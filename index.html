@@ -444,6 +444,19 @@
     <div class="form-row">
       <div class="field"><label>สถานะ</label><select id="eStatus"><option value="pending">รอรับ</option><option value="paid">รับแล้ว</option></select></div>
     </div>
+    <!-- v3: billing_month + account -->
+    <div class="form-row">
+      <div class="field">
+        <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
+        <input type="month" id="eBillingMonth" style="font-size:14px !important">
+      </div>
+      <div class="field">
+        <label>บัญชี</label>
+        <select id="eAccount" style="font-size:14px !important">
+          <option value="">-- ไม่ระบุ --</option>
+        </select>
+      </div>
+    </div>
     <div class="form-row full">
       <div class="field"><label>หมายเหตุ</label><input type="text" id="eNote"></div>
     </div>
@@ -900,35 +913,29 @@ create policy "public write" on transactions for all using (true);</div>
     <div class="form-row">
       <div class="field">
         <label>ชื่อเป้าหมาย</label>
-        <input type="text" id="newGoalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
+        <input type="text" id="sgName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
       </div>
     </div>
     <div class="form-row">
       <div class="field">
         <label>เป้าหมาย (฿)</label>
-        <input type="number" id="newGoalTarget" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
+        <input type="number" id="sgTarget" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
       </div>
       <div class="field">
         <label>มีอยู่แล้ว (฿)</label>
-        <input type="number" id="newGoalCurrent" placeholder="0" min="0" style="font-size:18px !important;text-align:right;font-family:monospace">
+        <input type="number" id="sgCurrent" placeholder="0" min="0" style="font-size:18px !important;text-align:right;font-family:monospace">
       </div>
     </div>
     <div class="form-row">
       <div class="field">
         <label>วันกำหนด</label>
-        <input type="date" id="newGoalDeadline" style="font-size:15px !important">
+        <input type="date" id="sgDate" style="font-size:15px !important">
       </div>
       <div class="field">
         <label>บัญชีที่ใช้ออม</label>
         <select id="newGoalAccount" style="font-size:15px !important">
           <option value="">-- เลือกบัญชี --</option>
         </select>
-      </div>
-    </div>
-    <div class="form-row full">
-      <div class="field">
-        <label>หมายเหตุ</label>
-        <input type="text" id="newGoalNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
       </div>
     </div>
     <div class="btn-row">
@@ -982,56 +989,57 @@ create policy "public write" on transactions for all using (true);</div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>ชื่อรายการ</label>
-        <input type="text" id="rName" placeholder="เช่น ค่าเช่า, Netflix" style="font-size:15px !important">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
         <label>ประเภท</label>
-        <select id="rType" style="font-size:15px !important">
+        <select id="recType" onchange="onRecurringTypeChange()" style="font-size:15px !important">
           <option value="expense">รายจ่าย</option>
           <option value="income">รายรับ</option>
         </select>
       </div>
       <div class="field">
         <label>หมวดหมู่</label>
-        <select id="rCat" style="font-size:15px !important"></select>
+        <select id="recCat" style="font-size:15px !important"></select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="field">
+        <label>ชื่อรายการ / คำอธิบาย</label>
+        <input type="text" id="recDesc" placeholder="เช่น ค่าเช่า, Netflix (เว้นว่างได้)" style="font-size:15px !important">
       </div>
     </div>
     <div class="form-row">
       <div class="field">
         <label>จำนวน (฿)</label>
-        <input type="number" id="rAmt" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
+        <input type="number" id="recAmt" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
       </div>
       <div class="field">
         <label>วันที่ตัดรายการ</label>
-        <input type="number" id="rDay" placeholder="1-31" min="1" max="31" style="font-size:22px !important;font-weight:700;text-align:center;font-family:monospace">
+        <input type="number" id="recDay" placeholder="1-31" min="1" max="31" style="font-size:22px !important;font-weight:700;text-align:center;font-family:monospace">
       </div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>Billing month offset</label>
-        <select id="rBillingOffset" style="font-size:14px !important">
+        <label>เดือนบิล</label>
+        <select id="recBillingOffset" style="font-size:14px !important">
           <option value="0">เดือนเดียวกัน (default)</option>
           <option value="-1">เดือนก่อนหน้า (ค่าไฟ/น้ำ)</option>
         </select>
       </div>
       <div class="field">
         <label>ผู้บันทึก</label>
-        <select id="rPerson" style="font-size:15px !important">
-          <option value="A">คนA</option>
-          <option value="B">คนB</option>
-        </select>
+        <select id="recPerson" style="font-size:15px !important"></select>
       </div>
+    </div>
+    <!-- split toggle — hidden for income -->
+    <div id="recSplitSection" style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <input type="checkbox" id="recSplit" style="width:18px;height:18px;cursor:pointer">
+      <label for="recSplit" style="font-size:14px;cursor:pointer">หาร 2 คน</label>
     </div>
     <div class="form-row full">
       <div class="field">
         <label>หมายเหตุ</label>
-        <input type="text" id="rNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+        <input type="text" id="recNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
       </div>
     </div>
-    <div id="recurringMsg" class="msg" style="margin-bottom:8px"></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" onclick="closeRecurringModal()" style="flex:1;min-height:44px">ยกเลิก</button>
       <button class="btn btn-primary" onclick="onSaveRecurring()" style="flex:1;min-height:44px">บันทึก</button>

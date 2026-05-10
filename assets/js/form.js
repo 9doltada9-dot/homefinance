@@ -50,6 +50,13 @@ function updateThaiDate(){
   var v = document.getElementById('fDate')?.value;
   var el = document.getElementById('fDateThai');
   if(el) el.textContent = v ? toThaiDateStr(v) : '';
+  // v3: update billing month suggestion when date changes
+  if(typeof updateBillingMonthSelector === 'function'){
+    var catName = '';
+    var catSel = document.getElementById('fCat');
+    if(catSel) { var catObj = catMap[catSel.value]; catName = catObj ? catObj.name : ''; }
+    updateBillingMonthSelector(v, catName);
+  }
   // salary cycle warning
   var warn = document.getElementById('fDateCycleWarn');
   if(!warn) return;
@@ -92,6 +99,12 @@ function onCatChange(){
   fillDescByCat(catId);
   autoSplit();
   fillVendors();
+  // v3: re-suggest billing_month when category changes
+  if(typeof updateBillingMonthSelector === 'function'){
+    var date = (document.getElementById('fDate')||{}).value || '';
+    var cat  = catMap[catId]; var catName = cat ? cat.name : '';
+    updateBillingMonthSelector(date, catName);
+  }
 }
 
 function fillDescByCat(catId){

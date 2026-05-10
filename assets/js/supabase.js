@@ -1,8 +1,8 @@
 /* HomeFinance · module: supabase.js · v2.5.0 */
 
 // ─── SUPABASE CREDENTIALS ─────────────────────────────────
-var SB_URL = localStorage.getItem('hf2_sb_url') || '';
-var SB_KEY = localStorage.getItem('hf2_sb_key') || '';
+var SB_URL = localStorage.getItem('hf2_sb_url') || (typeof SB_URL_DEFAULT !== 'undefined' ? SB_URL_DEFAULT : '');
+var SB_KEY = localStorage.getItem('hf2_sb_key') || (typeof SB_KEY_DEFAULT !== 'undefined' ? SB_KEY_DEFAULT : '');
 
 // ─── CATEGORIES SYNC ──────────────────────────────────────
 async function sbAddCategory(cat){

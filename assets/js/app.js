@@ -76,9 +76,14 @@ document.addEventListener('DOMContentLoaded', function(){
       sbLoadSettings(),
       sbLoadCategories(),
       sbLoadItems(),
-      sbLoadVendors()
+      sbLoadVendors(),
+      // v3: load accounts + savings goals from Supabase
+      (typeof sbLoadAccounts      === 'function' ? sbLoadAccounts()      : Promise.resolve(null)),
+      (typeof sbLoadSavingsGoals  === 'function' ? sbLoadSavingsGoals()  : Promise.resolve(null))
     ]).then(function(results){
-      var rows = results[0], settingsMap = results[1], catsData = results[2], itemsRows = results[3], vendorRows = results[4];
+      var rows = results[0], settingsMap = results[1], catsData = results[2],
+          itemsRows = results[3], vendorRows = results[4],
+          sbAccounts = results[5], sbGoals = results[6];
       // load categories first
       if(catsData && Array.isArray(catsData)){
         categories = catsData;
@@ -107,6 +112,16 @@ document.addEventListener('DOMContentLoaded', function(){
       if(rows.length>0){
         db = rows.map(mapSbRow);
         save();
+      }
+      // v3: merge Supabase accounts into local store
+      if(sbAccounts && sbAccounts.length && typeof saveAccountsLocal === 'function'){
+        accountsData = sbAccounts;
+        saveAccountsLocal();
+      }
+      // v3: merge Supabase savings goals into local store
+      if(sbGoals && sbGoals.length && typeof saveSavingsGoalsLocal === 'function'){
+        savingsGoals = sbGoals;
+        saveSavingsGoalsLocal();
       }
       initV3Modules();
       renderDash();

@@ -91,6 +91,8 @@ function renderDash(){
     '<td><button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\');renderDash()">✓</button></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ไม่มีรายการรอดำเนินการ</div>';
   renderSalaryCycleCard();
+  // v3: render account summary cards on dashboard
+  if (typeof renderAccountCards === 'function') renderAccountCards();
 }
 
 function renderSalaryCycleCard(){

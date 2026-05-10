@@ -3,11 +3,17 @@
 function fillVendors(){
   var sel = document.getElementById('fVendor');
   if(!sel) return;
+  var prevVal = sel.value; // จำค่าที่เลือกอยู่ก่อน re-render
   var sorted = vendorsData.slice().sort(function(a,b){return (isFavVendor(b.name)?1:0)-(isFavVendor(a.name)?1:0);});
   sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'+
     sorted.map(function(v){return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';}).join('');
-  var fav = sorted.find(function(v){return isFavVendor(v.name);});
-  if(fav) sel.value = fav.id;
+  // คืนค่าเดิมถ้ายังมีอยู่ใน list มิฉะนั้นเลือก fav แรก
+  if(prevVal && vendorsData.find(function(v){return v.id===prevVal;})){
+    sel.value = prevVal;
+  } else {
+    var fav = sorted.find(function(v){return isFavVendor(v.name);});
+    if(fav) sel.value = fav.id;
+  }
   // star button — ต้องใช้ชื่อร้าน ไม่ใช่ id
   var btn = document.getElementById('fVendorStar');
   function updateVendorStar(){

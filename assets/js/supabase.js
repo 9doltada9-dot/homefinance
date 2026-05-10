@@ -1,4 +1,36 @@
-/* HomeFinance · module: supabase.js · v2.5.0 */
+/* HomeFinance · module: supabase.js · v3.0.0 */
+
+// ─── ROW MAPPER (Supabase → local JS object) ──────────────
+/**
+ * Maps a raw Supabase row to the internal transaction object.
+ * Handles both v2 (no cycle_id/billing_month) and v3 rows.
+ */
+function mapSbRow(e) {
+  return {
+    id:           e.id,
+    date:         e.date,
+    type:         e.type,
+    cat_id:       e.cat_id,
+    cat_name:     e.cat_name || ((categories.find(function(c){ return c.id===e.cat_id; })||{}).name||''),
+    desc:         e.desc,
+    amt:          Number(e.amt)||0,
+    person:       e.person,
+    split:        e.split===true||e.split==='true'||e.split==='TRUE',
+    status:       e.status,
+    note:         e.note||'',
+    item_id:      e.item_id||null,
+    vendor_id:    e.vendor_id||null,
+    vendor_name:  e.vendor_name||'',
+    // v3 fields
+    cycle_id:           e.cycle_id||null,
+    billing_month:      e.billing_month||null,
+    account_id:         e.account_id||null,
+    transfer_direction: e.transfer_direction||null,
+    transfer_pair_id:   e.transfer_pair_id||null,
+    _recurring_id:      e._recurring_id||null,
+    _salary_cycle:      e._salary_cycle||false,
+  };
+}
 
 // ─── SUPABASE CREDENTIALS ─────────────────────────────────
 var SB_URL = localStorage.getItem('hf2_sb_url') || (typeof SB_URL_DEFAULT !== 'undefined' ? SB_URL_DEFAULT : '');
@@ -246,15 +278,7 @@ async function silentPull(){
     var hash = rows.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     var old  = db.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     if(hash !== old){
-      db = rows.map(function(e){
-        return {
-          id:e.id, date:e.date, type:e.type,
-          cat_id:e.cat_id, cat_name:e.cat_name||((categories.find(function(c){return c.id===e.cat_id;})||{}).name||''),
-          desc:e.desc, amt:Number(e.amt)||0, person:e.person,
-          split:e.split===true||e.split==='true'||e.split==='TRUE',
-          status:e.status, note:e.note||''
-        };
-      });
+      db = rows.map(mapSbRow);
       save();
       renderDash();
       var activePage = (document.querySelector('.page.active')||{}).id;
@@ -463,15 +487,7 @@ async function syncOnReconnect(){
     ]);
     var rows = results[0], catsData = results[1];
     if(rows.length > 0){
-      db = rows.map(function(e){
-        return {
-          id:e.id, date:e.date, type:e.type,
-          cat_id:e.cat_id, cat_name:e.cat_name||((categories.find(function(c){return c.id===e.cat_id;})||{}).name||''),
-          desc:e.desc, amt:Number(e.amt)||0, person:e.person,
-          split:e.split===true||e.split==='true'||e.split==='TRUE',
-          status:e.status, note:e.note||''
-        };
-      });
+      db = rows.map(mapSbRow);
       save();
     }
     if(catsData && Array.isArray(catsData)){
@@ -569,14 +585,7 @@ async function sbPull(){
       if(pB) document.getElementById('nameB').value=pB.name;
     }
     // apply transactions
-    db = rows.map(function(e){
-      return {
-        id:e.id, date:e.date, type:e.type, cat_id:e.cat_id, cat_name:e.cat_name||((categories.find(function(c){return c.id===e.cat_id;})||{}).name||''),
-        desc:e.desc, amt:Number(e.amt)||0, person:e.person,
-        split:e.split===true||e.split==='true'||e.split==='TRUE',
-        status:e.status, note:e.note||''
-      };
-    });
+    db = rows.map(mapSbRow);
     save();
     sbStatus('ok');
     showMsg('sbMsg','Pull สำเร็จ! ได้ '+db.length+' รายการ + settings + '+categories.length+' หมวด จาก Supabase', 'success');
@@ -597,12 +606,15 @@ async function sbAdd(e){
   try {
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
     var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'resolution=merge-duplicates,return=minimal'});
+    // Ensure cycle_id + billing_month are populated (v3)
+    var cycleId      = e.cycle_id      || (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : null);
+    var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : null);
     await fetch(creds.url+'/rest/v1/'+SB_TABLE, {
       method:'POST',
       headers: headers,
       body:JSON.stringify([{
         id:String(e.id), date:e.date,
-        type:e.type,           // enum: income|expense
+        type:e.type,
         cat_id:catId,
         desc:e.desc, amt:e.amt, person:e.person,
         split:e.split,
@@ -610,6 +622,13 @@ async function sbAdd(e){
         note:e.note||'',
         item_id:e.item_id||null,
         vendor_id:e.vendor_id||null,
+        // v3 new fields
+        cycle_id:       cycleId||null,
+        billing_month:  billingMonth||null,
+        account_id:     e.account_id||null,
+        transfer_direction: e.transfer_direction||null,
+        transfer_pair_id:   e.transfer_pair_id||null,
+        _recurring_id:  e._recurring_id||null,
       }])
     });
   } catch(_){}
@@ -620,6 +639,8 @@ async function sbUpdate(e){
   if(!creds.ok) return;
   try {
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
+    var cycleId      = e.cycle_id      || (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : null);
+    var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : null);
     await fetch(creds.url+'/rest/v1/'+SB_TABLE+'?id=eq.'+encodeURIComponent(String(e.id)), {
       method:'PATCH',
       headers:sbHeadersFrom(creds.key),
@@ -632,6 +653,10 @@ async function sbUpdate(e){
         note:e.note||'',
         item_id:e.item_id||null,
         vendor_id:e.vendor_id||null,
+        // v3 new fields
+        cycle_id:      cycleId||null,
+        billing_month: billingMonth||null,
+        account_id:    e.account_id||null,
       })
     });
   } catch(_){}

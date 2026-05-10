@@ -1,4 +1,4 @@
-/* HomeFinance · module: app.js · v2.5.0 */
+/* HomeFinance · module: app.js · v3.0.0 */
 
 // ─── GLOBAL TICKERS / LISTENERS ───────────────────────────
 setInterval(updateTopbarClock, 1000);
@@ -103,30 +103,49 @@ document.addEventListener('DOMContentLoaded', function(){
         if(pA2) document.getElementById('nameA').value=pA2.name;
         if(pB2) document.getElementById('nameB').value=pB2.name;
       }
-      // apply transactions
+      // apply transactions (v3: uses mapSbRow for new fields)
       if(rows.length>0){
-        db = rows.map(function(e){
-          return {
-            id:e.id, date:e.date, type:e.type, cat_id:e.cat_id, cat_name:e.cat_name||((categories.find(function(c){return c.id===e.cat_id;})||{}).name||''),
-            desc:e.desc, amt:Number(e.amt)||0, person:e.person,
-            split:e.split===true||e.split==='true'||e.split==='TRUE',
-            status:e.status, note:e.note||''
-          };
-        });
+        db = rows.map(mapSbRow);
         save();
       }
+      initV3Modules();
       renderDash();
+      if (typeof renderAccountCards === 'function') renderAccountCards();
       startConnectionMonitor();
       startSilentPullInterval();
-      if (typeof initFeatures === 'function') initFeatures();
     }).catch(function(){
+      initV3Modules();
       renderDash();
       startConnectionMonitor();
       startSilentPullInterval();
-      if (typeof initFeatures === 'function') initFeatures();
     });
   } else {
+    initV3Modules();
     renderDash();
-    if (typeof initFeatures === 'function') initFeatures();
   }
 });
+
+// ─── V3 MODULE INIT ───────────────────────────────────────
+function initV3Modules() {
+  // Cycle engine: ensure current + next cycle exist
+  if (typeof initCycleEngine === 'function') initCycleEngine();
+
+  // Accounts
+  if (typeof loadAccountsLocal === 'function') loadAccountsLocal();
+  if (typeof fillAccountSelectors === 'function') fillAccountSelectors();
+
+  // Savings goals
+  if (typeof loadSavingsGoals === 'function') loadSavingsGoals();
+
+  // Recurring engine (replaces features.js recurring)
+  if (typeof initRecurringEngine === 'function') initRecurringEngine();
+
+  // Notification engine
+  if (typeof initNotificationEngine === 'function') initNotificationEngine();
+
+  // Salary auto-activate (from salary.js)
+  if (typeof autoActivateSalary === 'function') autoActivateSalary();
+
+  // PWA service worker (from features.js)
+  if (typeof registerServiceWorker === 'function') registerServiceWorker();
+}

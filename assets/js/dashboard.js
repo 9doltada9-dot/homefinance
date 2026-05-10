@@ -1,4 +1,4 @@
-/* HomeFinance · module: dashboard.js · v2.5.0 */
+/* HomeFinance · module: dashboard.js · v3.0.0 */
 
 // ─── DASHBOARD ───────────────────────────────────────────
 function populateDashYears(){
@@ -98,21 +98,50 @@ function renderSalaryCycleCard(){
   var content = document.getElementById('salaryCycleContent');
   if(!card||!content) return;
 
-  var today  = new Date();
-  var cycle  = getSalaryCycle();
-  var cycleInc = db.filter(function(e){return e.type==='income'&&e.date>=cycle.start&&e.date<=cycle.end;});
-  var cycleExp = db.filter(function(e){return e.type==='expense'&&e.date>=cycle.start&&e.date<=cycle.end&&isPaid(e);});
-  var received = cycleInc.filter(function(e){return isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
-  var pending  = cycleInc.filter(function(e){return e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
-  var totalExp = cycleExp.reduce(function(s,e){return s+e.amt;},0);
-  var remain   = received - totalExp;
-  var dayLeft  = Math.ceil((new Date(cycle.end) - today) / 86400000) + 1;
+  // Use v3 engines when available, fallback to v2 logic
+  var cycleId  = typeof getCurrentCycleId === 'function' ? getCurrentCycleId() : null;
+  var summary  = (cycleId && typeof getDashboardSummary === 'function') ? getDashboardSummary(cycleId) : null;
 
-  // pending salary entries
-  var pendList = cycleInc.filter(function(e){return e.status==='pending'&&e._salary_cycle;});
+  // Fallback v2 values
+  var cycle    = getSalaryCycle();
+  var cycleInc, cycleExp, received, pending, totalExp, remain, dayLeft;
+
+  if (summary) {
+    received = summary.received;
+    pending  = summary.pendingBalance;
+    totalExp = summary.totalExpense;
+    remain   = summary.activeBalance;
+    dayLeft  = summary.daysRemaining;
+  } else {
+    var today = new Date();
+    cycleInc  = db.filter(function(e){return e.type==='income'&&e.date>=cycle.start&&e.date<=cycle.end;});
+    cycleExp  = db.filter(function(e){return e.type==='expense'&&e.date>=cycle.start&&e.date<=cycle.end&&isPaid(e);});
+    received  = cycleInc.filter(function(e){return isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
+    pending   = cycleInc.filter(function(e){return e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
+    totalExp  = cycleExp.reduce(function(s,e){return s+e.amt;},0);
+    remain    = received - totalExp;
+    dayLeft   = Math.max(0, Math.ceil((new Date(cycle.end) - today) / 86400000));
+  }
+
+  // Forecast (v3)
+  var forecastHtml = '';
+  if (cycleId && typeof renderForecastCard === 'function') {
+    forecastHtml = renderForecastCard(cycleId);
+  }
+
+  // Pending salary entries
+  var allInCycle = db.filter(function(e){ return e.date >= cycle.start && e.date <= cycle.end; });
+  var pendList   = allInCycle.filter(function(e){ return e.type==='income'&&e.status==='pending'&&e._salary_cycle; });
+
+  // Progress bar for cycle
+  var totalDays   = summary ? summary.totalDays : 31;
+  var elapsed     = summary ? summary.daysElapsed : (totalDays - dayLeft);
+  var progressPct = Math.min(100, Math.round(elapsed / totalDays * 100));
+  var spendPct    = received > 0 ? Math.min(100, Math.round(totalExp / received * 100)) : 0;
 
   card.style.display='block';
   content.innerHTML=
+    // Header
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">'+
       '<div>'+
         '<div style="font-size:12px;font-weight:700;color:#1a4fa0;letter-spacing:.3px">💼 รอบเงินเดือน</div>'+
@@ -122,38 +151,54 @@ function renderSalaryCycleCard(){
         'เหลืออีก <b>'+dayLeft+'</b> วัน'+
       '</div>'+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:'+(pendList.length?'10px':'0')+'">'+
+    // Cycle progress bar
+    '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-bottom:3px">'+
+        '<span>เริ่ม '+toThaiDateShort(cycle.start)+'</span>'+
+        '<span>'+progressPct+'% ของรอบ</span>'+
+        '<span>สิ้นสุด '+toThaiDateShort(cycle.end)+'</span>'+
+      '</div>'+
+      '<div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">'+
+        '<div style="height:100%;width:'+progressPct+'%;background:#1a4fa0;border-radius:3px;transition:width .4s"></div>'+
+      '</div>'+
+    '</div>'+
+    // 4-metric grid
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">รับแล้ว</div>'+
+        '<div style="font-size:10px;color:var(--ink3)">✅ รับแล้ว (Active)</div>'+
         '<div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmt(received)+'</div>'+
       '</div>'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">รายจ่าย</div>'+
+        '<div style="font-size:10px;color:var(--ink3)">💸 รายจ่ายรอบนี้</div>'+
         '<div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmt(totalExp)+'</div>'+
       '</div>'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">คงเหลือ</div>'+
+        '<div style="font-size:10px;color:var(--ink3)">💰 คงเหลือ (Active)</div>'+
         '<div style="font-size:15px;font-weight:700;color:'+(remain>=0?'var(--green)':'var(--red)')+';font-family:monospace">'+fmt(remain)+'</div>'+
       '</div>'+
+      (pending > 0 ?
+      '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px">'+
+        '<div style="font-size:10px;color:#b5600a">⏳ รอรับ (Pending)</div>'+
+        '<div style="font-size:15px;font-weight:700;color:#b5600a;font-family:monospace">'+fmt(pending)+'</div>'+
+      '</div>'
+      :
+      '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
+        '<div style="font-size:10px;color:var(--ink3)">📊 ใช้จ่ายไป</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--ink2);font-family:monospace">'+spendPct+'%</div>'+
+      '</div>') +
     '</div>'+
+    // Pending salary activation
     (pendList.length ?
-    '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px 10px">'+
+    '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px 10px;margin-bottom:10px">'+
       '<div style="font-size:11px;font-weight:700;color:#b5600a;margin-bottom:6px">⏳ รอรับ — จะเปิดใช้งานวันที่ '+SALARY_DAY+'</div>'+
       pendList.map(function(e){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(240,195,106,.3)">'+
           '<span>'+e.desc+'</span>'+
           '<span style="font-family:monospace;font-weight:600;color:#b5600a">+'+fmt(e.amt)+'</span>'+
         '</div>';}).join('')+
-      '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0 0;font-weight:700;color:#b5600a">'+
-        '<span>รวมรอรับ</span>'+
-        '<span style="font-family:monospace">+'+fmt(pending)+'</span>'+
-      '</div>'+
-      '<button onclick="activateSalaryNow()" style="'+
-        'margin-top:8px;width:100%;background:#1a4fa0;color:#fff;'+
-        'border:none;border-radius:8px;padding:8px;font-size:12px;'+
-        'font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;'+
-        'touch-action:manipulation'+
-      '">✓ ยืนยันรับเงินทันที</button>'+
-    '</div>' : '');
+      '<button onclick="activateSalaryNow()" style="margin-top:8px;width:100%;background:#1a4fa0;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
+    '</div>' : '')+
+    // Forecast card (v3)
+    forecastHtml;
 }
 
 function activateSalaryNow(){

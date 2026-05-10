@@ -1,4 +1,4 @@
-/* HomeFinance · module: form.js · v2.5.0 */
+/* HomeFinance · module: form.js · v3.0.0 */
 
 function initForm(){
   if(!document.getElementById('fDate').value){
@@ -15,6 +15,14 @@ function initForm(){
   fillVendors();
   var pSel = document.getElementById('fPerson');
   if(pSel) pSel.onchange = function(){ fillVendors(); };
+  // v3: populate account selector
+  if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
+  // v3: auto-set billing_month to current month
+  var bmSel = document.getElementById('fBillingMonth');
+  if(bmSel && !bmSel.value){
+    var now = new Date();
+    bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  }
 }
 
 function setType(t){
@@ -147,6 +155,19 @@ function addEntry(){
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});
   var item_id = (itemObj && itemObj.id)||null;
 
+  // v3: billing_month and account_id
+  var billing_month = (document.getElementById('fBillingMonth')||{}).value || null;
+  var account_id    = (document.getElementById('fAccount')||{}).value    || null;
+
+  // v3: compute cycle_id from date
+  var cycle_id = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(date) : null;
+
+  // v3: auto-suggest billing_month for utility categories if not set
+  if(!billing_month && cType==='expense' && typeof suggestBillingMonth === 'function'){
+    billing_month = suggestBillingMonth(date, cat_name) || (date ? date.slice(0,7) : null);
+  }
+  if(!billing_month && date) billing_month = date.slice(0,7);
+
   // ── SALARY CYCLE: auto-pending if income before 25th ──────
   var _salary_cycle = null;
   if(cType==='income' && isEarlySalary({type:cType, date:date})){
@@ -158,7 +179,9 @@ function addEntry(){
   }
 
   db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt, person:person,
-    split:cType==='expense'?splitOn:false, status:status, note:note, item_id:item_id, vendor_id:vendor_id, _salary_cycle:_salary_cycle});
+    split:cType==='expense'?splitOn:false, status:status, note:note, item_id:item_id, vendor_id:vendor_id,
+    _salary_cycle:_salary_cycle,
+    cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null});
   save();
   addNoteHistory(note);
   sbAdd(db[0]);
@@ -170,4 +193,12 @@ function clearForm(){
   document.getElementById('fDesc').value='';
   document.getElementById('fAmt').value='';
   document.getElementById('fNote').value='';
+  // reset billing_month back to current month
+  var bmSel = document.getElementById('fBillingMonth');
+  if(bmSel){
+    var now = new Date();
+    bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  }
+  var acctSel = document.getElementById('fAccount');
+  if(acctSel) acctSel.value = '';
 }

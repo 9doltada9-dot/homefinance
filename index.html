@@ -44,6 +44,10 @@
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 11.5h-1.5V9h1.5v4.5zm0-6h-1.5V6h1.5v1.5z"/></svg>
     ชำระ
   </div>
+  <div class="bn-item" id="bn-accounts" onclick="nav('accounts')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2 0v2h10V5H5zm0 5v5h10v-5H5zm2 1h4v2H7v-2z"/></svg>
+    บัญชี
+  </div>
   <div class="bn-item" id="bn-settings" onclick="nav('settings')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a4 4 0 100 8 4 4 0 000-8zm0 1.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM8 1l-.5 2a6.5 6.5 0 00-1.7 1L4 3.4 2.4 5l1 2a6.5 6.5 0 00-.8 2L1 9.5V11l1.6.7c.2.7.5 1.4.9 2l-1 2 1.6 1.6 2-1c.6.4 1.2.7 1.9.9L8 19h2l.5-1.8a6.5 6.5 0 001.9-.9l2 1 1.6-1.6-1-2c.4-.6.7-1.3.9-2L18 11V9.5l-1.8-.5a6.5 6.5 0 00-.9-2l1-2L14.7 3.4 12.7 4.4a6.5 6.5 0 00-1.7-1L10.5 1H8z"/></svg>
     ตั้งค่า
@@ -57,7 +61,7 @@
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v2.9.3 · THB</div>
+    <div class="brand-sub">v3.0.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div class="name-row">
@@ -93,6 +97,14 @@
     <div class="nav-item" onclick="nav('budget')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3zm0 3h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V6zm3 2v1h6V8H5zm0 2v1h4v-1H5z"/></svg>
       งบประมาณ
+    </div>
+    <div class="nav-item" onclick="nav('accounts')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm1 0v2h10V4H3zm0 4v4h10V8H3zm2 1h3v1.5H5V9zm5 0h1v1.5h-1V9z"/></svg>
+      บัญชีธนาคาร
+    </div>
+    <div class="nav-item" onclick="nav('savings')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 014.9 6H14a1 1 0 010 2h-1a1 1 0 01-1-1 4 4 0 10-4 4 1 1 0 010 2 6 6 0 110-12zm0 3a1 1 0 011 1v2.6l1.7 1.7-1.4 1.4-2-2A1 1 0 017 9V5a1 1 0 011-1zm-1 9h6v1.5H7V13zm2-2h4v1.5H9V11z"/></svg>
+      เป้าหมายออม
     </div>
     <div class="nav-item" onclick="nav('supabase')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1H3zm1 2h8v1H4V4zm0 2h8v1H4V6zm0 2h5v1H4V8z"/></svg>
@@ -130,6 +142,9 @@
   <div id="salaryCycleCard" class="card" style="border-left:4px solid #1a4fa0;padding:12px 16px;display:none">
     <div id="salaryCycleContent"></div>
   </div>
+
+  <!-- ACCOUNT CARDS (v3) -->
+  <div id="accountCards" style="display:none"></div>
 
   <!-- CHART SECTION -->
   <div class="card" style="padding:0;overflow:hidden">
@@ -237,6 +252,20 @@
         </select>
       </div>
     </div>
+    <!-- v3: billing_month + account -->
+    <div class="form-row">
+      <div class="field">
+        <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
+        <input type="month" id="fBillingMonth" style="font-size:15px !important">
+        <div style="font-size:11px;color:var(--ink3);margin-top:3px">สำหรับค่าไฟ/น้ำ ที่จ่ายเดือนนี้แต่ใช้เดือนที่แล้ว</div>
+      </div>
+      <div class="field">
+        <label>บัญชี</label>
+        <select id="fAccount" style="font-size:15px !important">
+          <option value="">-- เลือกบัญชี --</option>
+        </select>
+      </div>
+    </div>
     <div class="form-row">
       <div class="field">
         <label>หมายเหตุ</label>
@@ -323,6 +352,11 @@
         <div class="mf-label" onclick="toggleMF('mfItem')">รายการ ▾</div>
         <div class="mf-dropdown" id="mfItemList" style="max-height:220px;overflow-y:auto"></div>
       </div>
+
+      <!-- Billing Month filter (v3) -->
+      <select id="fltBillingMonth" onchange="renderTx()" style="min-width:130px;font-size:13px !important">
+        <option value="">เดือนบิล (billing)</option>
+      </select>
 
       <!-- Reset button -->
       <button onclick="resetFilters()" style="
@@ -597,7 +631,7 @@
     </div>
     <div style="padding:0 14px 14px">
       <div id="recurringList" style="margin-bottom:8px"></div>
-      <button class="btn btn-primary" onclick="onAddRecurring()" style="width:100%;min-height:44px">+ เพิ่มรายการประจำ</button>
+      <button class="btn btn-primary" onclick="openRecurringModal()" style="width:100%;min-height:44px">+ เพิ่มรายการประจำ</button>
     </div>
   </div>
 
@@ -623,6 +657,9 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
+        <strong>v3.0.0</strong> — major: รอบเงินเดือน (cycle_id), billing_month, Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push notifications, budget-cycle mode, recurringEngine v3
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v2.9.3</strong> — feat: sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, ไม่ระบุท้าย, แก้ปุ่มยกเลิก, จัดลำดับตั้งค่า
       </div>
       <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
@@ -787,6 +824,221 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 </div>
 
+<!-- ACCOUNTS PAGE (v3) -->
+<div id="page-accounts" class="page">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <div class="page-title">บัญชีธนาคาร</div>
+      <div class="page-sub">จัดการหลายบัญชีและโอนเงินระหว่างบัญชี</div>
+    </div>
+    <button class="btn btn-primary" onclick="openTransferModal()" style="min-height:44px;white-space:nowrap">⇄ โอนเงิน</button>
+  </div>
+
+  <!-- Account Cards -->
+  <div id="pageAccountCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
+
+  <!-- Add Account -->
+  <div class="card" style="max-width:600px">
+    <div class="card-title">+ เพิ่มบัญชีใหม่</div>
+    <div class="form-row">
+      <div class="field">
+        <label>ชื่อบัญชี</label>
+        <input type="text" id="newAcctName" placeholder="เช่น กสิกรไทย, กระเป๋าเงิน" style="font-size:15px !important">
+      </div>
+      <div class="field">
+        <label>ประเภท</label>
+        <select id="newAcctType" style="font-size:15px !important">
+          <option value="bank">🏦 ธนาคาร</option>
+          <option value="cash">💵 เงินสด</option>
+          <option value="ewallet">📱 E-Wallet</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>ยอดเริ่มต้น (฿)</label>
+        <input type="number" id="newAcctBalance" placeholder="0" min="0" style="font-size:20px !important;font-weight:600;text-align:right;font-family:monospace">
+      </div>
+      <div class="field">
+        <label>สี</label>
+        <select id="newAcctColor" style="font-size:15px !important">
+          <option value="#1a4fa0">น้ำเงิน</option>
+          <option value="#1a7a4a">เขียว</option>
+          <option value="#b5600a">ส้ม</option>
+          <option value="#7c3aed">ม่วง</option>
+          <option value="#dc2626">แดง</option>
+          <option value="#0369a1">ฟ้า</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="onAddAccount()" style="min-height:44px">+ เพิ่มบัญชี</button>
+    </div>
+    <div id="acctMsg" class="msg"></div>
+  </div>
+
+  <!-- Account List (edit/delete) -->
+  <div class="card" style="max-width:600px">
+    <div class="card-title">รายการบัญชีทั้งหมด</div>
+    <div id="accountList"></div>
+  </div>
+</div>
+
+<!-- SAVINGS GOALS PAGE (v3) -->
+<div id="page-savings" class="page">
+  <div class="page-header">
+    <div class="page-title">เป้าหมายการออม</div>
+    <div class="page-sub">ติดตามเป้าหมายและคำนวณเงินออมรายเดือน</div>
+  </div>
+
+  <!-- Goals list -->
+  <div id="savingsGoalsList" style="margin-bottom:16px"></div>
+
+  <!-- Add Goal form -->
+  <div class="card" style="max-width:600px">
+    <div class="card-title">+ เพิ่มเป้าหมายใหม่</div>
+    <div class="form-row">
+      <div class="field">
+        <label>ชื่อเป้าหมาย</label>
+        <input type="text" id="newGoalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>เป้าหมาย (฿)</label>
+        <input type="number" id="newGoalTarget" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
+      </div>
+      <div class="field">
+        <label>มีอยู่แล้ว (฿)</label>
+        <input type="number" id="newGoalCurrent" placeholder="0" min="0" style="font-size:18px !important;text-align:right;font-family:monospace">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>วันกำหนด</label>
+        <input type="date" id="newGoalDeadline" style="font-size:15px !important">
+      </div>
+      <div class="field">
+        <label>บัญชีที่ใช้ออม</label>
+        <select id="newGoalAccount" style="font-size:15px !important">
+          <option value="">-- เลือกบัญชี --</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="field">
+        <label>หมายเหตุ</label>
+        <input type="text" id="newGoalNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="onAddSavingsGoal()" style="min-height:44px">+ เพิ่มเป้าหมาย</button>
+    </div>
+    <div id="goalMsg" class="msg"></div>
+  </div>
+</div>
+
+<!-- TRANSFER MODAL (v3) -->
+<div id="transferModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:440px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:600">⇄ โอนเงินระหว่างบัญชี</div>
+      <button onclick="closeTransferModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>จากบัญชี</label>
+      <select id="transferFrom" style="font-size:16px !important"></select>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>ไปบัญชี</label>
+      <select id="transferTo" style="font-size:16px !important"></select>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>จำนวนเงิน (฿)</label>
+      <input type="number" id="transferAmt" placeholder="0" min="0" style="font-size:28px !important;font-weight:700;text-align:right;font-family:monospace">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>วันที่โอน</label>
+      <input type="date" id="transferDate" style="font-size:15px !important">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>หมายเหตุ</label>
+      <input type="text" id="transferNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+    </div>
+    <div id="transferMsg" class="msg" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeTransferModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="doTransfer()" style="flex:1;min-height:44px">⇄ โอนเงิน</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECURRING MODAL (v3) -->
+<div id="recurringModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:520px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:600">รายการประจำเดือน</div>
+      <button onclick="closeRecurringModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>ชื่อรายการ</label>
+        <input type="text" id="rName" placeholder="เช่น ค่าเช่า, Netflix" style="font-size:15px !important">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>ประเภท</label>
+        <select id="rType" style="font-size:15px !important">
+          <option value="expense">รายจ่าย</option>
+          <option value="income">รายรับ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>หมวดหมู่</label>
+        <select id="rCat" style="font-size:15px !important"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>จำนวน (฿)</label>
+        <input type="number" id="rAmt" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
+      </div>
+      <div class="field">
+        <label>วันที่ตัดรายการ</label>
+        <input type="number" id="rDay" placeholder="1-31" min="1" max="31" style="font-size:22px !important;font-weight:700;text-align:center;font-family:monospace">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Billing month offset</label>
+        <select id="rBillingOffset" style="font-size:14px !important">
+          <option value="0">เดือนเดียวกัน (default)</option>
+          <option value="-1">เดือนก่อนหน้า (ค่าไฟ/น้ำ)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ผู้บันทึก</label>
+        <select id="rPerson" style="font-size:15px !important">
+          <option value="A">คนA</option>
+          <option value="B">คนB</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="field">
+        <label>หมายเหตุ</label>
+        <input type="text" id="rNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+      </div>
+    </div>
+    <div id="recurringMsg" class="msg" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeRecurringModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="onSaveRecurring()" style="flex:1;min-height:44px">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 </main>
 </div>
 
@@ -810,6 +1062,13 @@ create policy "public write" on transactions for all using (true);</div>
 <script src="assets/js/monthly.js"></script>
 <script src="assets/js/budget.js"></script>
 <script src="assets/js/autocomplete.js"></script>
+<script src="assets/js/cycleEngine.js"></script>
+<script src="assets/js/balanceEngine.js"></script>
+<script src="assets/js/forecastEngine.js"></script>
+<script src="assets/js/accounts.js"></script>
+<script src="assets/js/savingsGoals.js"></script>
+<script src="assets/js/notificationEngine.js"></script>
+<script src="assets/js/recurringEngine.js"></script>
 <script src="assets/js/features.js"></script>
 <script src="assets/js/settings.js"></script>
 <script src="assets/js/app.js"></script>

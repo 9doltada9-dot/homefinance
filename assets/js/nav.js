@@ -1,4 +1,4 @@
-/* HomeFinance · module: nav.js · v2.5.0 */
+/* HomeFinance · module: nav.js · v3.0.0 */
 
 // ─── NAV ────────────────────────────────────────────────
 function nav(page){
@@ -12,11 +12,15 @@ function nav(page){
   });
   // highlight bottom nav
   document.querySelectorAll('.bn-item').forEach(function(b){b.classList.remove('active');});
-  var bnMap={dashboard:'bn-dashboard',add:'bn-add',transactions:'bn-transactions',settlement:'bn-settlement',settings:'bn-settings'};
+  var bnMap={
+    dashboard:'bn-dashboard', add:'bn-add',
+    transactions:'bn-transactions', settlement:'bn-settlement',
+    accounts:'bn-accounts', settings:'bn-settings'
+  };
   var bnEl=document.getElementById(bnMap[page]);
   if(bnEl) bnEl.classList.add('active');
   closeSidebar();
-  if(page==='dashboard') renderDash();
+  if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions') renderTx();
   if(page==='settlement'){ populateMths('settleMonth'); renderSettle(); }
   if(page==='monthly'){ populateMths('monthSel'); renderMonthly(); }
@@ -24,7 +28,14 @@ function nav(page){
   if(page==='settings'){ renderSettings(); }
   if(page==='supabase'){ initSbPage(); }
   if(page==='budget'){ renderBudget(); }
-  if(page==='dashboard'){ autoActivateSalary(); }
+  if(page==='accounts'){
+    if(typeof renderAccountCards==='function') renderAccountCards();
+    if(typeof renderAccountList==='function') renderAccountList();
+  }
+  if(page==='savings'){
+    if(typeof renderSavingsGoals==='function') renderSavingsGoals();
+    if(typeof fillAccountSelectors==='function') fillAccountSelectors();
+  }
 }
 
 function toggleSidebar(){

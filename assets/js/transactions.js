@@ -1,4 +1,4 @@
-/* HomeFinance · module: transactions.js · v2.5.0 */
+/* HomeFinance · module: transactions.js · v3.0.0 */
 
 // ─── MULTI FILTER ─────────────────────────────────────────
 function toggleMF(id){
@@ -86,6 +86,9 @@ function populateMFPerson(){
 
 function resetFilters(){
   document.getElementById('fltMonth').value='';
+  // Rebuild billing_month filter dropdown
+  var fltBM = document.getElementById('fltBillingMonth');
+  if (fltBM) { fltBM.value = ''; populateFltBillingMonth(fltBM); }
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
   [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ'],['mfPerson','คน']].forEach(function(pair){
     var id=pair[0], def=pair[1];
@@ -100,22 +103,48 @@ function resetFilters(){
  * (ใช้ตอน export CSV ของรายการที่กรอง)
  */
 function getFilteredTx(){
-  var fltM=document.getElementById('fltMonth');
-  var list=db.slice();
-  if(fltM && fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
-  var ftypes = getMFValues('mfType');
-  if(ftypes.length) list=list.filter(function(e){return ftypes.indexOf(e.type)>-1;});
-  var fcats = getMFValues('mfCat');
-  if(fcats.length) list=list.filter(function(e){return fcats.indexOf(e.cat_id)>-1;});
-  var fitems = getMFValues('mfItem');
-  if(fitems.length) list=list.filter(function(e){return fitems.indexOf(e.desc)>-1;});
-  var fstats = getMFValues('mfStatus');
-  if(fstats.length) list=list.filter(function(e){return fstats.indexOf(e.status)>-1;});
-  var fpers = getMFValues('mfPerson');
-  if(fpers.length) list=list.filter(function(e){return fpers.indexOf(e.person)>-1;});
+  var fltM  = document.getElementById('fltMonth');
+  var fltBM = document.getElementById('fltBillingMonth');
+  var list  = db.slice();
+  // transaction_date filter
+  if(fltM  && fltM.value)  list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
+  // billing_month filter (v3)
+  if(fltBM && fltBM.value){
+    list = list.filter(function(e){
+      var bm = e.billing_month || e.date.slice(0,7);
+      return bm === fltBM.value;
+    });
+  }
+  var ftypes   = getMFValues('mfType');
+  if(ftypes.length)   list = list.filter(function(e){ return ftypes.indexOf(e.type)>-1; });
+  var fcats    = getMFValues('mfCat');
+  if(fcats.length)    list = list.filter(function(e){ return fcats.indexOf(e.cat_id)>-1; });
+  var fitems   = getMFValues('mfItem');
+  if(fitems.length)   list = list.filter(function(e){ return fitems.indexOf(e.desc)>-1; });
+  var fstats   = getMFValues('mfStatus');
+  if(fstats.length)   list = list.filter(function(e){ return fstats.indexOf(e.status)>-1; });
+  var fpers    = getMFValues('mfPerson');
+  if(fpers.length)    list = list.filter(function(e){ return fpers.indexOf(e.person)>-1; });
   var fvendors = getMFValues('mfVendor');
-  if(fvendors.length) list=list.filter(function(e){return fvendors.indexOf(e.vendor_id)>-1;});
+  if(fvendors.length) list = list.filter(function(e){ return fvendors.indexOf(e.vendor_id)>-1; });
   return list;
+}
+
+/** Populate billing_month <select> from unique values in db */
+function populateFltBillingMonth(sel) {
+  if (!sel) sel = document.getElementById('fltBillingMonth');
+  if (!sel) return;
+  var cur = sel.value;
+  var months = Array.from(new Set(db.map(function(e){
+    return e.billing_month || e.date.slice(0,7);
+  }))).sort().reverse();
+  sel.innerHTML = '<option value="">เดือนบิล (billing)</option>' +
+    months.map(function(m){
+      var parts = m.split('-').map(Number);
+      return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+
+             SHORT_M[parts[1]-1]+' '+(parts[0]+543)+'</option>';
+    }).join('');
+  if (cur) sel.value = cur;
 }
 
 function renderTx(){
@@ -139,9 +168,18 @@ function renderTx(){
   populateMFCat();
   populateMFPerson();
   populateMFVendor();
+  populateFltBillingMonth();
 
-  var list=db.slice();
+  var list = db.slice();
   if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
+
+  // billing_month filter (v3)
+  var fltBM = document.getElementById('fltBillingMonth');
+  if(fltBM && fltBM.value){
+    list = list.filter(function(e){
+      return (e.billing_month || e.date.slice(0,7)) === fltBM.value;
+    });
+  }
 
   var ftypes = getMFValues('mfType');
   if(ftypes.length) list=list.filter(function(e){return ftypes.indexOf(e.type)>-1;});

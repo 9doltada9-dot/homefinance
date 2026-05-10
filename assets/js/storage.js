@@ -1,4 +1,4 @@
-/* HomeFinance · module: storage.js · v2.5.0 */
+/* HomeFinance · module: storage.js · v3.0.0 */
 
 // ─── ENTRIES (transactions) ───────────────────────────────
 function seed(){
@@ -80,6 +80,19 @@ function saveVendorsLocal(){
 
 // ─── BUDGETS ──────────────────────────────────────────────
 function saveBudgets(){ localStorage.setItem('hf2_budgets', JSON.stringify(budgets)); }
+
+// ─── CYCLES REGISTRY ──────────────────────────────────────
+// (managed by cycleEngine.js — helpers here for completeness)
+function getCyclesFromStorage() {
+  try { return JSON.parse(localStorage.getItem('hf2_cycles') || '[]'); }
+  catch(_) { return []; }
+}
+
+// ─── ACCOUNTS ─────────────────────────────────────────────
+// (managed by accounts.js — loadAccountsLocal / saveAccountsLocal)
+
+// ─── SAVINGS GOALS ────────────────────────────────────────
+// (managed by savingsGoals.js — loadSavingsGoals / saveSavingsGoalsLocal)
 
 // ─── SUPABASE CREDS ───────────────────────────────────────
 function getSbCreds(){

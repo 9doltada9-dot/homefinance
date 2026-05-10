@@ -1,11 +1,11 @@
-/* HomeFinance · Service Worker · v2.8.0
+/* HomeFinance · Service Worker · v2.9.0
  * กลยุทธ์:
  *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first → ใช้งาน offline ได้
  *   - Supabase API call: network-first → ดึงข้อมูลล่าสุดเสมอ ถ้าไม่มี net ใช้ของเก่า
  *
  * NOTE: เปลี่ยน CACHE_VERSION ทุกครั้งที่ deploy ใหม่ เพื่อให้ user ได้ของใหม่
  */
-const CACHE_VERSION = 'hf-v2.8.0';
+const CACHE_VERSION = 'hf-v2.9.0';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [
@@ -46,21 +46,29 @@ self.addEventListener('install', function(event){
   event.waitUntil(
     caches.open(STATIC_CACHE).then(function(cache){
       return cache.addAll(PRECACHE_URLS).catch(function(err){
-        // ถ้ามี file หาย ก็ผ่านไป (อย่าให้ install fail)
         console.warn('[sw] precache partial:', err && err.message);
       });
     }).then(function(){ return self.skipWaiting(); })
   );
 });
 
-// ─── ACTIVATE: ลบ cache version เก่า ─────────────────────
+// ─── ACTIVATE: ลบ cache เก่า + บังคับ reload ทุก client ──
 self.addEventListener('activate', function(event){
   event.waitUntil(
     caches.keys().then(function(keys){
       return Promise.all(keys.map(function(k){
         if (k.indexOf('hf-') === 0 && k !== STATIC_CACHE) return caches.delete(k);
       }));
-    }).then(function(){ return self.clients.claim(); })
+    }).then(function(){
+      return self.clients.claim();
+    }).then(function(){
+      // บังคับให้ทุก client โหลดใหม่เพื่อใช้ไฟล์ version ใหม่
+      return self.clients.matchAll({ type: 'window' });
+    }).then(function(clients){
+      clients.forEach(function(client){
+        client.navigate(client.url);
+      });
+    })
   );
 });
 
@@ -84,14 +92,12 @@ self.addEventListener('fetch', function(event){
     caches.match(req).then(function(cached){
       if (cached) return cached;
       return fetch(req).then(function(res){
-        // cache เพิ่มเฉพาะ same-origin success
         if (res && res.ok && url.origin === location.origin){
           var copy = res.clone();
           caches.open(STATIC_CACHE).then(function(c){ c.put(req, copy); });
         }
         return res;
       }).catch(function(){
-        // fallback หน้า index หาก document
         if (req.mode === 'navigate') return caches.match('./index.html');
       });
     })

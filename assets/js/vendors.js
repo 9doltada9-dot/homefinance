@@ -8,15 +8,16 @@ function fillVendors(){
     sorted.map(function(v){return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';}).join('');
   var fav = sorted.find(function(v){return isFavVendor(v.name);});
   if(fav) sel.value = fav.id;
-  // star button
+  // star button — ต้องใช้ชื่อร้าน ไม่ใช่ id
   var btn = document.getElementById('fVendorStar');
-  var curName = (sorted.find(function(v){return v.id===sel.value;})||{}).name||'';
-  if(btn) btn.textContent = isFavVendor(curName) ? '⭐' : '☆';
-  sel.onchange = function(){
+  function updateVendorStar(){
     var n = (vendorsData.find(function(v){return v.id===sel.value;})||{}).name||'';
-    var b = document.getElementById('fVendorStar');
-    if(b) b.textContent = isFavVendor(n)?'⭐':'☆';
-  };
+    if(!btn) return;
+    btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+    btn.onclick = function(){ if(n) toggleFavVendor(n); };
+  }
+  updateVendorStar();
+  sel.onchange = updateVendorStar;
 }
 
 function renderVendorList(){

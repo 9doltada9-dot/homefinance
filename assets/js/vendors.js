@@ -1,107 +1,113 @@
-/* HomeFinance · module: vendors.js · v2.9.1 */
+/* HomeFinance · module: vendors.js · v2.9.3 */
 
-// fillVendors(personId, catId) — เรียง: ctx-fav → global-fav → ปกติ
-function fillVendors(personId, catId){
+// fillVendors() — เรียง: fav(⭐) → ปกติ → ไม่ระบุ (ท้ายสุด)
+function fillVendors(){
   var sel = document.getElementById('fVendor');
   if(!sel) return;
   var prevVal = sel.value;
 
-  // รับ context จาก form ถ้าไม่ได้ส่งมา
-  if(!personId) personId = document.getElementById('fPerson')?.value || '';
-  if(!catId)    catId    = document.getElementById('fCat')?.value    || '';
-
   var sorted = vendorsData.slice().sort(function(a,b){
-    var aCtx = isFavVendorCtx(personId, catId, a.name) ? 2 : (isFavVendor(a.name) ? 1 : 0);
-    var bCtx = isFavVendorCtx(personId, catId, b.name) ? 2 : (isFavVendor(b.name) ? 1 : 0);
-    return bCtx - aCtx;
+    return (isFavVendor(b.name)?1:0) - (isFavVendor(a.name)?1:0);
   });
 
-  sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'+
-    sorted.map(function(v){
-      var isCtx = isFavVendorCtx(personId, catId, v.name);
-      var isGlb = isFavVendor(v.name);
-      var icon  = isCtx ? '⭐ ' : (isGlb ? '☆ ' : '');
-      return '<option value="'+v.id+'">'+icon+v.name+'</option>';
-    }).join('');
+  sel.innerHTML = sorted.map(function(v){
+    return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';
+  }).join('') + '<option value="">-- ไม่ระบุ --</option>';
 
-  // คืนค่าเดิมถ้ายังมี มิฉะนั้น auto-select ctx-fav แรก
-  if(prevVal && vendorsData.find(function(v){return v.id===prevVal;})){
+  // คืนค่าเดิมถ้ายังมี มิฉะนั้น auto-select fav แรก หรือ vendor แรก
+  if(prevVal !== '' && vendorsData.find(function(v){return v.id===prevVal;})){
     sel.value = prevVal;
+  } else if(prevVal === ''){
+    sel.value = '';
   } else {
-    var firstCtx = sorted.find(function(v){return isFavVendorCtx(personId,catId,v.name);});
-    var firstGlb = sorted.find(function(v){return isFavVendor(v.name);});
-    var auto = firstCtx || firstGlb;
-    if(auto) sel.value = auto.id;
+    var firstFav = sorted.find(function(v){return isFavVendor(v.name);});
+    if(firstFav) sel.value = firstFav.id;
+    else if(sorted.length) sel.value = sorted[0].id;
+    else sel.value = '';
   }
 
-  // star button — inline toggle ไม่ reset selection
   var btn = document.getElementById('fVendorStar');
-  _bindVendorStar(sel, btn, personId, catId);
-  sel.onchange = function(){ _bindVendorStar(sel, btn, personId, catId); };
+  _bindVendorStar(sel, btn);
+  sel.onchange = function(){ _bindVendorStar(sel, btn); };
 }
 
-function _bindVendorStar(sel, btn, personId, catId){
+function _bindVendorStar(sel, btn){
   if(!btn) return;
   var curId = sel.value;
   var n = (vendorsData.find(function(v){return v.id===curId;})||{}).name||'';
-  var isCtx = n && isFavVendorCtx(personId, catId, n);
-  var isGlb = n && isFavVendor(n);
-  btn.textContent = isCtx ? '⭐' : (isGlb ? '★' : '☆');
-  btn.title = isCtx ? 'เป็น fav ของ context นี้' : (isGlb ? 'เป็น fav ทั่วไป' : 'ตั้ง favorite');
+  btn.textContent = (n && isFavVendor(n)) ? '⭐' : '☆';
+  btn.title = (n && isFavVendor(n)) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
   btn.onclick = function(){
     if(!n) return;
-    if(personId && catId){
-      // toggle context fav
-      toggleFavVendorCtx(personId, catId, n);
-    } else {
-      // toggle global fav
-      var f=getFavs(); if(!f.vendor) f.vendor={};
-      f.vendor[n]=!f.vendor[n]; saveFavs(f);
-    }
-    // อัปเดต icon + label ใน dropdown โดยไม่เปลี่ยน selection
-    _rebuildVendorOptions(sel, personId, catId);
-    var isCtxNow = n && isFavVendorCtx(personId, catId, n);
-    var isGlbNow = n && isFavVendor(n);
-    btn.textContent = isCtxNow ? '⭐' : (isGlbNow ? '★' : '☆');
+    // inline toggle ไม่เรียก fillVendors() เพื่อไม่ reset selection
+    var f = getFavs(); if(!f.vendor) f.vendor={};
+    f.vendor[n] = !f.vendor[n]; saveFavs(f);
+    _rebuildVendorOptions(sel);
+    btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+    btn.title = isFavVendor(n) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
+    // sync edit overlay ด้วยถ้าเปิดอยู่
+    var eVendorStar = document.getElementById('eVendorStar');
+    if(eVendorStar){ var eV=document.getElementById('eVendor'); if(eV) _bindEditVendorStar(eV,eVendorStar); }
   };
 }
 
-function _rebuildVendorOptions(sel, personId, catId){
+function _rebuildVendorOptions(sel){
   var curId = sel.value;
   var sorted = vendorsData.slice().sort(function(a,b){
-    var aS = isFavVendorCtx(personId,catId,a.name)?2:(isFavVendor(a.name)?1:0);
-    var bS = isFavVendorCtx(personId,catId,b.name)?2:(isFavVendor(b.name)?1:0);
-    return bS-aS;
+    return (isFavVendor(b.name)?1:0) - (isFavVendor(a.name)?1:0);
   });
-  sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'+
-    sorted.map(function(v){
-      var icon = isFavVendorCtx(personId,catId,v.name)?'⭐ ':(isFavVendor(v.name)?'★ ':'');
-      return '<option value="'+v.id+'">'+icon+v.name+'</option>';
-    }).join('');
+  sel.innerHTML = sorted.map(function(v){
+    return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';
+  }).join('') + '<option value="">-- ไม่ระบุ --</option>';
   sel.value = curId;
 }
 
-// fillEditVendors — สำหรับ editOverlay (ใช้ ePerson + eCat)
+// fillEditVendors — สำหรับ editOverlay
 function fillEditVendors(){
   var sel = document.getElementById('eVendor');
   if(!sel) return;
-  var personId = document.getElementById('ePerson')?.value||'';
-  var catId    = document.getElementById('eCat')?.value||'';
-  var prevVal  = sel.value;
+  var prevVal = sel.value;
   var sorted = vendorsData.slice().sort(function(a,b){
-    var aS = isFavVendorCtx(personId,catId,a.name)?2:(isFavVendor(a.name)?1:0);
-    var bS = isFavVendorCtx(personId,catId,b.name)?2:(isFavVendor(b.name)?1:0);
-    return bS-aS;
+    return (isFavVendor(b.name)?1:0) - (isFavVendor(a.name)?1:0);
   });
-  sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'+
-    sorted.map(function(v){
-      var icon = isFavVendorCtx(personId,catId,v.name)?'⭐ ':(isFavVendor(v.name)?'★ ':'');
-      return '<option value="'+v.id+'">'+icon+v.name+'</option>';
-    }).join('');
-  if(prevVal) sel.value = prevVal;
+  sel.innerHTML = sorted.map(function(v){
+    return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';
+  }).join('') + '<option value="">-- ไม่ระบุ --</option>';
+  if(prevVal !== undefined) sel.value = prevVal;
   var btn = document.getElementById('eVendorStar');
-  _bindVendorStar(sel, btn, personId, catId);
-  sel.onchange = function(){ _bindVendorStar(sel, btn, personId, catId); };
+  _bindEditVendorStar(sel, btn);
+  sel.onchange = function(){ _bindEditVendorStar(sel, btn); };
+}
+
+function _bindEditVendorStar(sel, btn){
+  if(!btn) return;
+  var curId = sel.value;
+  var n = (vendorsData.find(function(v){return v.id===curId;})||{}).name||'';
+  btn.textContent = (n && isFavVendor(n)) ? '⭐' : '☆';
+  btn.title = (n && isFavVendor(n)) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
+  btn.onclick = function(){
+    if(!n) return;
+    var f = getFavs(); if(!f.vendor) f.vendor={};
+    f.vendor[n] = !f.vendor[n]; saveFavs(f);
+    _rebuildEditVendorOptions(sel);
+    btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+    btn.title = isFavVendor(n) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
+    // sync form dropdown ด้วย
+    var fSel = document.getElementById('fVendor');
+    var fBtn = document.getElementById('fVendorStar');
+    if(fSel){ _rebuildVendorOptions(fSel); if(fBtn) _bindVendorStar(fSel,fBtn); }
+  };
+}
+
+function _rebuildEditVendorOptions(sel){
+  var curId = sel.value;
+  var sorted = vendorsData.slice().sort(function(a,b){
+    return (isFavVendor(b.name)?1:0) - (isFavVendor(a.name)?1:0);
+  });
+  sel.innerHTML = sorted.map(function(v){
+    return '<option value="'+v.id+'">'+(isFavVendor(v.name)?'⭐ ':'')+v.name+'</option>';
+  }).join('') + '<option value="">-- ไม่ระบุ --</option>';
+  sel.value = curId;
 }
 
 function renderVendorList(){
@@ -125,7 +131,6 @@ function startEditVendor(id){
   if(!nameEl) return;
   var v = vendorsData.find(function(x){return x.id===id;});
   if(!v) return;
-  var row = document.getElementById('vrow-'+id);
   nameEl.innerHTML =
     '<input id="vedit-'+id+'" value="'+v.name+'" style="font-size:14px;border:1px solid var(--accent);border-radius:6px;padding:4px 8px;flex:1;width:100%" '+
     'onkeydown="if(event.key===\'Enter\')saveEditVendor(\''+id+'\');if(event.key===\'Escape\')renderVendorList()">'+

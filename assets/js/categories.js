@@ -14,6 +14,13 @@ function applySettingsFromMap(map){
   if(map.expense_cats) { cats.expense.length=0; map.expense_cats.forEach(function(c){cats.expense.push(c);}); localStorage.setItem('hf2_expense_cats',JSON.stringify(cats.expense)); }
   if(map.no_split)     { NO_SPLIT = map.no_split; localStorage.setItem('hf2_no_split',JSON.stringify(NO_SPLIT)); }
   if(map.viewmode)     { viewMode = map.viewmode; localStorage.setItem('hf2_viewmode', viewMode); }
+  // sync favorites จาก DB — ใช้ saveFavsLocal เพื่อไม่ push กลับ
+  if(map.favs && typeof map.favs === 'object'){
+    var f = map.favs;
+    // ล้าง vendor_ctx เก่า (legacy) ออก
+    if(f.vendor_ctx) delete f.vendor_ctx;
+    if(typeof saveFavsLocal === 'function') saveFavsLocal(f);
+  }
 }
 
 function renderCatList(type){

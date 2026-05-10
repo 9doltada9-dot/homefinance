@@ -57,7 +57,7 @@
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v2.9.2 · THB</div>
+    <div class="brand-sub">v2.9.3 · THB</div>
   </div>
   <div class="sidebar-names">
     <div class="name-row">
@@ -373,7 +373,7 @@
         <div style="font-size:16px;font-weight:600">แก้ไขรายการ</div>
         <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="editIdLabel"></div>
       </div>
-      <button onclick="closeEdit()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:4px">×</button>
+      <button type="button" onclick="closeEdit()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:4px">×</button>
     </div>
     <div class="type-toggle">
       <button class="type-btn" id="eBtnIncome" onclick="eSetType('income')">
@@ -423,8 +423,8 @@
       </div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveEdit()">บันทึกการแก้ไข</button>
-      <button class="btn btn-ghost" onclick="closeEdit()">ยกเลิก</button>
+      <button type="button" class="btn btn-primary" onclick="saveEdit()">บันทึกการแก้ไข</button>
+      <button type="button" class="btn btn-ghost" onclick="closeEdit()">ยกเลิก</button>
     </div>
     <div id="editMsg" class="msg"></div>
   </div>
@@ -550,24 +550,6 @@
 
   <div id="settingsMsg" class="msg" style="margin:0 0 20px 0;text-align:center"></div>
 
-  <!-- VENDOR MANAGEMENT -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#edf2fc">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm1 3h14l-1 10H4L3 7zm5 2v6h1V9H8zm3 0v6h1V9h-1z"/></svg>
-      </div>
-      <div><div class="settings-header-text">ร้านค้า / แหล่งรายรับ</div><div class="settings-header-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div></div>
-    </div>
-    <div style="padding:0 14px 8px">
-      <div id="vendorList" style="margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;font-size:16px !important">
-        <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
-      </div>
-      <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
-    </div>
-  </div>
-
   <!-- ITEMS BY CATEGORY -->
   <div class="settings-section card" style="max-width:700px;padding:0">
     <div class="settings-header" style="padding:14px 16px 10px">
@@ -584,6 +566,24 @@
         <button class="btn btn-primary" onclick="addItem()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
       </div>
       <div id="itemMsg" class="msg" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- VENDOR MANAGEMENT -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#edf2fc">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm1 3h14l-1 10H4L3 7zm5 2v6h1V9H8zm3 0v6h1V9h-1z"/></svg>
+      </div>
+      <div><div class="settings-header-text">ร้านค้า / แหล่งรายรับ</div><div class="settings-header-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div></div>
+    </div>
+    <div style="padding:0 14px 8px">
+      <div id="vendorList" style="margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;font-size:16px !important">
+        <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
+      </div>
+      <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -623,7 +623,10 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v2.9.2</strong> — feat: smart vendor favorites per person+category, vendor inline edit, dashboard month fix, form field reorder
+        <strong>v2.9.3</strong> — feat: sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, ไม่ระบุท้าย, แก้ปุ่มยกเลิก, จัดลำดับตั้งค่า
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.9.2</strong> — feat: smart vendor ctx-fav, vendor inline edit, form reorder, dashboard month fix
       </div>
       <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v2.9.1</strong> — fix: vendor star toggle, โหลด vendors จาก Supabase, default credentials, SW force-reload

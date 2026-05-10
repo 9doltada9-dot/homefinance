@@ -43,6 +43,16 @@ document.addEventListener('visibilitychange', function(){
   }
 });
 
+// ─── MIGRATE: ลบ vendor_ctx legacy ออกจาก localStorage ────
+(function migrateFavs(){
+  try {
+    var raw = localStorage.getItem('hf2_favs');
+    if(!raw) return;
+    var f = JSON.parse(raw);
+    if(f.vendor_ctx){ delete f.vendor_ctx; localStorage.setItem('hf2_favs', JSON.stringify(f)); }
+  } catch(_){}
+})();
+
 // ─── DOMContentLoaded — APP STARTUP ───────────────────────
 document.addEventListener('DOMContentLoaded', function(){
   var pA=persons.find(function(x){return x.id==='A';}), pB=persons.find(function(x){return x.id==='B';});

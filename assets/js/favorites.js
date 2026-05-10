@@ -1,14 +1,22 @@
-/* HomeFinance · module: favorites.js · v2.5.0 */
+/* HomeFinance · module: favorites.js · v2.9.3 */
 
 // ─── FAVORITES ────────────────────────────────────────────
-// NOTE: shadowed earlier definition removed — using the later
-// override (line ~3282 in original) that initializes with
-// {cat:{},item:{}} structure.
+// เก็บใน localStorage (hf2_favs) AND sync ขึ้น Supabase settings table
+// structure: { cat:{catId:bool}, item:{name:bool}, vendor:{name:bool} }
 
-function getFavs(){ return JSON.parse(localStorage.getItem('hf2_favs')||'{"cat":{},"item":{}}'); }
-function saveFavs(f){ localStorage.setItem('hf2_favs', JSON.stringify(f)); }
-function isFavCat(catId){ return !!getFavs().cat?.[catId]; }
-function isFavItem(desc){ return !!getFavs().item?.[desc]; }
+function getFavs(){ return JSON.parse(localStorage.getItem('hf2_favs')||'{"cat":{},"item":{},"vendor":{}}'); }
+
+// เขียน localStorage เท่านั้น (ใช้ตอน apply จาก DB เพื่อไม่ loop กลับ)
+function saveFavsLocal(f){ localStorage.setItem('hf2_favs', JSON.stringify(f)); }
+
+// เขียน localStorage + push ขึ้น Supabase (fire-and-forget)
+function saveFavs(f){
+  saveFavsLocal(f);
+  if(typeof sbSaveSetting === 'function') sbSaveSetting('favs', f);
+}
+
+function isFavCat(catId)  { return !!getFavs().cat?.[catId]; }
+function isFavItem(desc)  { return !!getFavs().item?.[desc]; }
 function isFavVendor(name){ return !!getFavs().vendor?.[name]; }
 
 function toggleFavCat(catId){
@@ -24,22 +32,10 @@ function toggleFavItem(desc){
   saveFavs(f); fillDescByCat(document.getElementById('fCat')?.value);
 }
 function toggleFavVendor(name){
-  var f=getFavs(); if(!f.vendor) f.vendor={};
-  f.vendor[name]=!f.vendor[name]; saveFavs(f); fillVendors();
-}
-
-// ─── CONTEXT VENDOR FAVORITES (per person + catId) ────────
-function _ctxKey(personId, catId){ return (personId||'')+'|'+(catId||''); }
-function isFavVendorCtx(personId, catId, name){
-  var f=getFavs();
-  var ctx = f.vendor_ctx && f.vendor_ctx[_ctxKey(personId,catId)];
-  return !!(ctx && ctx[name]);
-}
-function toggleFavVendorCtx(personId, catId, name){
-  var f=getFavs();
-  if(!f.vendor_ctx) f.vendor_ctx={};
-  var k=_ctxKey(personId,catId);
-  if(!f.vendor_ctx[k]) f.vendor_ctx[k]={};
-  f.vendor_ctx[k][name]=!f.vendor_ctx[k][name];
+  var f = getFavs();
+  if(!f.vendor) f.vendor={};
+  f.vendor[name] = !f.vendor[name];
   saveFavs(f);
+  fillVendors();
+  fillEditVendors();
 }

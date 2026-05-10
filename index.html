@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0f0f0f">
+<title>บัญชีครัวเรือน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/layout.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;flex-direction:column;justify-content:center;gap:1px">
+    <div class="topbar-title">HomeFinance</div>
+    <div id="topbarDate" style="font-size:10px;color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px"></div>
+  </div>
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+</div>
+
+<!-- BOTTOM NAV (iOS) -->
+<div class="bottomnav" id="bottomnav">
+  <div class="bn-item active" id="bn-dashboard" onclick="nav('dashboard')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2V2zm9 0h7v7h-7V2zM2 11h7v7H2v-7zm9 0h7v7h-7v-7z"/></svg>
+    หน้าหลัก
+  </div>
+  <div class="bn-item" id="bn-add" onclick="nav('add')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 010 2h-5v5a1 1 0 01-2 0v-5H4a1 1 0 010-2h5V4a1 1 0 011-1z"/></svg>
+    บันทึก
+  </div>
+  <div class="bn-item" id="bn-transactions" onclick="nav('transactions')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h12v2H2v-2z"/></svg>
+    รายการ
+  </div>
+  <div class="bn-item" id="bn-settlement" onclick="nav('settlement')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 11.5h-1.5V9h1.5v4.5zm0-6h-1.5V6h1.5v1.5z"/></svg>
+    ชำระ
+  </div>
+  <div class="bn-item" id="bn-settings" onclick="nav('settings')">
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a4 4 0 100 8 4 4 0 000-8zm0 1.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM8 1l-.5 2a6.5 6.5 0 00-1.7 1L4 3.4 2.4 5l1 2a6.5 6.5 0 00-.8 2L1 9.5V11l1.6.7c.2.7.5 1.4.9 2l-1 2 1.6 1.6 2-1c.6.4 1.2.7 1.9.9L8 19h2l.5-1.8a6.5 6.5 0 001.9-.9l2 1 1.6-1.6-1-2c.4-.6.7-1.3.9-2L18 11V9.5l-1.8-.5a6.5 6.5 0 00-.9-2l1-2L14.7 3.4 12.7 4.4a6.5 6.5 0 00-1.7-1L10.5 1H8z"/></svg>
+    ตั้งค่า
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-title">HomeFinance</div>
+    <div class="brand-sub">v2.7.0 · THB</div>
+  </div>
+  <div class="sidebar-names">
+    <div class="name-row">
+      <div class="name-dot dot-a"></div>
+      <input class="name-input" id="nameA" value="คนA" placeholder="ชื่อคนที่ 1" onchange="renamePerson('A',this.value);refreshAll()">
+    </div>
+    <div class="name-row">
+      <div class="name-dot dot-b"></div>
+      <input class="name-input" id="nameB" value="คนB" placeholder="ชื่อคนที่ 2" onchange="renamePerson('B',this.value);refreshAll()">
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-item active" onclick="nav('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="nav('add')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 010 2H9v4a1 1 0 01-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+      บันทึกรายการ
+    </div>
+    <div class="nav-item" onclick="nav('transactions')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h10v2H1v-2z"/></svg>
+      รายการทั้งหมด
+    </div>
+    <div class="nav-item" onclick="nav('settlement')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
+      Settlement
+    </div>
+    <div class="nav-item" onclick="nav('monthly')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-2V1h-1.5v1h-5V1H4zm8 3H4v1H2.5V4H2v9.5h12V4h-.5v1H12V4z"/></svg>
+      สรุปรายเดือน
+    </div>
+    <div class="nav-item" onclick="nav('budget')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3zm0 3h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V6zm3 2v1h6V8H5zm0 2v1h4v-1H5z"/></svg>
+      งบประมาณ
+    </div>
+    <div class="nav-item" onclick="nav('supabase')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1H3zm1 2h8v1H4V4zm0 2h8v1H4V6zm0 2h5v1H4V8z"/></svg>
+      Supabase
+    </div>
+    <div class="nav-item" onclick="nav('settings')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.4 1.6a5.5 5.5 0 00-1.4.8L3.1 2.9 1.4 4.6l.8 1.6a5.5 5.5 0 00-.6 1.7L0 8.5v2.5l1.6.6c.2.6.4 1.2.8 1.7l-.8 1.6 1.7 1.7 1.6-.8c.5.3 1.1.6 1.7.8l.4 1.4h2.5l.4-1.6c.6-.2 1.2-.5 1.7-.8l1.6.8 1.7-1.7-.8-1.6c.3-.5.6-1.1.8-1.7L16 11V8.5l-1.6-.6a5.5 5.5 0 00-.8-1.7l.8-1.6L12.7 3l-1.6.8a5.5 5.5 0 00-1.7-.8L9 1H6.5z"/></svg>
+      ตั้งค่า
+    </div>
+  </div>
+  <div class="sidebar-footer">HomeFinance © 2025</div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="dashSub">ภาพรวมการเงิน</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+      <select id="dashYear" onchange="onDashYearChange()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
+        <option value="">ปี</option>
+      </select>
+      <select id="dashMonth" onchange="renderDash()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
+        <option value="">เดือน</option>
+      </select>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+  <!-- SALARY CYCLE CARD -->
+  <div id="salaryCycleCard" class="card" style="border-left:4px solid #1a4fa0;padding:12px 16px;display:none">
+    <div id="salaryCycleContent"></div>
+  </div>
+
+  <!-- CHART SECTION -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;scrollbar-width:none" id="chartTabs">
+      <button id="ct-bar"    onclick="switchChart('bar')"    class="chart-tab">รายรับ vs รายจ่าย</button>
+      <button id="ct-donut"  onclick="switchChart('donut')"  class="chart-tab">สัดส่วนรายจ่าย</button>
+      <button id="ct-trend"  onclick="switchChart('trend')"  class="chart-tab">แนวโน้ม 6 เดือน</button>
+      <button id="ct-person" onclick="switchChart('person')" class="chart-tab">แยกตามคน</button>
+      <button id="ct-status" onclick="switchChart('status')" class="chart-tab">สถานะรายการ</button>
+    </div>
+    <div style="padding:12px 12px 8px">
+      <div style="position:relative;height:230px">
+        <canvas id="chartMain" role="img"></canvas>
+      </div>
+      <div id="chartLegend" style="font-size:11px;color:var(--ink3);text-align:center;padding:4px 0"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">รายการล่าสุด</div>
+      <div id="recentTx"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">รอดำเนินการ</div>
+      <div id="pendingTx"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ENTRY -->
+<div id="page-add" class="page">
+  <div class="page-header">
+    <div class="page-title">บันทึกรายการ</div>
+    <div class="page-sub">เพิ่มรายรับหรือรายจ่ายใหม่</div>
+  </div>
+  <div class="card" style="max-width:620px">
+    <div class="type-toggle">
+      <button class="type-btn active-income" id="btnIncome" onclick="setType('income')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>
+        รายรับ
+      </button>
+      <button class="type-btn" id="btnExpense" onclick="setType('expense')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
+        รายจ่าย
+      </button>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>วันที่</label>
+        <input type="date" id="fDate" onchange="updateThaiDate()">
+        <div id="fDateThai" style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500"></div>
+        <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
+      </div>
+      <div class="field">
+        <label>ผู้บันทึก</label>
+        <select id="fPerson">
+          <option value="A">คนA</option>
+          <option value="B">คนB</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="field">
+        <label>หมวดหมู่</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="fCat" onchange="onCatChange()" style="flex:1"></select>
+          <button id="fCatStar" onclick="toggleFavCat(document.getElementById('fCat').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="field">
+        <label>รายการ</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="fDesc" style="flex:1" onchange="updateDescStar()"></select>
+          <button id="fDescStar" onclick="toggleFavItem(document.getElementById('fDesc').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>จำนวนเงิน (฿)</label>
+        <input type="number" id="fAmt" placeholder="0" min="0">
+      </div>
+      <div class="field">
+        <label>สถานะ</label>
+        <select id="fStatus">
+          <option value="pending">รอรับ</option>
+          <option value="paid">รับแล้ว</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>หมายเหตุ</label>
+        <div id="noteWrap" style="position:relative">
+          <div style="display:flex;gap:6px">
+            <input type="text" id="fNote" placeholder="(ไม่บังคับ)" style="flex:1">
+            <button onclick="toggleNoteHistory()" title="ประวัติหมายเหตุ" style="background:none;border:1px solid var(--line);border-radius:var(--r);padding:4px 8px;cursor:pointer;font-size:14px;min-width:36px;min-height:44px;touch-action:manipulation">🕐</button>
+          </div>
+          <div id="noteHistoryDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:200;max-height:200px;overflow-y:auto">
+            <div id="noteHistoryList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- VENDOR FIELD -->
+    <div class="form-row full" style="margin-bottom:8px">
+      <div class="field">
+        <label>ร้านค้า / แหล่งรายรับ <span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <select id="fVendor" style="flex:1;font-size:15px !important">
+            <option value="">-- ไม่ระบุ --</option>
+          </select>
+          <button id="fVendorStar" onclick="toggleFavVendor(document.getElementById('fVendor').value)" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+        </div>
+      </div>
+    </div>
+    <div id="splitSection" style="margin-bottom:12px">
+      <div class="split-row">
+        <div class="split-label">
+          <strong id="splitTitle">หาร 2 คน?</strong>
+          <div style="font-size:12px;color:var(--ink3);margin-top:1px" id="splitDesc">แบ่งค่าใช้จ่ายส่วนกลางเท่ากัน</div>
+        </div>
+        <div class="toggle" id="splitToggle" onclick="toggleSplit()"><div class="toggle-thumb"></div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addEntry()">บันทึก</button>
+      <button class="btn btn-ghost" onclick="clearForm()">ล้างข้อมูล</button>
+    </div>
+    <div id="formMsg" class="msg"></div>
+  </div>
+</div>
+
+<!-- TRANSACTIONS -->
+<div id="page-transactions" class="page">
+  <div class="page-header">
+    <div class="page-title">รายการทั้งหมด</div>
+  </div>
+  <div class="card">
+    <div class="filter-row" style="align-items:flex-start;gap:8px;flex-wrap:wrap">
+
+      <!-- Month -->
+      <select id="fltMonth" onchange="renderTx()" style="min-width:100px">
+        <option value="">ทุกเดือน</option>
+      </select>
+
+      <!-- Type multi -->
+      <div class="multi-filter" id="mfType">
+        <div class="mf-label" onclick="toggleMF('mfType')">ประเภท ▾</div>
+        <div class="mf-dropdown">
+          <label><input type="checkbox" value="income"  onchange="renderTx()"> รายรับ</label>
+          <label><input type="checkbox" value="expense" onchange="renderTx()"> รายจ่าย</label>
+        </div>
+      </div>
+
+      <!-- Category multi -->
+      <div class="multi-filter" id="mfCat">
+        <div class="mf-label" onclick="toggleMF('mfCat')">หมวด ▾</div>
+        <div class="mf-dropdown" id="mfCatList"></div>
+      </div>
+
+      <!-- Status multi -->
+      <div class="multi-filter" id="mfStatus">
+        <div class="mf-label" onclick="toggleMF('mfStatus')">สถานะ ▾</div>
+        <div class="mf-dropdown">
+          <label><input type="checkbox" value="paid"    onchange="renderTx()"> จ่ายแล้ว</label>
+          <label><input type="checkbox" value="received" onchange="renderTx()"> รับแล้ว</label>
+          <label><input type="checkbox" value="pending" onchange="renderTx()"> รอดำเนินการ</label>
+        </div>
+      </div>
+
+      <!-- Person multi -->
+      <div class="multi-filter" id="mfPerson">
+        <div class="mf-label" onclick="toggleMF('mfPerson')">คน ▾</div>
+        <div class="mf-dropdown" id="mfPersonList"></div>
+      </div>
+
+      <!-- Vendor multi -->
+      <div class="multi-filter" id="mfVendor">
+        <div class="mf-label" onclick="toggleMF('mfVendor')">ร้านค้า ▾</div>
+        <div class="mf-dropdown" id="mfVendorList" style="max-height:220px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Item multi -->
+      <div class="multi-filter" id="mfItem">
+        <div class="mf-label" onclick="toggleMF('mfItem')">รายการ ▾</div>
+        <div class="mf-dropdown" id="mfItemList" style="max-height:220px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Reset button -->
+      <button onclick="resetFilters()" style="
+        background:var(--surface2);border:1px solid var(--line);
+        border-radius:8px;padding:6px 12px;font-size:12px;
+        font-family:Sarabun,sans-serif;cursor:pointer;
+        color:var(--ink2);white-space:nowrap;min-height:34px;
+        touch-action:manipulation
+      ">× รีเซ็ต</button>
+    </div>
+    <div class="table-scroll" id="txContent"></div>
+    <div id="txTotal" style="border-top:2px solid var(--line);padding:10px 12px;display:none;gap:16px;flex-wrap:wrap;background:var(--surface2);border-radius:0 0 var(--r) var(--r)"></div>
+  </div>
+</div>
+
+<!-- SETTLEMENT -->
+<div id="page-settlement" class="page">
+  <div class="page-header">
+    <div class="page-title">Settlement</div>
+    <div class="page-sub">คำนวณเฉพาะรายจ่ายส่วนกลาง (หาร 2)</div>
+  </div>
+  <div class="filter-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <select id="settleMonth" onchange="renderSettle()"><option value="">เลือกเดือน</option></select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;white-space:nowrap">
+      <input type="checkbox" id="settleShowPersonal" onchange="renderSettle()" style="width:16px;height:16px">
+      แสดงรายจ่ายส่วนตัว
+    </label>
+  </div>
+  <div id="settleContent"></div>
+</div>
+
+<!-- MONTHLY -->
+<div id="page-monthly" class="page">
+  <div class="page-header">
+    <div class="page-title">สรุปรายเดือน</div>
+  </div>
+  <div class="filter-row">
+    <select id="monthSel" onchange="renderMonthly()"><option value="">เลือกเดือน</option></select>
+  </div>
+  <div id="monthlyContent"></div>
+</div>
+
+<!-- EDIT OVERLAY -->
+<div id="editOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);border:1px solid var(--line);width:100%;max-width:560px;padding:24px 26px;position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:16px;font-weight:600">แก้ไขรายการ</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="editIdLabel"></div>
+      </div>
+      <button onclick="closeEdit()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:4px">×</button>
+    </div>
+    <div class="type-toggle">
+      <button class="type-btn" id="eBtnIncome" onclick="eSetType('income')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>รายรับ
+      </button>
+      <button class="type-btn" id="eBtnExpense" onclick="eSetType('expense')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>รายจ่าย
+      </button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>วันที่</label><input type="date" id="eDate"></div>
+      <div class="field"><label>ผู้บันทึก</label><select id="ePerson"><option value="A">คนA</option><option value="B">คนB</option></select></div>
+    </div>
+    <div class="form-row full"><div class="field"><label>รายการ</label>
+      <div class="ac-wrap">
+        <select id="eDesc"></select>
+        <div class="ac-list" id="acEdit" style="display:none"></div>
+      </div>
+    </div></div>
+    <div class="form-row">
+      <div class="field"><label>หมวดหมู่</label><select id="eCat"></select></div>
+      <div class="field"><label>จำนวนเงิน (฿)</label><input type="number" id="eAmt" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>สถานะ</label><select id="eStatus"><option value="pending">รอรับ</option><option value="paid">รับแล้ว</option></select></div>
+      <div class="field"><label>ร้านค้า (ไม่บังคับ)</label><select id="eVendor"><option value="">-- ไม่ระบุ --</option></select></div>
+    </div>
+    <div class="form-row full">
+      <div class="field"><label>หมายเหตุ</label><input type="text" id="eNote"></div>
+    </div>
+    <div id="eSplitSection" style="margin-bottom:12px">
+      <div class="split-row">
+        <div class="split-label">
+          <strong>หาร 2 คน?</strong>
+          <div style="font-size:12px;color:var(--ink3);margin-top:1px" id="eSplitDesc">แบ่งค่าใช้จ่ายส่วนกลางเท่ากัน</div>
+        </div>
+        <div class="toggle" id="eSplitToggle" onclick="eToggleSplit()"><div class="toggle-thumb"></div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveEdit()">บันทึกการแก้ไข</button>
+      <button class="btn btn-ghost" onclick="closeEdit()">ยกเลิก</button>
+    </div>
+    <div id="editMsg" class="msg"></div>
+  </div>
+</div>
+
+<!-- BUDGET PAGE -->
+<div id="page-budget" class="page">
+  <div class="page-header">
+    <div class="page-title">งบประมาณ</div>
+    <div class="page-sub">กำหนดและติดตามงบรายจ่ายแต่ละหมวด</div>
+  </div>
+
+  <!-- Month selector -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <select id="budgetMonth" onchange="renderBudget()" style="font-size:15px !important;flex:1;min-width:140px"></select>
+    <button class="btn btn-primary" onclick="showAddBudget()" style="min-height:44px;white-space:nowrap">+ ตั้งงบ</button>
+  </div>
+
+  <div id="budgetContent"></div>
+
+  <!-- Add/Edit Budget Modal -->
+  <div id="budgetModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--surface);border-radius:var(--r);width:100%;max-width:400px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <div style="font-size:16px;font-weight:600;margin-bottom:14px" id="budgetModalTitle">ตั้งงบประมาณ</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>หมวดหมู่</label>
+        <select id="budgetCat" style="font-size:16px !important"></select>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>งบประมาณ (บาท)</label>
+        <input type="number" id="budgetAmt" placeholder="0" min="0" style="font-size:16px !important">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>ใช้กับ</label>
+        <select id="budgetScope" style="font-size:16px !important">
+          <option value="month">เดือนนี้เท่านั้น</option>
+          <option value="all">ทุกเดือน (default)</option>
+        </select>
+      </div>
+      <div id="budgetModalMsg" class="msg" style="margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeBudgetModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveBudget()" style="flex:1;min-height:44px">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" class="page">
+  <div class="page-header">
+    <div class="page-title">ตั้งค่า</div>
+    <div class="page-sub">ผู้บันทึก · หมวดหมู่ · การแสดงผล</div>
+  </div>
+
+  <!-- VIEW MODE -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#edf2fc">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 3h16v2H2V3zm0 6h7v2H2V9zm10 0h6v2h-6V9zm-10 6h4v2H2v-2zm7 0h9v2H9v-2z"/></svg>
+      </div>
+      <div><div class="settings-header-text">โหมดการแสดงผล</div></div>
+    </div>
+    <div class="view-mode-cards">
+      <div class="vm-card" id="btnViewDesktop" onclick="setViewMode('desktop')">
+        <div class="vm-card-icon">🖥</div>
+        <div class="vm-card-label">Desktop</div>
+      </div>
+      <div class="vm-card" id="btnViewMobile" onclick="setViewMode('mobile')">
+        <div class="vm-card-icon">📱</div>
+        <div class="vm-card-label">มือถือ</div>
+      </div>
+    </div>
+    <div style="padding:0 16px 14px;font-size:11px;color:var(--ink3)" id="viewModeDesc">กำลังใช้: Desktop</div>
+  </div>
+
+  <!-- PERSONS -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#eef7f2">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/></svg>
+      </div>
+      <div><div class="settings-header-text">ผู้บันทึก</div><div class="settings-header-sub">แก้ไขชื่อหรือเพิ่มผู้บันทึก</div></div>
+    </div>
+    <div id="personList"></div>
+    <div class="add-cat-row" style="padding:8px 14px 14px">
+      <input type="text" id="newPersonName" class="add-cat-input" placeholder="ชื่อผู้บันทึกใหม่">
+      <button class="btn btn-primary" onclick="addPerson()" style="white-space:nowrap;min-height:44px">+ เพิ่ม</button>
+    </div>
+    <div id="personMsg" class="msg" style="margin:0 14px 10px"></div>
+  </div>
+
+  <!-- INCOME CATS -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#eef7f2">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 3l5 5h-3v7H8V8H5l5-5z"/></svg>
+      </div>
+      <div><div class="settings-header-text">หมวดหมู่รายรับ</div></div>
+    </div>
+    <div id="incomeCatList"></div>
+    <div style="padding:8px 14px 14px">
+      <button class="btn btn-primary" onclick="showAddCatDialog('income')" style="width:100%;min-height:44px">+ เพิ่มหมวด</button>
+    </div>
+  </div>
+
+  <!-- EXPENSE CATS -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#fdf4e7">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#b5600a"><path d="M10 17l-5-5h3V6h4v6h3l-5 5z"/></svg>
+      </div>
+      <div>
+        <div class="settings-header-text">หมวดหมู่รายจ่าย</div>
+        <div class="settings-header-sub">ระบบจะป้องกันการลบหมวดที่มีรายการใช้อยู่</div>
+      </div>
+    </div>
+    <div id="expenseCatList"></div>
+    <div style="padding:8px 14px 14px">
+      <button class="btn btn-primary" onclick="showAddCatDialog('expense')" style="width:100%;min-height:44px">+ เพิ่มหมวด</button>
+    </div>
+  </div>
+
+  <div id="settingsMsg" class="msg" style="margin:0 0 20px 0;text-align:center"></div>
+
+  <!-- VENDOR MANAGEMENT -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#edf2fc">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm1 3h14l-1 10H4L3 7zm5 2v6h1V9H8zm3 0v6h1V9h-1z"/></svg>
+      </div>
+      <div><div class="settings-header-text">ร้านค้า / แหล่งรายรับ</div><div class="settings-header-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div></div>
+    </div>
+    <div style="padding:0 14px 8px">
+      <div id="vendorList" style="margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;font-size:16px !important">
+        <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
+      </div>
+      <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- ITEMS BY CATEGORY -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#edf2fc">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h12v2H2v-2z"/></svg>
+      </div>
+      <div><div class="settings-header-text">รายการในแต่ละหมวด</div><div class="settings-header-sub">เลือกหมวด แล้วเพิ่ม/ลบรายการ</div></div>
+    </div>
+    <div style="padding:0 14px 8px">
+      <select id="itemCatSel" onchange="renderItemList()" style="width:100%;font-size:15px !important;margin-bottom:8px"></select>
+      <div id="itemList" style="margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="newItemName" placeholder="ชื่อรายการ เช่น ค่าน้ำประปา" style="flex:1;font-size:16px !important">
+        <button class="btn btn-primary" onclick="addItem()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
+      </div>
+      <div id="itemMsg" class="msg" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- RECURRING TRANSACTIONS -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 10px">
+      <div class="settings-icon" style="background:#f0eef9">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#4a3a9a"><path d="M2 8a6 6 0 0110.7-3.7l-1.5 1.5H14V3l-1.5 1.5A7.5 7.5 0 001 8.5h1.5A6 6 0 012 8zm12-.5A6 6 0 014.8 12.2l1.5-1.5H3V14l1.5-1.5A7.5 7.5 0 0015 7.5h-1z"/></svg>
+      </div>
+      <div><div class="settings-header-text">รายการประจำเดือน</div><div class="settings-header-sub">สร้างรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div></div>
+    </div>
+    <div style="padding:0 14px 14px">
+      <div id="recurringList" style="margin-bottom:8px"></div>
+      <button class="btn btn-primary" onclick="onAddRecurring()" style="width:100%;min-height:44px">+ เพิ่มรายการประจำ</button>
+    </div>
+  </div>
+
+  <!-- SUPABASE SHORTCUT -->
+  <div class="card" style="max-width:700px;background:var(--blue-bg);border:1.5px solid #c5d8f8">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink)">Supabase — ฐานข้อมูล Cloud</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="sbStatusShortcut">ซิงก์ข้อมูลข้ามอุปกรณ์ · Real-time</div>
+      </div>
+      <button class="btn btn-primary" onclick="nav('supabase')" style="min-height:44px;white-space:nowrap">ตั้งค่า Supabase →</button>
+    </div>
+  </div>
+
+  <!-- VERSION CHANGELOG -->
+  <div class="card" style="max-width:700px">
+    <div class="card-title">Version History</div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:10px">
+      <strong>หลักการ Versioning: v[major].[minor].[patch]</strong><br>
+      · major — เปลี่ยนโครงสร้างใหญ่ / เปลี่ยน database schema<br>
+      · minor — เพิ่ม feature ใหม่ / เปลี่ยน UI หลัก<br>
+      · patch — แก้ bug / ปรับ UI เล็กน้อย
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
+        <strong>v2.7.0</strong> — Refactor: แยก JS/CSS เป็นไฟล์แยก, เพิ่ม Unit Tests, รายการประจำเดือน, fix bugs
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.1.0</strong> — เพิ่ม: รายการในหมวด, เลือก desc จาก DB, วันที่ภาษาไทย, นาฬิกาในแถบบน, ซ่อนยอดเงินเดือน, ยกเลิกการลบ, version history
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.0.0</strong> — เปลี่ยนจาก Google Sheets เป็น Supabase, Realtime connection monitor, categories table แบบ relationship
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v1.0.0</strong> — เวอร์ชันเริ่มต้น: บันทึกรายรับ/รายจ่าย, Settlement, Dashboard, Google Sheets export
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAT MODAL -->
+<div id="catOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r);width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:16px" id="catModalTitle">เพิ่มหมวด</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>ชื่อหมวด</label>
+      <input type="text" id="catModalName" placeholder="เช่น ค่าไฟ, เงินเดือน" style="font-size:16px !important">
+    </div>
+    <div id="catModalSplitRow" style="display:none;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--ink)">
+        <input type="checkbox" id="catModalSplit" style="width:18px;height:18px;cursor:pointer">
+        หาร 2 อัตโนมัติ
+      </label>
+    </div>
+    <div id="catModalMsg" class="msg" style="margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeCatModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveCatModal()" style="flex:1;min-height:44px">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPABASE PAGE -->
+<div id="page-supabase" class="page">
+  <div class="page-header">
+    <div class="page-title">Supabase</div>
+    <div class="page-sub">เชื่อมต่อฐานข้อมูล Real-time · ไม่มี CORS · ใช้ได้จากทุกที่</div>
+  </div>
+
+  <!-- CONNECTION CARD -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 12px">
+      <div class="settings-icon" style="background:#e8f5e9">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4zm-1 3v4l3 2-1 1.5-3.5-2.5V7h1.5z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="settings-header-text">การเชื่อมต่อ Supabase</div>
+        <div class="settings-header-sub" id="sbStatusText">ยังไม่ได้เชื่อมต่อ</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <div id="rtDot" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8" title="Realtime"></div>
+        <div id="sbDot" style="width:10px;height:10px;border-radius:50%;background:#d4d1c8"></div>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:10px">
+      <div class="field">
+        <label>Project URL</label>
+        <input type="url" id="sbUrl" placeholder="https://xxxxxxxxxxxx.supabase.co"
+          style="font-size:13px !important" oninput="saveSbCreds()">
+      </div>
+      <div class="field">
+        <label>Anon Key (public)</label>
+        <input type="text" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          style="font-size:13px !important;font-family:monospace" oninput="saveSbCreds()">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="testSupabase()" style="flex:1;justify-content:center;min-height:44px">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8a5 5 0 1010 0A5 5 0 003 8zm5-6a6 6 0 110 12A6 6 0 018 2zm.5 3v3.25l2.5 1.5-.75 1.25L7 9.25V5h1.5z"/></svg>
+          ทดสอบการเชื่อมต่อ
+        </button>
+        <button class="btn btn-ghost" onclick="sbPush()" style="flex:1;justify-content:center;min-height:44px">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 8a6 6 0 0110.7-3.7l-1.5 1.5H14V3l-1.5 1.5A7.5 7.5 0 001 8.5h1.5A6 6 0 012 8zm12-.5A6 6 0 014.8 12.2l1.5-1.5H3V14l1.5-1.5A7.5 7.5 0 0015 7.5h-1z"/></svg>
+          อัปโหลดข้อมูลขึ้น
+        </button>
+        <button class="btn btn-ghost" onclick="sbPull()" style="flex:1;justify-content:center;min-height:44px">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 10.5l-4-4h2.5V2h3v4.5H12l-4 4zM2 13h12v1.5H2V13z"/></svg>
+          ดาวน์โหลดข้อมูล
+        </button>
+      </div>
+      <div id="sbMsg" class="msg"></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0 0;font-size:12px;color:var(--ink3)">
+        <div id="rtDot2" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8;flex-shrink:0"></div>
+        <span id="rtStatusText">สถานะ: กำลังตรวจสอบ...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT CSV -->
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 12px">
+      <div class="settings-icon" style="background:#eef7f2">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 13l-5-5h3V3h4v5h3l-5 5zM3 16h14v2H3v-2z"/></svg>
+      </div>
+      <div><div class="settings-header-text">Export CSV</div><div class="settings-header-sub">สำรองข้อมูลออกไฟล์</div></div>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" onclick="exportCSV()" style="min-height:44px">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 10.5l-4-4h2.5V2h3v4.5H12l-4 4zM2 13h12v1.5H2V13z"/></svg>
+        Export CSV
+      </button>
+      <div id="sbExportMsg" class="msg" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- SETUP GUIDE -->
+  <div class="card" style="max-width:700px">
+    <div class="card-title">วิธีตั้งค่า Supabase (3 ขั้นตอน)</div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.9">
+      <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">1</div>
+        <div>
+          <strong>สร้างโปรเจกต์ที่ supabase.com</strong> (ฟรี) → กด <strong>New project</strong>
+          → ตั้งชื่อ เช่น <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:monospace">homefinance</code>
+          → จดรหัสผ่านฐานข้อมูลไว้
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">2</div>
+        <div>
+          <strong>สร้าง Table</strong> → เปิด <strong>SQL Editor</strong> → วาง SQL ด้านล่าง → Run
+          <div style="background:var(--ink);color:#a8d8a8;font-family:monospace;font-size:11px;padding:10px 12px;border-radius:var(--r);margin-top:8px;line-height:1.7;overflow-x:auto;white-space:pre">create table transactions (
+  id        text primary key,
+  date      text,
+  type      text,
+  cat       text,
+  desc      text,
+  amt       numeric,
+  person    text,
+  split     boolean,
+  status    text,
+  note      text,
+  created_at timestamptz default now()
+);
+alter table transactions enable row level security;
+create policy "public read" on transactions for select using (true);
+create policy "public write" on transactions for all using (true);</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:10px 0">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">3</div>
+        <div>
+          <strong>Copy credentials</strong> → ไปที่ <strong>Project Settings → API</strong>
+          → Copy <em>Project URL</em> และ <em>anon public key</em>
+          → วางในช่องด้านบน → กดทดสอบ ✓
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/salary.js"></script>
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/persons.js"></script>
+<script src="assets/js/categories.js"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/items.js"></script>
+<script src="assets/js/vendors.js"></script>
+<script src="assets/js/favorites.js"></script>
+<script src="assets/js/notes.js"></script>
+<script src="assets/js/nav.js"></script>
+<script src="assets/js/form.js"></script>
+<script src="assets/js/edit.js"></script>
+<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/settlement.js"></script>
+<script src="assets/js/monthly.js"></script>
+<script src="assets/js/budget.js"></script>
+<script src="assets/js/autocomplete.js"></script>
+<script src="assets/js/features.js"></script>
+<script src="assets/js/settings.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

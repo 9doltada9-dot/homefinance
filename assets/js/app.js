@@ -65,9 +65,10 @@ document.addEventListener('DOMContentLoaded', function(){
         .then(function(r){return r.ok?r.json():[];}).catch(function(){return [];}),
       sbLoadSettings(),
       sbLoadCategories(),
-      sbLoadItems()
+      sbLoadItems(),
+      sbLoadVendors()
     ]).then(function(results){
-      var rows = results[0], settingsMap = results[1], catsData = results[2], itemsRows = results[3];
+      var rows = results[0], settingsMap = results[1], catsData = results[2], itemsRows = results[3], vendorRows = results[4];
       // load categories first
       if(catsData && Array.isArray(catsData)){
         categories = catsData;
@@ -77,6 +78,11 @@ document.addEventListener('DOMContentLoaded', function(){
         buildItemsData(itemsRows);
       } else {
         loadItemsLocal();
+      }
+      if(vendorRows && Array.isArray(vendorRows)){
+        vendorsData = vendorRows;
+        saveVendorsLocal();
+      } else {
         loadVendorsLocal();
       }
       // apply settings

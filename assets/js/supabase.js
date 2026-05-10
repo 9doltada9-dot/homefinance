@@ -530,9 +530,10 @@ async function sbPull(){
         .then(function(r){return r.ok?r.json():Promise.reject(r.status);}),
       sbLoadSettings(),
       sbLoadCategories(),
-      sbLoadItems()
+      sbLoadItems(),
+      sbLoadVendors()
     ]);
-    var rows = results[0], settingsMap = results[1], catsData = results[2], itemsRows = results[3];
+    var rows = results[0], settingsMap = results[1], catsData = results[2], itemsRows = results[3], vendorRows = results[4];
     if(catsData && Array.isArray(catsData)){
       categories = catsData; buildCategoryMap(); fillCats();
       // refresh filter dropdowns if on transactions page
@@ -541,6 +542,11 @@ async function sbPull(){
     if(itemsRows && Array.isArray(itemsRows)){
       buildItemsData(itemsRows);
       populateMFItem();
+    }
+    if(vendorRows && Array.isArray(vendorRows)){
+      vendorsData = vendorRows;
+      saveVendorsLocal();
+      fillVendors();
     }
     // apply settings
     if(settingsMap){

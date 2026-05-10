@@ -14,13 +14,28 @@ function fillVendors(){
     var fav = sorted.find(function(v){return isFavVendor(v.name);});
     if(fav) sel.value = fav.id;
   }
-  // star button — ต้องใช้ชื่อร้าน ไม่ใช่ id
+  // star button — อัปเดต icon + onclick โดยไม่ให้กระทบ selection
   var btn = document.getElementById('fVendorStar');
   function updateVendorStar(){
-    var n = (vendorsData.find(function(v){return v.id===sel.value;})||{}).name||'';
+    var curId = sel.value;
+    var n = (vendorsData.find(function(v){return v.id===curId;})||{}).name||'';
     if(!btn) return;
     btn.textContent = isFavVendor(n) ? '⭐' : '☆';
-    btn.onclick = function(){ if(n) toggleFavVendor(n); };
+    btn.onclick = function(){
+      if(!n) return;
+      // toggle fav แบบ inline — ไม่เรียก fillVendors() ผ่าน toggleFavVendor
+      var f = getFavs();
+      if(!f.vendor) f.vendor={};
+      f.vendor[n] = !f.vendor[n];
+      saveFavs(f);
+      btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+      // อัปเดต label ใน dropdown เฉพาะตัวที่เปลี่ยน โดยไม่เปลี่ยน selection
+      var opts = sel.options;
+      for(var i=0;i<opts.length;i++){
+        var v2 = vendorsData.find(function(v){return v.id===opts[i].value;});
+        if(v2) opts[i].text = (isFavVendor(v2.name)?'⭐ ':'')+v2.name;
+      }
+    };
   }
   updateVendorStar();
   sel.onchange = updateVendorStar;

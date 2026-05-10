@@ -195,6 +195,18 @@ async function sbAddVendor(name, sortOrder){
   } catch(_){ return null; }
 }
 
+async function sbUpdateVendor(id, newName){
+  var creds = getSbCreds();
+  if(!creds.ok) return;
+  try {
+    await fetchWithTimeout(
+      creds.url+'/rest/v1/vendors?id=eq.'+encodeURIComponent(id),
+      { method:'PATCH', headers:sbHeadersFrom(creds.key),
+        body: JSON.stringify({name: newName}) }, 8000
+    );
+  } catch(_){}
+}
+
 async function sbDeleteVendor(id){
   var creds = getSbCreds();
   if(!creds.ok) return;

@@ -29,8 +29,9 @@ function populateDashMonthsByYear(year){
     var mo = Number(m.split('-')[1]);
     return '<option value="'+m+'" '+(m===curM?'selected':'')+'>'+SHORT_M[mo-1]+'</option>';
   }).join('');
-  // set to current month if year matches, else first available
-  if(year===now.getFullYear()) selM.value = thisM;
+  // คงค่าที่ผู้ใช้เลือกไว้ถ้ายังมีในรายการ มิฉะนั้นใช้เดือนปัจจุบัน/แรกสุด
+  if(curM && months.indexOf(curM) !== -1) selM.value = curM;
+  else if(year===now.getFullYear()) selM.value = thisM;
   else if(months.length) selM.value = months[0];
 }
 
@@ -41,9 +42,13 @@ function onDashYearChange(){
 }
 
 function renderDash(){
+  var selM = document.getElementById('dashMonth');
+  var savedMonth = selM ? selM.value : '';
   populateDashYears();
   var yearVal = document.getElementById('dashYear')?.value;
   if(yearVal) populateDashMonthsByYear(Number(yearVal));
+  // คืนค่าเดือนที่ user เลือกไว้ (กันไม่ให้ populateDashMonthsByYear reset)
+  if(savedMonth && selM && selM.querySelector('option[value="'+savedMonth+'"]')) selM.value = savedMonth;
 
   var sel = document.getElementById('dashMonth');
   var now = new Date();

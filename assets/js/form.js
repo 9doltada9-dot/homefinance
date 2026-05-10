@@ -13,6 +13,8 @@ function initForm(){
   updatePersonLabels();
   renderNoteHistory();
   fillVendors();
+  var pSel = document.getElementById('fPerson');
+  if(pSel) pSel.onchange = function(){ fillVendors(); };
 }
 
 function setType(t){
@@ -81,6 +83,7 @@ function onCatChange(){
   updateCatStar();
   fillDescByCat(catId);
   autoSplit();
+  fillVendors();
 }
 
 function fillDescByCat(catId){

@@ -27,3 +27,19 @@ function toggleFavVendor(name){
   var f=getFavs(); if(!f.vendor) f.vendor={};
   f.vendor[name]=!f.vendor[name]; saveFavs(f); fillVendors();
 }
+
+// ─── CONTEXT VENDOR FAVORITES (per person + catId) ────────
+function _ctxKey(personId, catId){ return (personId||'')+'|'+(catId||''); }
+function isFavVendorCtx(personId, catId, name){
+  var f=getFavs();
+  var ctx = f.vendor_ctx && f.vendor_ctx[_ctxKey(personId,catId)];
+  return !!(ctx && ctx[name]);
+}
+function toggleFavVendorCtx(personId, catId, name){
+  var f=getFavs();
+  if(!f.vendor_ctx) f.vendor_ctx={};
+  var k=_ctxKey(personId,catId);
+  if(!f.vendor_ctx[k]) f.vendor_ctx[k]={};
+  f.vendor_ctx[k][name]=!f.vendor_ctx[k][name];
+  saveFavs(f);
+}

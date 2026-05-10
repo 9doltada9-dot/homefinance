@@ -20,11 +20,9 @@ function openEdit(id){
   document.getElementById('eAmt').value = e.amt;
   document.getElementById('eStatus').value = e.status;
   document.getElementById('eNote').value = e.note||'';
-  // populate vendors
-  var eVendorSel = document.getElementById('eVendor');
-  eVendorSel.innerHTML = '<option value="">-- ไม่ระบุ --</option>' +
-    vendorsData.map(function(v){return '<option value="'+v.id+'">'+v.name+'</option>';}).join('');
-  if(e.vendor_id) eVendorSel.value = e.vendor_id;
+  // populate vendors (with smart sort via fillEditVendors)
+  fillEditVendors();
+  if(e.vendor_id) document.getElementById('eVendor').value = e.vendor_id;
   eSetType(e.type, false);
   setTimeout(function(){
     var catVal = e.cat_id || ((categories.find(function(c){return c.name === e.cat_name;})||{}).id) || '';

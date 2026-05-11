@@ -102,10 +102,13 @@ function getSbCreds(){
 }
 
 function sbHeadersFrom(key){
+  // If user is authenticated, use their JWT (enables RLS user isolation).
+  // Falls back to anon key when auth.js is not loaded or user not yet logged in.
+  var token = (typeof getAuthToken === 'function' && getAuthToken()) ? getAuthToken() : key;
   return {
     'Content-Type':'application/json',
     'apikey': key,
-    'Authorization': 'Bearer '+key,
+    'Authorization': 'Bearer ' + token,
     'Prefer': 'return=minimal',
   };
 }
@@ -118,10 +121,11 @@ function saveSbCreds(){
 }
 
 function sbHeaders(){
+  var token = (typeof getAuthToken === 'function' && getAuthToken()) ? getAuthToken() : SB_KEY;
   return {
     'Content-Type': 'application/json',
     'apikey': SB_KEY,
-    'Authorization': 'Bearer '+SB_KEY,
+    'Authorization': 'Bearer ' + token,
     'Prefer': 'return=minimal',
   };
 }

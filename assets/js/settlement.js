@@ -1,4 +1,4 @@
-/* HomeFinance · module: settlement.js · v2.5.0 */
+/* HomeFinance · module: settlement.js · v3.2.0 */
 
 // ─── SETTLEMENT ──────────────────────────────────────────
 function populateMths(selId){
@@ -244,4 +244,93 @@ function exportSettlePDF(month){
   win.document.write(html);
   win.document.close();
   win.onload = function(){ win.focus(); win.print(); };
+}
+
+// ─── ADMIN VARIANT: export PDF from arbitrary data ────────
+// Called by report.js exportAdminPDF() with all-user data
+function exportSettlePDFFromData(data, month) {
+  var n = names();
+  var me = data.filter(function(e){return e.type==='expense'&&isPaid(e);});
+  var paid={}, share={};
+  persons.forEach(function(p){paid[p.id]=0;share[p.id]=0;});
+  me.forEach(function(e){
+    if(paid[e.person]!==undefined) paid[e.person]+=e.amt;
+    if(e.split){ var each=e.amt/2; persons.forEach(function(p){if(share[p.id]!==undefined) share[p.id]+=each;}); }
+    else { if(share[e.person]!==undefined) share[e.person]+=e.amt; }
+  });
+  var net={};
+  persons.forEach(function(p){net[p.id]=paid[p.id]-share[p.id];});
+  var sorted=persons.slice().sort(function(a,b){return net[b.id]-net[a.id];});
+  var creditor=sorted[0], debtor=sorted[sorted.length-1];
+  var owe=Math.abs(net[creditor.id]);
+  var totalExp=Object.values(paid).reduce(function(s,v){return s+v;},0);
+
+  var mp=month.split('-').map(Number);
+  var monthThai=THAI_MONTHS[mp[1]-1]+' '+(mp[0]+543);
+
+  var rows=me.map(function(e){
+    var shares=persons.map(function(p){
+      var s=e.split?e.amt/2:(e.person===p.id?e.amt:0);
+      return '<td style="text-align:right">'+fmt(s)+'</td>';
+    }).join('');
+    return '<tr><td>'+toThaiDateShort(e.date)+'</td><td>'+e.desc+'</td><td>'+(e.cat_name||'—')+'</td>'+
+      '<td style="text-align:right">'+fmt(e.amt)+'</td><td style="text-align:center">'+(e.split?'÷2':'ส่วนตัว')+'</td>'+shares+'</tr>';
+  }).join('');
+
+  var summaryRows=persons.map(function(p){return '<tr>'+
+    '<td>'+p.name+'</td>'+
+    '<td style="text-align:right">'+fmt(paid[p.id]||0)+'</td>'+
+    '<td style="text-align:right">'+fmt(share[p.id]||0)+'</td>'+
+    '<td style="text-align:right;font-weight:600;color:'+(net[p.id]>=0?'#1a7a4a':'#c0392b')+'">'+
+      (net[p.id]>=0?'+':'')+fmt(net[p.id])+'</td></tr>';}).join('');
+
+  var settleBox=owe<1
+    ?'<div style="background:#eef7f2;border:1.5px solid #1a7a4a;border-radius:8px;padding:14px;text-align:center"><div style="font-size:14px;color:#1a7a4a;font-weight:600">✓ ไม่มียอดค้างชำระ</div></div>'
+    :'<div style="background:#fdf4e7;border:1.5px solid #b5600a;border-radius:8px;padding:14px;text-align:center">'+
+      '<div style="font-size:12px;color:#b5600a;font-weight:600;margin-bottom:4px">ยอดที่ต้องชำระคืน</div>'+
+      '<div style="font-size:24px;font-weight:700;color:#b5600a;font-family:monospace">'+fmt(owe)+' บาท</div>'+
+      '<div style="font-size:14px;font-weight:600;margin-top:4px">'+debtor.name+' โอนให้ '+creditor.name+'</div></div>';
+
+  var label = (typeof getAuthProfileName==='function'&&getAuthProfileName()) ? ' · Admin: '+getAuthProfileName() : '';
+  var html='<!DOCTYPE html>\n<html lang="th">\n<head>\n<meta charset="UTF-8">\n'+
+    '<title>Settlement '+monthThai+'</title>\n'+
+    '<style>\n@import url(\'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap\');\n'+
+    '*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Sarabun\',sans-serif;font-size:13px;color:#1a1a1a;padding:24px}\n'+
+    'h1{font-size:20px;font-weight:700;margin-bottom:4px}h2{font-size:14px;font-weight:600;margin:16px 0 8px;color:#444}\n'+
+    '.sub{font-size:12px;color:#888;margin-bottom:16px}.meta{display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap}\n'+
+    '.meta-box{border:1px solid #ddd;border-radius:6px;padding:10px 14px;flex:1;min-width:140px}\n'+
+    '.meta-label{font-size:11px;color:#888}.meta-val{font-size:18px;font-weight:700;font-family:monospace}\n'+
+    'table{width:100%;border-collapse:collapse;margin-bottom:16px}\n'+
+    'th{background:#f0f0f0;padding:7px 8px;text-align:left;font-size:12px;font-weight:600;border-bottom:1.5px solid #ccc}\n'+
+    'td{padding:6px 8px;border-bottom:1px solid #eee}\ntr:nth-child(even) td{background:#fafafa}\n'+
+    '.settle{margin:16px 0}.footer{margin-top:24px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:12px}\n'+
+    '@media print{body{padding:12px}@page{margin:15mm}}\n</style>\n</head>\n<body>\n'+
+    '<h1>HomeFinance — สรุป Settlement (Admin Report)</h1>\n'+
+    '<div class="sub">เดือน '+monthThai+' · ออกเมื่อ '+toThaiDateStr(new Date().toISOString().split('T')[0])+label+'</div>\n'+
+    '<div class="meta">'+
+      persons.map(function(p){return '<div class="meta-box"><div class="meta-label">'+p.name+' จ่ายจริง</div>'+
+        '<div class="meta-val">'+fmt(paid[p.id]||0)+' <small style="font-size:12px;font-weight:400">บาท</small></div></div>'+
+        '<div class="meta-box"><div class="meta-label">'+p.name+' ควรจ่าย</div>'+
+        '<div class="meta-val">'+fmt(share[p.id]||0)+' <small style="font-size:12px;font-weight:400">บาท</small></div></div>';}).join('')+
+      '<div class="meta-box"><div class="meta-label">รวมรายจ่ายทั้งหมด</div>'+
+      '<div class="meta-val">'+fmt(totalExp)+' <small style="font-size:12px;font-weight:400">บาท</small></div></div>'+
+    '</div>\n'+
+    '<div class="settle">'+settleBox+'</div>\n'+
+    '<h2>สรุปรายบุคคล</h2>\n<table>\n'+
+    '<tr><th>ชื่อ</th><th style="text-align:right">จ่ายจริง</th><th style="text-align:right">ควรจ่าย</th><th style="text-align:right">ส่วนต่าง</th></tr>\n'+
+    summaryRows+'</table>\n'+
+    '<h2>รายการทั้งหมดเดือน '+monthThai+'</h2>\n<table>\n'+
+    '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th style="text-align:right">จำนวน</th><th style="text-align:center">แบ่ง</th>'+
+    persons.map(function(p){return '<th style="text-align:right">ส่วน'+p.name+'</th>';}).join('')+'</tr>\n'+
+    rows+
+    '<tr style="font-weight:700;background:#f0f0f0"><td colspan="3">รวม</td>'+
+    '<td style="text-align:right">'+fmt(totalExp)+'</td><td></td>'+
+    persons.map(function(p){return '<td style="text-align:right">'+fmt(share[p.id]||0)+'</td>';}).join('')+'</tr>\n'+
+    '</table>\n<div class="footer">HomeFinance v3.2.0 · Admin Settlement Report</div>\n</body>\n</html>';
+
+  var win=window.open('','_blank','width=900,height=700');
+  if(!win){alert('กรุณาอนุญาต popup เพื่อพิมพ์ PDF');return;}
+  win.document.write(html);
+  win.document.close();
+  win.onload=function(){win.focus();win.print();};
 }

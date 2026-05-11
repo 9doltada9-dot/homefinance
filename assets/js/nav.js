@@ -1,4 +1,4 @@
-/* HomeFinance · module: nav.js · v3.0.0 */
+/* HomeFinance · module: nav.js · v3.2.0 */
 
 // ─── NAV ────────────────────────────────────────────────
 function nav(page){
@@ -35,6 +35,12 @@ function nav(page){
   if(page==='savings'){
     if(typeof renderSavingsGoals==='function') renderSavingsGoals();
     if(typeof fillAccountSelectors==='function') fillAccountSelectors();
+  }
+  if(page==='admin'){
+    // Guard — redirect non-admins
+    if(typeof isAdminUser==='function' && !isAdminUser()){ nav('dashboard'); return; }
+    if(typeof populateAdminMonths==='function') populateAdminMonths();
+    if(typeof renderAdminUserList==='function') renderAdminUserList();
   }
 }
 

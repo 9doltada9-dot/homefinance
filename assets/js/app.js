@@ -1,4 +1,4 @@
-/* HomeFinance · module: app.js · v3.0.0 */
+/* HomeFinance · module: app.js · v3.2.0 */
 
 // ─── GLOBAL TICKERS / LISTENERS ───────────────────────────
 setInterval(updateTopbarClock, 1000);
@@ -53,11 +53,9 @@ document.addEventListener('visibilitychange', function(){
   } catch(_){}
 })();
 
-// ─── DOMContentLoaded — APP STARTUP ───────────────────────
+// ─── DOMContentLoaded — STATIC INIT ONLY ─────────────────
+// Data loading is deferred to startAppAfterAuth() (called by auth.js after login).
 document.addEventListener('DOMContentLoaded', function(){
-  var pA=persons.find(function(x){return x.id==='A';}), pB=persons.find(function(x){return x.id==='B';});
-  if(pA) document.getElementById('nameA').value=pA.name;
-  if(pB) document.getElementById('nameB').value=pB.name;
   updateTopbarClock();
   initForm();
   applyViewMode();
@@ -67,7 +65,21 @@ document.addEventListener('DOMContentLoaded', function(){
       if(e.target===this) closeEdit();
     });
   }
-  // auto-load from Supabase on startup
+  // auth.js handles session check; on success it calls startAppAfterAuth().
+  // If auth.js is absent (no-auth build), fall through directly.
+  if (typeof initAuth === 'function') {
+    initAuth();
+  } else {
+    startAppAfterAuth();
+  }
+});
+
+// ─── CALLED AFTER AUTH IS CONFIRMED ──────────────────────
+function startAppAfterAuth() {
+  var pA=persons.find(function(x){return x.id==='A';}), pB=persons.find(function(x){return x.id==='B';});
+  if(pA) document.getElementById('nameA').value=pA.name;
+  if(pB) document.getElementById('nameB').value=pB.name;
+
   var startCreds = getSbCreds();
   if(startCreds.ok){
     Promise.all([
@@ -138,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function(){
     initV3Modules();
     renderDash();
   }
-});
+}
 
 // ─── V3 MODULE INIT ───────────────────────────────────────
 function initV3Modules() {

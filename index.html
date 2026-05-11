@@ -15,6 +15,18 @@
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
 <link rel="manifest" href="manifest.json">
+<style>
+/* ── AUTH STATE CLASSES ─────────────────────── */
+body:not(.app-ready) .topbar,
+body:not(.app-ready) .bottomnav,
+body:not(.app-ready) .sidebar,
+body:not(.app-ready) #sidebarOverlay,
+body:not(.app-ready) .layout { display: none !important; }
+#page-login { display: none; }
+body.login-visible #page-login { display: flex !important; }
+body.app-ready #page-login { display: none !important; }
+.admin-only { display: none; }
+</style>
 </head>
 <body>
 
@@ -23,7 +35,11 @@
     <div class="topbar-title">HomeFinance</div>
     <div id="topbarDate" style="font-size:10px;color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px"></div>
   </div>
-  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="topbarUser" style="font-size:11px;color:rgba(255,255,255,.75);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button id="logoutBtn" onclick="doLogout()" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px;white-space:nowrap">ออก</button>
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  </div>
 </div>
 
 <!-- BOTTOM NAV (iOS) -->
@@ -114,8 +130,16 @@
       <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.4 1.6a5.5 5.5 0 00-1.4.8L3.1 2.9 1.4 4.6l.8 1.6a5.5 5.5 0 00-.6 1.7L0 8.5v2.5l1.6.6c.2.6.4 1.2.8 1.7l-.8 1.6 1.7 1.7 1.6-.8c.5.3 1.1.6 1.7.8l.4 1.4h2.5l.4-1.6c.6-.2 1.2-.5 1.7-.8l1.6.8 1.7-1.7-.8-1.6c.3-.5.6-1.1.8-1.7L16 11V8.5l-1.6-.6a5.5 5.5 0 00-.8-1.7l.8-1.6L12.7 3l-1.6.8a5.5 5.5 0 00-1.7-.8L9 1H6.5z"/></svg>
       ตั้งค่า
     </div>
+    <div class="nav-item admin-only" onclick="nav('admin')" style="display:none">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor" style="color:var(--amber)"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.8l-3.7 1.8.7-4.1-3-2.9 4.2-.6z"/></svg>
+      <span style="color:var(--amber)">Admin</span>
+    </div>
   </div>
-  <div class="sidebar-footer">HomeFinance © 2025</div>
+  <div class="sidebar-footer">
+    <div id="sidebarUserInfo" style="font-size:11px;color:var(--ink3);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance © 2025</div>
+  </div>
 </nav>
 
 <!-- MAIN -->
@@ -1036,7 +1060,54 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 </div>
 
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <div class="page-header">
+    <div class="page-title">🛡 Admin</div>
+    <div class="page-sub">จัดการผู้ใช้ · รายงาน Settlement</div>
+  </div>
+  <div class="stg-group-label">👥 รายชื่อผู้ใช้งาน</div>
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div style="padding:12px 14px"><div id="adminUserList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">กำลังโหลด...</div></div></div>
+  </div>
+  <div class="stg-group-label">📊 รายงาน Settlement</div>
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div style="padding:12px 14px">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <select id="adminReportMonth" style="flex:1;min-width:130px;font-size:14px !important"><option value="">เลือกเดือน</option></select>
+        <button class="btn btn-primary" onclick="loadAdminReport()" style="min-height:40px;white-space:nowrap">🔄 โหลดรายงาน</button>
+        <button class="btn btn-ghost" onclick="exportAdminPDF()" style="min-height:40px;white-space:nowrap">📄 Export PDF</button>
+      </div>
+      <div id="adminReportContent"></div>
+    </div>
+  </div>
+</div>
+
 </main>
+</div>
+
+<!-- LOGIN PAGE OVERLAY -->
+<div id="page-login" style="position:fixed;inset:0;background:var(--surface);z-index:2000;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="width:100%;max-width:380px;margin:auto">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:48px;margin-bottom:12px">💰</div>
+      <div style="font-size:22px;font-weight:700;color:var(--ink)">HomeFinance</div>
+      <div style="font-size:13px;color:var(--ink3);margin-top:4px">บันทึกรายรับ-รายจ่ายส่วนตัว</div>
+    </div>
+    <div class="card" style="padding:24px">
+      <div class="field" style="margin-bottom:14px">
+        <label>📧 Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
+      </div>
+      <div class="field" style="margin-bottom:20px">
+        <label>🔒 Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button id="loginBtn" class="btn btn-primary" onclick="doLogin()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">เข้าสู่ระบบ</button>
+      <div id="loginMsg" class="msg" style="margin-top:12px;text-align:center"></div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3)">HomeFinance v3.2.0 · Supabase Auth</div>
+  </div>
 </div>
 
 <script src="assets/js/config.js"></script>
@@ -1068,6 +1139,8 @@ create policy "public write" on transactions for all using (true);</div>
 <script src="assets/js/recurringEngine.js"></script>
 <script src="assets/js/features.js"></script>
 <script src="assets/js/settings.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/report.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

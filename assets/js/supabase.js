@@ -629,6 +629,8 @@ async function sbAdd(e){
         transfer_direction: e.transfer_direction||null,
         transfer_pair_id:   e.transfer_pair_id||null,
         _recurring_id:  e._recurring_id||null,
+        // v3.2: user isolation
+        user_id: (typeof getAuthUserId==='function' ? getAuthUserId() : null) || e.user_id || null,
       }])
     });
   } catch(_){}
@@ -657,6 +659,8 @@ async function sbUpdate(e){
         cycle_id:      cycleId||null,
         billing_month: billingMonth||null,
         account_id:    e.account_id||null,
+        // v3.2: user isolation
+        user_id: (typeof getAuthUserId==='function' ? getAuthUserId() : null) || e.user_id || null,
       })
     });
   } catch(_){}

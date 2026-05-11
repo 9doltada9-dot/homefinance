@@ -19,15 +19,10 @@ function isAdminUser()        { return !!(  _authProfile && _authProfile.role ==
 // ─── INIT: check saved session on startup ─────────────────
 async function initAuth() {
   var creds = getSbCreds();
-
-  // ถ้ายังไม่ได้ตั้งค่า Supabase → เข้า app โดยไม่ต้อง login
-  if (!creds.ok) {
-    _showApp();
-    return;
-  }
-
   var saved = _loadSavedSession();
-  if (!saved) {
+
+  // ไม่มี Supabase หรือไม่มี session → แสดง login เสมอ
+  if (!creds.ok || !saved) {
     showLoginPage();
     return;
   }
@@ -230,6 +225,53 @@ async function _refreshSession(creds, refresh_token) {
 function showLoginPage() {
   document.body.classList.remove('app-ready');
   document.body.classList.add('login-visible');
+  // ถ้ายังไม่มี Supabase creds → เปิดพาเนลตั้งค่าอัตโนมัติ
+  var creds = getSbCreds();
+  if (!creds.ok) {
+    var panel = document.getElementById('loginDbPanel');
+    var arrow = document.getElementById('loginDbArrow');
+    if (panel) panel.style.display = 'block';
+    if (arrow) arrow.textContent = '▲';
+    // pre-fill existing values if any
+    var urlEl = document.getElementById('loginSbUrl');
+    var keyEl = document.getElementById('loginSbKey');
+    if (urlEl) urlEl.value = localStorage.getItem('hf2_sb_url') || '';
+    if (keyEl) keyEl.value = localStorage.getItem('hf2_sb_key') || '';
+  }
+}
+
+// ─── DB SETUP (on login page) ─────────────────────────────
+function toggleDbSetup() {
+  var panel = document.getElementById('loginDbPanel');
+  var arrow = document.getElementById('loginDbArrow');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▼' : '▲';
+}
+
+function saveDbSetup() {
+  var urlEl = document.getElementById('loginSbUrl');
+  var keyEl = document.getElementById('loginSbKey');
+  var msgEl = document.getElementById('loginDbMsg');
+  var url = ((urlEl || {}).value || '').trim().replace(/\/+$/, '');
+  var key = ((keyEl || {}).value || '').trim();
+  if (!url || !key) {
+    if (msgEl) { msgEl.style.color = 'var(--red)'; msgEl.textContent = '⚠️ กรอกให้ครบทั้ง URL และ Key'; }
+    return;
+  }
+  localStorage.setItem('hf2_sb_url', url);
+  localStorage.setItem('hf2_sb_key', key);
+  if (msgEl) { msgEl.style.color = 'var(--green)'; msgEl.textContent = '✅ บันทึกแล้ว — กรอก Email / Password เพื่อเข้าสู่ระบบ'; }
+  // ปิดพาเนลหลังบันทึก
+  setTimeout(function () {
+    var panel = document.getElementById('loginDbPanel');
+    var arrow = document.getElementById('loginDbArrow');
+    if (panel) panel.style.display = 'none';
+    if (arrow) arrow.textContent = '▼';
+    var em = document.getElementById('loginEmail');
+    if (em) em.focus();
+  }, 1200);
 }
 
 function _showApp() {

@@ -80,13 +80,12 @@ body.app-ready #page-login { display: none !important; }
     <div class="brand-sub">v3.0.0 · THB</div>
   </div>
   <div class="sidebar-names">
-    <div class="name-row">
-      <div class="name-dot dot-a"></div>
-      <input class="name-input" id="nameA" value="คนA" placeholder="ชื่อคนที่ 1" onchange="renamePerson('A',this.value);refreshAll()">
-    </div>
-    <div class="name-row">
-      <div class="name-dot dot-b"></div>
-      <input class="name-input" id="nameB" value="คนB" placeholder="ชื่อคนที่ 2" onchange="renamePerson('B',this.value);refreshAll()">
+    <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>
+      <div style="min-width:0">
+        <div id="sidebarAuthName" style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <div id="sidebarAuthRole" style="font-size:11px;color:var(--ink3);margin-top:1px"></div>
+      </div>
     </div>
   </div>
   <div class="nav">
@@ -121,10 +120,6 @@ body.app-ready #page-login { display: none !important; }
     <div class="nav-item" onclick="nav('savings')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 014.9 6H14a1 1 0 010 2h-1a1 1 0 01-1-1 4 4 0 10-4 4 1 1 0 010 2 6 6 0 110-12zm0 3a1 1 0 011 1v2.6l1.7 1.7-1.4 1.4-2-2A1 1 0 017 9V5a1 1 0 011-1zm-1 9h6v1.5H7V13zm2-2h4v1.5H9V11z"/></svg>
       เป้าหมายออม
-    </div>
-    <div class="nav-item" onclick="nav('supabase')">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1H3zm1 2h8v1H4V4zm0 2h8v1H4V6zm0 2h5v1H4V8z"/></svg>
-      Supabase
     </div>
     <div class="nav-item" onclick="nav('settings')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.4 1.6a5.5 5.5 0 00-1.4.8L3.1 2.9 1.4 4.6l.8 1.6a5.5 5.5 0 00-.6 1.7L0 8.5v2.5l1.6.6c.2.6.4 1.2.8 1.7l-.8 1.6 1.7 1.7 1.6-.8c.5.3 1.1.6 1.7.8l.4 1.4h2.5l.4-1.6c.6-.2 1.2-.5 1.7-.8l1.6.8 1.7-1.7-.8-1.6c.3-.5.6-1.1.8-1.7L16 11V8.5l-1.6-.6a5.5 5.5 0 00-.8-1.7l.8-1.6L12.7 3l-1.6.8a5.5 5.5 0 00-1.7-.8L9 1H6.5z"/></svg>
@@ -216,19 +211,13 @@ body.app-ready #page-login { display: none !important; }
         รายจ่าย
       </button>
     </div>
-    <div class="form-row">
+    <input type="hidden" id="fPerson" value="A">
+    <div class="form-row full">
       <div class="field">
         <label>วันที่</label>
         <input type="date" id="fDate" onchange="updateThaiDate()">
         <div id="fDateThai" style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500"></div>
         <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
-      </div>
-      <div class="field">
-        <label>ผู้บันทึก</label>
-        <select id="fPerson">
-          <option value="A">คนA</option>
-          <option value="B">คนB</option>
-        </select>
       </div>
     </div>
     <div class="form-row full">
@@ -441,9 +430,9 @@ body.app-ready #page-login { display: none !important; }
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>รายจ่าย
       </button>
     </div>
-    <div class="form-row">
+    <input type="hidden" id="ePerson" value="A">
+    <div class="form-row full">
       <div class="field"><label>วันที่</label><input type="date" id="eDate"></div>
-      <div class="field"><label>ผู้บันทึก</label><select id="ePerson"><option value="A">คนA</option><option value="B">คนB</option></select></div>
     </div>
     <div class="form-row full">
       <div class="field"><label>หมวดหมู่</label><select id="eCat"></select></div>
@@ -535,21 +524,16 @@ body.app-ready #page-login { display: none !important; }
   </div>
 
   <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
-  <div class="stg-group-label">👥 ผู้ใช้งาน</div>
+  <div class="stg-group-label">👤 ผู้ใช้งาน</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#eef7f2">👤</span>
-      <div>
-        <div class="stg-title">ผู้บันทึก</div>
-        <div class="stg-sub">แก้ไขชื่อหรือเพิ่มผู้บันทึก</div>
+      <span class="stg-icon" style="background:var(--blue-bg)">👤</span>
+      <div style="flex:1;min-width:0">
+        <div class="stg-title" id="stgUserName">—</div>
+        <div class="stg-sub" id="stgUserEmail">—</div>
       </div>
+      <span id="stgUserRole" style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--surface2);color:var(--ink3);white-space:nowrap"></span>
     </div>
-    <div id="personList"></div>
-    <div class="add-cat-row">
-      <input type="text" id="newPersonName" class="add-cat-input" placeholder="ชื่อผู้บันทึกใหม่">
-      <button class="btn btn-primary" onclick="addPerson()" style="white-space:nowrap">+ เพิ่ม</button>
-    </div>
-    <div id="personMsg" class="msg" style="margin:0 14px 10px"></div>
   </div>
 
   <!-- ─── หมวดหมู่ ───────────────────────────── -->

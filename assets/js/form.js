@@ -5,16 +5,13 @@ function initForm(){
     document.getElementById('fDate').value = todayISO();
     updateThaiDate();
   }
-  populatePersonSelects();
-  var pA=persons.find(function(x){return x.id==='A';}), pB=persons.find(function(x){return x.id==='B';});
-  if(pA) document.getElementById('nameA').value=pA.name;
-  if(pB) document.getElementById('nameB').value=pB.name;
+  // auto-set person จาก logged-in user
+  var pSel = document.getElementById('fPerson');
+  if(pSel) pSel.value = (typeof getCurrentPerson==='function') ? getCurrentPerson() : 'A';
   setType('expense');
   updatePersonLabels();
   renderNoteHistory();
   fillVendors();
-  var pSel = document.getElementById('fPerson');
-  if(pSel) pSel.onchange = function(){ fillVendors(); };
   // v3: populate account selector
   if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
   // v3: auto-set billing_month to current month

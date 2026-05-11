@@ -331,19 +331,53 @@ function _showApp() {
 }
 
 function _updateUserBar() {
-  // Topbar user chip
+  var name  = getAuthProfileName();
+  var email = _authUser ? (_authUser.email || '') : '';
+  var role  = isAdminUser() ? 'admin' : 'user';
+  var roleLabel = isAdminUser() ? '🛡 Admin' : '👤 User';
+
+  // Topbar chip
   var nameEl = document.getElementById('topbarUser');
-  if (nameEl) {
-    nameEl.textContent = getAuthProfileName() + (isAdminUser() ? ' 🛡' : '');
-  }
+  if (nameEl) nameEl.textContent = name + (isAdminUser() ? ' 🛡' : '');
+
   // Logout button
   var lb = document.getElementById('logoutBtn');
   if (lb) lb.style.display = '';
-  // Sidebar footer
+
+  // Sidebar: auth info block (ชื่อ + role)
+  var sidebarName = document.getElementById('sidebarAuthName');
+  var sidebarRole = document.getElementById('sidebarAuthRole');
+  if (sidebarName) sidebarName.textContent = name;
+  if (sidebarRole) sidebarRole.textContent = roleLabel;
+
+  // Sidebar footer (เก่า — ยังคงไว้เผื่อมี)
   var sf = document.getElementById('sidebarUserInfo');
-  if (sf && _authProfile) {
-    sf.textContent = _authProfile.name + ' · ' + (_authProfile.role === 'admin' ? '🛡 Admin' : '👤 User');
+  if (sf) sf.textContent = name + ' · ' + roleLabel;
+
+  // Settings page — user card
+  var stgName  = document.getElementById('stgUserName');
+  var stgEmail = document.getElementById('stgUserEmail');
+  var stgRole  = document.getElementById('stgUserRole');
+  if (stgName)  stgName.textContent  = name;
+  if (stgEmail) stgEmail.textContent = email;
+  if (stgRole)  {
+    stgRole.textContent = roleLabel;
+    stgRole.style.background = isAdminUser() ? 'var(--green-bg)' : 'var(--surface2)';
+    stgRole.style.color      = isAdminUser() ? 'var(--green)'    : 'var(--ink3)';
   }
+}
+
+// ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
+// ใช้สำหรับ auto-set ฟิลด์ person ในฟอร์ม
+function getCurrentPerson() {
+  var name = getAuthProfileName().toLowerCase();
+  if (!name || typeof persons === 'undefined') return 'A';
+  for (var i = 0; i < persons.length; i++) {
+    if (persons[i].name.toLowerCase() === name) return persons[i].id;
+  }
+  // fallback: user ตัวที่ 1 = A, ตัวที่ 2 = B ตาม email hash
+  var email = _authUser ? (_authUser.email || '') : '';
+  return email ? (email.charCodeAt(0) % 2 === 0 ? 'A' : 'B') : 'A';
 }
 
 function _updateAdminNav() {

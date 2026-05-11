@@ -76,10 +76,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // ─── CALLED AFTER AUTH IS CONFIRMED ──────────────────────
 function startAppAfterAuth() {
-  var pA=persons.find(function(x){return x.id==='A';}), pB=persons.find(function(x){return x.id==='B';});
-  if(pA) document.getElementById('nameA').value=pA.name;
-  if(pB) document.getElementById('nameB').value=pB.name;
-
   var startCreds = getSbCreds();
   if(startCreds.ok){
     Promise.all([
@@ -116,9 +112,6 @@ function startAppAfterAuth() {
       if(settingsMap){
         applySettingsFromMap(settingsMap);
         updatePersonLabels(); applyViewMode();
-        var pA2=persons.find(function(x){return x.id==='A';}), pB2=persons.find(function(x){return x.id==='B';});
-        if(pA2) document.getElementById('nameA').value=pA2.name;
-        if(pB2) document.getElementById('nameB').value=pB2.name;
       }
       // apply transactions (v3: uses mapSbRow for new fields)
       if(rows.length>0){

@@ -15,8 +15,9 @@ function openEdit(id){
   document.getElementById('editOverlay').style.display='flex';
   document.getElementById('editIdLabel').textContent='รายการ: '+e.desc;
   document.getElementById('eDate').value = e.date;
-  populatePersonSelects();
-  document.getElementById('ePerson').value = e.person;
+  // person คงค่าเดิม (hidden input — ไม่ให้ user เปลี่ยน)
+  var ePersonEl = document.getElementById('ePerson');
+  if(ePersonEl) ePersonEl.value = e.person || (typeof getCurrentPerson==='function' ? getCurrentPerson() : 'A');
   document.getElementById('eAmt').value = e.amt;
   document.getElementById('eStatus').value = e.status;
   document.getElementById('eNote').value = e.note||'';

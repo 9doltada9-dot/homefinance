@@ -18,10 +18,16 @@ function isAdminUser()        { return !!(  _authProfile && _authProfile.role ==
 
 // ─── INIT: check saved session on startup ─────────────────
 async function initAuth() {
-  var saved = _loadSavedSession();
   var creds = getSbCreds();
 
-  if (!saved || !creds.ok) {
+  // ถ้ายังไม่ได้ตั้งค่า Supabase → เข้า app โดยไม่ต้อง login
+  if (!creds.ok) {
+    _showApp();
+    return;
+  }
+
+  var saved = _loadSavedSession();
+  if (!saved) {
     showLoginPage();
     return;
   }

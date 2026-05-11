@@ -484,40 +484,7 @@
     <div class="page-sub">กำหนดและติดตามงบรายจ่ายแต่ละหมวด</div>
   </div>
 
-  <!-- Month selector -->
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-    <select id="budgetMonth" onchange="renderBudget()" style="font-size:15px !important;flex:1;min-width:140px"></select>
-    <button class="btn btn-primary" onclick="showAddBudget()" style="min-height:44px;white-space:nowrap">+ ตั้งงบ</button>
-  </div>
-
   <div id="budgetContent"></div>
-
-  <!-- Add/Edit Budget Modal -->
-  <div id="budgetModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px">
-    <div style="background:var(--surface);border-radius:var(--r);width:100%;max-width:400px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-      <div style="font-size:16px;font-weight:600;margin-bottom:14px" id="budgetModalTitle">ตั้งงบประมาณ</div>
-      <div class="field" style="margin-bottom:10px">
-        <label>หมวดหมู่</label>
-        <select id="budgetCat" style="font-size:16px !important"></select>
-      </div>
-      <div class="field" style="margin-bottom:10px">
-        <label>งบประมาณ (บาท)</label>
-        <input type="number" id="budgetAmt" placeholder="0" min="0" style="font-size:16px !important">
-      </div>
-      <div class="field" style="margin-bottom:14px">
-        <label>ใช้กับ</label>
-        <select id="budgetScope" style="font-size:16px !important">
-          <option value="month">เดือนนี้เท่านั้น</option>
-          <option value="all">ทุกเดือน (default)</option>
-        </select>
-      </div>
-      <div id="budgetModalMsg" class="msg" style="margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="closeBudgetModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-        <button class="btn btn-primary" onclick="saveBudget()" style="flex:1;min-height:44px">บันทึก</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- SETTINGS PAGE -->

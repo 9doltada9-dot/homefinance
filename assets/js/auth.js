@@ -284,17 +284,16 @@ function saveDbSetup() {
     msgEl.textContent = '⏳ กำลังทดสอบการเชื่อมต่อ...';
   }
 
-  // ทดสอบโดย ping Supabase health endpoint
-  fetch(url + '/rest/v1/', {
-    headers: { 'apikey': key, 'Authorization': 'Bearer ' + key }
+  // ทดสอบด้วย /auth/v1/settings — public endpoint ไม่ต้อง login
+  fetch(url + '/auth/v1/settings', {
+    headers: { 'apikey': key }
   }).then(function (r) {
-    if (r.ok || r.status === 400 || r.status === 401 || r.status === 406) {
-      // 400/406 = connected but query invalid — still means server reachable
-      // 401 = wrong key but server exists
-      _showDbStatus(msgEl, btnEl, r.status === 401
-        ? { ok: false, msg: '⚠️ เชื่อมต่อได้ แต่ Key ไม่ถูกต้อง (HTTP ' + r.status + ')' }
-        : { ok: true,  msg: '✅ เชื่อมต่อสำเร็จ — พร้อมใช้งาน' }
-      );
+    if (r.ok) {
+      _showDbStatus(msgEl, btnEl, { ok: true, msg: '✅ เชื่อมต่อสำเร็จ — พร้อมใช้งาน' });
+    } else if (r.status === 404) {
+      _showDbStatus(msgEl, btnEl, { ok: false, msg: '❌ URL ไม่ถูกต้อง หรือ Project ไม่พบ (404)' });
+    } else if (r.status === 401 || r.status === 403) {
+      _showDbStatus(msgEl, btnEl, { ok: false, msg: '❌ API Key ไม่ถูกต้อง (HTTP ' + r.status + ')' });
     } else {
       _showDbStatus(msgEl, btnEl, { ok: false, msg: '❌ เชื่อมต่อไม่ได้ (HTTP ' + r.status + ')' });
     }

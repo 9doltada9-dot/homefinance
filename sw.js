@@ -46,6 +46,9 @@ const PRECACHE_URLS = [
   './assets/js/notificationEngine.js',
   './assets/js/recurringEngine.js',
   './assets/js/features.js',
+  // v3.2 auth modules
+  './assets/js/auth.js',
+  './assets/js/report.js',
   './assets/js/app.js',
 ];
 

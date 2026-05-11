@@ -1,4 +1,12 @@
-/* HomeFinance · module: responsive.css · v2.5.0 */
+/* HomeFinance · module: responsive.css · v3.1.0 */
+
+/* ─── Settings groups: global (desktop + mobile) ─── */
+.stg-group-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;padding:14px 4px 5px;max-width:700px}
+.stg-sect-head{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.stg-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;line-height:1}
+.stg-title{font-size:13px;font-weight:600;color:var(--ink)}
+.stg-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+.stg-divider{height:1px;background:var(--line);margin:0 14px}
 
 /* RESPONSIVE - Desktop */
 @media(min-width:901px){
@@ -151,6 +159,13 @@
   .add-cat-row{display:flex;gap:8px;padding:0 14px 14px}
   .add-cat-input{flex:1;font-size:16px !important;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink);font-family:'Sarabun',sans-serif;min-height:44px}
   .chip-wrap{padding:8px 14px 4px;display:flex;flex-wrap:wrap}
+  /* ─── Settings groups (v3.1) ────────── */
+  .stg-group-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;padding:14px 4px 5px;max-width:700px}
+  .stg-sect-head{display:flex;align-items:center;gap:10px;padding:12px 14px}
+  .stg-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;line-height:1}
+  .stg-title{font-size:13px;font-weight:600;color:var(--ink)}
+  .stg-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+  .stg-divider{height:1px;background:var(--line);margin:0 14px}
 }
 
 @media(max-width:390px){

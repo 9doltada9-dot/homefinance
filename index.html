@@ -491,17 +491,12 @@
 <div id="page-settings" class="page">
   <div class="page-header">
     <div class="page-title">ตั้งค่า</div>
-    <div class="page-sub">ผู้บันทึก · หมวดหมู่ · การแสดงผล</div>
+    <div class="page-sub">จัดการหมวดหมู่ · ผู้บันทึก · ระบบ</div>
   </div>
 
-  <!-- VIEW MODE -->
+  <!-- ─── การแสดงผล ──────────────────────────── -->
+  <div class="stg-group-label">🖥 การแสดงผล</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#edf2fc">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 3h16v2H2V3zm0 6h7v2H2V9zm10 0h6v2h-6V9zm-10 6h4v2H2v-2zm7 0h9v2H9v-2z"/></svg>
-      </div>
-      <div><div class="settings-header-text">โหมดการแสดงผล</div></div>
-    </div>
     <div class="view-mode-cards">
       <div class="vm-card" id="btnViewDesktop" onclick="setViewMode('desktop')">
         <div class="vm-card-icon">🖥</div>
@@ -512,68 +507,68 @@
         <div class="vm-card-label">มือถือ</div>
       </div>
     </div>
-    <div style="padding:0 16px 14px;font-size:11px;color:var(--ink3)" id="viewModeDesc">กำลังใช้: Desktop</div>
+    <div style="padding:0 16px 12px;font-size:11px;color:var(--ink3)" id="viewModeDesc">กำลังใช้: Desktop</div>
   </div>
 
-  <!-- PERSONS -->
+  <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
+  <div class="stg-group-label">👥 ผู้ใช้งาน</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#eef7f2">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 10a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z"/></svg>
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#eef7f2">👤</span>
+      <div>
+        <div class="stg-title">ผู้บันทึก</div>
+        <div class="stg-sub">แก้ไขชื่อหรือเพิ่มผู้บันทึก</div>
       </div>
-      <div><div class="settings-header-text">ผู้บันทึก</div><div class="settings-header-sub">แก้ไขชื่อหรือเพิ่มผู้บันทึก</div></div>
     </div>
     <div id="personList"></div>
-    <div class="add-cat-row" style="padding:8px 14px 14px">
+    <div class="add-cat-row">
       <input type="text" id="newPersonName" class="add-cat-input" placeholder="ชื่อผู้บันทึกใหม่">
-      <button class="btn btn-primary" onclick="addPerson()" style="white-space:nowrap;min-height:44px">+ เพิ่ม</button>
+      <button class="btn btn-primary" onclick="addPerson()" style="white-space:nowrap">+ เพิ่ม</button>
     </div>
     <div id="personMsg" class="msg" style="margin:0 14px 10px"></div>
   </div>
 
-  <!-- INCOME CATS -->
+  <!-- ─── หมวดหมู่ ───────────────────────────── -->
+  <div class="stg-group-label">🗂 หมวดหมู่</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#eef7f2">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 3l5 5h-3v7H8V8H5l5-5z"/></svg>
-      </div>
-      <div><div class="settings-header-text">หมวดหมู่รายรับ</div></div>
+
+    <!-- รายรับ -->
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#eef7f2">💰</span>
+      <div class="stg-title">หมวดรายรับ</div>
     </div>
     <div id="incomeCatList"></div>
-    <div style="padding:8px 14px 14px">
-      <button class="btn btn-primary" onclick="showAddCatDialog('income')" style="width:100%;min-height:44px">+ เพิ่มหมวด</button>
+    <div style="padding:6px 14px 12px">
+      <button class="btn btn-primary" onclick="showAddCatDialog('income')" style="width:100%;min-height:40px;font-size:13px">+ เพิ่มหมวดรายรับ</button>
     </div>
-  </div>
 
-  <!-- EXPENSE CATS -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#fdf4e7">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#b5600a"><path d="M10 17l-5-5h3V6h4v6h3l-5 5z"/></svg>
-      </div>
+    <div class="stg-divider"></div>
+
+    <!-- รายจ่าย -->
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#fdf4e7">💸</span>
       <div>
-        <div class="settings-header-text">หมวดหมู่รายจ่าย</div>
-        <div class="settings-header-sub">ระบบจะป้องกันการลบหมวดที่มีรายการใช้อยู่</div>
+        <div class="stg-title">หมวดรายจ่าย</div>
+        <div class="stg-sub">ระบบป้องกันการลบหมวดที่มีรายการใช้อยู่</div>
       </div>
     </div>
     <div id="expenseCatList"></div>
-    <div style="padding:8px 14px 14px">
-      <button class="btn btn-primary" onclick="showAddCatDialog('expense')" style="width:100%;min-height:44px">+ เพิ่มหมวด</button>
+    <div style="padding:6px 14px 12px">
+      <button class="btn btn-primary" onclick="showAddCatDialog('expense')" style="width:100%;min-height:40px;font-size:13px">+ เพิ่มหมวดรายจ่าย</button>
     </div>
-  </div>
 
-  <div id="settingsMsg" class="msg" style="margin:0 0 20px 0;text-align:center"></div>
+    <div class="stg-divider"></div>
 
-  <!-- ITEMS BY CATEGORY -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#edf2fc">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h12v2H2v-2z"/></svg>
+    <!-- รายการในหมวด -->
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#edf2fc">📋</span>
+      <div>
+        <div class="stg-title">รายการในแต่ละหมวด</div>
+        <div class="stg-sub">เลือกหมวด แล้วเพิ่ม / ลบรายการ</div>
       </div>
-      <div><div class="settings-header-text">รายการในแต่ละหมวด</div><div class="settings-header-sub">เลือกหมวด แล้วเพิ่ม/ลบรายการ</div></div>
     </div>
-    <div style="padding:0 14px 8px">
-      <select id="itemCatSel" onchange="renderItemList()" style="width:100%;font-size:15px !important;margin-bottom:8px"></select>
+    <div style="padding:0 14px 14px">
+      <select id="itemCatSel" onchange="renderItemList()" style="width:100%;font-size:14px !important;margin-bottom:8px"></select>
       <div id="itemList" style="margin-bottom:8px"></div>
       <div style="display:flex;gap:8px">
         <input type="text" id="newItemName" placeholder="ชื่อรายการ เช่น ค่าน้ำประปา" style="flex:1;font-size:16px !important">
@@ -583,15 +578,19 @@
     </div>
   </div>
 
-  <!-- VENDOR MANAGEMENT -->
+  <div id="settingsMsg" class="msg" style="margin:4px 0 8px;text-align:center"></div>
+
+  <!-- ─── ข้อมูลอ้างอิง ──────────────────────── -->
+  <div class="stg-group-label">📦 ข้อมูลอ้างอิง</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#edf2fc">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a4fa0"><path d="M2 4h16v2H2V4zm1 3h14l-1 10H4L3 7zm5 2v6h1V9H8zm3 0v6h1V9h-1z"/></svg>
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#fff3e8">🏪</span>
+      <div>
+        <div class="stg-title">ร้านค้า / แหล่งรายรับ</div>
+        <div class="stg-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div>
       </div>
-      <div><div class="settings-header-text">ร้านค้า / แหล่งรายรับ</div><div class="settings-header-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div></div>
     </div>
-    <div style="padding:0 14px 8px">
+    <div style="padding:0 14px 14px">
       <div id="vendorList" style="margin-bottom:8px"></div>
       <div style="display:flex;gap:8px">
         <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;font-size:16px !important">
@@ -601,83 +600,87 @@
     </div>
   </div>
 
-  <!-- RECURRING TRANSACTIONS -->
+  <!-- ─── ระบบอัตโนมัติ ──────────────────────── -->
+  <div class="stg-group-label">🤖 ระบบอัตโนมัติ</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#f0eef9">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#4a3a9a"><path d="M2 8a6 6 0 0110.7-3.7l-1.5 1.5H14V3l-1.5 1.5A7.5 7.5 0 001 8.5h1.5A6 6 0 012 8zm12-.5A6 6 0 014.8 12.2l1.5-1.5H3V14l1.5-1.5A7.5 7.5 0 0015 7.5h-1z"/></svg>
-      </div>
-      <div><div class="settings-header-text">รายการประจำเดือน</div><div class="settings-header-sub">สร้างรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div></div>
-    </div>
-    <div style="padding:0 14px 14px">
-      <div id="recurringList" style="margin-bottom:8px"></div>
-      <button class="btn btn-primary" onclick="openRecurringModal()" style="width:100%;min-height:44px">+ เพิ่มรายการประจำ</button>
-    </div>
-  </div>
 
-  <!-- NOTIFICATIONS (v3) -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="settings-header" style="padding:14px 16px 10px">
-      <div class="settings-icon" style="background:#f0eef9">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="#4a3a9a"><path d="M10 2a6 6 0 00-6 6v3l-2 2v1h16v-1l-2-2V8a6 6 0 00-6-6zm0 16a2 2 0 002-2H8a2 2 0 002 2z"/></svg>
+    <!-- รายการประจำ -->
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#f0eef9">🔄</span>
+      <div>
+        <div class="stg-title">รายการประจำเดือน</div>
+        <div class="stg-sub">สร้างรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div>
       </div>
-      <div><div class="settings-header-text">การแจ้งเตือน</div><div class="settings-header-sub">รายการประจำ · ยอดเงินต่ำ · สิ้นรอบเงินเดือน</div></div>
     </div>
-    <div style="padding:0 16px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="requestNotificationPermission().then(function(){renderNotificationBadge();})" style="min-height:44px">
+    <div style="padding:0 14px 12px">
+      <div id="recurringList" style="margin-bottom:8px"></div>
+      <button class="btn btn-primary" onclick="openRecurringModal()" style="width:100%;min-height:40px;font-size:13px">+ เพิ่มรายการประจำ</button>
+    </div>
+
+    <div class="stg-divider"></div>
+
+    <!-- การแจ้งเตือน -->
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#f0eef9">🔔</span>
+      <div>
+        <div class="stg-title">การแจ้งเตือน</div>
+        <div class="stg-sub">รายการประจำ · ยอดเงินต่ำ · สิ้นรอบเงินเดือน</div>
+      </div>
+    </div>
+    <div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="requestNotificationPermission().then(function(){renderNotificationBadge();})" style="min-height:40px;font-size:13px">
         🔔 เปิดการแจ้งเตือน
       </button>
-      <button class="btn btn-ghost" onclick="runNotificationChecks()" style="min-height:44px">
+      <button class="btn btn-ghost" onclick="runNotificationChecks()" style="min-height:40px;font-size:13px">
         🔍 ตรวจสอบเดี๋ยวนี้
       </button>
       <span id="notifStatusText" style="font-size:12px;color:var(--ink3)"></span>
     </div>
   </div>
 
-  <!-- SUPABASE SHORTCUT -->
-  <div class="card" style="max-width:700px;background:var(--blue-bg);border:1.5px solid #c5d8f8">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>
+  <!-- ─── ระบบ ───────────────────────────────── -->
+  <div class="stg-group-label">☁️ ระบบ</div>
+  <div class="card" style="max-width:700px;background:var(--blue-bg);border:1.5px solid #c5d8f8;padding:14px 16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:28px;line-height:1">🗄</span>
+      <div style="flex:1">
         <div style="font-size:14px;font-weight:600;color:var(--ink)">Supabase — ฐานข้อมูล Cloud</div>
         <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="sbStatusShortcut">ซิงก์ข้อมูลข้ามอุปกรณ์ · Real-time</div>
       </div>
-      <button class="btn btn-primary" onclick="nav('supabase')" style="min-height:44px;white-space:nowrap">ตั้งค่า Supabase →</button>
+      <button class="btn btn-primary" onclick="nav('supabase')" style="min-height:40px;white-space:nowrap;font-size:13px">ตั้งค่า →</button>
     </div>
   </div>
 
-  <!-- VERSION CHANGELOG -->
+  <!-- ─── Version History ──────────────────────── -->
   <div class="card" style="max-width:700px">
-    <div class="card-title">Version History</div>
-    <div style="font-size:12px;color:var(--ink3);margin-bottom:10px">
-      <strong>หลักการ Versioning: v[major].[minor].[patch]</strong><br>
-      · major — เปลี่ยนโครงสร้างใหญ่ / เปลี่ยน database schema<br>
-      · minor — เพิ่ม feature ใหม่ / เปลี่ยน UI หลัก<br>
-      · patch — แก้ bug / ปรับ UI เล็กน้อย
+    <div class="card-title">📜 Version History</div>
+    <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">
+      <strong>major</strong> = โครงสร้าง/schema &nbsp;·&nbsp; <strong>minor</strong> = feature ใหม่ &nbsp;·&nbsp; <strong>patch</strong> = แก้ bug
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.0.0</strong> — major: รอบเงินเดือน (cycle_id), billing_month, Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push notifications, budget-cycle mode, recurringEngine v3
+        <strong>v3.0.0</strong> — รอบเงินเดือน (cycle_id), billing_month, Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.3</strong> — feat: sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, ไม่ระบุท้าย, แก้ปุ่มยกเลิก, จัดลำดับตั้งค่า
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.9.3</strong> — sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, แก้ปุ่มยกเลิก
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.2</strong> — feat: smart vendor ctx-fav, vendor inline edit, form reorder, dashboard month fix
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.9.2</strong> — smart vendor ctx-fav, vendor inline edit, form reorder, dashboard month fix
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.1</strong> — fix: vendor star toggle, โหลด vendors จาก Supabase, default credentials, SW force-reload
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.9.1</strong> — vendor star toggle, โหลด vendors จาก Supabase, SW force-reload
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.7.0</strong> — Refactor: แยก JS/CSS เป็นไฟล์แยก, เพิ่ม Unit Tests, รายการประจำเดือน, fix bugs
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.7.0</strong> — แยก JS/CSS, รายการประจำเดือน, Unit Tests
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.1.0</strong> — เพิ่ม: รายการในหมวด, เลือก desc จาก DB, วันที่ภาษาไทย, นาฬิกาในแถบบน, ซ่อนยอดเงินเดือน, ยกเลิกการลบ, version history
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.1.0</strong> — รายการในหมวด, วันที่ไทย, นาฬิกาในแถบบน, ซ่อนยอดเงินเดือน
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.0.0</strong> — เปลี่ยนจาก Google Sheets เป็น Supabase, Realtime connection monitor, categories table แบบ relationship
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v2.0.0</strong> — เปลี่ยนจาก Google Sheets เป็น Supabase, Realtime monitor
       </div>
-      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v1.0.0</strong> — เวอร์ชันเริ่มต้น: บันทึกรายรับ/รายจ่าย, Settlement, Dashboard, Google Sheets export
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
+        <strong>v1.0.0</strong> — เวอร์ชันเริ่มต้น: รายรับ/รายจ่าย, Settlement, Dashboard
       </div>
     </div>
   </div>

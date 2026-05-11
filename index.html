@@ -77,7 +77,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.0.0 · THB</div>
+    <div class="brand-sub">v3.2.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
@@ -131,9 +131,13 @@ body.app-ready #page-login { display: none !important; }
     </div>
   </div>
   <div class="sidebar-footer">
-    <div id="sidebarUserInfo" style="font-size:11px;color:var(--ink3);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    <div id="sidebarUserInfo" style="font-size:11px;color:var(--ink3);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <div id="sidebarOnlineDot" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8;flex-shrink:0;transition:background .4s"></div>
+      <span id="sidebarOnlineTxt" style="font-size:11px;color:var(--ink3)">กำลังตรวจสอบ...</span>
+    </div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.2.0 © 2025</div>
   </div>
 </nav>
 
@@ -1044,6 +1048,54 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 </div>
 
+<!-- DEPOSIT MODAL -->
+<div id="depositModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px">
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px">💰 ฝากเงิน</div>
+    <input type="hidden" id="depositAccountId">
+    <div class="field" style="margin-bottom:12px">
+      <label>จำนวนเงิน (฿)</label>
+      <input type="number" id="depositAmt" placeholder="0" min="0" style="font-size:24px !important;font-weight:700;text-align:right;font-family:monospace">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>วันที่</label>
+      <input type="date" id="depositDate">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>หมายเหตุ</label>
+      <input type="text" id="depositNote" placeholder="(ไม่บังคับ)">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeDepositModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="doDeposit()" style="flex:1;min-height:44px">ฝากเงิน</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ACCOUNT MODAL -->
+<div id="editAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px">
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px">✏️ แก้ไขบัญชี</div>
+    <input type="hidden" id="editAcctId">
+    <div class="field" style="margin-bottom:12px">
+      <label>ชื่อบัญชี</label>
+      <input type="text" id="editAcctName" style="font-size:15px !important">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>ประเภท</label>
+      <select id="editAcctType" style="font-size:15px !important">
+        <option value="bank">ธนาคาร</option>
+        <option value="cash">เงินสด</option>
+        <option value="ewallet">E-Wallet</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeEditAccountModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="doEditAccount()" style="flex:1;min-height:44px">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div class="page-header">
@@ -1078,7 +1130,14 @@ create policy "public write" on transactions for all using (true);</div>
       <div style="font-size:22px;font-weight:700;color:var(--ink)">HomeFinance</div>
       <div style="font-size:13px;color:var(--ink3);margin-top:4px">บันทึกรายรับ-รายจ่ายส่วนตัว</div>
     </div>
-    <div class="card" style="padding:24px">
+    <!-- TAB switcher -->
+    <div style="display:flex;border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;margin-bottom:14px">
+      <button id="tabLoginBtn" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">เข้าสู่ระบบ</button>
+      <button id="tabSignupBtn" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;background:var(--surface2);color:var(--ink2);font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">สมัครสมาชิก</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm" class="card" style="padding:24px">
       <div class="field" style="margin-bottom:14px">
         <label>📧 Email</label>
         <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
@@ -1090,6 +1149,25 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginBtn" class="btn btn-primary" onclick="doLogin()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">เข้าสู่ระบบ</button>
       <div id="loginMsg" class="msg" style="margin-top:12px;text-align:center"></div>
     </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signupForm" class="card" style="padding:24px;display:none">
+      <div class="field" style="margin-bottom:14px">
+        <label>👤 ชื่อที่แสดง</label>
+        <input type="text" id="signupName" placeholder="เช่น สมชาย" autocomplete="name" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>📧 Email</label>
+        <input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('signupPassword').focus()">
+      </div>
+      <div class="field" style="margin-bottom:20px">
+        <label>🔒 Password</label>
+        <input type="password" id="signupPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doSignup()">
+      </div>
+      <button id="signupBtn" class="btn btn-primary" onclick="doSignup()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">สมัครสมาชิก</button>
+      <div id="signupMsg" class="msg" style="margin-top:12px;text-align:center"></div>
+    </div>
+
     <!-- hidden DB setup panel — เปิดด้วยการแตะ version 5 ครั้ง -->
     <div id="loginDbPanel" style="display:none;margin-top:12px;background:var(--surface2);border-radius:var(--r2);padding:16px">
       <div style="font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">⚙️ การเชื่อมต่อ Supabase</div>

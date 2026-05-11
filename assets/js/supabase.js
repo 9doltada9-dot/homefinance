@@ -361,9 +361,10 @@ async function checkConnection(){
   var creds = getSbCreds();
   if(!creds.ok){ setOnlineState(true); return; }
   try {
+    // ใช้ /auth/v1/settings — public endpoint ไม่ต้องการ JWT
     var r = await fetchWithTimeout(
-      creds.url+'/rest/v1/'+SB_TABLE+'?select=id&limit=1',
-      { headers: sbHeadersFrom(creds.key) }, 8000
+      creds.url + '/auth/v1/settings',
+      { headers: { 'apikey': creds.key } }, 8000
     );
     setOnlineState(r.ok);
   } catch(_){ setOnlineState(false); }
@@ -381,12 +382,18 @@ function setOnlineState(online){
 }
 
 function updateConnectionUI(online){
+  var color = online ? '#1a7a4a' : '#c0392b';
+  // Sidebar online dot + label
+  var sidebarDot = document.getElementById('sidebarOnlineDot');
+  var sidebarTxt = document.getElementById('sidebarOnlineTxt');
+  if(sidebarDot) sidebarDot.style.background = color;
+  if(sidebarTxt){ sidebarTxt.textContent = online ? 'Online' : 'Offline'; sidebarTxt.style.color = color; }
+  // Legacy elements (Supabase page — kept for backward compat)
   var dot = document.getElementById('sbDot');
   var txt = document.getElementById('sbStatusText');
   var rtDot = document.getElementById('rtDot');
   var rtDot2 = document.getElementById('rtDot2');
   var rtTxt = document.getElementById('rtStatusText');
-  var color = online ? '#1a7a4a' : '#c0392b';
   if(dot) dot.style.background = color;
   if(txt) txt.textContent = online ? 'เชื่อมต่อแล้ว ✓' : 'ขาดการเชื่อมต่อ';
   if(rtDot) rtDot.style.background = color;

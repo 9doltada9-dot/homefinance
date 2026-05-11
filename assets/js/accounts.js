@@ -55,11 +55,20 @@ function updateAccount(id, fields) {
 
 function deleteAccount(id) {
   if (accountsData.length <= 1) {
-    showCycleToast('ต้องมีบัญชีอย่างน้อย 1 บัญชี');
+    showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี');
     return;
   }
+  // ห้ามลบถ้าบัญชีมีรายการอยู่
+  var hasUsage = db.some(function(e) { return e.account_id === id; });
+  if (hasUsage) {
+    showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้');
+    return;
+  }
+  if (!confirm('ลบบัญชีนี้?')) return;
+  var acct = accountsData.find(function(a) { return a.id === id; });
   accountsData = accountsData.filter(function(a) { return a.id !== id; });
   saveAccountsLocal();
+  if (acct) sbSyncAccount(acct, 'delete');
 }
 
 // ─── BALANCE CALCULATION ──────────────────────────────────
@@ -232,6 +241,69 @@ function doTransfer() {
   addTransfer(from, to, amt, date, note);
   closeTransferModal();
   renderAccountCards();
+  renderAccountList();  // 3.1: refresh ยอดทันที
+}
+
+// ─── DEPOSIT ──────────────────────────────────────────────
+function openDepositModal(accountId) {
+  document.getElementById('depositAccountId').value = accountId;
+  document.getElementById('depositAmt').value = '';
+  document.getElementById('depositDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('depositNote').value = '';
+  document.getElementById('depositModal').style.display = 'flex';
+}
+function closeDepositModal() {
+  document.getElementById('depositModal').style.display = 'none';
+}
+function doDeposit() {
+  var accountId = document.getElementById('depositAccountId').value;
+  var amt  = parseFloat(document.getElementById('depositAmt').value);
+  var date = document.getElementById('depositDate').value;
+  var note = document.getElementById('depositNote').value;
+  if (!amt || amt <= 0) { showCycleToast('⚠️ ระบุจำนวนเงิน'); return; }
+  var acct = accountsData.find(function(a) { return a.id === accountId; });
+  var id = 'tx-dep-' + Date.now();
+  var entry = {
+    id: id, date: date, type: 'income',
+    cat_id: null, cat_name: 'ฝากเงิน',
+    desc: 'ฝากเงิน' + (acct ? ' – ' + acct.name : ''),
+    amt: amt, person: (typeof getCurrentPerson==='function' ? getCurrentPerson() : 'A'),
+    split: false, status: 'received', note: note || '',
+    account_id: accountId,
+    cycle_id: (typeof cycleIdFromDate==='function' ? cycleIdFromDate(date) : null),
+    billing_month: (typeof defaultBillingMonth==='function' ? defaultBillingMonth(date) : date.slice(0,7)),
+  };
+  db.push(entry);
+  save();
+  sbAdd(entry);
+  closeDepositModal();
+  renderAccountCards();
+  renderAccountList();
+  showCycleToast('ฝากเงิน ' + fmt(amt) + ' บาท เรียบร้อย');
+}
+
+// ─── EDIT ACCOUNT ─────────────────────────────────────────
+function openEditAccountModal(id) {
+  var acct = accountsData.find(function(a) { return a.id === id; });
+  if (!acct) return;
+  document.getElementById('editAcctId').value = id;
+  document.getElementById('editAcctName').value = acct.name;
+  document.getElementById('editAcctType').value = acct.type || 'bank';
+  document.getElementById('editAccountModal').style.display = 'flex';
+}
+function closeEditAccountModal() {
+  document.getElementById('editAccountModal').style.display = 'none';
+}
+function doEditAccount() {
+  var id   = document.getElementById('editAcctId').value;
+  var name = (document.getElementById('editAcctName').value || '').trim();
+  var type = document.getElementById('editAcctType').value;
+  if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
+  updateAccount(id, { name: name, type: type });
+  closeEditAccountModal();
+  renderAccountList();
+  renderAccountCards();
+  showCycleToast('แก้ไขบัญชีแล้ว');
 }
 
 // ─── SETTINGS: ACCOUNT LIST ───────────────────────────────
@@ -239,13 +311,22 @@ function renderAccountList() {
   var el = document.getElementById('accountList');
   if (!el) return;
   el.innerHTML = accountsData.map(function(a) {
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">' +
+    var bal = getAccountBalance(a.id);
+    var hasUsage = db.some(function(e) { return e.account_id === a.id; });
+    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)">' +
       '<div style="width:12px;height:12px;border-radius:50%;background:' + a.color + ';flex-shrink:0"></div>' +
       '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13px;font-weight:500">' + a.name + '</div>' +
-        '<div style="font-size:11px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + ' · ยอด: ' + fmt(getAccountBalance(a.id)) + ' บาท</div>' +
+        '<div style="font-size:13px;font-weight:600">' + a.name + '</div>' +
+        '<div style="font-size:11px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
+        '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmt(bal) + ' บาท</div>' +
       '</div>' +
-      '<button onclick="deleteAccount(\'' + a.id + '\');renderAccountList()" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:4px 8px">×</button>' +
+      '<div style="display:flex;gap:4px">' +
+        '<button onclick="openDepositModal(\'' + a.id + '\')" title="ฝากเงิน" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>' +
+        '<button onclick="openEditAccountModal(\'' + a.id + '\')" title="แก้ไข" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>' +
+        '<button onclick="deleteAccount(\'' + a.id + '\');renderAccountList();renderAccountCards()" title="ลบ" ' +
+          (hasUsage ? 'disabled style="opacity:.35;cursor:not-allowed;' : 'style="') +
+          'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer">×</button>' +
+      '</div>' +
     '</div>';
   }).join('') || '<div class="empty">ยังไม่มีบัญชี</div>';
 }

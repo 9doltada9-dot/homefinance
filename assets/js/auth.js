@@ -108,6 +108,69 @@ async function doLogin() {
   }
 }
 
+// ─── SIGNUP ───────────────────────────────────────────────
+async function doSignup() {
+  var name  = ((document.getElementById('signupName')    || {}).value || '').trim();
+  var email = ((document.getElementById('signupEmail')   || {}).value || '').trim();
+  var pass  = ((document.getElementById('signupPassword')|| {}).value || '').trim();
+  var btn   = document.getElementById('signupBtn');
+  var msgEl = document.getElementById('signupMsg');
+
+  if (!name)  { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ กรอกชื่อที่แสดง';} return; }
+  if (!email) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ กรอก Email';} return; }
+  if (pass.length < 6) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ Password อย่างน้อย 6 ตัว';} return; }
+
+  var creds = getSbCreds();
+  if (!creds.ok) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ ยังไม่ได้ตั้งค่า Supabase';} return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังสมัคร...'; }
+  if (msgEl) { msgEl.className='msg'; msgEl.textContent=''; }
+
+  try {
+    var r = await fetch(creds.url + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    var data = await r.json();
+    if (!r.ok) throw new Error(data.error_description || data.msg || 'สมัครไม่สำเร็จ');
+
+    // สร้าง profile พร้อมชื่อ
+    _authToken = data.access_token;
+    _authUser  = { id: data.user.id, email: data.user.email };
+    await fetch(creds.url + '/rest/v1/profiles', {
+      method: 'POST',
+      headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + _authToken,
+                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ id: data.user.id, name: name, role: 'user' })
+    });
+
+    // Login ทันทีหลังสมัคร
+    _authRefresh = data.refresh_token;
+    _authProfile = { id: data.user.id, name: name, role: 'user' };
+    _saveSession(data.access_token, data.refresh_token, data.user);
+    if (msgEl) { msgEl.className='msg msg-success'; msgEl.textContent='✅ สมัครสำเร็จ! กำลังเข้าสู่ระบบ...'; }
+    setTimeout(function(){ _showApp(); }, 600);
+  } catch (e) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='❌ ' + e.message; }
+    if (btn)   { btn.disabled = false; btn.textContent = 'สมัครสมาชิก'; }
+  }
+}
+
+// ─── TAB SWITCH ───────────────────────────────────────────
+function switchAuthTab(tab) {
+  var loginForm  = document.getElementById('loginForm');
+  var signupForm = document.getElementById('signupForm');
+  var tabL = document.getElementById('tabLoginBtn');
+  var tabS = document.getElementById('tabSignupBtn');
+  if (!loginForm || !signupForm) return;
+  var isLogin = tab === 'login';
+  loginForm.style.display  = isLogin ? 'block' : 'none';
+  signupForm.style.display = isLogin ? 'none'  : 'block';
+  if (tabL) { tabL.style.background = isLogin ? 'var(--blue)' : 'var(--surface2)'; tabL.style.color = isLogin ? '#fff' : 'var(--ink2)'; }
+  if (tabS) { tabS.style.background = isLogin ? 'var(--surface2)' : 'var(--blue)'; tabS.style.color = isLogin ? 'var(--ink2)' : '#fff'; }
+}
+
 // ─── LOGOUT ───────────────────────────────────────────────
 async function doLogout() {
   if (!confirm('ออกจากระบบ?')) return;
@@ -225,10 +288,11 @@ async function _refreshSession(creds, refresh_token) {
 function showLoginPage() {
   document.body.classList.remove('app-ready');
   document.body.classList.add('login-visible');
-  // ซ่อน DB panel เสมอเมื่อเปิด login ใหม่
+  // ซ่อน DB panel, reset tab กลับ login
   var panel = document.getElementById('loginDbPanel');
   if (panel) panel.style.display = 'none';
   _dbTapCount = 0;
+  switchAuthTab('login');
 }
 
 // ─── HIDDEN DB SETUP — แตะ version text 5 ครั้ง ──────────

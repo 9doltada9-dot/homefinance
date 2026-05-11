@@ -262,22 +262,65 @@ function saveDbSetup() {
   var urlEl = document.getElementById('loginSbUrl');
   var keyEl = document.getElementById('loginSbKey');
   var msgEl = document.getElementById('loginDbMsg');
+  var btnEl = document.getElementById('loginDbSaveBtn');
   var url = ((urlEl || {}).value || '').trim().replace(/\/+$/, '');
   var key = ((keyEl || {}).value || '').trim();
+
   if (!url || !key) {
-    if (msgEl) { msgEl.style.color = 'var(--red)'; msgEl.textContent = '⚠️ กรอกให้ครบทั้ง URL และ Key'; }
+    if (msgEl) {
+      msgEl.style.cssText = 'margin-top:8px;font-size:12px;text-align:center;color:var(--red)';
+      msgEl.textContent = '⚠️ กรอกให้ครบทั้ง URL และ Key';
+    }
     return;
   }
+
+  // บันทึกก่อน แล้วทดสอบ
   localStorage.setItem('hf2_sb_url', url);
   localStorage.setItem('hf2_sb_key', key);
-  if (msgEl) { msgEl.style.color = 'var(--green)'; msgEl.textContent = '✅ บันทึกแล้ว'; }
-  setTimeout(function () {
-    var panel = document.getElementById('loginDbPanel');
-    if (panel) panel.style.display = 'none';
-    _dbTapCount = 0;
-    var em = document.getElementById('loginEmail');
-    if (em) em.focus();
-  }, 1000);
+
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'กำลังทดสอบ...'; }
+  if (msgEl) {
+    msgEl.style.cssText = 'margin-top:8px;font-size:12px;text-align:center;color:var(--ink3)';
+    msgEl.textContent = '⏳ กำลังทดสอบการเชื่อมต่อ...';
+  }
+
+  // ทดสอบโดย ping Supabase health endpoint
+  fetch(url + '/rest/v1/', {
+    headers: { 'apikey': key, 'Authorization': 'Bearer ' + key }
+  }).then(function (r) {
+    if (r.ok || r.status === 400 || r.status === 401 || r.status === 406) {
+      // 400/406 = connected but query invalid — still means server reachable
+      // 401 = wrong key but server exists
+      _showDbStatus(msgEl, btnEl, r.status === 401
+        ? { ok: false, msg: '⚠️ เชื่อมต่อได้ แต่ Key ไม่ถูกต้อง (HTTP ' + r.status + ')' }
+        : { ok: true,  msg: '✅ เชื่อมต่อสำเร็จ — พร้อมใช้งาน' }
+      );
+    } else {
+      _showDbStatus(msgEl, btnEl, { ok: false, msg: '❌ เชื่อมต่อไม่ได้ (HTTP ' + r.status + ')' });
+    }
+  }).catch(function (e) {
+    _showDbStatus(msgEl, btnEl, { ok: false, msg: '❌ เชื่อมต่อไม่ได้: ' + (e.message || 'network error') });
+  });
+}
+
+function _showDbStatus(msgEl, btnEl, result) {
+  if (btnEl) { btnEl.disabled = false; btnEl.textContent = '💾 บันทึก'; }
+  if (!msgEl) return;
+  msgEl.style.cssText = 'margin-top:10px;font-size:13px;text-align:center;font-weight:600;padding:8px 12px;border-radius:8px;' +
+    (result.ok
+      ? 'background:var(--green-bg);color:var(--green)'
+      : 'background:var(--red-bg);color:var(--red)');
+  msgEl.textContent = result.msg;
+
+  if (result.ok) {
+    setTimeout(function () {
+      var panel = document.getElementById('loginDbPanel');
+      if (panel) panel.style.display = 'none';
+      _dbTapCount = 0;
+      var em = document.getElementById('loginEmail');
+      if (em) em.focus();
+    }, 1500);
+  }
 }
 
 function _showApp() {

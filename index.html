@@ -1117,7 +1117,7 @@ create policy "public write" on transactions for all using (true);</div>
         <label style="font-size:12px">Anon / Public Key</label>
         <input type="text" id="loginSbKey" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:100%;font-size:13px !important">
       </div>
-      <button onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึก</button>
+      <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
     <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.2.0</div>

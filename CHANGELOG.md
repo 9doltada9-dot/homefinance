@@ -1,6 +1,6 @@
 # 📋 HomeFinance — CHANGELOG
 
-## v2.2.0 — 2026-05-12  (Transfer type)
+## v3.3.1 — 2026-05-12  (Transfer type — modular)
 
 ### ฟีเจอร์ใหม่
 - ➕ **ประเภทรายการ "โอน/ฝาก" (transfer)** — เพิ่มปุ่มที่ 3 ในส่วนเลือกประเภท
@@ -12,14 +12,10 @@
 - 🔍 **Filter "โอน/ฝาก"** — เพิ่มตัวเลือก transfer ในช่อง filter ประเภท
 - 📊 **Total bar แยก** — หน้ารายการแสดง "โอน/ฝาก (n)" แยกต่างหาก (ปรากฏเฉพาะเมื่อมีรายการโอน)
 
-### SQL สำหรับ Supabase (รันใน SQL Editor ถ้า type column มี CHECK constraint)
+### SQL สำหรับ Supabase (รันใน SQL Editor — type column เป็น ENUM `tx_type`)
 ```sql
--- ถ้ามี check constraint บน type ให้รันนี้
-ALTER TABLE transactions
-  DROP CONSTRAINT IF EXISTS transactions_type_check;
-ALTER TABLE transactions
-  ADD CONSTRAINT transactions_type_check
-    CHECK (type IN ('income', 'expense', 'transfer'));
+-- เพิ่ม value 'transfer' เข้า ENUM tx_type
+ALTER TYPE tx_type ADD VALUE IF NOT EXISTS 'transfer';
 ```
 
 ---

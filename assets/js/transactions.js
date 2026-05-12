@@ -14,7 +14,7 @@ function getMFValues(id){
 }
 
 var MF_LABELS = {
-  income:'รายรับ', expense:'รายจ่าย',
+  income:'รายรับ', expense:'รายจ่าย', transfer:'โอน/ฝาก',
   paid:'จ่ายแล้ว', received:'รับแล้ว', pending:'รอดำเนินการ'
 };
 

@@ -26,7 +26,11 @@ function setType(t){
   cType = t;
   document.getElementById('btnIncome').className = 'type-btn' + (t==='income'?' active-income':'');
   document.getElementById('btnExpense').className = 'type-btn' + (t==='expense'?' active-expense':'');
+  var btnTr = document.getElementById('btnTransfer');
+  if(btnTr) btnTr.className = 'type-btn' + (t==='transfer'?' active-transfer':'');
   document.getElementById('splitSection').style.display = t==='expense'?'block':'none';
+  var fCatRow = document.getElementById('fCatRow');
+  if(fCatRow) fCatRow.style.display = t==='transfer'?'none':'';
   updateStatusOptions();
   fillCats();
   updateThaiDate(); // refresh salary cycle warning
@@ -37,6 +41,8 @@ function updateStatusOptions(){
   if(!sel) return;
   if(cType==='income'){
     sel.innerHTML = '<option value="received">รับแล้ว</option><option value="pending">รอรับ</option>';
+  } else if(cType==='transfer'){
+    sel.innerHTML = '<option value="paid">โอนแล้ว</option><option value="pending">รอโอน</option>';
   } else {
     sel.innerHTML = '<option value="paid">จ่ายแล้ว</option><option value="pending">รอจ่าย</option>';
   }
@@ -152,14 +158,14 @@ function addEntry(){
   var date   = document.getElementById('fDate').value;
   var person = document.getElementById('fPerson').value;
   var desc   = (document.getElementById('fDesc')?.value||'').trim();
-  var cat_id = document.getElementById('fCat').value;
-  var catObj = catMap[cat_id];
-  var cat_name = catObj ? catObj.name : '';
+  var cat_id = cType==='transfer' ? null : document.getElementById('fCat').value;
+  var catObj = cat_id ? catMap[cat_id] : null;
+  var cat_name = cType==='transfer' ? 'โอนเงิน' : (catObj ? catObj.name : '');
   var amt    = parseFloat(document.getElementById('fAmt').value)||0;
   var status = document.getElementById('fStatus').value || doneStatus(cType);
   var note   = document.getElementById('fNote').value.trim();
   var vendor_id = document.getElementById('fVendor')?.value||null;
-  if(!date||!desc||!amt||!cat_id){
+  if(!date||!desc||!amt||(cType!=='transfer'&&!cat_id)){
     showMsg('formMsg','กรุณากรอกวันที่ รายการ หมวด และจำนวนเงิน','error'); return;
   }
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});

@@ -78,7 +78,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.2.0 · THB</div>
+    <div class="brand-sub">v3.3.1 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
@@ -138,7 +138,7 @@ body.app-ready #page-login { display: none !important; }
       <span id="sidebarOnlineTxt" style="font-size:11px;color:var(--ink3)">กำลังตรวจสอบ...</span>
     </div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.2.0 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.3.1 © 2025</div>
   </div>
 </nav>
 
@@ -215,6 +215,10 @@ body.app-ready #page-login { display: none !important; }
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
         รายจ่าย
       </button>
+      <button class="type-btn" id="btnTransfer" onclick="setType('transfer')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>
+        โอน/ฝาก
+      </button>
     </div>
     <input type="hidden" id="fPerson" value="A">
     <div class="form-row full">
@@ -225,7 +229,7 @@ body.app-ready #page-login { display: none !important; }
         <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
       </div>
     </div>
-    <div class="form-row full">
+    <div class="form-row full" id="fCatRow">
       <div class="field">
         <label>หมวดหมู่</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -332,8 +336,9 @@ body.app-ready #page-login { display: none !important; }
       <div class="multi-filter" id="mfType">
         <div class="mf-label" onclick="toggleMF('mfType')">ประเภท ▾</div>
         <div class="mf-dropdown">
-          <label><input type="checkbox" value="income"  onchange="renderTx()"> รายรับ</label>
-          <label><input type="checkbox" value="expense" onchange="renderTx()"> รายจ่าย</label>
+          <label><input type="checkbox" value="income"   onchange="updateMFLabel('mfType','ประเภท');renderTx()"> รายรับ</label>
+          <label><input type="checkbox" value="expense"  onchange="updateMFLabel('mfType','ประเภท');renderTx()"> รายจ่าย</label>
+          <label><input type="checkbox" value="transfer" onchange="updateMFLabel('mfType','ประเภท');renderTx()"> โอน/ฝาก</label>
         </div>
       </div>
 
@@ -434,12 +439,15 @@ body.app-ready #page-login { display: none !important; }
       <button class="type-btn" id="eBtnExpense" onclick="eSetType('expense')">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>รายจ่าย
       </button>
+      <button class="type-btn" id="eBtnTransfer" onclick="eSetType('transfer')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>โอน/ฝาก
+      </button>
     </div>
     <input type="hidden" id="ePerson" value="A">
     <div class="form-row full">
       <div class="field"><label>วันที่</label><input type="date" id="eDate"></div>
     </div>
-    <div class="form-row full">
+    <div class="form-row full" id="eCatRow">
       <div class="field"><label>หมวดหมู่</label><select id="eCat"></select></div>
     </div>
     <div class="form-row full"><div class="field"><label>รายการ</label>
@@ -699,6 +707,10 @@ body.app-ready #page-login { display: none !important; }
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
+        <strong>v3.3.1</strong> — Email confirmation redirect: หลังกดลิงก์ยืนยัน email แอปจะ redirect กลับหน้า Login พร้อมข้อความ "ยืนยัน Email สำเร็จ", แก้ signup crash เมื่อ Supabase ต้องยืนยัน email ก่อน (null access_token), เพิ่ม redirect_to ใน signup URL
+        <br><strong>v3.2.1</strong> — แก้ HTTP 500 บันทึกชื่อ (เพิ่ม user_id ใน settings), แก้ข้อมูลหายหลัง login (sbGetHeaders + user_id filter), แก้ "ตรวจสอบ Database" แสดงผล error ถูกต้อง, getSbCreds fallback config.js defaults
+      </div>
+      <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v3.0.0</strong> — รอบเงินเดือน (cycle_id), billing_month, Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
@@ -1274,7 +1286,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.2.0</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.3.1</div>
   </div>
 </div>
 

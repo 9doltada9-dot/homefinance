@@ -72,14 +72,22 @@ function eSetType(t, autoS){
   eType = t;
   document.getElementById('eBtnIncome').className = 'type-btn'+(t==='income'?' active-income':'');
   document.getElementById('eBtnExpense').className = 'type-btn'+(t==='expense'?' active-expense':'');
+  var eBtnTr = document.getElementById('eBtnTransfer');
+  if(eBtnTr) eBtnTr.className = 'type-btn'+(t==='transfer'?' active-transfer':'');
   document.getElementById('eSplitSection').style.display = t==='expense'?'block':'none';
+  var eCatRow = document.getElementById('eCatRow');
+  if(eCatRow) eCatRow.style.display = t==='transfer'?'none':'';
   // update status options
   var eStat = document.getElementById('eStatus');
   if(eStat){
     var cur = eStat.value;
-    eStat.innerHTML = t==='income'
-      ? '<option value="pending">รอรับ</option><option value="received">รับแล้ว</option>'
-      : '<option value="pending">รอจ่าย</option><option value="paid">จ่ายแล้ว</option>';
+    if(t==='income'){
+      eStat.innerHTML = '<option value="pending">รอรับ</option><option value="received">รับแล้ว</option>';
+    } else if(t==='transfer'){
+      eStat.innerHTML = '<option value="paid">โอนแล้ว</option><option value="pending">รอโอน</option>';
+    } else {
+      eStat.innerHTML = '<option value="pending">รอจ่าย</option><option value="paid">จ่ายแล้ว</option>';
+    }
     eStat.value = cur && eStat.querySelector('option[value="'+cur+'"]') ? cur : doneStatus(t);
   }
   var sel = document.getElementById('eCat');
@@ -119,9 +127,9 @@ function saveEdit(){
   var desc=document.getElementById('eDesc').value.trim();
   var amt=parseFloat(document.getElementById('eAmt').value)||0;
   if(!date||!desc||!amt){ showMsg('editMsg','กรุณากรอกวันที่ รายการ และจำนวนเงิน','error'); return; }
-  var cat_id = document.getElementById('eCat').value;
-  var catObj = catMap[cat_id];
-  var cat_name = catObj ? catObj.name : '';
+  var cat_id = eType==='transfer' ? null : document.getElementById('eCat').value;
+  var catObj = cat_id ? catMap[cat_id] : null;
+  var cat_name = eType==='transfer' ? 'โอนเงิน' : (catObj ? catObj.name : '');
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});
   e.date=date; e.type=eType; e.cat_id=cat_id; e.cat_name=cat_name;
   e.desc=desc; e.amt=amt; e.person=document.getElementById('ePerson').value;

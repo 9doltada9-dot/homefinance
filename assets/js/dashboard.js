@@ -76,10 +76,10 @@ function renderDash(){
   var recent = curM === thisM ? db.slice(0,6) : db.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
   document.getElementById('recentTx').innerHTML=recent.length?'<table><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
-    '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
+    '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
     '</td>'+
-    '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(e.amt)+'</td>'+
-    '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span></td>'+
+    '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)')+'">'+fmt(e.amt)+'</td>'+
+    '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
   var pend=db.filter(function(e){return e.status==='pending';});
   document.getElementById('pendingTx').innerHTML=pend.length?'<table><tr><th>รายการ</th><th>ผู้บันทึก</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
@@ -87,7 +87,7 @@ function renderDash(){
     '</td>'+
     '<td>'+personPill(e.person)+'</td>'+
     '<td style="text-align:right;font-family:monospace">'+fmt(e.amt)+'</td>'+
-    '<td><span class="badge badge-pending" style="font-size:10px">'+(e.type==='income'?'รอรับ':'รอจ่าย')+'</span></td>'+
+    '<td><span class="badge badge-pending" style="font-size:10px">'+(e.type==='income'?'รอรับ':e.type==='transfer'?'รอโอน':'รอจ่าย')+'</span></td>'+
     '<td><button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\');renderDash()">✓</button></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ไม่มีรายการรอดำเนินการ</div>';
   renderSalaryCycleCard();

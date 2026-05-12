@@ -27,6 +27,7 @@ tr:hover td{background:var(--surface2)}
 .badge-pending{background:var(--amber-bg);color:var(--amber)}
 .badge-split{background:var(--blue-bg);color:var(--blue)}
 .badge-personal{background:var(--violet-bg);color:var(--violet)}
+.badge-transfer{background:var(--blue-bg);color:var(--blue)}
 
 /* FORM */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
@@ -43,6 +44,7 @@ tr:hover td{background:var(--surface2)}
 .type-btn{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;font-size:13px;font-family:'Sarabun',sans-serif;font-weight:500;color:var(--ink3);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .type-btn.active-income{background:var(--green-bg);color:var(--green)}
 .type-btn.active-expense{background:var(--red-bg);color:var(--red)}
+.type-btn.active-transfer{background:var(--blue-bg);color:var(--blue)}
 
 /* SPLIT TOGGLE */
 .split-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface2)}

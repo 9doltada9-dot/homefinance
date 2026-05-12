@@ -19,13 +19,26 @@ function nav(page){
   };
   var bnEl=document.getElementById(bnMap[page]);
   if(bnEl) bnEl.classList.add('active');
+
+  // แสดง/ซ่อนปุ่ม refresh ใน topbar
+  var refreshBtn = document.getElementById('topbarRefreshBtn');
+  var dataPages  = ['dashboard','transactions','accounts','settlement','budget','savings'];
+  if(refreshBtn) refreshBtn.style.display = dataPages.indexOf(page) > -1 ? '' : 'none';
+
   closeSidebar();
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions') renderTx();
   if(page==='settlement'){ populateMths('settleMonth'); renderSettle(); }
   if(page==='monthly'){ populateMths('monthSel'); renderMonthly(); }
   if(page==='add'){ initForm(); }
-  if(page==='settings'){ renderSettings(); }
+  if(page==='settings'){
+    renderSettings();
+    // refresh sync status เมื่อเข้าหน้าตั้งค่า
+    if(typeof refreshSyncStatus==='function'){
+      var localEl = document.getElementById('syncLocalCount');
+      if(localEl) localEl.textContent = (window.db||[]).length + ' รายการ';
+    }
+  }
   if(page==='supabase'){ initSbPage(); }
   if(page==='budget'){ renderBudget(); }
   if(page==='accounts'){
@@ -41,6 +54,11 @@ function nav(page){
     if(typeof isAdminUser==='function' && !isAdminUser()){ nav('dashboard'); return; }
     if(typeof populateAdminMonths==='function') populateAdminMonths();
     if(typeof renderAdminUserList==='function') renderAdminUserList();
+  }
+
+  // silentPull เมื่อสลับไปหน้าข้อมูล (ถ้าผ่านมา >30 วิแล้ว)
+  if(dataPages.indexOf(page) > -1 && typeof silentPull === 'function'){
+    silentPull();
   }
 }
 

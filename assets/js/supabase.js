@@ -254,6 +254,41 @@ async function sbDeleteVendor(id){
 var _lastPullTs = 0;
 var _pullInProgress = false;
 
+/** ผลลัพธ์: merged db array หรือ null ถ้าล้มเหลว */
+async function _fetchAndMerge(creds, timeoutMs) {
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ ctrl.abort(); }, timeoutMs || 8000);
+  var r = await fetch(
+    creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc',
+    { headers: sbHeadersFrom(creds.key), signal: ctrl.signal }
+  );
+  clearTimeout(t);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  var rows = await r.json();
+  if(!rows) return null;
+  var sbMapped = rows.map(mapSbRow);
+  var sbIdSet  = {};
+  sbMapped.forEach(function(x){ sbIdSet[String(x.id)] = true; });
+  var localOnly = db.filter(function(e){ return !sbIdSet[String(e.id)]; });
+  var merged = sbMapped.concat(localOnly);
+  merged.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
+  return merged;
+}
+
+/** อัปเดต UI ทุกหน้าที่เกี่ยวข้องกับข้อมูล */
+function _renderAllDataPages() {
+  renderDash();
+  var activePage = (document.querySelector('.page.active')||{}).id;
+  if(activePage==='page-transactions') renderTx();
+  if(activePage==='page-accounts'){
+    if(typeof renderAccountCards==='function') renderAccountCards();
+    if(typeof renderAccountList ==='function') renderAccountList();
+  }
+  if(activePage==='page-settlement'){ if(typeof renderSettle==='function') renderSettle(); }
+  if(activePage==='page-budget')    { if(typeof renderBudget==='function')  renderBudget(); }
+  if(activePage==='page-savings')   { if(typeof renderSavingsGoals==='function') renderSavingsGoals(); }
+}
+
 async function silentPull(){
   if(_pullInProgress) return;
   if(isFileProtocol()) return;
@@ -264,28 +299,49 @@ async function silentPull(){
   _pullInProgress = true;
   _lastPullTs = now;
   try {
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ ctrl.abort(); }, 6000);
-    var r = await fetch(
-      creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc',
-      { headers: sbHeadersFrom(creds.key), signal: ctrl.signal }
-    );
-    clearTimeout(t);
-    if(!r.ok){ _pullInProgress=false; return; }
-    var rows = await r.json();
-    if(!rows || !rows.length){ _pullInProgress=false; return; }
+    var merged = await _fetchAndMerge(creds, 8000);
+    if(!merged){ _pullInProgress=false; return; }
     // checksum — ไม่ render ถ้าข้อมูลเหมือนเดิม
-    var hash = rows.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
+    var hash = merged.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     var old  = db.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     if(hash !== old){
-      db = rows.map(mapSbRow);
+      db = merged;
       save();
-      renderDash();
-      var activePage = (document.querySelector('.page.active')||{}).id;
-      if(activePage==='page-transactions') renderTx();
+      _renderAllDataPages();
     }
   } catch(_){} // abort หรือ error ใดๆ → fail silently
   _pullInProgress = false;
+}
+
+/** Force-pull — ไม่สนใจ throttle, แสดง UI feedback */
+var _forceRefreshing = false;
+async function forceRefreshFromDB(){
+  if(_forceRefreshing) return;
+  if(isFileProtocol()){ showCycleToast('⚠️ ไม่มี Database — เปิดจาก file://'); return; }
+  var creds = getSbCreds();
+  if(!creds.ok){ showCycleToast('⚠️ ยังไม่ได้ตั้งค่า Database'); return; }
+
+  _forceRefreshing = true;
+  var btn = document.getElementById('topbarRefreshBtn');
+  if(btn) { btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none'; }
+
+  try {
+    var merged = await _fetchAndMerge(creds, 12000);
+    if(!merged) throw new Error('ไม่ได้รับข้อมูล');
+    db = merged;
+    save();
+    _lastPullTs = Date.now();
+    _renderAllDataPages();
+    // อัปเดต sync panel ถ้าเปิดอยู่
+    var localEl = document.getElementById('syncLocalCount');
+    if(localEl) refreshSyncStatus();
+    showCycleToast('✅ ดึงข้อมูลล่าสุดสำเร็จ (' + db.length + ' รายการ)');
+  } catch(e){
+    showCycleToast('❌ ดึงข้อมูลไม่ได้: ' + (e.message||'network error'));
+  }
+
+  _forceRefreshing = false;
+  if(btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
 }
 
 // pull ทุก 30 วินาที (เริ่มหลัง 10 วิ เพื่อไม่ชนกับ startup)
@@ -494,7 +550,12 @@ async function syncOnReconnect(){
     ]);
     var rows = results[0], catsData = results[1];
     if(rows.length > 0){
-      db = rows.map(mapSbRow);
+      var sbMapped2 = rows.map(mapSbRow);
+      var sbIdSet2  = {};
+      sbMapped2.forEach(function(r){ sbIdSet2[String(r.id)] = true; });
+      var localOnly2 = db.filter(function(e){ return !sbIdSet2[String(e.id)]; });
+      db = sbMapped2.concat(localOnly2);
+      db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
       save();
     }
     if(catsData && Array.isArray(catsData)){
@@ -681,6 +742,179 @@ async function sbDelete(id){
       method:'DELETE', headers:sbHeadersFrom(creds.key)
     });
   } catch(_){}
+}
+
+// ─── SYNC PANEL HELPERS ───────────────────────────────────
+async function getSbTxCount(){
+  var creds = getSbCreds();
+  if(!creds.ok) return null;
+  try {
+    var r = await fetchWithTimeout(
+      creds.url+'/rest/v1/'+SB_TABLE+'?select=id',
+      { headers: Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'count=exact'}) }, 8000
+    );
+    if(!r.ok) return null;
+    var cr = r.headers.get('content-range') || '';
+    // content-range: 0-24/25 → total = 25
+    var m = cr.match(/\/(\d+)$/);
+    return m ? parseInt(m[1]) : (await r.json()).length;
+  } catch(_){ return null; }
+}
+
+async function refreshSyncStatus(){
+  var localEl = document.getElementById('syncLocalCount');
+  var dbEl    = document.getElementById('syncDbCount');
+  var msgEl   = document.getElementById('syncStatusMsg');
+  if(localEl) localEl.textContent = db.length + ' รายการ';
+  if(dbEl)    dbEl.textContent    = '⏳ กำลังตรวจสอบ...';
+  if(msgEl)   { msgEl.textContent = ''; }
+
+  var creds = getSbCreds();
+  if(!creds.ok){
+    if(dbEl)  dbEl.textContent  = 'ไม่มี Database';
+    if(msgEl) { msgEl.style.color='var(--ink3)'; msgEl.textContent='ยังไม่ได้ตั้งค่า Supabase URL/Key'; }
+    return;
+  }
+
+  try {
+    // ดึงข้อมูลจริงและ merge พร้อมกัน (ไม่ใช่แค่นับ)
+    var merged = await _fetchAndMerge(creds, 10000);
+    var dbCount = merged ? (merged.length - db.filter(function(e){
+      var inSb = false;
+      merged.forEach(function(m){ if(String(m.id)===String(e.id)) inSb=true; });
+      return !inSb;
+    }).length) : null;
+
+    // อ่าน count ตรงจาก DB
+    var countR = await fetchWithTimeout(
+      creds.url+'/rest/v1/'+SB_TABLE+'?select=id',
+      { headers: Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'count=exact'}) }, 8000
+    );
+    var dbCount2 = null;
+    if(countR.ok){
+      var cr = countR.headers.get('content-range') || '';
+      var m2 = cr.match(/\/(\d+)$/);
+      dbCount2 = m2 ? parseInt(m2[1]) : null;
+    }
+
+    if(dbEl) dbEl.textContent = dbCount2 !== null ? dbCount2 + ' รายการ' : 'อ่านไม่ได้';
+
+    // apply merge ถ้าข้อมูลต่างจากเดิม
+    if(merged){
+      var hash = merged.map(function(e){return String(e.id)+String(e.status);}).join('|');
+      var old  = db.map(function(e){return String(e.id)+String(e.status);}).join('|');
+      if(hash !== old){
+        db = merged;
+        save();
+        _renderAllDataPages();
+      }
+    }
+
+    if(localEl) localEl.textContent = db.length + ' รายการ';
+
+    if(msgEl && dbCount2 !== null){
+      var localCount = db.filter(function(e){
+        // นับเฉพาะที่ยังไม่ใน DB (local-only)
+        return true;
+      }).length;
+      var diff = db.length - dbCount2;
+      if(diff > 0){
+        msgEl.style.color = 'var(--amber,#d97706)';
+        msgEl.textContent = '⚠️ ในเครื่องมีมากกว่า Database ' + diff + ' รายการ — กด "อัปโหลด" เพื่อซิงก์';
+      } else if(diff < 0){
+        msgEl.style.color = 'var(--blue)';
+        msgEl.textContent = '📥 Database มีมากกว่าในเครื่อง ' + Math.abs(diff) + ' รายการ (ดึงมาแล้ว)';
+      } else {
+        msgEl.style.color = 'var(--green)';
+        msgEl.textContent = '✅ ข้อมูลตรงกัน — อัปเดตล่าสุดแล้ว (' + db.length + ' รายการ)';
+      }
+    }
+  } catch(e){
+    if(dbEl)  dbEl.textContent  = 'เชื่อมต่อไม่ได้';
+    if(msgEl) { msgEl.style.color='var(--red)'; msgEl.textContent='❌ ตรวจสอบไม่ได้: '+(e.message||'network error'); }
+  }
+}
+
+async function sbPushAllLocal(){
+  if(!checkOnlineForAction()) return;
+  var creds = getSbCreds();
+  if(!creds.ok){ showCycleToast('⚠️ ยังไม่ได้ตั้งค่า Database'); return; }
+  var btnEl = document.getElementById('syncPushBtn');
+  var msgEl = document.getElementById('syncStatusMsg');
+  if(btnEl){ btnEl.disabled=true; btnEl.textContent='⏳ กำลังอัปโหลด...'; }
+  try {
+    // upsert ทีละ 500 rows (Supabase limit)
+    var BATCH = 500;
+    var total = 0;
+    var userId = (typeof getAuthUserId==='function' ? getAuthUserId() : null);
+    for(var i=0; i<db.length; i+=BATCH){
+      var chunk = db.slice(i, i+BATCH).map(function(e){
+        var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id)||null;
+        return {
+          id: String(e.id), date: e.date, type: e.type,
+          cat_id: catId, desc: e.desc, amt: e.amt,
+          person: e.person, split: e.split||false,
+          status: e.status||doneStatus(e.type), note: e.note||'',
+          item_id: e.item_id||null, vendor_id: e.vendor_id||null,
+          cycle_id: e.cycle_id||null, billing_month: e.billing_month||null,
+          account_id: e.account_id||null,
+          transfer_direction: e.transfer_direction||null,
+          transfer_pair_id:   e.transfer_pair_id||null,
+          user_id: e.user_id || userId || null,
+        };
+      });
+      var r = await fetch(creds.url+'/rest/v1/'+SB_TABLE, {
+        method: 'POST',
+        headers: Object.assign({}, sbHeadersFrom(creds.key), {
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        }),
+        body: JSON.stringify(chunk)
+      });
+      if(!r.ok){ var t=await r.text(); throw new Error('HTTP '+r.status+': '+t.slice(0,120)); }
+      total += chunk.length;
+    }
+    if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ อัปโหลด '+total+' รายการสำเร็จ'; }
+    showCycleToast('✅ อัปโหลด '+total+' รายการขึ้น Database สำเร็จ');
+    setTimeout(refreshSyncStatus, 1000);
+  } catch(e){
+    if(msgEl){ msgEl.style.color='var(--red)'; msgEl.textContent='❌ อัปโหลดไม่สำเร็จ: '+e.message; }
+    showCycleToast('❌ อัปโหลดไม่สำเร็จ');
+  }
+  if(btnEl){ btnEl.disabled=false; btnEl.textContent='📤 อัปโหลดทั้งหมด'; }
+}
+
+async function sbPullAllFull(){
+  if(!checkOnlineForAction()) return;
+  var creds = getSbCreds();
+  if(!creds.ok){ showCycleToast('⚠️ ยังไม่ได้ตั้งค่า Database'); return; }
+  var btnEl = document.getElementById('syncPullBtn');
+  var msgEl = document.getElementById('syncStatusMsg');
+  if(btnEl){ btnEl.disabled=true; btnEl.textContent='⏳ กำลังดาวน์โหลด...'; }
+  try {
+    var r = await fetchWithTimeout(
+      creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc',
+      { headers: sbHeadersFrom(creds.key) }, 15000
+    );
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var rows = await r.json();
+    // merge — keep local-only rows too
+    var sbMapped3 = rows.map(mapSbRow);
+    var sbIdSet3  = {};
+    sbMapped3.forEach(function(r){ sbIdSet3[String(r.id)] = true; });
+    var localOnly3 = db.filter(function(e){ return !sbIdSet3[String(e.id)]; });
+    db = sbMapped3.concat(localOnly3);
+    db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
+    save();
+    renderDash(); renderTx();
+    if(typeof renderAccountCards==='function') renderAccountCards();
+    if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ ดาวน์โหลด '+rows.length+' รายการสำเร็จ (รวมเครื่อง '+db.length+' รายการ)'; }
+    showCycleToast('✅ ดาวน์โหลด '+rows.length+' รายการจาก Database');
+    setTimeout(refreshSyncStatus, 500);
+  } catch(e){
+    if(msgEl){ msgEl.style.color='var(--red)'; msgEl.textContent='❌ ดาวน์โหลดไม่สำเร็จ: '+e.message; }
+    showCycleToast('❌ ดาวน์โหลดไม่สำเร็จ');
+  }
+  if(btnEl){ btnEl.disabled=false; btnEl.textContent='📥 ดาวน์โหลดทั้งหมด'; }
 }
 
 // keep old export CSV working (point to sbExportMsg)

@@ -407,6 +407,9 @@ function _updateUserBar() {
   // Logout button
   var lb = document.getElementById('logoutBtn');
   if (lb) lb.style.display = '';
+  // Refresh button — แสดงเมื่อมี creds
+  var rb = document.getElementById('topbarRefreshBtn');
+  if (rb) rb.style.display = (typeof getSbCreds==='function' && getSbCreds().ok) ? '' : 'none';
 
   // Sidebar: auth info block (ชื่อ + role)
   var sidebarName = document.getElementById('sidebarAuthName');

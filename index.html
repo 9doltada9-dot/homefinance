@@ -36,7 +36,8 @@ body.app-ready #page-login { display: none !important; }
     <div id="topbarDate" style="font-size:10px;color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px"></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
-    <span id="topbarUser" style="font-size:11px;color:rgba(255,255,255,.75);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span id="topbarUser" style="font-size:11px;color:rgba(255,255,255,.75);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button id="topbarRefreshBtn" onclick="forceRefreshFromDB()" title="ดึงข้อมูลล่าสุดจาก Database" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:15px;cursor:pointer;min-height:32px;line-height:1;transition:opacity .2s">🔄</button>
     <button id="logoutBtn" onclick="doLogout()" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px;white-space:nowrap">ออก</button>
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
   </div>
@@ -658,14 +659,35 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── ระบบ ───────────────────────────────── -->
   <div class="stg-group-label">☁️ ระบบ</div>
-  <div class="card" style="max-width:700px;background:var(--blue-bg);border:1.5px solid #c5d8f8;padding:14px 16px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="font-size:28px;line-height:1">🗄</span>
+
+  <!-- Sync Panel -->
+  <div class="card" style="max-width:700px;padding:0">
+    <div class="stg-sect-head" style="cursor:default">
+      <span class="stg-icon" style="background:var(--blue-bg)">🔄</span>
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:600;color:var(--ink)">Supabase — ฐานข้อมูล Cloud</div>
-        <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="sbStatusShortcut">ซิงก์ข้อมูลข้ามอุปกรณ์ · Real-time</div>
+        <div class="stg-title">ซิงก์ข้อมูล</div>
+        <div class="stg-sub">เปรียบเทียบและซิงก์ข้อมูลระหว่างเครื่องกับ Database</div>
       </div>
-      <button class="btn btn-primary" onclick="nav('supabase')" style="min-height:40px;white-space:nowrap;font-size:13px">ตั้งค่า →</button>
+      <button class="btn btn-ghost" onclick="refreshSyncStatus()" style="min-height:36px;font-size:12px;white-space:nowrap">🔍 ตรวจสอบ</button>
+    </div>
+    <div style="padding:0 14px 10px;display:flex;gap:20px;flex-wrap:wrap">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;text-align:center">
+        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">ในเครื่อง</div>
+        <div id="syncLocalCount" style="font-size:20px;font-weight:700;font-family:monospace;margin-top:2px">—</div>
+      </div>
+      <div style="background:var(--blue-bg);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;text-align:center;border:1px solid #c5d8f8">
+        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Database</div>
+        <div id="syncDbCount" style="font-size:20px;font-weight:700;font-family:monospace;color:var(--blue);margin-top:2px">—</div>
+      </div>
+    </div>
+    <div id="syncStatusMsg" style="padding:0 14px 10px;font-size:12px;font-weight:500"></div>
+    <div style="padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="syncPushBtn" class="btn btn-primary" onclick="sbPushAllLocal()" style="flex:1;min-height:42px;font-size:13px">📤 อัปโหลดทั้งหมด</button>
+      <button id="syncPullBtn" class="btn btn-ghost"   onclick="sbPullAllFull()"  style="flex:1;min-height:42px;font-size:13px">📥 ดาวน์โหลดทั้งหมด</button>
+    </div>
+    <div style="padding:0 14px 12px;font-size:11px;color:var(--ink3);line-height:1.7">
+      📤 <strong>อัปโหลด</strong> — ส่งข้อมูลในเครื่องทั้งหมดขึ้น Database (ข้อมูลที่ซ้ำจะถูก merge)<br>
+      📥 <strong>ดาวน์โหลด</strong> — ดึงข้อมูลทั้งหมดจาก Database + รวมกับข้อมูลในเครื่อง
     </div>
   </div>
 

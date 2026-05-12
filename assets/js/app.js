@@ -113,9 +113,15 @@ function startAppAfterAuth() {
         applySettingsFromMap(settingsMap);
         updatePersonLabels(); applyViewMode();
       }
-      // apply transactions (v3: uses mapSbRow for new fields)
-      if(rows.length>0){
-        db = rows.map(mapSbRow);
+      // apply transactions — merge: Supabase wins for rows it has,
+      // keep local-only rows so old offline data is never lost
+      if(rows.length > 0){
+        var sbMapped = rows.map(mapSbRow);
+        var sbIdSet  = {};
+        sbMapped.forEach(function(r){ sbIdSet[String(r.id)] = true; });
+        var localOnly = db.filter(function(e){ return !sbIdSet[String(e.id)]; });
+        db = sbMapped.concat(localOnly);
+        db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
         save();
       }
       // v3: merge Supabase accounts into local store

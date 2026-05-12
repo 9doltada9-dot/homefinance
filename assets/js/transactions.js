@@ -106,6 +106,8 @@ function getFilteredTx(){
   var fltM  = document.getElementById('fltMonth');
   var fltBM = document.getElementById('fltBillingMonth');
   var list  = db.slice();
+  // ซ่อน transfer IN — แสดงเฉพาะ OUT
+  list = list.filter(function(e){ return e.transfer_direction !== 'in'; });
   // transaction_date filter
   if(fltM  && fltM.value)  list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
   // billing_month filter (v3)
@@ -171,6 +173,8 @@ function renderTx(){
   populateFltBillingMonth();
 
   var list = db.slice();
+  // ซ่อน transfer IN entry — แสดงเฉพาะ OUT (ตัวเดียวต่อการโอน)
+  list = list.filter(function(e){ return e.transfer_direction !== 'in'; });
   if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
 
   // billing_month filter (v3)
@@ -270,11 +274,16 @@ function renderTx(){
                       '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 4C5 4 1.5 10 1.5 10S5 16 10 16s8.5-6 8.5-6S15 4 10 4zm0 9a3 3 0 110-6 3 3 0 010 6z"/></svg>'+
                     '</button>'+
                   '</div>' :
+                  e.type==='transfer' ?
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmt(e.amt)+'</div>' :
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
                     (e.type==='income'?'+':'−')+fmt(e.amt)+
                   '</div>')+
                   '<div style="margin-top:3px">'+
-                    '<span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'+
+                    (e.type==='transfer'
+                      ? '<span class="badge badge-paid" style="font-size:10px;background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
+                      : '<span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
+                    )+
                   '</div>'+
                 '</div>'+
               '</div>'+
@@ -390,8 +399,13 @@ function renderTx(){
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
         '<td>'+(e.type==='expense'?'<span class="badge '+(e.split?'badge-split':'badge-personal')+'">'+(e.split?'÷2':'ส่วนตัว')+'</span>':'-')+'</td>'+
-        '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(e.amt)+'</td>'+
-        '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span></td>'+
+        '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
+          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
+        '</td>'+
+        '<td>'+(e.type==='transfer'
+          ? '<span class="badge badge-paid" style="background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
+          : '<span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
+        )+'</td>'+
         '<td style="font-size:11px;color:var(--ink3);font-style:italic">'+(e.note||'—')+'</td>'+
         '<td style="white-space:nowrap;display:flex;gap:4px;align-items:center" onclick="event.stopPropagation()">'+
           (e.status==='pending'

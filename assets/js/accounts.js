@@ -102,18 +102,24 @@ function getTotalBalance() {
 function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
   if (!checkOnlineForAction()) return;
   var id = 'tx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  var fromAcct = accountsData.find(function(a){ return a.id === fromAccountId; });
+  var toAcct   = accountsData.find(function(a){ return a.id === toAccountId; });
+  var fromName = fromAcct ? fromAcct.name : fromAccountId;
+  var toName   = toAcct   ? toAcct.name   : toAccountId;
   var base = {
     date:       dateStr,
     type:       'transfer',
     cat_id:     null, cat_name: 'โอนเงิน',
-    desc:       'โอนเงิน',
+    desc:       '↔ ' + fromName + ' → ' + toName,
+    transfer_from_name: fromName,
+    transfer_to_name:   toName,
     amt:        Number(amount) || 0,
-    person:     persons[0] ? persons[0].id : 'A',
+    person:     (typeof getCurrentPerson==='function' ? getCurrentPerson() : (persons[0] ? persons[0].id : 'A')),
     split:      false,
     status:     'paid',
     note:       note || '',
-    cycle_id:   cycleIdFromDate(dateStr),
-    billing_month: defaultBillingMonth(dateStr),
+    cycle_id:   (typeof cycleIdFromDate==='function' ? cycleIdFromDate(dateStr) : null),
+    billing_month: (typeof defaultBillingMonth==='function' ? defaultBillingMonth(dateStr) : dateStr.slice(0,7)),
   };
   // OUT entry
   var outEntry = Object.assign({}, base, {
@@ -306,6 +312,89 @@ function doEditAccount() {
   showCycleToast('แก้ไขบัญชีแล้ว');
 }
 
+// ─── ADJUST BALANCE ───────────────────────────────────────
+function openAdjustModal(accountId) {
+  var acct = accountsData.find(function(a) { return a.id === accountId; });
+  if (!acct) return;
+  var currentBal = getAccountBalance(accountId);
+  document.getElementById('adjustAcctId').value = accountId;
+  document.getElementById('adjustCurrentBal').textContent = fmt(currentBal) + ' บาท';
+  document.getElementById('adjustCurrentBal').style.color = currentBal >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('adjustTargetAmt').value = '';
+  document.getElementById('adjustDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('adjustNote').value = '';
+  document.getElementById('adjustDiffBox').style.display = 'none';
+  document.getElementById('adjustModal').style.display = 'flex';
+}
+function closeAdjustModal() {
+  document.getElementById('adjustModal').style.display = 'none';
+}
+function updateAdjustDiff() {
+  var accountId = document.getElementById('adjustAcctId').value;
+  var targetVal = document.getElementById('adjustTargetAmt').value;
+  var diffBox   = document.getElementById('adjustDiffBox');
+  var diffLabel = document.getElementById('adjustDiffLabel');
+  if (targetVal === '' || targetVal === null) { diffBox.style.display = 'none'; return; }
+  var target    = parseFloat(targetVal);
+  var current   = getAccountBalance(accountId);
+  var diff      = target - current;
+  if (isNaN(diff)) { diffBox.style.display = 'none'; return; }
+  if (Math.abs(diff) < 0.01) {
+    diffBox.style.display = 'block';
+    diffBox.style.background = 'var(--surface2)';
+    diffLabel.innerHTML = '✓ ยอดตรงกันอยู่แล้ว ไม่ต้องปรับ';
+    diffLabel.style.color = 'var(--ink3)';
+  } else if (diff > 0) {
+    diffBox.style.display = 'block';
+    diffBox.style.background = 'var(--green-bg)';
+    diffLabel.innerHTML = '📥 ปรับเพิ่ม <strong style="font-family:monospace">+' + fmt(diff) + ' บาท</strong> (บันทึกเป็นรายรับ)';
+    diffLabel.style.color = 'var(--green)';
+  } else {
+    diffBox.style.display = 'block';
+    diffBox.style.background = 'var(--red-bg,#fff0f0)';
+    diffLabel.innerHTML = '📤 ปรับลด <strong style="font-family:monospace">−' + fmt(Math.abs(diff)) + ' บาท</strong> (บันทึกเป็นรายจ่าย)';
+    diffLabel.style.color = 'var(--red)';
+  }
+}
+function doAdjustBalance() {
+  var accountId = document.getElementById('adjustAcctId').value;
+  var targetVal = parseFloat(document.getElementById('adjustTargetAmt').value);
+  var date      = document.getElementById('adjustDate').value;
+  var note      = document.getElementById('adjustNote').value;
+  if (isNaN(targetVal)) { showCycleToast('⚠️ ระบุยอดที่ถูกต้อง'); return; }
+  var current = getAccountBalance(accountId);
+  var diff    = targetVal - current;
+  if (Math.abs(diff) < 0.01) {
+    showCycleToast('✓ ยอดตรงกันอยู่แล้ว ไม่ต้องปรับ');
+    closeAdjustModal();
+    return;
+  }
+  var acct = accountsData.find(function(a) { return a.id === accountId; });
+  var entryType = diff > 0 ? 'income' : 'expense';
+  var id = 'tx-adj-' + Date.now();
+  var entry = {
+    id: id, date: date,
+    type: entryType,
+    cat_id: null, cat_name: 'ปรับยอดบัญชี',
+    desc: 'ปรับยอด' + (acct ? ' – ' + acct.name : '') + ' (' + (diff > 0 ? '+' : '') + fmt(diff) + ')',
+    amt: Math.abs(diff),
+    person: (typeof getCurrentPerson === 'function' ? getCurrentPerson() : 'A'),
+    split: false, status: entryType === 'income' ? 'received' : 'paid',
+    note: note || '',
+    account_id: accountId,
+    cycle_id: (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(date) : null),
+    billing_month: (typeof defaultBillingMonth === 'function' ? defaultBillingMonth(date) : date.slice(0, 7)),
+  };
+  db.push(entry);
+  save();
+  sbAdd(entry);
+  closeAdjustModal();
+  renderAccountCards();
+  renderAccountList();
+  if (typeof renderDash === 'function') renderDash();
+  showCycleToast('ปรับยอด ' + (diff > 0 ? '+' : '') + fmt(diff) + ' บาท เรียบร้อย');
+}
+
 // ─── SETTINGS: ACCOUNT LIST ───────────────────────────────
 function renderAccountList() {
   var el = document.getElementById('accountList');
@@ -320,8 +409,9 @@ function renderAccountList() {
         '<div style="font-size:11px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
         '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmt(bal) + ' บาท</div>' +
       '</div>' +
-      '<div style="display:flex;gap:4px">' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' +
         '<button onclick="openDepositModal(\'' + a.id + '\')" title="ฝากเงิน" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>' +
+        '<button onclick="openAdjustModal(\'' + a.id + '\')" title="ปรับยอด" style="background:var(--amber-bg,#fffbeb);border:none;color:var(--amber,#d97706);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">⚖️ ปรับ</button>' +
         '<button onclick="openEditAccountModal(\'' + a.id + '\')" title="แก้ไข" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>' +
         '<button onclick="deleteAccount(\'' + a.id + '\');renderAccountList();renderAccountCards()" title="ลบ" ' +
           (hasUsage ? 'disabled style="opacity:.35;cursor:not-allowed;' : 'style="') +

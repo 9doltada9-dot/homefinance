@@ -448,20 +448,36 @@ function delConfirm(id){
 
   // cancel any pending real delete from previous action
   clearTimeout(_delTimer);
-  // if there was a previous unrestored delete, commit it now
   if(_lastDeleted && _lastDeleted._pendingDelete){
     sbDelete(_lastDeleted.id);
+    if(_lastDeleted._pairId) sbDelete(_lastDeleted._pairId);
   }
 
-  _lastDeleted = Object.assign({}, entry, { _pendingDelete: true });
-  db = db.filter(function(e){return String(e.id)!==String(id);});
-  save(); renderTx(); renderDash();
+  // ถ้าเป็น transfer — ลบ entry คู่พร้อมกัน (atomic)
+  var pairId    = entry.transfer_pair_id || null;
+  var pairEntry = pairId ? db.find(function(e){ return String(e.id)===String(pairId); }) : null;
 
-  // show undo toast — actual DB delete delayed 5s
-  showUndoToast('ลบ "'+entry.desc+'" แล้ว');
+  _lastDeleted = Object.assign({}, entry, {
+    _pendingDelete: true,
+    _pairId:   pairId,
+    _pairSnap: pairEntry ? Object.assign({}, pairEntry) : null,
+  });
+
+  var idsToRemove = [String(id)];
+  if(pairId) idsToRemove.push(String(pairId));
+  db = db.filter(function(e){ return idsToRemove.indexOf(String(e.id)) === -1; });
+  save(); renderTx(); renderDash();
+  if(typeof renderAccountCards==='function') renderAccountCards();
+
+  var msg = entry.type === 'transfer'
+    ? 'ลบการโอนเงิน "' + entry.desc + '" แล้ว (ทั้งคู่)'
+    : 'ลบ "' + entry.desc + '" แล้ว';
+  showUndoToast(msg);
+
   _delTimer = setTimeout(function(){
     if(_lastDeleted && _lastDeleted.id === entry.id){
       sbDelete(entry.id);
+      if(_lastDeleted._pairId) sbDelete(_lastDeleted._pairId);
       _lastDeleted = null;
     }
   }, 5200);
@@ -527,18 +543,30 @@ function undoDelete(){
   clearTimeout(_delTimer); // cancel the pending DB delete
 
   var restored = Object.assign({}, _lastDeleted);
+  var pairId   = restored._pairId || null;
+  var pairSnap = restored._pairSnap || null;
   delete restored._pendingDelete;
+  delete restored._pairId;
+  delete restored._pairSnap;
   _lastDeleted = null;
 
   db.unshift(restored);
+  // Restore the paired transfer entry too (if any)
+  if(pairSnap){
+    db.unshift(pairSnap);
+  }
   save(); renderTx(); renderDash();
+  if(typeof renderAccountCards==='function') renderAccountCards();
 
   var t = document.getElementById('undoToast');
   if(t){
     t.style.opacity='0';
     t.style.transform='translateX(-50%) translateY(8px)';
   }
-  showRestoreToast('คืนค่า "'+restored.desc+'" แล้ว');
+  var msg = pairId
+    ? 'คืนค่าการโอนเงิน "'+restored.desc+'" แล้ว (ทั้งคู่)'
+    : 'คืนค่า "'+restored.desc+'" แล้ว';
+  showRestoreToast(msg);
 }
 
 var _restoreTimer = null;

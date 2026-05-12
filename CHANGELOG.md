@@ -1,5 +1,29 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v2.2.0 — 2026-05-12  (Transfer type)
+
+### ฟีเจอร์ใหม่
+- ➕ **ประเภทรายการ "โอน/ฝาก" (transfer)** — เพิ่มปุ่มที่ 3 ในส่วนเลือกประเภท
+  - รายการ transfer **ไม่นับ** ในยอดรายรับรวมและยอดรายจ่ายรวม
+  - ซ่อนช่องหมวดหมู่อัตโนมัติ (ใช้ค่า `cat_name = 'โอนเงิน'` แทน)
+  - ซ่อน split section (ไม่หาร 2)
+  - สถานะ: "โอนแล้ว" / "รอโอน"
+- 🏷️ **Badge สีฟ้า** — แสดง ⇄ และ badge "โอน" สีฟ้าในหน้ารายการ (ทั้ง mobile card และ desktop table)
+- 🔍 **Filter "โอน/ฝาก"** — เพิ่มตัวเลือก transfer ในช่อง filter ประเภท
+- 📊 **Total bar แยก** — หน้ารายการแสดง "โอน/ฝาก (n)" แยกต่างหาก (ปรากฏเฉพาะเมื่อมีรายการโอน)
+
+### SQL สำหรับ Supabase (รันใน SQL Editor ถ้า type column มี CHECK constraint)
+```sql
+-- ถ้ามี check constraint บน type ให้รันนี้
+ALTER TABLE transactions
+  DROP CONSTRAINT IF EXISTS transactions_type_check;
+ALTER TABLE transactions
+  ADD CONSTRAINT transactions_type_check
+    CHECK (type IN ('income', 'expense', 'transfer'));
+```
+
+---
+
 ## v2.6.0 — 2026-05-10  (Modular refactor + new features)
 
 ### Refactor (BREAKING ในระดับโครงสร้างไฟล์ — runtime ทำงานเหมือนเดิม)

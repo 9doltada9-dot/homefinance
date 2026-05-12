@@ -82,6 +82,7 @@ tr:hover td{background:var(--surface2)}
 .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .badge-income{background:var(--green-bg);color:var(--green)}
 .badge-expense{background:var(--red-bg);color:var(--red)}
+.badge-transfer{background:var(--blue-bg);color:var(--blue)}
 .badge-paid{background:var(--green-bg);color:var(--green)}
 .badge-pending{background:var(--amber-bg);color:var(--amber)}
 .badge-split{background:var(--blue-bg);color:var(--blue)}
@@ -102,6 +103,7 @@ tr:hover td{background:var(--surface2)}
 .type-btn{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;font-size:13px;font-family:'Sarabun',sans-serif;font-weight:500;color:var(--ink3);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .type-btn.active-income{background:var(--green-bg);color:var(--green)}
 .type-btn.active-expense{background:var(--red-bg);color:var(--red)}
+.type-btn.active-transfer{background:var(--blue-bg);color:var(--blue)}
 
 /* SPLIT TOGGLE */
 .split-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface2)}
@@ -452,7 +454,7 @@ body.view-mobile .btn{min-height:44px}
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v2.1.0 · THB</div>
+    <div class="brand-sub">v2.2.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div class="name-row">
@@ -571,6 +573,10 @@ body.view-mobile .btn{min-height:44px}
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
         รายจ่าย
       </button>
+      <button class="type-btn" id="btnTransfer" onclick="setType('transfer')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.586L9.293 2.707l1.414-1.414L15.414 6l-4.707 4.707-1.414-1.414L11.586 7H1V5zm14 4H4.414l2.293-2.293-1.414-1.414L.586 10l4.707 4.707 1.414-1.414L4.414 13H15v-2z"/></svg>
+        โอน/ฝาก
+      </button>
     </div>
     <div class="form-row">
       <div class="field">
@@ -587,7 +593,7 @@ body.view-mobile .btn{min-height:44px}
         </select>
       </div>
     </div>
-    <div class="form-row full">
+    <div class="form-row full" id="fCatRow">
       <div class="field">
         <label>หมวดหมู่</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -678,8 +684,9 @@ body.view-mobile .btn{min-height:44px}
       <div class="multi-filter" id="mfType">
         <div class="mf-label" onclick="toggleMF('mfType')">ประเภท ▾</div>
         <div class="mf-dropdown">
-          <label><input type="checkbox" value="income"  onchange="renderTx()"> รายรับ</label>
-          <label><input type="checkbox" value="expense" onchange="renderTx()"> รายจ่าย</label>
+          <label><input type="checkbox" value="income"   onchange="renderTx()"> รายรับ</label>
+          <label><input type="checkbox" value="expense"  onchange="renderTx()"> รายจ่าย</label>
+          <label><input type="checkbox" value="transfer" onchange="renderTx()"> โอน/ฝาก</label>
         </div>
       </div>
 
@@ -782,6 +789,9 @@ body.view-mobile .btn{min-height:44px}
       <button class="type-btn" id="eBtnExpense" onclick="eSetType('expense')">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>รายจ่าย
       </button>
+      <button class="type-btn" id="eBtnTransfer" onclick="eSetType('transfer')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.586L9.293 2.707l1.414-1.414L15.414 6l-4.707 4.707-1.414-1.414L11.586 7H1V5zm14 4H4.414l2.293-2.293-1.414-1.414L.586 10l4.707 4.707 1.414-1.414L4.414 13H15v-2z"/></svg>โอน/ฝาก
+      </button>
     </div>
     <div class="form-row">
       <div class="field"><label>วันที่</label><input type="date" id="eDate"></div>
@@ -793,7 +803,7 @@ body.view-mobile .btn{min-height:44px}
         <div class="ac-list" id="acEdit" style="display:none"></div>
       </div>
     </div></div>
-    <div class="form-row">
+    <div class="form-row" id="eCatRow">
       <div class="field"><label>หมวดหมู่</label><select id="eCat"></select></div>
       <div class="field"><label>จำนวนเงิน (฿)</label><input type="number" id="eAmt" min="0"></div>
     </div>
@@ -988,6 +998,9 @@ body.view-mobile .btn{min-height:44px}
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
+        <strong>v2.2.0</strong> — เพิ่ม: ประเภทรายการ "โอน/ฝาก" (transfer) — ไม่นับในยอดรายรับ/รายจ่าย, แสดง badge สีฟ้าในรายการ, รองรับทั้ง form เพิ่ม/แก้ไขและ filter
+      </div>
+      <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v2.1.0</strong> — เพิ่ม: รายการในหมวด, เลือก desc จาก DB, วันที่ภาษาไทย, นาฬิกาในแถบบน, ซ่อนยอดเงินเดือน, ยกเลิกการลบ, version history
       </div>
       <div style="padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
@@ -1761,7 +1774,7 @@ async function sbDeleteItem(itemId){
 function renderItemCatSel(){
   const sel = document.getElementById('itemCatSel');
   if(!sel) return;
-  sel.innerHTML = categories.map(c=>`<option value="${c.id}">[${c.type==='income'?'รายรับ':'รายจ่าย'}] ${c.name}</option>`).join('');
+  sel.innerHTML = categories.filter(c=>c.type!=='transfer').map(c=>`<option value="${c.id}">[${c.type==='income'?'รายรับ':'รายจ่าย'}] ${c.name}</option>`).join('');
   renderItemList();
 }
 
@@ -2028,9 +2041,12 @@ function initForm(){
 }
 function setType(t){
   cType = t;
-  document.getElementById('btnIncome').className = 'type-btn' + (t==='income'?' active-income':'');
-  document.getElementById('btnExpense').className = 'type-btn' + (t==='expense'?' active-expense':'');
+  document.getElementById('btnIncome').className   = 'type-btn' + (t==='income'  ?' active-income':'');
+  document.getElementById('btnExpense').className  = 'type-btn' + (t==='expense' ?' active-expense':'');
+  document.getElementById('btnTransfer').className = 'type-btn' + (t==='transfer'?' active-transfer':'');
   document.getElementById('splitSection').style.display = t==='expense'?'block':'none';
+  const fCatRow = document.getElementById('fCatRow');
+  if(fCatRow) fCatRow.style.display = t==='transfer'?'none':'';
   updateStatusOptions();
   fillCats();
   updateThaiDate(); // refresh salary cycle warning
@@ -2041,6 +2057,8 @@ function updateStatusOptions(){
   if(!sel) return;
   if(cType==='income'){
     sel.innerHTML = `<option value="received">รับแล้ว</option><option value="pending">รอรับ</option>`;
+  } else if(cType==='transfer'){
+    sel.innerHTML = `<option value="paid">โอนแล้ว</option><option value="pending">รอโอน</option>`;
   } else {
     sel.innerHTML = `<option value="paid">จ่ายแล้ว</option><option value="pending">รอจ่าย</option>`;
   }
@@ -2140,13 +2158,13 @@ function addEntry(){
   const desc   = (document.getElementById('fDesc')?.value||'').trim();
   const cat_id = document.getElementById('fCat').value;
   const catObj = catMap[cat_id];
-  const cat_name = catObj ? catObj.name : '';
+  const cat_name = catObj ? catObj.name : (cType==='transfer' ? 'โอนเงิน' : '');
   const amt    = parseFloat(document.getElementById('fAmt').value)||0;
   let   status = document.getElementById('fStatus').value || doneStatus(cType);
   const note   = document.getElementById('fNote').value.trim();
   const vendor_id = document.getElementById('fVendor')?.value||null;
-  if(!date||!desc||!amt||!cat_id){
-    showMsg('formMsg','กรุณากรอกวันที่ รายการ หมวด และจำนวนเงิน','error'); return;
+  if(!date||!desc||!amt||(cType!=='transfer'&&!cat_id)){
+    showMsg('formMsg','กรุณากรอกวันที่ รายการ และจำนวนเงิน','error'); return;
   }
   const itemObj = (itemsData[cat_id]||[]).find(x=>x.name===desc);
   const item_id = itemObj?.id||null;
@@ -2242,16 +2260,23 @@ function eUpdateDescByCat(catId){
 
 function eSetType(t, autoS=true){
   eType = t;
-  document.getElementById('eBtnIncome').className = 'type-btn'+(t==='income'?' active-income':'');
-  document.getElementById('eBtnExpense').className = 'type-btn'+(t==='expense'?' active-expense':'');
+  document.getElementById('eBtnIncome').className   = 'type-btn'+(t==='income'  ?' active-income':'');
+  document.getElementById('eBtnExpense').className  = 'type-btn'+(t==='expense' ?' active-expense':'');
+  document.getElementById('eBtnTransfer').className = 'type-btn'+(t==='transfer'?' active-transfer':'');
   document.getElementById('eSplitSection').style.display = t==='expense'?'block':'none';
+  const eCatRow = document.getElementById('eCatRow');
+  if(eCatRow) eCatRow.style.display = t==='transfer'?'none':'';
   // update status options
   const eStat = document.getElementById('eStatus');
   if(eStat){
     const cur = eStat.value;
-    eStat.innerHTML = t==='income'
-      ? `<option value="pending">รอรับ</option><option value="received">รับแล้ว</option>`
-      : `<option value="pending">รอจ่าย</option><option value="paid">จ่ายแล้ว</option>`;
+    if(t==='income'){
+      eStat.innerHTML = `<option value="pending">รอรับ</option><option value="received">รับแล้ว</option>`;
+    } else if(t==='transfer'){
+      eStat.innerHTML = `<option value="pending">รอโอน</option><option value="paid">โอนแล้ว</option>`;
+    } else {
+      eStat.innerHTML = `<option value="pending">รอจ่าย</option><option value="paid">จ่ายแล้ว</option>`;
+    }
     eStat.value = cur && eStat.querySelector(`option[value="${cur}"]`) ? cur : doneStatus(t);
   }
   const sel = document.getElementById('eCat');
@@ -2290,9 +2315,9 @@ function saveEdit(){
   if(!date||!desc||!amt){ showMsg('editMsg','กรุณากรอกวันที่ รายการ และจำนวนเงิน','error'); return; }
   const cat_id = document.getElementById('eCat').value;
   const catObj = catMap[cat_id];
-  const cat_name = catObj ? catObj.name : '';
+  const cat_name = catObj ? catObj.name : (eType==='transfer' ? 'โอนเงิน' : '');
   const itemObj = (itemsData[cat_id]||[]).find(x=>x.name===desc);
-  e.date=date; e.type=eType; e.cat_id=cat_id; e.cat_name=cat_name;
+  e.date=date; e.type=eType; e.cat_id=cat_id||null; e.cat_name=cat_name;
   e.desc=desc; e.amt=amt; e.person=document.getElementById('ePerson').value;
   e.split=eType==='expense'?eSplitOn:false;
   e.status=document.getElementById('eStatus').value || doneStatus(eType);
@@ -2376,10 +2401,10 @@ function renderDash(){
   const recent = curM === thisM ? db.slice(0,6) : db.filter(e=>e.date.startsWith(curM)).slice(0,6);
   document.getElementById('recentTx').innerHTML=recent.length?`<table><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>${recent.map(e=>`<tr>
     <td style="font-size:12px;color:var(--ink3);white-space:nowrap">${toThaiDateShort(e.date)}</td>
-    <td>${e.desc} <span class="badge ${e.type==='income'?'badge-income':'badge-expense'}" style="font-size:10px">${e.type==='income'?'รายรับ':'รายจ่าย'}</span>${e.note?`<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 ${e.note}</div>`:''}
+    <td>${e.desc} <span class="badge ${e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense'}" style="font-size:10px">${e.type==='income'?'รายรับ':e.type==='transfer'?'โอน':'รายจ่าย'}</span>${e.note?`<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 ${e.note}</div>`:''}
     </td>
-    <td style="text-align:right;font-family:monospace;color:${e.type==='income'?'var(--green)':'var(--red)'}">${fmt(e.amt)}</td>
-    <td><span class="badge ${isPaid(e)?'badge-paid':'badge-pending'}" style="font-size:10px">${isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')}</span></td>
+    <td style="text-align:right;font-family:monospace;color:${e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)'}">${fmt(e.amt)}</td>
+    <td><span class="badge ${isPaid(e)?'badge-paid':'badge-pending'}" style="font-size:10px">${isPaid(e)?(e.type==='income'?'รับแล้ว':e.type==='transfer'?'โอนแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':e.type==='transfer'?'รอโอน':'รอจ่าย')}</span></td>
     </tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีรายการ</div>';
   const pend=db.filter(e=>e.status==='pending');
   document.getElementById('pendingTx').innerHTML=pend.length?`<table><tr><th>รายการ</th><th>ผู้บันทึก</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>${pend.map(e=>`<tr>
@@ -2387,7 +2412,7 @@ function renderDash(){
     </td>
     <td>${personPill(e.person)}</td>
     <td style="text-align:right;font-family:monospace">${fmt(e.amt)}</td>
-    <td><span class="badge badge-pending" style="font-size:10px">${e.type==='income'?'รอรับ':'รอจ่าย'}</span></td>
+    <td><span class="badge badge-pending" style="font-size:10px">${e.type==='income'?'รอรับ':e.type==='transfer'?'รอโอน':'รอจ่าย'}</span></td>
     <td><button class="btn btn-confirm" onclick="markPaid('${e.id}');renderDash()">✓</button></td>
     </tr>`).join('')}</table>`:'<div class="empty">ไม่มีรายการรอดำเนินการ</div>';
   renderSalaryCycleCard();
@@ -2484,7 +2509,7 @@ function getMFValues(id){
   return [...document.querySelectorAll(`#${id} input[type=checkbox]:checked`)].map(c=>c.value);
 }
 const MF_LABELS = {
-  income:'รายรับ', expense:'รายจ่าย',
+  income:'รายรับ', expense:'รายจ่าย', transfer:'โอน/ฝาก',
   paid:'จ่ายแล้ว', received:'รับแล้ว', pending:'รอดำเนินการ'
 };
 
@@ -2609,13 +2634,16 @@ function renderTx(){
   // Total bar
   const totalEl = document.getElementById('txTotal');
   if(totalEl && list.length){
-    const inc  = list.filter(e=>e.type==='income' &&isPaid(e)).reduce((s,e)=>s+e.amt,0);
-    const exp  = list.filter(e=>e.type==='expense'&&isPaid(e)).reduce((s,e)=>s+e.amt,0);
-    const pend = list.filter(e=>e.status==='pending').reduce((s,e)=>s+e.amt,0);
+    const inc      = list.filter(e=>e.type==='income'  &&isPaid(e)).reduce((s,e)=>s+e.amt,0);
+    const exp      = list.filter(e=>e.type==='expense' &&isPaid(e)).reduce((s,e)=>s+e.amt,0);
+    const transfer = list.filter(e=>e.type==='transfer'&&isPaid(e)).reduce((s,e)=>s+e.amt,0);
+    const pend     = list.filter(e=>e.status==='pending').reduce((s,e)=>s+e.amt,0);
+    const trCnt    = list.filter(e=>e.type==='transfer').length;
     totalEl.style.display='flex';
     totalEl.innerHTML=`
       <div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายรับ (${list.filter(e=>e.type==='income'&&isPaid(e)).length})</div><div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">${fmt(inc)}</div></div>
       <div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายจ่าย (${list.filter(e=>e.type==='expense'&&isPaid(e)).length})</div><div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">${fmt(exp)}</div></div>
+      ${trCnt>0?`<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">โอน/ฝาก (${trCnt})</div><div style="font-size:15px;font-weight:700;color:var(--blue);font-family:monospace">${fmt(transfer)}</div></div>`:''}
       <div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รอดำเนินการ (${list.filter(e=>e.status==='pending').length})</div><div style="font-size:15px;font-weight:700;color:var(--amber);font-family:monospace">${fmt(pend)}</div></div>
       <div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">สุทธิ (${list.length} รายการ)</div><div style="font-size:15px;font-weight:700;font-family:monospace;color:${inc-exp>=0?'var(--green)':'var(--red)'}">${fmt(inc-exp)}</div></div>`;
   } else if(totalEl){ totalEl.style.display='none'; }
@@ -2675,11 +2703,11 @@ function renderTx(){
                       <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 4C5 4 1.5 10 1.5 10S5 16 10 16s8.5-6 8.5-6S15 4 10 4zm0 9a3 3 0 110-6 3 3 0 010 6z"/></svg>
                     </button>
                   </div>` : `
-                  <div style="font-size:15px;font-weight:600;font-family:monospace;color:${e.type==='income'?'var(--green)':'var(--red)'}">
-                    ${e.type==='income'?'+':'−'}${fmt(e.amt)}
+                  <div style="font-size:15px;font-weight:600;font-family:monospace;color:${e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)'}">
+                    ${e.type==='income'?'+':e.type==='transfer'?'⇄':'−'}${fmt(e.amt)}
                   </div>`}
                   <div style="margin-top:3px">
-                    <span class="badge ${isPaid(e)?'badge-paid':'badge-pending'}" style="font-size:10px">${isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')}</span>
+                    <span class="badge ${e.type==='transfer'?'badge-transfer':isPaid(e)?'badge-paid':'badge-pending'}" style="font-size:10px">${e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))}</span>
                   </div>
                 </div>
               </div>
@@ -2795,8 +2823,8 @@ function renderTx(){
         <td style="font-size:12px;color:var(--ink3)">${e.cat_name||'—'}</td>
         <td style="font-size:12px;color:var(--ink3)">${e.vendor_id ? vendorsData.find(v=>v.id===e.vendor_id)?.name||'—' : '—'}</td>
         <td>${e.type==='expense'?`<span class="badge ${e.split?'badge-split':'badge-personal'}">${e.split?'÷2':'ส่วนตัว'}</span>`:'-'}</td>
-        <td style="text-align:right;font-family:monospace;font-weight:500;color:${e.type==='income'?'var(--green)':'var(--red)'}">${fmt(e.amt)}</td>
-        <td><span class="badge ${isPaid(e)?'badge-paid':'badge-pending'}">${isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')}</span></td>
+        <td style="text-align:right;font-family:monospace;font-weight:500;color:${e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)'}">${e.type==='transfer'?'⇄ ':e.type==='income'?'+':'-'}${fmt(e.amt)}</td>
+        <td><span class="badge ${e.type==='transfer'?'badge-transfer':isPaid(e)?'badge-paid':'badge-pending'}">${e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))}</span></td>
         <td style="font-size:11px;color:var(--ink3);font-style:italic">${e.note||'—'}</td>
         <td style="white-space:nowrap;display:flex;gap:4px;align-items:center" onclick="event.stopPropagation()">
           ${e.status==='pending'

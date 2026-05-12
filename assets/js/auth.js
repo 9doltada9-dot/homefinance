@@ -431,6 +431,59 @@ function _updateUserBar() {
   }
 }
 
+// ─── CHANGE DISPLAY NAME ──────────────────────────────────
+async function doChangeName() {
+  var input  = document.getElementById('stgNewName');
+  var msgEl  = document.getElementById('changeNameMsg');
+  var newName = ((input || {}).value || '').trim();
+
+  function _showNameMsg(text, ok) {
+    if (!msgEl) return;
+    msgEl.style.display  = 'block';
+    msgEl.style.color    = ok ? 'var(--green)' : 'var(--red)';
+    msgEl.textContent    = text;
+    setTimeout(function(){ msgEl.style.display = 'none'; }, 3000);
+  }
+
+  if (!newName) { _showNameMsg('⚠️ กรอกชื่อที่ต้องการเปลี่ยน', false); return; }
+  if (!_authUser) { _showNameMsg('⚠️ ยังไม่ได้เข้าสู่ระบบ', false); return; }
+
+  var creds = getSbCreds();
+  if (!creds.ok) {
+    // local-only mode — just update in memory
+    if (_authProfile) _authProfile.name = newName;
+    _updateUserBar();
+    if (input) input.value = '';
+    _showNameMsg('✅ เปลี่ยนชื่อเป็น "' + newName + '" แล้ว', true);
+    return;
+  }
+
+  try {
+    var r = await fetch(
+      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id,
+      {
+        method: 'PATCH',
+        headers: Object.assign({}, sbHeadersFrom(creds.key), {
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        }),
+        body: JSON.stringify({ name: newName })
+      }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!_authProfile) _authProfile = {};
+    _authProfile.name = newName;
+    // Update saved session
+    var saved = _loadSavedSession();
+    if (saved) { saved.profile = _authProfile; try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_){} }
+    _updateUserBar();
+    if (input) input.value = '';
+    _showNameMsg('✅ เปลี่ยนชื่อเป็น "' + newName + '" แล้ว', true);
+  } catch (e) {
+    _showNameMsg('❌ เปลี่ยนชื่อไม่สำเร็จ: ' + e.message, false);
+  }
+}
+
 // ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
 // ใช้สำหรับ auto-set ฟิลด์ person ในฟอร์ม
 function getCurrentPerson() {

@@ -421,177 +421,78 @@ function markPending(id){
   save(); renderDash(); renderTx();
 }
 function delStep1(id){
-  var btn=document.getElementById('del-'+id);
-  if(!btn) return;
-  btn.textContent='ยืนยันลบ?';
-  btn.style.background='var(--red)';
-  btn.style.color='#fff';
-  btn.style.borderColor='var(--red)';
-  btn.onclick=function(){ delConfirm(id); };
-  setTimeout(function(){
-    if(document.getElementById('del-'+id)){
-      btn.textContent='ลบ';
-      btn.style.background='';btn.style.color='';btn.style.borderColor='';
-      btn.onclick=function(){ delStep1(id); };
-    }
-  },3000);
+  // Desktop — ใช้ confirm modal เหมือนกัน
+  delConfirm(id);
 }
 
-var _lastDeleted = null;
-var _undoTimer = null;
-var _delTimer = null; // delayed sbDelete — runs after undo window closes
+// ─── DELETE CONFIRM MODAL ─────────────────────────────────
+var _pendingDeleteId = null;
 
-function delConfirm(id){
-  if(!checkOnlineForAction()) return;
-  var entry = db.find(function(e){return String(e.id)===String(id);});
-  if(!entry) return;
+function delConfirm(id) {
+  if (!checkOnlineForAction()) return;
+  var entry = db.find(function(e){ return String(e.id) === String(id); });
+  if (!entry) return;
 
-  // cancel any pending real delete from previous action
-  clearTimeout(_delTimer);
-  if(_lastDeleted && _lastDeleted._pendingDelete){
-    sbDelete(_lastDeleted.id);
-    if(_lastDeleted._pairId) sbDelete(_lastDeleted._pairId);
+  var pairId = entry.transfer_pair_id || null;
+  var modal  = document.getElementById('deleteConfirmModal');
+  var descEl = document.getElementById('delConfirmDesc');
+  var noteEl = document.getElementById('delConfirmNote');
+
+  _pendingDeleteId = id;
+
+  if (descEl) {
+    if (entry.type === 'transfer') {
+      descEl.innerHTML =
+        '↔ <strong>' + entry.desc + '</strong><br>' +
+        '<span style="font-size:12px;color:var(--ink3)">รายการโอนเงิน</span>';
+    } else {
+      var sign = entry.type === 'income' ? '+' : '−';
+      descEl.innerHTML =
+        '<strong>' + entry.desc + '</strong><br>' +
+        '<span style="font-size:12px;color:var(--ink3)">' + (entry.cat_name || '—') + ' · ' + sign + fmt(entry.amt) + ' บาท</span>';
+    }
   }
+  if (noteEl) {
+    noteEl.textContent = pairId
+      ? '⚠️ การโอนเงินจะลบทั้ง 2 รายการ (ต้นทางและปลายทาง) พร้อมกัน'
+      : 'รายการที่ลบแล้วไม่สามารถกู้คืนได้';
+  }
+  if (modal) modal.style.display = 'flex';
+}
 
-  // ถ้าเป็น transfer — ลบ entry คู่พร้อมกัน (atomic)
-  var pairId    = entry.transfer_pair_id || null;
-  var pairEntry = pairId ? db.find(function(e){ return String(e.id)===String(pairId); }) : null;
+function closeDeleteConfirmModal() {
+  var modal = document.getElementById('deleteConfirmModal');
+  if (modal) modal.style.display = 'none';
+  _pendingDeleteId = null;
+}
 
-  _lastDeleted = Object.assign({}, entry, {
-    _pendingDelete: true,
-    _pairId:   pairId,
-    _pairSnap: pairEntry ? Object.assign({}, pairEntry) : null,
-  });
+function execDeleteConfirmed() {
+  if (!_pendingDeleteId) return;
+  var id    = _pendingDeleteId;
+  var entry = db.find(function(e){ return String(e.id) === String(id); });
+  closeDeleteConfirmModal();
+  if (!entry) return;
 
+  var pairId     = entry.transfer_pair_id || null;
   var idsToRemove = [String(id)];
-  if(pairId) idsToRemove.push(String(pairId));
+  if (pairId) idsToRemove.push(String(pairId));
+
   db = db.filter(function(e){ return idsToRemove.indexOf(String(e.id)) === -1; });
   save(); renderTx(); renderDash();
-  if(typeof renderAccountCards==='function') renderAccountCards();
+  if (typeof renderAccountCards === 'function') renderAccountCards();
+  if (typeof renderAccountList  === 'function') renderAccountList();
+
+  // sync to Supabase
+  sbDelete(id);
+  if (pairId) sbDelete(pairId);
 
   var msg = entry.type === 'transfer'
-    ? 'ลบการโอนเงิน "' + entry.desc + '" แล้ว (ทั้งคู่)'
-    : 'ลบ "' + entry.desc + '" แล้ว';
-  showUndoToast(msg);
-
-  _delTimer = setTimeout(function(){
-    if(_lastDeleted && _lastDeleted.id === entry.id){
-      sbDelete(entry.id);
-      if(_lastDeleted._pairId) sbDelete(_lastDeleted._pairId);
-      _lastDeleted = null;
-    }
-  }, 5200);
+    ? '🗑 ลบการโอนเงิน "' + entry.desc + '" แล้ว (ทั้งคู่)'
+    : '🗑 ลบ "' + entry.desc + '" แล้ว';
+  showCycleToast(msg);
 }
 
-function showUndoToast(msg){
-  var t = document.getElementById('undoToast');
-  if(!t){
-    t = document.createElement('div'); t.id='undoToast';
-    t.style.cssText = [
-      'position:fixed',
-      'bottom:calc(env(safe-area-inset-bottom,0px) + 80px)',
-      'left:50%;transform:translateX(-50%)',
-      'background:#1a1a1a;color:#fff',
-      'padding:12px 16px',
-      'border-radius:16px',
-      'font-size:13px;font-family:Sarabun,sans-serif',
-      'z-index:999',
-      'display:flex;align-items:center;gap:12px',
-      'box-shadow:0 4px 20px rgba(0,0,0,.35)',
-      'transition:opacity .3s,transform .3s',
-      'min-width:240px;max-width:calc(100vw - 40px)',
-    ].join(';');
-    document.body.appendChild(t);
-  }
-
-  t.innerHTML =
-    '<div style="flex:1;min-width:0">'+
-      '<div style="font-weight:600;margin-bottom:2px">'+msg+'</div>'+
-      '<div style="font-size:11px;color:rgba(255,255,255,.55)">จะลบถาวรใน 5 วินาที</div>'+
-      '<div style="height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin-top:6px;overflow:hidden">'+
-        '<div id="undoProgress" style="height:100%;background:var(--green);border-radius:2px;width:100%;transition:width 5s linear"></div>'+
-      '</div>'+
-    '</div>'+
-    '<button onclick="undoDelete()" style="'+
-      'background:var(--green);color:#fff;border:none;'+
-      'border-radius:12px;padding:8px 14px;'+
-      'font-size:13px;font-weight:600;cursor:pointer;'+
-      'font-family:Sarabun,sans-serif;'+
-      'white-space:nowrap;flex-shrink:0;'+
-      'min-height:40px;touch-action:manipulation'+
-    '">↩ คืนค่า</button>';
-
-  t.style.opacity='1';
-  t.style.transform='translateX(-50%) translateY(0)';
-
-  // animate progress bar
-  requestAnimationFrame(function(){
-    var bar = document.getElementById('undoProgress');
-    if(bar){ bar.style.width='100%'; setTimeout(function(){ bar.style.width='0%'; },50); }
-  });
-
-  clearTimeout(_undoTimer);
-  _undoTimer = setTimeout(function(){
-    t.style.opacity='0';
-    t.style.transform='translateX(-50%) translateY(8px)';
-  }, 5000);
-}
-
-function undoDelete(){
-  if(!_lastDeleted) return;
-  clearTimeout(_undoTimer);
-  clearTimeout(_delTimer); // cancel the pending DB delete
-
-  var restored = Object.assign({}, _lastDeleted);
-  var pairId   = restored._pairId || null;
-  var pairSnap = restored._pairSnap || null;
-  delete restored._pendingDelete;
-  delete restored._pairId;
-  delete restored._pairSnap;
-  _lastDeleted = null;
-
-  db.unshift(restored);
-  // Restore the paired transfer entry too (if any)
-  if(pairSnap){
-    db.unshift(pairSnap);
-  }
-  save(); renderTx(); renderDash();
-  if(typeof renderAccountCards==='function') renderAccountCards();
-
-  var t = document.getElementById('undoToast');
-  if(t){
-    t.style.opacity='0';
-    t.style.transform='translateX(-50%) translateY(8px)';
-  }
-  var msg = pairId
-    ? 'คืนค่าการโอนเงิน "'+restored.desc+'" แล้ว (ทั้งคู่)'
-    : 'คืนค่า "'+restored.desc+'" แล้ว';
-  showRestoreToast(msg);
-}
-
-var _restoreTimer = null;
-function showRestoreToast(msg){
-  var t = document.getElementById('restoreToast');
-  if(!t){
-    t = document.createElement('div'); t.id='restoreToast';
-    t.style.cssText = [
-      'position:fixed',
-      'bottom:calc(env(safe-area-inset-bottom,0px) + 80px)',
-      'left:50%;transform:translateX(-50%)',
-      'background:#1a7a4a;color:#fff',
-      'padding:10px 18px;border-radius:16px',
-      'font-size:13px;font-weight:600;font-family:Sarabun,sans-serif',
-      'z-index:999;white-space:nowrap',
-      'box-shadow:0 4px 16px rgba(0,0,0,.25)',
-      'transition:opacity .3s',
-    ].join(';');
-    document.body.appendChild(t);
-  }
-  t.textContent = '✓ '+msg;
-  t.style.opacity='1';
-  clearTimeout(_restoreTimer);
-  _restoreTimer = setTimeout(function(){ t.style.opacity='0'; }, 3000);
-}
+// (undo toast removed — replaced by confirm-before-delete modal)
 
 // ─── EXPORT CSV ───────────────────────────────────────────
 // NOTE: definition lives in supabase.js (later override wins)

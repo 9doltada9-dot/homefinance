@@ -530,7 +530,7 @@ body.app-ready #page-login { display: none !important; }
   <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
   <div class="stg-group-label">👤 ผู้ใช้งาน</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
-    <div class="stg-sect-head">
+    <div class="stg-sect-head" style="flex-wrap:wrap;gap:10px">
       <span class="stg-icon" style="background:var(--blue-bg)">👤</span>
       <div style="flex:1;min-width:0">
         <div class="stg-title" id="stgUserName">—</div>
@@ -538,6 +538,12 @@ body.app-ready #page-login { display: none !important; }
       </div>
       <span id="stgUserRole" style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--surface2);color:var(--ink3);white-space:nowrap"></span>
     </div>
+    <!-- edit name row -->
+    <div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center">
+      <input type="text" id="stgNewName" placeholder="เปลี่ยนชื่อที่แสดง..." style="flex:1;font-size:14px !important">
+      <button class="btn btn-primary" onclick="doChangeName()" style="white-space:nowrap;min-height:40px;font-size:13px">บันทึกชื่อ</button>
+    </div>
+    <div id="changeNameMsg" style="padding:0 14px 10px;font-size:12px;display:none"></div>
   </div>
 
   <!-- ─── หมวดหมู่ ───────────────────────────── -->
@@ -1093,6 +1099,38 @@ create policy "public write" on transactions for all using (true);</div>
       <button class="btn btn-ghost" onclick="closeEditAccountModal()" style="flex:1;min-height:44px">ยกเลิก</button>
       <button class="btn btn-primary" onclick="doEditAccount()" style="flex:1;min-height:44px">บันทึก</button>
     </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:340px;padding:24px">
+    <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px">🗑 ยืนยันการลบ</div>
+    <div id="delConfirmDesc" style="font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:6px">—</div>
+    <div id="delConfirmNote" style="font-size:12px;color:var(--ink3);margin-bottom:18px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeDeleteConfirmModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button id="delConfirmBtn" class="btn" onclick="execDeleteConfirmed()" style="flex:1;min-height:44px;background:var(--red);color:#fff;border-color:var(--red)">ลบถาวร</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT LEDGER MODAL -->
+<div id="accountLedgerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:680px;padding:0;margin:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)">
+      <div>
+        <div id="ledgerAcctName" style="font-size:16px;font-weight:700"></div>
+        <div id="ledgerAcctSub"  style="font-size:12px;color:var(--ink3);margin-top:2px"></div>
+      </div>
+      <button onclick="closeAccountLedger()" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">×</button>
+    </div>
+    <div style="padding:14px 20px;display:flex;gap:16px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">ยอดคงเหลือ</div><div id="ledgerBalance" style="font-size:20px;font-weight:700;font-family:monospace">0.00</div></div>
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายรับรวม</div><div id="ledgerTotalIn" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--green)">0.00</div></div>
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายจ่ายรวม</div><div id="ledgerTotalOut" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--red)">0.00</div></div>
+    </div>
+    <div id="ledgerTableWrap" style="overflow-x:auto;padding:0 20px 20px"></div>
   </div>
 </div>
 

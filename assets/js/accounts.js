@@ -410,6 +410,7 @@ function renderAccountList() {
         '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmt(bal) + ' บาท</div>' +
       '</div>' +
       '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' +
+        '<button onclick="openAccountLedger(\'' + a.id + '\')" title="ดูรายการ" style="background:var(--surface2);border:none;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">📋 รายการ</button>' +
         '<button onclick="openDepositModal(\'' + a.id + '\')" title="ฝากเงิน" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>' +
         '<button onclick="openAdjustModal(\'' + a.id + '\')" title="ปรับยอด" style="background:var(--amber-bg,#fffbeb);border:none;color:var(--amber,#d97706);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">⚖️ ปรับ</button>' +
         '<button onclick="openEditAccountModal(\'' + a.id + '\')" title="แก้ไข" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>' +
@@ -419,6 +420,109 @@ function renderAccountList() {
       '</div>' +
     '</div>';
   }).join('') || '<div class="empty">ยังไม่มีบัญชี</div>';
+}
+
+// ─── ACCOUNT LEDGER (สมุดรายวัน ต่อบัญชี) ────────────────
+function openAccountLedger(accountId) {
+  var acct = accountsData.find(function(a){ return a.id === accountId; });
+  if (!acct) return;
+
+  // header
+  var nameEl = document.getElementById('ledgerAcctName');
+  var subEl  = document.getElementById('ledgerAcctSub');
+  if (nameEl) nameEl.textContent = acct.name;
+  if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmt(acct.initial_balance || 0) + ' บาท';
+
+  // filter + sort entries for this account
+  var entries = db
+    .filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
+    .slice()
+    .sort(function(a, b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+
+  // running balance starting from initial
+  var running = acct.initial_balance || 0;
+  var totalIn  = 0;
+  var totalOut = 0;
+
+  var rows = entries.map(function(e) {
+    var debit  = 0; // เงินออก
+    var credit = 0; // เงินเข้า
+    var typeLabel = '';
+    var typeColor = 'var(--ink2)';
+
+    if (e.type === 'income') {
+      credit = e.amt; running += e.amt; totalIn += e.amt;
+      typeLabel = 'รายรับ'; typeColor = 'var(--green)';
+    } else if (e.type === 'expense') {
+      debit = e.amt; running -= e.amt; totalOut += e.amt;
+      typeLabel = 'รายจ่าย'; typeColor = 'var(--red)';
+    } else if (e.type === 'transfer') {
+      if (e.transfer_direction === 'in') {
+        credit = e.amt; running += e.amt; totalIn += e.amt;
+        typeLabel = '↙ รับโอน'; typeColor = 'var(--green)';
+      } else {
+        debit = e.amt; running -= e.amt; totalOut += e.amt;
+        typeLabel = '↗ โอนออก'; typeColor = 'var(--red)';
+      }
+    }
+
+    var balColor = running >= 0 ? 'var(--green)' : 'var(--red)';
+    return '<tr style="border-bottom:1px solid var(--line)">' +
+      '<td style="font-size:12px;color:var(--ink3);white-space:nowrap;padding:8px 6px">' + toThaiDateShort(e.date) + '</td>' +
+      '<td style="padding:8px 6px;max-width:180px">' +
+        '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.desc || '—') + '</div>' +
+        '<div style="font-size:11px;color:' + typeColor + ';font-weight:600">' + typeLabel + (e.cat_name ? ' · ' + e.cat_name : '') + '</div>' +
+      '</td>' +
+      '<td style="text-align:right;font-family:monospace;font-size:13px;color:var(--red);padding:8px 6px;white-space:nowrap">' +
+        (debit ? '−' + fmt(debit) : '—') +
+      '</td>' +
+      '<td style="text-align:right;font-family:monospace;font-size:13px;color:var(--green);padding:8px 6px;white-space:nowrap">' +
+        (credit ? '+' + fmt(credit) : '—') +
+      '</td>' +
+      '<td style="text-align:right;font-family:monospace;font-size:13px;font-weight:700;color:' + balColor + ';padding:8px 6px;white-space:nowrap">' +
+        fmt(running) +
+      '</td>' +
+    '</tr>';
+  });
+
+  // summary row
+  var openBal = acct.initial_balance || 0;
+  var openRow = '<tr style="background:var(--surface2);font-size:12px">' +
+    '<td colspan="2" style="padding:8px 6px;color:var(--ink3);font-style:italic">ยอดยกมา (Opening Balance)</td>' +
+    '<td></td><td></td>' +
+    '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmt(openBal) + '</td>' +
+  '</tr>';
+
+  var wrap = document.getElementById('ledgerTableWrap');
+  if (wrap) {
+    wrap.innerHTML = rows.length
+      ? '<table style="width:100%;border-collapse:collapse;margin-top:8px">' +
+          '<thead><tr style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px">' +
+            '<th style="text-align:left;padding:6px 6px;font-weight:600">วันที่</th>' +
+            '<th style="text-align:left;padding:6px 6px;font-weight:600">รายการ</th>' +
+            '<th style="text-align:right;padding:6px 6px;font-weight:600">รายจ่าย</th>' +
+            '<th style="text-align:right;padding:6px 6px;font-weight:600">รายรับ</th>' +
+            '<th style="text-align:right;padding:6px 6px;font-weight:600">ยอดคงเหลือ</th>' +
+          '</tr></thead>' +
+          '<tbody>' + openRow + rows.join('') + '</tbody>' +
+        '</table>'
+      : '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:14px">ยังไม่มีรายการในบัญชีนี้</div>';
+  }
+
+  // summary totals
+  var balEl     = document.getElementById('ledgerBalance');
+  var totalInEl = document.getElementById('ledgerTotalIn');
+  var totalOutEl= document.getElementById('ledgerTotalOut');
+  var finalBal  = getAccountBalance(accountId);
+  if (balEl)     { balEl.textContent = fmt(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
+  if (totalInEl) totalInEl.textContent  = '+' + fmt(totalIn)  + ' บาท';
+  if (totalOutEl)totalOutEl.textContent = '−' + fmt(totalOut) + ' บาท';
+
+  document.getElementById('accountLedgerModal').style.display = 'flex';
+}
+
+function closeAccountLedger() {
+  document.getElementById('accountLedgerModal').style.display = 'none';
 }
 
 function onAddAccount() {

@@ -163,7 +163,10 @@ function exportAdminPDF() {
 async function renderAdminUserList() {
   var el = document.getElementById('adminUserList');
   if (!el) return;
-  if (!isAdminUser()) { el.innerHTML = ''; return; }
+  if (!isAdminUser()) {
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">⚠️ ต้องมีสิทธิ์ Admin</div>';
+    return;
+  }
 
   var creds = getSbCreds();
   if (!creds.ok) {
@@ -171,54 +174,81 @@ async function renderAdminUserList() {
     return;
   }
 
-  el.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:8px 0">⏳ กำลังโหลด...</div>';
+  el.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:8px 0;text-align:center">⏳ กำลังโหลด...</div>';
 
   try {
+    // ดึง profiles พร้อม email (ถ้า column มีอยู่)
     var r = await fetch(
-      creds.url + '/rest/v1/profiles?select=id,name,role&order=created_at',
+      creds.url + '/rest/v1/profiles?select=id,name,role,email,created_at&order=created_at',
       { headers: sbHeadersFrom(creds.key) }
     );
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var profiles = await r.json();
 
     if (!profiles.length) {
-      el.innerHTML = '<div style="color:var(--ink3);font-size:13px">ยังไม่มี profile</div>';
+      el.innerHTML = '<div style="color:var(--ink3);font-size:13px;text-align:center;padding:12px">ยังไม่มีผู้ใช้งาน</div>';
       return;
     }
 
-    el.innerHTML = profiles.map(function(p){
-      var isSelf = p.id === getAuthUserId();
-      var isAdm  = p.role === 'admin';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)">' +
-        '<div>' +
-          '<div style="font-size:13px;font-weight:600">' + (p.name || '—') + (isSelf?' <span style="font-size:10px;color:var(--blue)">(คุณ)</span>':'') + '</div>' +
-          '<div style="font-size:11px;color:var(--ink3)">' + p.id.slice(0,12) + '...</div>' +
+    var myId = getAuthUserId();
+    var html = '<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">พบ ' + profiles.length + ' ผู้ใช้</div>';
+    html += profiles.map(function(p){
+      var isSelf  = p.id === myId;
+      var isAdm   = p.role === 'admin';
+      var safeName = (p.name || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var safeEmail = (p.email || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var initials = (p.name || '?').charAt(0).toUpperCase();
+      var avatarBg = isAdm ? 'var(--green-bg)' : 'var(--blue-bg)';
+      var avatarColor = isAdm ? 'var(--green)' : 'var(--blue)';
+
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">' +
+        // Avatar
+        '<div style="width:36px;height:36px;border-radius:50%;background:' + avatarBg + ';color:' + avatarColor + ';' +
+          'display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">' + initials + '</div>' +
+        // Info
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--ink)">' +
+            safeName +
+            (isSelf ? ' <span style="font-size:10px;background:var(--blue-bg);color:var(--blue);padding:1px 6px;border-radius:8px">(คุณ)</span>' : '') +
+          '</div>' +
+          (safeEmail
+            ? '<div style="font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + safeEmail + '</div>'
+            : '<div style="font-size:10px;color:var(--ink3);font-family:monospace">' + p.id.slice(0,16) + '…</div>') +
         '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<span style="font-size:11px;padding:3px 9px;border-radius:12px;' +
-            'background:' + (isAdm?'var(--green-bg)':'var(--surface2)') + ';' +
-            'color:'      + (isAdm?'var(--green)':'var(--ink3)') + '">' +
+        // Role badge + toggle
+        '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">' +
+          '<span style="font-size:11px;padding:3px 9px;border-radius:12px;white-space:nowrap;' +
+            'background:' + (isAdm ? 'var(--green-bg)' : 'var(--surface2)') + ';' +
+            'color:'      + (isAdm ? 'var(--green)'    : 'var(--ink3)')     + '">' +
             (isAdm ? '🛡 Admin' : '👤 User') +
           '</span>' +
           (!isSelf
-            ? '<button onclick="toggleUserRole(\'' + p.id + '\',\'' + (p.name||'').replace(/'/g,'') + '\',\'' + p.role + '\')" ' +
-                'style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px">' +
+            ? '<button onclick="toggleUserRole(\'' + p.id + '\',\'' + safeName.replace(/'/g,'') + '\',\'' + p.role + '\')" ' +
+                'style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:6px;' +
+                'background:var(--surface);cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px;white-space:nowrap;' +
+                'color:' + (isAdm ? 'var(--red)' : 'var(--green)') + '">' +
                 (isAdm ? '→ User' : '→ Admin') +
               '</button>'
-            : '') +
+            : '<span style="font-size:11px;color:var(--ink3);padding:4px 10px">—</span>') +
         '</div>' +
       '</div>';
     }).join('');
+    el.innerHTML = html;
 
   } catch (e) {
-    el.innerHTML = '<div style="color:var(--red);font-size:13px">❌ โหลดไม่ได้: ' + e.message + '</div>';
+    var errMsg = e.message || 'เชื่อมต่อไม่ได้';
+    if (errMsg.indexOf('42501') > -1 || errMsg.indexOf('403') > -1) {
+      errMsg = 'ถูกปฏิเสธ (RLS) — ตรวจสอบ policy ของ profiles table ว่า Admin อ่านได้ทุก row';
+    }
+    el.innerHTML = '<div style="color:var(--red);font-size:13px">❌ โหลดไม่ได้: ' + errMsg + '</div>';
   }
 }
 
 async function toggleUserRole(userId, userName, currentRole) {
   if (!isAdminUser()) return;
   var newRole = currentRole === 'admin' ? 'user' : 'admin';
-  if (!confirm('เปลี่ยน "' + userName + '" เป็น ' + newRole + '?')) return;
+  var roleLabel = newRole === 'admin' ? 'Admin 🛡' : 'User 👤';
+  if (!confirm('เปลี่ยน "' + userName + '" เป็น ' + roleLabel + '?')) return;
 
   var creds = getSbCreds();
   try {
@@ -228,7 +258,7 @@ async function toggleUserRole(userId, userName, currentRole) {
       body: JSON.stringify({ role: newRole })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    if(typeof showCycleToast==='function') showCycleToast('✅ อัปเดต role แล้ว');
+    if(typeof showCycleToast==='function') showCycleToast('✅ เปลี่ยน "' + userName + '" เป็น ' + roleLabel + ' แล้ว');
     renderAdminUserList();
   } catch (e) {
     if(typeof showCycleToast==='function') showCycleToast('❌ อัปเดตไม่ได้: ' + e.message);

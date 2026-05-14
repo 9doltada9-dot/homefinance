@@ -1,4 +1,4 @@
-/* HomeFinance · module: auth.js · v3.2.0
+/* HomeFinance · module: auth.js · v3.4.0
  * Supabase Auth — login, logout, session restore, profile management
  *
  * Must be loaded BEFORE app.js in index.html.
@@ -9,26 +9,105 @@
 var _authToken   = null;   // user's JWT access_token
 var _authUser    = null;   // { id, email }
 var _authProfile = null;   // { id, name, role }
+var _tempResetToken = null; // token สำหรับ reset password
 
 // ─── PUBLIC ACCESSORS ─────────────────────────────────────
 function getAuthToken()       { return _authToken; }
 function getAuthUserId()      { return _authUser   ? _authUser.id    : null; }
 function getAuthProfileName() { return _authProfile ? (_authProfile.name || (_authUser && _authUser.email.split('@')[0]) || '') : ''; }
-function isAdminUser()        { return !!(  _authProfile && _authProfile.role === 'admin'); }
+function isAdminUser()        { return !!(_authProfile && _authProfile.role === 'admin'); }
+
+// ─── AUTH CALLBACK HANDLER ────────────────────────────────
+// รับ type=signup (email confirm) และ type=recovery (reset password)
+function _handleAuthCallback() {
+  var hash = window.location.hash;
+  if (!hash || hash.indexOf('access_token') === -1) return false;
+
+  var params = {};
+  hash.replace(/^#/, '').split('&').forEach(function(pair) {
+    var idx = pair.indexOf('=');
+    if (idx > -1) {
+      params[decodeURIComponent(pair.slice(0, idx))] =
+        decodeURIComponent(pair.slice(idx + 1).replace(/\+/g, ' '));
+    }
+  });
+
+  // ล้าง hash ออกจาก URL
+  try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+
+  // ── Email Confirmation ──────────────────────────────────
+  if (params.type === 'signup') {
+    var savedName  = localStorage.getItem('hf2_pending_signup_name')  || '';
+    var savedEmail = localStorage.getItem('hf2_pending_signup_email') || '';
+    localStorage.removeItem('hf2_pending_signup_name');
+    localStorage.removeItem('hf2_pending_signup_email');
+
+    // สร้าง profile ด้วย token ที่ได้จาก email confirm
+    if (params.access_token && savedName) {
+      var creds = getSbCreds();
+      if (creds.ok) {
+        fetch(creds.url + '/auth/v1/user', {
+          headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + params.access_token }
+        }).then(function(r) {
+          return r.ok ? r.json() : null;
+        }).then(function(user) {
+          if (user && user.id) {
+            fetch(creds.url + '/rest/v1/profiles', {
+              method: 'POST',
+              headers: {
+                'apikey': creds.key,
+                'Authorization': 'Bearer ' + params.access_token,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates,return=minimal'
+              },
+              body: JSON.stringify({ id: user.id, name: savedName, role: 'user' })
+            }).catch(function(_) {});
+          }
+        }).catch(function(_) {});
+      }
+    }
+
+    showLoginPage();
+    setTimeout(function() {
+      // Pre-fill email ในช่อง login
+      var emailEl = document.getElementById('loginEmail');
+      if (emailEl && savedEmail) emailEl.value = savedEmail;
+      // แสดง success message
+      var msgEl = document.getElementById('loginMsg');
+      if (msgEl) {
+        msgEl.className = 'msg msg-success';
+        msgEl.textContent = '✅ ยืนยัน Email สำเร็จแล้ว กรุณา Login';
+      }
+    }, 120);
+    return true;
+  }
+
+  // ── Password Recovery ───────────────────────────────────
+  if (params.type === 'recovery') {
+    _tempResetToken = params.access_token;
+    showLoginPage();
+    setTimeout(function() {
+      showPasswordResetForm(true);
+    }, 120);
+    return true;
+  }
+
+  return false;
+}
 
 // ─── INIT: check saved session on startup ─────────────────
 async function initAuth() {
+  if (_handleAuthCallback()) return;
+
   var creds = getSbCreds();
   var saved = _loadSavedSession();
 
-  // ไม่มี Supabase หรือไม่มี session → แสดง login เสมอ
   if (!creds.ok || !saved) {
     showLoginPage();
     return;
   }
 
   try {
-    // Verify token still valid
     var r = await fetch(creds.url + '/auth/v1/user', {
       headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + saved.access_token }
     });
@@ -41,7 +120,6 @@ async function initAuth() {
       _showApp();
 
     } else if (r.status === 401) {
-      // Token expired — try refresh
       var ok = await _refreshSession(creds, saved.refresh_token);
       if (ok) { _showApp(); } else { _clearSession(); showLoginPage(); }
 
@@ -50,7 +128,6 @@ async function initAuth() {
     }
 
   } catch (_err) {
-    // Network offline — use cached credentials
     _authToken   = saved.access_token;
     _authUser    = { id: saved.user_id, email: saved.email };
     _authProfile = saved.profile || null;
@@ -74,7 +151,7 @@ async function doLogin() {
 
   var creds = getSbCreds();
   if (!creds.ok) {
-    showMsg('loginMsg', '⚠️ ยังไม่ได้ตั้งค่า Supabase URL / Key\n(แก้ในไฟล์ config.js)', 'error');
+    showMsg('loginMsg', '⚠️ ยังไม่ได้ตั้งค่า Supabase URL / Key\n(แตะ version 5 ครั้งเพื่อตั้งค่า)', 'error');
     return;
   }
 
@@ -89,13 +166,23 @@ async function doLogin() {
     });
 
     var data = await r.json();
-    if (!r.ok) throw new Error(data.error_description || data.msg || 'Login ไม่สำเร็จ');
+    if (!r.ok) {
+      var errMsg = data.error_description || data.msg || 'Login ไม่สำเร็จ';
+      if (errMsg.toLowerCase().indexOf('email not confirmed') > -1) {
+        errMsg = 'ยังไม่ได้ยืนยัน Email กรุณาตรวจสอบกล่องจดหมายและกดลิงก์ยืนยัน';
+      } else if (errMsg.toLowerCase().indexOf('invalid login') > -1 || errMsg.toLowerCase().indexOf('invalid credentials') > -1) {
+        errMsg = 'Email หรือ Password ไม่ถูกต้อง';
+      }
+      throw new Error(errMsg);
+    }
 
     _authToken = data.access_token;
     _authUser  = { id: data.user.id, email: data.user.email };
     _saveSession(data.access_token, data.refresh_token, data.user);
-
     await _loadProfile(creds);
+
+    // บันทึก recent account
+    _saveRecentAccount(email, getAuthProfileName());
 
     if (passEl) passEl.value = '';
     showMsg('loginMsg', '', '');
@@ -116,59 +203,397 @@ async function doSignup() {
   var btn   = document.getElementById('signupBtn');
   var msgEl = document.getElementById('signupMsg');
 
-  if (!name)  { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ กรอกชื่อที่แสดง';} return; }
-  if (!email) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ กรอก Email';} return; }
-  if (pass.length < 6) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ Password อย่างน้อย 6 ตัว';} return; }
+  if (!name)  { _showSignupMsg('⚠️ กรอกชื่อที่แสดง', false); return; }
+  if (!email) { _showSignupMsg('⚠️ กรอก Email', false); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { _showSignupMsg('⚠️ รูปแบบ Email ไม่ถูกต้อง', false); return; }
+  if (pass.length < 6) { _showSignupMsg('⚠️ Password อย่างน้อย 6 ตัวอักษร', false); return; }
 
   var creds = getSbCreds();
-  if (!creds.ok) { if(msgEl){msgEl.className='msg msg-error';msgEl.textContent='⚠️ ยังไม่ได้ตั้งค่า Supabase';} return; }
+  if (!creds.ok) { _showSignupMsg('⚠️ ยังไม่ได้ตั้งค่า Supabase (แตะ version 5 ครั้ง)', false); return; }
 
   if (btn) { btn.disabled = true; btn.textContent = 'กำลังสมัคร...'; }
-  if (msgEl) { msgEl.className='msg'; msgEl.textContent=''; }
+  _showSignupMsg('', null);
+
+  // เก็บ name และ email ชั่วคราว สำหรับสร้าง profile หลัง email confirm
+  localStorage.setItem('hf2_pending_signup_name',  name);
+  localStorage.setItem('hf2_pending_signup_email', email);
 
   try {
-    var r = await fetch(creds.url + '/auth/v1/signup', {
+    var _appUrl = window.location.href.replace(/#.*$/, '').replace(/\?.*$/, '');
+    var r = await fetch(creds.url + '/auth/v1/signup?redirect_to=' + encodeURIComponent(_appUrl), {
       method: 'POST',
       headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, password: pass })
     });
     var data = await r.json();
-    if (!r.ok) throw new Error(data.error_description || data.msg || 'สมัครไม่สำเร็จ');
 
-    // สร้าง profile พร้อมชื่อ
+    if (!r.ok) {
+      // แสดง error ที่เข้าใจง่าย
+      var errMsg = data.error_description || data.msg || data.message || 'สมัครไม่สำเร็จ';
+      if (errMsg.toLowerCase().indexOf('already registered') > -1 ||
+          errMsg.toLowerCase().indexOf('already been registered') > -1 ||
+          errMsg.toLowerCase().indexOf('user already') > -1) {
+        errMsg = '⚠️ Email นี้ลงทะเบียนไว้แล้ว กรุณาเข้าสู่ระบบหรือรีเซ็ต Password';
+      } else if (errMsg.toLowerCase().indexOf('invalid email') > -1) {
+        errMsg = '⚠️ รูปแบบ Email ไม่ถูกต้อง';
+      } else if (errMsg.toLowerCase().indexOf('password') > -1 && errMsg.toLowerCase().indexOf('weak') > -1) {
+        errMsg = '⚠️ Password ไม่ปลอดภัยพอ กรุณาใช้ตัวอักษรและตัวเลขผสมกัน';
+      }
+      throw new Error(errMsg);
+    }
+
+    // กรณี Supabase ต้องยืนยัน email (access_token = null)
+    if (!data.access_token) {
+      _showSignupPendingEmail(name, email);
+      if (btn) { btn.disabled = false; btn.textContent = 'สมัครสมาชิก'; }
+      return;
+    }
+
+    // กรณี email confirm ปิด → login ทันที
     _authToken = data.access_token;
     _authUser  = { id: data.user.id, email: data.user.email };
-    await fetch(creds.url + '/rest/v1/profiles', {
-      method: 'POST',
-      headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + _authToken,
-                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ id: data.user.id, name: name, role: 'user' })
-    });
-
-    // Login ทันทีหลังสมัคร
-    _authRefresh = data.refresh_token;
+    try {
+      await fetch(creds.url + '/rest/v1/profiles', {
+        method: 'POST',
+        headers: {
+          'apikey': creds.key,
+          'Authorization': 'Bearer ' + (_authToken || ''),
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify({ id: data.user.id, name: name, role: 'user' })
+      });
+    } catch(_profileErr) {
+      console.warn('[doSignup] profile create failed:', _profileErr);
+    }
+    localStorage.removeItem('hf2_pending_signup_name');
+    localStorage.removeItem('hf2_pending_signup_email');
     _authProfile = { id: data.user.id, name: name, role: 'user' };
     _saveSession(data.access_token, data.refresh_token, data.user);
-    if (msgEl) { msgEl.className='msg msg-success'; msgEl.textContent='✅ สมัครสำเร็จ! กำลังเข้าสู่ระบบ...'; }
-    setTimeout(function(){ _showApp(); }, 600);
+    _saveRecentAccount(email, name);
+    _showSignupMsg('✅ สมัครสำเร็จ! กำลังเข้าสู่ระบบ...', true);
+    setTimeout(function() { _showApp(); }, 600);
+
   } catch (e) {
-    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='❌ ' + e.message; }
-    if (btn)   { btn.disabled = false; btn.textContent = 'สมัครสมาชิก'; }
+    _showSignupMsg('❌ ' + e.message, false);
+    if (btn) { btn.disabled = false; btn.textContent = 'สมัครสมาชิก'; }
   }
+}
+
+// แสดง pending email confirmation UI
+function _showSignupPendingEmail(name, email) {
+  var formEl = document.getElementById('signupForm');
+  if (!formEl) return;
+  formEl.innerHTML =
+    '<div style="text-align:center;padding:8px 0">' +
+      '<div style="font-size:48px;margin-bottom:12px">📧</div>' +
+      '<div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">ส่ง Email ยืนยันแล้ว!</div>' +
+      '<div style="font-size:13px;color:var(--ink2);margin-bottom:4px">สวัสดี <strong>' + name + '</strong></div>' +
+      '<div style="font-size:13px;color:var(--ink2);margin-bottom:16px">กรุณาตรวจสอบกล่องจดหมายที่</div>' +
+      '<div style="font-size:14px;font-weight:600;color:var(--blue);background:var(--blue-bg);padding:8px 16px;border-radius:8px;margin-bottom:16px;word-break:break-all">' + email + '</div>' +
+      '<div style="font-size:12px;color:var(--ink3);margin-bottom:20px">คลิกลิงก์ยืนยันใน Email เพื่อเปิดใช้งานบัญชี<br>หลังจากนั้นกลับมา Login ได้เลย</div>' +
+      '<button class="btn btn-primary" onclick="switchAuthTab(\'login\')" style="width:100%;min-height:44px;font-size:14px">→ ไปหน้า Login</button>' +
+    '</div>';
+}
+
+function _showSignupMsg(text, ok) {
+  var msgEl = document.getElementById('signupMsg');
+  if (!msgEl) return;
+  if (!text) { msgEl.className = 'msg'; msgEl.textContent = ''; return; }
+  msgEl.className = 'msg ' + (ok ? 'msg-success' : 'msg-error');
+  msgEl.textContent = text;
 }
 
 // ─── TAB SWITCH ───────────────────────────────────────────
 function switchAuthTab(tab) {
-  var loginForm  = document.getElementById('loginForm');
+  // ถ้า signupForm ถูกแทนที่ด้วย pending email UI ให้ rebuild ก่อน
   var signupForm = document.getElementById('signupForm');
+  if (signupForm && !signupForm.querySelector('#signupName') && tab === 'signup') {
+    _rebuildSignupForm();
+  }
+
+  var loginForm  = document.getElementById('loginForm');
+  signupForm = document.getElementById('signupForm');
   var tabL = document.getElementById('tabLoginBtn');
   var tabS = document.getElementById('tabSignupBtn');
   if (!loginForm || !signupForm) return;
   var isLogin = tab === 'login';
   loginForm.style.display  = isLogin ? 'block' : 'none';
   signupForm.style.display = isLogin ? 'none'  : 'block';
+
+  // ซ่อน forgot/reset form
+  var forgotForm = document.getElementById('forgotForm');
+  var resetForm  = document.getElementById('resetPasswordForm');
+  if (forgotForm) forgotForm.style.display = 'none';
+  if (resetForm)  resetForm.style.display  = 'none';
+
   if (tabL) { tabL.style.background = isLogin ? 'var(--blue)' : 'var(--surface2)'; tabL.style.color = isLogin ? '#fff' : 'var(--ink2)'; }
   if (tabS) { tabS.style.background = isLogin ? 'var(--surface2)' : 'var(--blue)'; tabS.style.color = isLogin ? 'var(--ink2)' : '#fff'; }
+
+  if (isLogin) _renderRecentAccounts();
+}
+
+function _rebuildSignupForm() {
+  var signupForm = document.getElementById('signupForm');
+  if (!signupForm) return;
+  signupForm.innerHTML =
+    '<div class="field" style="margin-bottom:14px">' +
+      '<label>👤 ชื่อที่แสดง</label>' +
+      '<input type="text" id="signupName" placeholder="เช่น สมชาย" autocomplete="name" style="width:100%;font-size:16px !important" onkeydown="if(event.key===\'Enter\') document.getElementById(\'signupEmail\').focus()">' +
+    '</div>' +
+    '<div class="field" style="margin-bottom:14px">' +
+      '<label>📧 Email</label>' +
+      '<input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key===\'Enter\') document.getElementById(\'signupPassword\').focus()">' +
+    '</div>' +
+    '<div class="field" style="margin-bottom:20px">' +
+      '<label>🔒 Password</label>' +
+      '<input type="password" id="signupPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key===\'Enter\') doSignup()">' +
+    '</div>' +
+    '<button id="signupBtn" class="btn btn-primary" onclick="doSignup()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">สมัครสมาชิก</button>' +
+    '<div id="signupMsg" class="msg" style="margin-top:12px;text-align:center"></div>';
+}
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────
+async function doForgotPassword() {
+  var emailEl = document.getElementById('forgotEmail');
+  var msgEl   = document.getElementById('forgotMsg');
+  var btn     = document.getElementById('forgotBtn');
+  var email   = ((emailEl || {}).value || '').trim();
+
+  if (!email) {
+    if (msgEl) { msgEl.className = 'msg msg-error'; msgEl.textContent = '⚠️ กรอก Email ที่ลงทะเบียนไว้'; }
+    return;
+  }
+
+  var creds = getSbCreds();
+  if (!creds.ok) {
+    if (msgEl) { msgEl.className = 'msg msg-error'; msgEl.textContent = '⚠️ ยังไม่ได้ตั้งค่า Supabase'; }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังส่ง...'; }
+  if (msgEl) { msgEl.className = 'msg'; msgEl.textContent = ''; }
+
+  try {
+    var appUrl = window.location.href.replace(/#.*$/, '').replace(/\?.*$/, '');
+    var r = await fetch(creds.url + '/auth/v1/recover', {
+      method: 'POST',
+      headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, redirect_to: appUrl })
+    });
+    // Supabase ส่ง 200 แม้ email ไม่มีในระบบ (เพื่อ security)
+    if (msgEl) {
+      msgEl.className = 'msg msg-success';
+      msgEl.textContent = '📧 ถ้า Email นี้มีในระบบ จะได้รับลิงก์รีเซ็ต Password กรุณาตรวจสอบกล่องจดหมาย';
+    }
+    setTimeout(function() { showForgotForm(false); }, 5000);
+  } catch(e) {
+    if (msgEl) { msgEl.className = 'msg msg-error'; msgEl.textContent = '❌ ' + (e.message || 'ส่งไม่สำเร็จ'); }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📨 ส่ง Email รีเซ็ต Password'; }
+  }
+}
+
+function showForgotForm(show) {
+  var loginForm  = document.getElementById('loginForm');
+  var forgotForm = document.getElementById('forgotForm');
+  var tabRow     = document.getElementById('authTabRow');
+  if (!loginForm || !forgotForm) return;
+
+  loginForm.style.display  = show ? 'none' : 'block';
+  forgotForm.style.display = show ? 'block' : 'none';
+  if (tabRow) tabRow.style.display = show ? 'none' : '';
+
+  if (show) {
+    // Pre-fill email จาก login form
+    var loginEmail  = document.getElementById('loginEmail');
+    var forgotEmail = document.getElementById('forgotEmail');
+    if (forgotEmail && loginEmail) forgotEmail.value = loginEmail.value;
+    var msgEl = document.getElementById('forgotMsg');
+    if (msgEl) { msgEl.className = 'msg'; msgEl.textContent = ''; }
+    setTimeout(function() { if (forgotEmail) forgotEmail.focus(); }, 100);
+  }
+}
+
+// ─── RESET PASSWORD (หลังคลิก link ใน email) ─────────────
+async function doResetPassword() {
+  var passEl    = document.getElementById('resetNewPassword');
+  var confirmEl = document.getElementById('resetConfirmPassword');
+  var btn       = document.getElementById('resetPasswordBtn');
+  var msgEl     = document.getElementById('resetPasswordMsg');
+
+  var newPass     = ((passEl    || {}).value || '').trim();
+  var confirmPass = ((confirmEl || {}).value || '').trim();
+
+  if (newPass.length < 6) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='⚠️ Password อย่างน้อย 6 ตัวอักษร'; }
+    return;
+  }
+  if (newPass !== confirmPass) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='⚠️ Password ไม่ตรงกัน'; }
+    return;
+  }
+
+  var creds = getSbCreds();
+  if (!creds.ok || !_tempResetToken) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='⚠️ Session หมดอายุ กรุณาขอ link ใหม่'; }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
+  if (msgEl) { msgEl.className = 'msg'; msgEl.textContent = ''; }
+
+  try {
+    var r = await fetch(creds.url + '/auth/v1/user', {
+      method: 'PUT',
+      headers: {
+        'apikey': creds.key,
+        'Authorization': 'Bearer ' + _tempResetToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: newPass })
+    });
+    if (!r.ok) {
+      var d = await r.json();
+      throw new Error(d.error_description || d.msg || 'เปลี่ยนไม่สำเร็จ');
+    }
+    if (msgEl) { msgEl.className='msg msg-success'; msgEl.textContent='✅ เปลี่ยน Password สำเร็จ กรุณา Login ใหม่'; }
+    _tempResetToken = null;
+    setTimeout(function() { showPasswordResetForm(false); }, 2500);
+  } catch(e) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='❌ ' + e.message; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 บันทึก Password ใหม่'; }
+  }
+}
+
+function showPasswordResetForm(show) {
+  var loginForm  = document.getElementById('loginForm');
+  var resetForm  = document.getElementById('resetPasswordForm');
+  var tabRow     = document.getElementById('authTabRow');
+  if (!loginForm || !resetForm) return;
+  loginForm.style.display = show ? 'none' : 'block';
+  resetForm.style.display = show ? 'block' : 'none';
+  if (tabRow) tabRow.style.display = show ? 'none' : '';
+  if (show) {
+    var msgEl = document.getElementById('resetPasswordMsg');
+    if (msgEl) { msgEl.className='msg'; msgEl.textContent=''; }
+  }
+}
+
+// ─── RECENT ACCOUNTS ──────────────────────────────────────
+function _saveRecentAccount(email, name) {
+  try {
+    var accounts = JSON.parse(localStorage.getItem('hf2_recent_accounts') || '[]');
+    accounts = accounts.filter(function(a) { return a.email !== email; });
+    accounts.unshift({ email: email, name: name || email.split('@')[0], ts: Date.now() });
+    if (accounts.length > 5) accounts = accounts.slice(0, 5);
+    localStorage.setItem('hf2_recent_accounts', JSON.stringify(accounts));
+  } catch(_) {}
+}
+
+function _getRecentAccounts() {
+  try { return JSON.parse(localStorage.getItem('hf2_recent_accounts') || '[]'); }
+  catch(_) { return []; }
+}
+
+function _renderRecentAccounts() {
+  var el = document.getElementById('recentAccountsList');
+  if (!el) return;
+  var accounts = _getRecentAccounts();
+  if (!accounts.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML =
+    '<div style="font-size:12px;color:var(--ink3);margin-bottom:6px;font-weight:500">บัญชีที่เคยเข้าระบบ</div>' +
+    accounts.map(function(a) {
+      var safeEmail = a.email.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+      var safeName  = (a.name || a.email.split('@')[0]).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div onclick="_fillRecentAccount(\'' + safeEmail.replace(/'/g,'\\\'') + '\')" ' +
+        'style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;' +
+        'border:1px solid var(--line);margin-bottom:6px;background:var(--surface2);transition:background .15s" ' +
+        'onmouseover="this.style.background=\'var(--surface3,var(--surface2))\'" ' +
+        'onmouseout="this.style.background=\'var(--surface2)\'">' +
+        '<div style="width:30px;height:30px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">👤</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--ink)">' + safeName + '</div>' +
+          '<div style="font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + safeEmail + '</div>' +
+        '</div>' +
+        '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--ink3)" stroke-width="1.5"><path d="M6 3l5 5-5 5"/></svg>' +
+      '</div>';
+    }).join('');
+}
+
+function _fillRecentAccount(email) {
+  var emailEl = document.getElementById('loginEmail');
+  var passEl  = document.getElementById('loginPassword');
+  if (emailEl) emailEl.value = email;
+  if (passEl)  passEl.focus();
+}
+
+// ─── CHANGE PASSWORD (ขณะ logged in) ─────────────────────
+async function doChangePassword() {
+  var currentEl = document.getElementById('stgCurrentPassword');
+  var newEl     = document.getElementById('stgNewPassword');
+  var confirmEl = document.getElementById('stgConfirmPassword');
+  var msgEl     = document.getElementById('changePasswordMsg');
+  var btn       = document.getElementById('changePasswordBtn');
+
+  var currentPass = ((currentEl || {}).value || '');
+  var newPass     = ((newEl     || {}).value || '').trim();
+  var confirmPass = ((confirmEl || {}).value || '').trim();
+
+  function _showPassMsg(text, ok) {
+    if (!msgEl) return;
+    msgEl.style.display = 'block';
+    msgEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+    msgEl.textContent = text;
+    if (ok) setTimeout(function(){ msgEl.style.display='none'; }, 4000);
+  }
+
+  if (!currentPass)        { _showPassMsg('⚠️ กรอก Password ปัจจุบัน', false); return; }
+  if (newPass.length < 6)  { _showPassMsg('⚠️ Password ใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', false); return; }
+  if (newPass !== confirmPass) { _showPassMsg('⚠️ Password ใหม่ไม่ตรงกัน', false); return; }
+
+  var creds = getSbCreds();
+  if (!creds.ok) { _showPassMsg('⚠️ ยังไม่ได้ตั้งค่า Supabase', false); return; }
+  if (!_authToken || !_authUser) { _showPassMsg('⚠️ ยังไม่ได้เข้าสู่ระบบ', false); return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...'; }
+
+  try {
+    // ตรวจสอบ password ปัจจุบันก่อน
+    var verifyR = await fetch(creds.url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _authUser.email, password: currentPass })
+    });
+    if (!verifyR.ok) { _showPassMsg('❌ Password ปัจจุบันไม่ถูกต้อง', false); return; }
+
+    if (btn) btn.textContent = 'กำลังบันทึก...';
+
+    // เปลี่ยน password
+    var r = await fetch(creds.url + '/auth/v1/user', {
+      method: 'PUT',
+      headers: {
+        'apikey': creds.key,
+        'Authorization': 'Bearer ' + _authToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: newPass })
+    });
+    if (!r.ok) {
+      var errData = await r.json();
+      throw new Error(errData.error_description || errData.msg || 'เปลี่ยนไม่สำเร็จ');
+    }
+    if (currentEl) currentEl.value = '';
+    if (newEl)     newEl.value     = '';
+    if (confirmEl) confirmEl.value = '';
+    _showPassMsg('✅ เปลี่ยน Password สำเร็จ', true);
+  } catch(e) {
+    _showPassMsg('❌ ' + e.message, false);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 เปลี่ยน Password'; }
+  }
 }
 
 // ─── LOGOUT ───────────────────────────────────────────────
@@ -185,11 +610,10 @@ async function doLogout() {
     }
   } catch (_) {}
 
-  _authToken = null;
-  _authUser  = null;
+  _authToken   = null;
+  _authUser    = null;
   _authProfile = null;
 
-  // Clear local data
   db = [];
   try { save(); } catch (_) {}
 
@@ -220,6 +644,13 @@ async function _loadProfile(creds) {
 
 async function _createProfile(creds) {
   var name = _authUser.email.split('@')[0];
+  // ตรวจสอบถ้ามี pending signup name
+  var pendingName = localStorage.getItem('hf2_pending_signup_name');
+  if (pendingName) {
+    name = pendingName;
+    localStorage.removeItem('hf2_pending_signup_name');
+    localStorage.removeItem('hf2_pending_signup_email');
+  }
   try {
     var r = await fetch(creds.url + '/rest/v1/profiles', {
       method: 'POST',
@@ -288,11 +719,11 @@ async function _refreshSession(creds, refresh_token) {
 function showLoginPage() {
   document.body.classList.remove('app-ready');
   document.body.classList.add('login-visible');
-  // ซ่อน DB panel, reset tab กลับ login
   var panel = document.getElementById('loginDbPanel');
   if (panel) panel.style.display = 'none';
   _dbTapCount = 0;
   switchAuthTab('login');
+  setTimeout(_renderRecentAccounts, 50);
 }
 
 // ─── HIDDEN DB SETUP — แตะ version text 5 ครั้ง ──────────
@@ -309,7 +740,6 @@ function authDbTap() {
     var isOpen = panel.style.display !== 'none';
     panel.style.display = isOpen ? 'none' : 'block';
     if (!isOpen) {
-      // pre-fill existing values
       var urlEl = document.getElementById('loginSbUrl');
       var keyEl = document.getElementById('loginSbKey');
       if (urlEl) urlEl.value = localStorage.getItem('hf2_sb_url') || '';
@@ -338,7 +768,6 @@ function saveDbSetup() {
     return;
   }
 
-  // บันทึกก่อน แล้วทดสอบ
   localStorage.setItem('hf2_sb_url', url);
   localStorage.setItem('hf2_sb_key', key);
 
@@ -348,7 +777,6 @@ function saveDbSetup() {
     msgEl.textContent = '⏳ กำลังทดสอบการเชื่อมต่อ...';
   }
 
-  // ทดสอบด้วย /auth/v1/settings — public endpoint ไม่ต้อง login
   fetch(url + '/auth/v1/settings', {
     headers: { 'apikey': key }
   }).then(function (r) {
@@ -397,31 +825,24 @@ function _showApp() {
 function _updateUserBar() {
   var name  = getAuthProfileName();
   var email = _authUser ? (_authUser.email || '') : '';
-  var role  = isAdminUser() ? 'admin' : 'user';
   var roleLabel = isAdminUser() ? '🛡 Admin' : '👤 User';
 
-  // Topbar chip
   var nameEl = document.getElementById('topbarUser');
   if (nameEl) nameEl.textContent = name + (isAdminUser() ? ' 🛡' : '');
 
-  // Logout button
   var lb = document.getElementById('logoutBtn');
   if (lb) lb.style.display = '';
-  // Refresh button — แสดงเมื่อมี creds
   var rb = document.getElementById('topbarRefreshBtn');
   if (rb) rb.style.display = (typeof getSbCreds==='function' && getSbCreds().ok) ? '' : 'none';
 
-  // Sidebar: auth info block (ชื่อ + role)
   var sidebarName = document.getElementById('sidebarAuthName');
   var sidebarRole = document.getElementById('sidebarAuthRole');
   if (sidebarName) sidebarName.textContent = name;
   if (sidebarRole) sidebarRole.textContent = roleLabel;
 
-  // Sidebar footer (เก่า — ยังคงไว้เผื่อมี)
   var sf = document.getElementById('sidebarUserInfo');
   if (sf) sf.textContent = name + ' · ' + roleLabel;
 
-  // Settings page — user card
   var stgName  = document.getElementById('stgUserName');
   var stgEmail = document.getElementById('stgUserEmail');
   var stgRole  = document.getElementById('stgUserRole');
@@ -453,7 +874,6 @@ async function doChangeName() {
 
   var creds = getSbCreds();
   if (!creds.ok) {
-    // local-only mode — just update in memory
     if (_authProfile) _authProfile.name = newName;
     _updateUserBar();
     if (input) input.value = '';
@@ -466,17 +886,22 @@ async function doChangeName() {
       creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id,
       {
         method: 'PATCH',
-        headers: Object.assign({}, sbHeadersFrom(creds.key), {
+        headers: {
+          'apikey': creds.key,
+          'Authorization': 'Bearer ' + _authToken,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
-        }),
-        body: JSON.stringify({ name: newName })
+        },
+        body: JSON.stringify({ name: newName, id: _authUser.id })
       }
     );
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) {
+      var errBody = '';
+      try { errBody = await r.text(); } catch(_) {}
+      throw new Error('HTTP ' + r.status + (errBody ? ' — ' + errBody.slice(0, 120) : ''));
+    }
     if (!_authProfile) _authProfile = {};
     _authProfile.name = newName;
-    // Update saved session
     var saved = _loadSavedSession();
     if (saved) { saved.profile = _authProfile; try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_){} }
     _updateUserBar();
@@ -488,14 +913,12 @@ async function doChangeName() {
 }
 
 // ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
-// ใช้สำหรับ auto-set ฟิลด์ person ในฟอร์ม
 function getCurrentPerson() {
   var name = getAuthProfileName().toLowerCase();
   if (!name || typeof persons === 'undefined') return 'A';
   for (var i = 0; i < persons.length; i++) {
     if (persons[i].name.toLowerCase() === name) return persons[i].id;
   }
-  // fallback: user ตัวที่ 1 = A, ตัวที่ 2 = B ตาม email hash
   var email = _authUser ? (_authUser.email || '') : '';
   return email ? (email.charCodeAt(0) % 2 === 0 ? 'A' : 'B') : 'A';
 }

@@ -1027,7 +1027,7 @@ function getCurrentPerson() {
 function _updateAdminNav() {
   var show = isAdminUser();
   document.querySelectorAll('.admin-only').forEach(function (el) {
-    el.style.display = show ? '' : 'none';
+    el.style.display = show ? 'flex' : 'none';
   });
 }
 

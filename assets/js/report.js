@@ -179,7 +179,7 @@ async function renderAdminUserList() {
   try {
     // ดึง profiles พร้อม email (ถ้า column มีอยู่)
     var r = await fetch(
-      creds.url + '/rest/v1/profiles?select=id,name,role,label&order=name',
+      creds.url + '/rest/v1/profiles_with_email?select=id,name,role,label,email&order=name',
       { headers: sbHeadersFrom(creds.key) }
     );
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -196,7 +196,7 @@ async function renderAdminUserList() {
       var isSelf  = p.id === myId;
       var isAdm   = p.role === 'admin';
       var safeName = (p.name || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var safeEmail = (p.email || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var safeEmail = (p.email || p.id || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       var initials = (p.name || '?').charAt(0).toUpperCase();
       var avatarBg = isAdm ? 'var(--green-bg)' : 'var(--blue-bg)';
       var avatarColor = isAdm ? 'var(--green)' : 'var(--blue)';

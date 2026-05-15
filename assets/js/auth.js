@@ -877,10 +877,14 @@ function _updateUserBar() {
   if (sidebarName)   sidebarName.textContent = name || email.split('@')[0] || '—';
   if (sidebarRole)   sidebarRole.textContent = roleLabel;
   if (sidebarAvatar) {
-    var initials = (name || email).charAt(0).toUpperCase();
-    sidebarAvatar.textContent = initials || '👤';
-    sidebarAvatar.style.background = isAdminUser() ? 'var(--green-bg,#f0fdf4)' : 'var(--blue-bg,#eff6ff)';
-    sidebarAvatar.style.color      = isAdminUser() ? 'var(--green,#166534)' : 'var(--blue)';
+    var avatarColor = isAdminUser() ? '#0f6e56' : '#185fa5';
+    var avatarBg    = isAdminUser() ? '#e1f5ee' : '#e6f1fb';
+    sidebarAvatar.style.background = avatarBg;
+    sidebarAvatar.innerHTML =
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="' + avatarColor + '">' +
+        '<circle cx="12" cy="8" r="4"/>' +
+        '<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>' +
+      '</svg>';
   }
 
   var sf = document.getElementById('sidebarUserInfo');

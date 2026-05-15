@@ -118,6 +118,7 @@ async function initAuth() {
       _authToken = saved.access_token;
       _authUser  = { id: user.id, email: user.email };
       await _loadProfile(creds);
+      _saveSession(saved.access_token, saved.refresh_token, user); // อัปเดต cache role ล่าสุด
       _showApp();
 
     } else if (r.status === 401) {
@@ -1028,4 +1029,25 @@ function _updateAdminNav() {
   document.querySelectorAll('.admin-only').forEach(function (el) {
     el.style.display = show ? '' : 'none';
   });
+}
+
+// รีเฟรช profile จาก Supabase (ใช้ใน Settings → ปุ่มรีเฟรช)
+async function refreshAuthProfile() {
+  var creds = getSbCreds();
+  if (!creds.ok || !_authUser) {
+    showMsg('settingsMsg', '⚠️ ไม่ได้เชื่อมต่อ Supabase', 'error');
+    return;
+  }
+  var old = _authProfile ? _authProfile.role : '—';
+  await _loadProfile(creds);
+  var saved = _loadSavedSession();
+  if (saved) {
+    saved.profile = _authProfile;
+    try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_) {}
+  }
+  _updateAdminNav();
+  var newRole = _authProfile ? _authProfile.role : '—';
+  showMsg('settingsMsg',
+    'รีเฟรชแล้ว — role: ' + newRole + (old !== newRole ? ' (เปลี่ยนจาก ' + old + ')' : ''),
+    'success');
 }

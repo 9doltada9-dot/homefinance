@@ -172,7 +172,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.9.0 · THB</div>
+    <div class="brand-sub">v3.9.1 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
@@ -651,6 +651,10 @@ body.app-ready #page-login { display: none !important; }
         <div class="stg-sub" id="stgUserEmail">—</div>
       </div>
       <span id="stgUserRole" style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--surface2);color:var(--ink3);white-space:nowrap"></span>
+      <button onclick="refreshAuthProfile()" title="ดึง role/ชื่อใหม่จาก Supabase"
+        style="background:none;border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:11px;color:var(--ink3);cursor:pointer;white-space:nowrap;font-family:Sarabun,sans-serif">
+        🔄 รีเฟรช
+      </button>
     </div>
     <!-- edit name row -->
     <div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center">

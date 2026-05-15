@@ -131,7 +131,10 @@ function getUpcomingRecurring(days) {
 function renderRecurringList() {
   var box = document.getElementById('recurringList');
   if (!box) return;
-  var list = getRecurringList();
+  var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
+  var list = getRecurringList().filter(function(t) {
+    return !_myPerson || t.person === _myPerson;
+  });
   if (!list.length) {
     box.innerHTML = '<div class="empty">ยังไม่มีรายการประจำ</div>';
     return;
@@ -176,12 +179,12 @@ function openRecurringModal() {
       .join('');
   }
 
-  // Populate person dropdown
+  // Auto-assign person จาก user ที่ login อยู่ (ซ่อน dropdown แล้ว)
   var perSel = document.getElementById('recPerson');
   if (perSel) {
-    perSel.innerHTML = (typeof persons !== 'undefined' ? persons : [])
-      .map(function(p) { return '<option value="' + p.id + '">' + p.name + '</option>'; })
-      .join('');
+    var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : 'A';
+    perSel.innerHTML = '<option value="' + _myPerson + '">' + _myPerson + '</option>';
+    perSel.value = _myPerson;
   }
 
   modal.style.display = 'flex';

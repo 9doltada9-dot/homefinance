@@ -54,6 +54,7 @@ function nav(page){
     if(typeof isAdminUser==='function' && !isAdminUser()){ nav('dashboard'); return; }
     if(typeof populateAdminMonths==='function') populateAdminMonths();
     if(typeof renderAdminUserList==='function') renderAdminUserList();
+    if(typeof renderSplitGroupsSection==='function') renderSplitGroupsSection();
   }
 
   // silentPull เมื่อสลับไปหน้าข้อมูล (ถ้าผ่านมา >30 วิแล้ว)

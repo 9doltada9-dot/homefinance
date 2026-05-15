@@ -8,6 +8,9 @@ function initForm(){
   // auto-set person จาก logged-in user
   var pSel = document.getElementById('fPerson');
   if(pSel) pSel.value = (typeof getCurrentPerson==='function') ? getCurrentPerson() : 'A';
+  // hook amount input to refresh group preview
+  var amtInp = document.getElementById('fAmt');
+  if(amtInp) amtInp.addEventListener('input', _updateGroupPreview);
   setType('expense');
   updatePersonLabels();
   renderNoteHistory();
@@ -134,15 +137,16 @@ function updateDescStar(){
 
 // ─── SPLIT TYPE (v3.6) ───────────────────────────────────
 // splitType: 'personal' | 'equal' | 'ratio' | 'custom'
-var splitType = 'personal';
-var splitMembers = [];   // สำหรับ custom
-var splitRatios  = {};   // สำหรับ ratio {personId: percent}
+var splitType     = 'personal';
+var splitMembers  = [];   // สำหรับ custom
+var splitRatios   = {};   // สำหรับ ratio {personId: percent}
+var splitGroupId  = null; // สำหรับ group
 
 function setSplitType(type) {
   splitType = type;
   splitOn   = (type !== 'personal');
   // update button styles
-  ['personal','equal','ratio','custom'].forEach(function(t) {
+  ['personal','equal','ratio','custom','group'].forEach(function(t) {
     var btn = document.getElementById('stBtn-' + t);
     if (!btn) return;
     var active = (t === type);
@@ -150,11 +154,16 @@ function setSplitType(type) {
     btn.style.color        = active ? '#fff'             : 'var(--ink2)';
     btn.style.borderColor  = active ? 'var(--blue)'     : 'var(--line)';
   });
-  var ratioRow  = document.getElementById('splitRatioRow');
-  var customRow = document.getElementById('splitCustomRow');
-  var desc      = document.getElementById('splitDesc');
-  if (ratioRow)  ratioRow.style.display  = (type === 'ratio')  ? 'flex'  : 'none';
-  if (customRow) customRow.style.display = (type === 'custom') ? 'flex'  : 'none';
+  var ratioRow    = document.getElementById('splitRatioRow');
+  var customRow   = document.getElementById('splitCustomRow');
+  var groupRow    = document.getElementById('splitGroupRow');
+  var previewRow  = document.getElementById('splitPreviewRow');
+  var desc        = document.getElementById('splitDesc');
+  if (ratioRow)   ratioRow.style.display   = (type === 'ratio')   ? 'flex'  : 'none';
+  if (customRow)  customRow.style.display  = (type === 'custom')  ? 'flex'  : 'none';
+  if (groupRow)   groupRow.style.display   = (type === 'group')   ? 'block' : 'none';
+  if (previewRow) previewRow.style.display = 'none'; // hide until group chosen
+
   if (type === 'personal') {
     if (desc) desc.textContent = 'ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร';
   } else if (type === 'equal') {
@@ -166,6 +175,9 @@ function setSplitType(type) {
   } else if (type === 'custom') {
     _buildCustomUI();
     if (desc) desc.textContent = 'เลือกคนที่ร่วมจ่ายค่าใช้จ่ายนี้';
+  } else if (type === 'group') {
+    _buildGroupUI();
+    if (desc) desc.textContent = 'เลือกกลุ่ม Settlement ด้านบน';
   }
 }
 
@@ -249,6 +261,68 @@ function _onCustomChange() {
   }
 }
 
+function _buildGroupUI() {
+  var sel = document.getElementById('fSplitGroup');
+  if (!sel) return;
+  var groups = (typeof getSplitGroupOptions === 'function') ? getSplitGroupOptions() : [];
+  if (!groups.length) {
+    sel.innerHTML = '<option value="">ยังไม่มีกลุ่ม — สร้างที่หน้า Admin</option>';
+    return;
+  }
+  var typeLabel = { personal:'ส่วนตัว', equal:'หารเท่ากัน', ratio:'ตามสัดส่วน', custom:'เลือกคน' };
+  sel.innerHTML = '<option value="">-- เลือกกลุ่ม --</option>' +
+    groups.map(function(g) {
+      return '<option value="' + g.id + '">' + g.name + ' (' + (typeLabel[g.split_type]||g.split_type) + ')</option>';
+    }).join('');
+  // restore previous selection if still valid
+  if (splitGroupId) sel.value = splitGroupId;
+  _onGroupChange();
+}
+
+function _onGroupChange() {
+  var sel = document.getElementById('fSplitGroup');
+  splitGroupId = sel ? (sel.value || null) : null;
+  _updateGroupPreview();
+}
+
+function _updateGroupPreview() {
+  var previewRow = document.getElementById('splitPreviewRow');
+  var previewEl  = document.getElementById('splitPreviewContent');
+  var desc       = document.getElementById('splitDesc');
+  if (!previewRow || !previewEl) return;
+
+  if (!splitGroupId) {
+    previewRow.style.display = 'none';
+    if (desc) desc.textContent = 'เลือกกลุ่ม Settlement ด้านบน';
+    return;
+  }
+
+  var amt = parseFloat(document.getElementById('fAmt')?.value) || 0;
+  var snapshot = (typeof buildSplitSnapshot === 'function')
+    ? buildSplitSnapshot(splitGroupId, amt || 1000) : {};
+  var keys = Object.keys(snapshot);
+  if (!keys.length) {
+    previewRow.style.display = 'none';
+    if (desc) desc.textContent = 'กลุ่มนี้ไม่มีสมาชิก active';
+    return;
+  }
+
+  previewRow.style.display = 'block';
+  var amtDisplay = amt > 0 ? amt : null;
+  previewEl.innerHTML = keys.map(function(uid) {
+    var s = snapshot[uid];
+    var amtStr = amtDisplay
+      ? '฿' + (buildSplitSnapshot(splitGroupId, amtDisplay)[uid] || s).amount.toLocaleString()
+      : s.pct.toFixed(0) + '%';
+    return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">' +
+      '<span style="color:var(--ink2)">' + (s.label || uid) + '</span>' +
+      '<span style="font-weight:700;color:var(--blue)">' + amtStr + '</span>' +
+    '</div>';
+  }).join('');
+
+  if (desc) desc.textContent = '';
+}
+
 function autoSplit() {
   if (cType !== 'expense') return;
   var catId = document.getElementById('fCat')?.value;
@@ -299,11 +373,22 @@ function addEntry(){
     showCycleToast('⏳ รายรับก่อนวันที่ 25 — จะเป็น "รับแล้ว" อัตโนมัติวันที่ '+actLabel);
   }
 
+  // group split: build snapshot before saving
+  var _split_snapshot = {};
+  var _split_group_id = null;
+  if (cType === 'expense' && splitType === 'group' && splitGroupId) {
+    _split_group_id  = splitGroupId;
+    _split_snapshot  = (typeof buildSplitSnapshot === 'function')
+      ? buildSplitSnapshot(splitGroupId, amt) : {};
+  }
+
   db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt, person:person,
     split:cType==='expense'?splitOn:false,
     split_type:cType==='expense'?splitType:'personal',
     split_members:cType==='expense'&&splitType==='custom'?splitMembers.slice():[],
     split_ratios:cType==='expense'&&splitType==='ratio'?Object.assign({},splitRatios):{},
+    split_group_id:_split_group_id,
+    split_snapshot:Object.keys(_split_snapshot).length ? _split_snapshot : null,
     status:status, note:note, item_id:item_id, vendor_id:vendor_id,
     _salary_cycle:_salary_cycle,
     cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null});

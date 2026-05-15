@@ -16,6 +16,7 @@ function getAuthToken()       { return _authToken; }
 function getAuthUserId()      { return _authUser   ? _authUser.id    : null; }
 function getAuthProfileName() { return _authProfile ? (_authProfile.name || (_authUser && _authUser.email.split('@')[0]) || '') : ''; }
 function isAdminUser()        { return !!(_authProfile && _authProfile.role === 'admin'); }
+function getAuthLabel()        { return (_authProfile && _authProfile.label) ? _authProfile.label : ''; }
 
 // ─── AUTH CALLBACK HANDLER ────────────────────────────────
 // รับ type=signup (email confirm) และ type=recovery (reset password)
@@ -660,7 +661,7 @@ async function _loadProfile(creds) {
   if (!_authUser || !creds.ok) return;
   try {
     var r = await fetch(
-      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id + '&select=id,name,role',
+      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id + '&select=id,name,role,label',
       { headers: {
           'apikey': creds.key,
           'Authorization': 'Bearer ' + _authToken,
@@ -887,6 +888,15 @@ function _updateUserBar() {
     stgRole.style.background = isAdminUser() ? 'var(--green-bg)' : 'var(--surface2)';
     stgRole.style.color      = isAdminUser() ? 'var(--green)'    : 'var(--ink3)';
   }
+  // Refresh label picker active state
+  var currentLabel = getAuthLabel();
+  document.querySelectorAll('.stg-label-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.label === currentLabel);
+  });
+  var customInp = document.getElementById('stgLabelCustom');
+  if (customInp && currentLabel && ['พ่อ','แม่','ลูก1','ลูก2'].indexOf(currentLabel) === -1) {
+    customInp.value = currentLabel;
+  }
 }
 
 // ─── CHANGE DISPLAY NAME ──────────────────────────────────
@@ -946,15 +956,71 @@ async function doChangeName() {
   }
 }
 
+// ─── SAVE PROFILE LABEL ──────────────────────────────────────
+async function doSaveLabel(label) {
+  if (!_authUser) return;
+  var prev = getAuthLabel();
+  if (!_authProfile) _authProfile = {};
+  _authProfile.label = label;
+
+  // Update picker UI
+  document.querySelectorAll('.stg-label-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.label === label);
+  });
+
+  // Persist to localStorage session cache
+  var saved = _loadSavedSession();
+  if (saved) {
+    saved.profile = _authProfile;
+    try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_) {}
+  }
+
+  // Persist to Supabase (graceful — column may not exist yet)
+  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
+  if (!creds.ok) return;
+  try {
+    await fetch(
+      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': creds.key,
+          'Authorization': 'Bearer ' + _authToken,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ label: label })
+      }
+    );
+  } catch (e) {
+    // silent — label is stored locally anyway
+  }
+}
+
 // ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
 function getCurrentPerson() {
-  var name = getAuthProfileName().toLowerCase();
-  if (!name || typeof persons === 'undefined') return 'A';
-  for (var i = 0; i < persons.length; i++) {
-    if (persons[i].name.toLowerCase() === name) return persons[i].id;
+  if (typeof persons === 'undefined' || !persons.length) return 'A';
+  // 1. match by user_id (most reliable)
+  var userId = _authUser ? _authUser.id : null;
+  if (userId) {
+    var byId = persons.find(function(p){ return p.user_id === userId; });
+    if (byId) return byId.id;
   }
-  var email = _authUser ? (_authUser.email || '') : '';
-  return email ? (email.charCodeAt(0) % 2 === 0 ? 'A' : 'B') : 'A';
+  // 2. match by profile name (fallback)
+  var name = getAuthProfileName().toLowerCase();
+  if (name) {
+    var byName = persons.find(function(p){ return p.name.toLowerCase() === name; });
+    if (byName) {
+      // auto-link ถ้ายังไม่ link
+      if (userId && !byName.user_id && typeof linkPersonToUser === 'function') {
+        linkPersonToUser(userId, byName.id);
+      }
+      return byName.id;
+    }
+  }
+  // 3. fallback: คืน person แรกที่ไม่มี user_id (ยังไม่ถูก link)
+  var unlinked = persons.find(function(p){ return !p.user_id; });
+  return unlinked ? unlinked.id : persons[0].id;
 }
 
 function _updateAdminNav() {

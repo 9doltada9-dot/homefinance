@@ -179,7 +179,7 @@ async function renderAdminUserList() {
   try {
     // ดึง profiles พร้อม email (ถ้า column มีอยู่)
     var r = await fetch(
-      creds.url + '/rest/v1/profiles?select=id,name,role,email,created_at&order=created_at',
+      creds.url + '/rest/v1/profiles?select=id,name,role,label&order=name',
       { headers: sbHeadersFrom(creds.key) }
     );
     if (!r.ok) throw new Error('HTTP ' + r.status);

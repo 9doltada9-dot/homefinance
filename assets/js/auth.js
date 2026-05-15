@@ -871,13 +871,20 @@ function _updateUserBar() {
   var rb = document.getElementById('topbarRefreshBtn');
   if (rb) rb.style.display = (typeof getSbCreds==='function' && getSbCreds().ok) ? '' : 'none';
 
-  var sidebarName = document.getElementById('sidebarAuthName');
-  var sidebarRole = document.getElementById('sidebarAuthRole');
-  if (sidebarName) sidebarName.textContent = name;
-  if (sidebarRole) sidebarRole.textContent = roleLabel;
+  var sidebarName   = document.getElementById('sidebarAuthName');
+  var sidebarRole   = document.getElementById('sidebarAuthRole');
+  var sidebarAvatar = document.getElementById('sidebarAvatar');
+  if (sidebarName)   sidebarName.textContent = name || email.split('@')[0] || '—';
+  if (sidebarRole)   sidebarRole.textContent = roleLabel;
+  if (sidebarAvatar) {
+    var initials = (name || email).charAt(0).toUpperCase();
+    sidebarAvatar.textContent = initials || '👤';
+    sidebarAvatar.style.background = isAdminUser() ? 'var(--green-bg,#f0fdf4)' : 'var(--blue-bg,#eff6ff)';
+    sidebarAvatar.style.color      = isAdminUser() ? 'var(--green,#166534)' : 'var(--blue)';
+  }
 
   var sf = document.getElementById('sidebarUserInfo');
-  if (sf) sf.textContent = name + ' · ' + roleLabel;
+  if (sf) sf.style.display = 'none';
 
   var stgName  = document.getElementById('stgUserName');
   var stgEmail = document.getElementById('stgUserEmail');

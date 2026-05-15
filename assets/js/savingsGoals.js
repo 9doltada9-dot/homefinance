@@ -122,14 +122,14 @@ function renderSavingsGoals() {
 
 // ─── ADD FORM ─────────────────────────────────────────────
 function onAddSavingsGoal() {
-  var name   = (document.getElementById('sgName')   || {}).value || '';
-  var target = parseFloat((document.getElementById('sgTarget') || {}).value) || 0;
-  var date   = (document.getElementById('sgDate')   || {}).value || '';
-  var cur    = parseFloat((document.getElementById('sgCurrent') || {}).value) || 0;
+  var name   = (document.getElementById('goalName')   || {}).value || '';
+  var target = parseFloat((document.getElementById('goalTarget') || {}).value) || 0;
+  var date   = (document.getElementById('goalDate')   || {}).value || '';
+  var cur    = parseFloat((document.getElementById('goalCurrent') || {}).value) || 0;
   name = name.trim();
   if (!name || !target) { showCycleToast('⚠️ ระบุชื่อและยอดเป้าหมาย'); return; }
   addSavingsGoal(name, target, date, cur);
-  ['sgName','sgTarget','sgDate','sgCurrent'].forEach(function(id) {
+  ['goalName','goalTarget','goalDate','goalCurrent'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
   renderSavingsGoals();

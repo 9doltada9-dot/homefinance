@@ -120,13 +120,22 @@ async function _sgLoadProfilesAndRender(g, type) {
       .map(function(p) { return { id: p.user_id, name: p.name, label: p.label || '' }; });
   }
 
+  var myId = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+
   _sgMembers = profiles.map(function(p) {
     var existing = g ? (g.members || []).find(function(m) { return m.user_id === p.id; }) : null;
+    // สำหรับกลุ่มใหม่ (ไม่มี existing) ให้ auto-activate ตาม type
+    var defaultActive = false;
+    if (!g) {
+      if (type === 'equal' || type === 'custom') defaultActive = true;
+      else if (type === 'personal') defaultActive = (p.id === myId);
+      else defaultActive = false; // ratio: ให้ผู้ใช้เลือกเอง
+    }
     return {
       user_id: p.id,
       label:   existing ? existing.label : (p.label || p.name),
       ratio:   existing ? (parseFloat(existing.ratio) || 0) : 0,
-      active:  existing ? !!existing.active : false,
+      active:  existing ? !!existing.active : defaultActive,
       _name:   p.name,
     };
   });
@@ -145,9 +154,14 @@ function _renderSgMembers(type) {
     return;
   }
 
+  var myId = type === 'personal'
+    ? (typeof getAuthUserId === 'function' ? getAuthUserId() : null)
+    : null;
+
   el.innerHTML = _sgMembers.map(function(m, i) {
     var initials = (m._name || '?').charAt(0);
-    var accountBadge = '';  // profiles จาก Supabase มีบัญชีทั้งหมด
+    // ส่วนตัว: toggle ของคนอื่นเป็น disabled
+    var isDisabled = (type === 'personal' && myId && m.user_id !== myId);
 
     var pctHtml = '';
     if (type === 'ratio' && m.active) {
@@ -158,18 +172,21 @@ function _renderSgMembers(type) {
     } else if (type === 'ratio' && !m.active) {
       pctHtml = '<span style="font-size:12px;color:var(--ink3);min-width:44px;text-align:right">—</span>';
     }
+    // ส่วนตัว: badge แสดงว่าเป็น "ฉัน"
+    var meBadge = (type === 'personal' && myId && m.user_id === myId)
+      ? '<span style="font-size:10px;background:#e6f1fb;color:#185fa5;border-radius:8px;padding:1px 7px;margin-left:4px;font-weight:600">ฉัน</span>'
+      : '';
 
     return '<div class="sg-mem-row" id="sgMem_' + i + '"' +
       (m.active ? '' : ' style="opacity:.5"') + '>' +
       '<div class="sg-avatar">' + _escHtml(initials) + '</div>' +
       '<div class="sg-mem-info">' +
-        '<div class="sg-mem-name">' + _escHtml(m._name) + '</div>' +
-        '<div style="margin-top:2px">' + accountBadge + '</div>' +
+        '<div class="sg-mem-name">' + _escHtml(m._name) + meBadge + '</div>' +
       '</div>' +
       pctHtml +
-      '<div class="sg-toggle ' + (m.active ? '' : 'off') + '" ' +
-        'onclick="_sgToggleMember(' + i + ')" ' +
-        'title="' + (m.active ? 'Active — คลิกเพื่อปิด' : 'Inactive — คลิกเพื่อเปิด') + '">' +
+      '<div class="sg-toggle ' + (m.active ? '' : 'off') + (isDisabled ? ' disabled' : '') + '" ' +
+        (isDisabled ? '' : 'onclick="_sgToggleMember(' + i + ')"') + ' ' +
+        'title="' + (isDisabled ? 'ส่วนตัว — ไม่สามารถเปลี่ยนได้' : (m.active ? 'Active — คลิกเพื่อปิด' : 'Inactive — คลิกเพื่อเปิด')) + '">' +
       '</div>' +
     '</div>';
   }).join('');
@@ -200,6 +217,14 @@ function sgSelectType(type) {
   document.querySelectorAll('.sg-type-btn').forEach(function(b) {
     b.classList.toggle('active', b.dataset.type === type);
   });
+  // ส่วนตัว: เปิดเฉพาะ user ปัจจุบัน, ปิดคนอื่น
+  if (type === 'personal') {
+    var myId = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+    _sgMembers.forEach(function(m) {
+      m.active = myId ? (m.user_id === myId) : false;
+      if (!m.active) m.ratio = 0;
+    });
+  }
   _renderSgMembers(type);
   _updateSgValidation(type);
 }

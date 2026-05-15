@@ -34,6 +34,28 @@ function getSplitShares(entry) {
 
 /* HomeFinance · module: settlement.js · v3.2.0 */
 
+// ─── PERSONAL EXPENSE TOGGLE ─────────────────────────────
+var _settleShowPersonal = false;
+
+function toggleSettlePersonal() {
+  _settleShowPersonal = !_settleShowPersonal;
+  var btn = document.getElementById('settlePersonalBtn');
+  if (btn) {
+    if (_settleShowPersonal) {
+      btn.textContent = '🙈 ซ่อนรายจ่ายส่วนตัว';
+      btn.style.background = 'var(--surface2)';
+      btn.style.color = 'var(--ink2)';
+      btn.style.borderColor = 'var(--ink3)';
+    } else {
+      btn.textContent = '👁 แสดงรายจ่ายส่วนตัว';
+      btn.style.background = 'var(--surface)';
+      btn.style.color = 'var(--ink3)';
+      btn.style.borderColor = 'var(--line)';
+    }
+  }
+  renderSettle();
+}
+
 // ─── SETTLEMENT ──────────────────────────────────────────
 function populateMths(selId){
   var months=Array.from(new Set(db.map(function(e){return e.date.substring(0,7);}))).sort().reverse();
@@ -109,7 +131,7 @@ function _buildNameMap() {
 function renderSettle(){
   var m       = document.getElementById('settleMonth').value;
   var groupId = (document.getElementById('settleGroup') || {}).value || '';
-  var showPersonal = (document.getElementById('settleShowPersonal') || {}).checked;
+  var showPersonal = _settleShowPersonal;
   var out     = document.getElementById('settleContent');
   if (!m) { out.innerHTML = '<div class="empty">เลือกเดือน</div>'; return; }
 

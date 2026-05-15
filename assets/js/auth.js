@@ -676,6 +676,35 @@ async function _loadProfile(creds) {
       else             { await _createProfile(creds); }
     }
   } catch (e) { console.warn('[auth] loadProfile:', e); }
+
+  // ── sync person names จาก Supabase profiles ──
+  await _syncPersonNamesFromProfiles(creds);
+}
+
+/** อัปเดตชื่อใน persons[] ให้ตรงกับ Supabase profiles (แก้ปัญหาชื่อเก่า ต้น/เจี๊ยบ) */
+async function _syncPersonNamesFromProfiles(creds) {
+  if (!creds || !creds.ok || !_authToken) return;
+  try {
+    var r = await fetch(
+      creds.url + '/rest/v1/profiles?select=id,name&order=name',
+      { headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + _authToken } }
+    );
+    if (!r.ok) return;
+    var profiles = await r.json();
+    var changed = false;
+    profiles.forEach(function(prof) {
+      if (!prof.id || !prof.name) return;
+      var p = persons.find(function(x) { return x.user_id === prof.id; });
+      if (p && p.name !== prof.name) {
+        p.name = prof.name;
+        changed = true;
+      }
+    });
+    if (changed) {
+      if (typeof savePersons === 'function') savePersons(persons);
+      if (typeof populatePersonSelects === 'function') populatePersonSelects();
+    }
+  } catch (e) { console.warn('[auth] syncPersonNames:', e); }
 }
 
 async function _createProfile(creds) {

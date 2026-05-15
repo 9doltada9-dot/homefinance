@@ -1,3 +1,37 @@
+// ─── SPLIT SHARES HELPER (v3.6) ─────────────────────────
+/**
+ * คืน {personId: บาทที่ควรจ่าย} สำหรับแต่ละคน
+ * รองรับทั้ง 4 รูปแบบ + backward-compat (split boolean)
+ */
+function getSplitShares(entry) {
+  var shares = {};
+  persons.forEach(function(p) { shares[p.id] = 0; });
+  var type = entry.split_type;
+  if (!type) type = entry.split ? 'equal' : 'personal';
+  if (type === 'personal') {
+    return shares;  // ไม่มีส่วนแบ่ง
+  } else if (type === 'equal') {
+    var n = persons.length;
+    persons.forEach(function(p) { shares[p.id] = entry.amt / n; });
+  } else if (type === 'ratio') {
+    var ratios = entry.split_ratios || {};
+    var total  = persons.reduce(function(s,p){ return s+(parseFloat(ratios[p.id])||0); }, 0);
+    if (!total) total = 100;
+    persons.forEach(function(p) {
+      shares[p.id] = entry.amt * ((parseFloat(ratios[p.id]) || 0) / total);
+    });
+  } else if (type === 'custom') {
+    var members = (entry.split_members && entry.split_members.length)
+      ? entry.split_members
+      : persons.map(function(p){ return p.id; });
+    var nm = members.length;
+    members.forEach(function(pid) {
+      if (shares[pid] !== undefined) shares[pid] = entry.amt / nm;
+    });
+  }
+  return shares;
+}
+
 /* HomeFinance · module: settlement.js · v3.2.0 */
 
 // ─── SETTLEMENT ──────────────────────────────────────────
@@ -16,16 +50,21 @@ function renderSettle(){
   var showPersonal = document.getElementById('settleShowPersonal')?.checked ?? false;
   var allExp=db.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);});
   // exclude personal (split=false) from settlement calc
-  var me=allExp.filter(function(e){return e.split;});
-  var personal=allExp.filter(function(e){return !e.split;});
+  var me=allExp.filter(function(e){
+    var t = e.split_type || (e.split ? 'equal' : 'personal');
+    return t !== 'personal';
+  });
+  var personal=allExp.filter(function(e){
+    var t = e.split_type || (e.split ? 'equal' : 'personal');
+    return t === 'personal';
+  });
   // build per-person paid & share maps (only split=true expenses)
   var paid={}, share={};
   persons.forEach(function(p){paid[p.id]=0;share[p.id]=0;});
   me.forEach(function(e){
     if(paid[e.person]!==undefined) paid[e.person]+=e.amt;
-    // all me entries have split=true
-    var each=e.amt/2;
-    persons.forEach(function(p){if(share[p.id]!==undefined) share[p.id]+=each;});
+    var shares = getSplitShares(e);
+    persons.forEach(function(p){ share[p.id] = (share[p.id]||0) + (shares[p.id]||0); });
   });
   // compute net per person (positive = overpaid = others owe them)
   var net={};
@@ -108,13 +147,14 @@ function renderSettle(){
 
 function exportSettlePDF(month){
   var n = names();
-  var me = db.filter(function(e){return e.date.startsWith(month)&&e.type==='expense'&&isPaid(e);});
+  var allExpPDF = db.filter(function(e){return e.date.startsWith(month)&&e.type==='expense'&&isPaid(e);});
+  var me = allExpPDF.filter(function(e){ var t=e.split_type||(e.split?'equal':'personal'); return t!=='personal'; });
   var paid={}, share={};
   persons.forEach(function(p){paid[p.id]=0;share[p.id]=0;});
   me.forEach(function(e){
     if(paid[e.person]!==undefined) paid[e.person]+=e.amt;
-    if(e.split){ var each=e.amt/2; persons.forEach(function(p){if(share[p.id]!==undefined) share[p.id]+=each;}); }
-    else { if(share[e.person]!==undefined) share[e.person]+=e.amt; }
+    var shares=getSplitShares(e);
+    persons.forEach(function(p){ share[p.id]=(share[p.id]||0)+(shares[p.id]||0); });
   });
   var net={};
   persons.forEach(function(p){net[p.id]=paid[p.id]-share[p.id];});

@@ -307,13 +307,16 @@ body.app-ready #page-login { display: none !important; }
       </div>
     </div>
     <div id="splitSection" style="margin-bottom:12px">
-      <div class="split-row">
-        <div class="split-label">
-          <strong id="splitTitle">หาร 2 คน?</strong>
-          <div style="font-size:12px;color:var(--ink3);margin-top:1px" id="splitDesc">แบ่งค่าใช้จ่ายส่วนกลางเท่ากัน</div>
-        </div>
-        <div class="toggle" id="splitToggle" onclick="toggleSplit()"><div class="toggle-thumb"></div></div>
+      <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">รูปแบบการหาร</div>
+      <div style="display:flex;gap:5px;margin-bottom:8px">
+        <button id="stBtn-personal" onclick="setSplitType('personal')" style="flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;line-height:1.3">ส่วนตัว</button>
+        <button id="stBtn-equal"    onclick="setSplitType('equal')"    style="flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:1.5px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--ink2);cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;line-height:1.3">หารเท่ากัน</button>
+        <button id="stBtn-ratio"    onclick="setSplitType('ratio')"    style="flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:1.5px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--ink2);cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;line-height:1.3">ตามสัดส่วน</button>
+        <button id="stBtn-custom"   onclick="setSplitType('custom')"   style="flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:1.5px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--ink2);cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;line-height:1.3">เลือกคน</button>
       </div>
+      <div id="splitRatioRow" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;background:var(--surface2);border-radius:8px;padding:10px"></div>
+      <div id="splitCustomRow" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:6px;background:var(--surface2);border-radius:8px;padding:10px"></div>
+      <div id="splitDesc" style="font-size:12px;color:var(--ink3)">ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร</div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="addEntry()">บันทึก</button>

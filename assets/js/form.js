@@ -132,25 +132,130 @@ function updateDescStar(){
   if(btn) btn.textContent = isFavItem(desc) ? '⭐' : '☆';
 }
 
-function autoSplit(){
-  if(cType!=='expense') return;
+// ─── SPLIT TYPE (v3.6) ───────────────────────────────────
+// splitType: 'personal' | 'equal' | 'ratio' | 'custom'
+var splitType = 'personal';
+var splitMembers = [];   // สำหรับ custom
+var splitRatios  = {};   // สำหรับ ratio {personId: percent}
+
+function setSplitType(type) {
+  splitType = type;
+  splitOn   = (type !== 'personal');
+  // update button styles
+  ['personal','equal','ratio','custom'].forEach(function(t) {
+    var btn = document.getElementById('stBtn-' + t);
+    if (!btn) return;
+    var active = (t === type);
+    btn.style.background   = active ? 'var(--blue)'     : 'var(--surface2)';
+    btn.style.color        = active ? '#fff'             : 'var(--ink2)';
+    btn.style.borderColor  = active ? 'var(--blue)'     : 'var(--line)';
+  });
+  var ratioRow  = document.getElementById('splitRatioRow');
+  var customRow = document.getElementById('splitCustomRow');
+  var desc      = document.getElementById('splitDesc');
+  if (ratioRow)  ratioRow.style.display  = (type === 'ratio')  ? 'flex'  : 'none';
+  if (customRow) customRow.style.display = (type === 'custom') ? 'flex'  : 'none';
+  if (type === 'personal') {
+    if (desc) desc.textContent = 'ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร';
+  } else if (type === 'equal') {
+    var n = (typeof persons !== 'undefined') ? persons.length : 2;
+    if (desc) desc.textContent = 'หารเท่ากันทุกคน (คนละ ' + (100/n).toFixed(0) + '%)';
+  } else if (type === 'ratio') {
+    _buildRatioUI();
+    _updateRatioDesc();
+  } else if (type === 'custom') {
+    _buildCustomUI();
+    if (desc) desc.textContent = 'เลือกคนที่ร่วมจ่ายค่าใช้จ่ายนี้';
+  }
+}
+
+function _buildRatioUI() {
+  var row = document.getElementById('splitRatioRow');
+  if (!row || typeof persons === 'undefined') return;
+  if (row.dataset.built === 'true') return;  // สร้างครั้งเดียว
+  var n = persons.length;
+  var defaultPct = Math.floor(100 / n);
+  var leftover   = 100 - (defaultPct * (n - 1));
+  row.innerHTML = persons.map(function(p, i) {
+    var pct = (i === n - 1) ? leftover : defaultPct;
+    if (!splitRatios[p.id]) splitRatios[p.id] = pct;
+    return '<div style="display:flex;align-items:center;gap:4px;flex:1;min-width:80px">' +
+      '<span style="font-size:12px;font-weight:600;color:var(--ink2)">' + p.name + '</span>' +
+      '<input type="number" id="ratio-' + p.id + '" value="' + pct + '" min="0" max="100"' +
+      ' onchange="_onRatioChange()" oninput="_onRatioChange()"' +
+      ' style="width:52px;padding:4px 6px;border:1.5px solid var(--line);border-radius:6px;font-size:13px;font-family:monospace;text-align:center">' +
+      '<span style="font-size:12px;color:var(--ink3)">%</span>' +
+      '</div>';
+  }).join('');
+  row.dataset.built = 'true';
+  _updateRatioDesc();
+}
+
+function _onRatioChange() {
+  if (typeof persons === 'undefined') return;
+  persons.forEach(function(p) {
+    var inp = document.getElementById('ratio-' + p.id);
+    splitRatios[p.id] = inp ? (parseFloat(inp.value) || 0) : 0;
+  });
+  _updateRatioDesc();
+}
+
+function _updateRatioDesc() {
+  var desc = document.getElementById('splitDesc');
+  if (!desc || typeof persons === 'undefined') return;
+  var total = persons.reduce(function(s, p) {
+    return s + (parseFloat(splitRatios[p.id]) || 0);
+  }, 0);
+  var parts = persons.map(function(p) {
+    return p.name + ' ' + (splitRatios[p.id] || 0) + '%';
+  }).join(' / ');
+  desc.textContent = 'ตามสัดส่วน: ' + parts + (total !== 100 ? ' (รวม ' + total + '%)' : '');
+  desc.style.color = (total !== 100) ? 'var(--amber)' : 'var(--ink3)';
+}
+
+function _buildCustomUI() {
+  var row = document.getElementById('splitCustomRow');
+  if (!row || typeof persons === 'undefined') return;
+  if (row.dataset.built === 'true') return;
+  row.innerHTML = persons.map(function(p) {
+    var checked = (splitMembers.length === 0 || splitMembers.indexOf(p.id) !== -1);
+    return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:500">' +
+      '<input type="checkbox" id="custom-' + p.id + '"' + (checked ? ' checked' : '') +
+      ' onchange="_onCustomChange()"' +
+      ' style="width:16px;height:16px;cursor:pointer">' +
+      p.name + '</label>';
+  }).join('');
+  row.dataset.built = 'true';
+  _onCustomChange();
+}
+
+function _onCustomChange() {
+  if (typeof persons === 'undefined') return;
+  splitMembers = persons.filter(function(p) {
+    var el = document.getElementById('custom-' + p.id);
+    return el && el.checked;
+  }).map(function(p) { return p.id; });
+  var desc = document.getElementById('splitDesc');
+  if (desc) {
+    if (!splitMembers.length) {
+      desc.textContent = '⚠️ กรุณาเลือกอย่างน้อย 1 คน';
+      desc.style.color = 'var(--red)';
+    } else {
+      var names = persons.filter(function(p){ return splitMembers.indexOf(p.id)!==-1; }).map(function(p){return p.name;});
+      var n = splitMembers.length;
+      desc.textContent = 'แบ่งเท่ากัน: ' + names.join(', ') + ' (คนละ ' + (100/n).toFixed(0) + '%)';
+      desc.style.color = 'var(--ink3)';
+    }
+  }
+}
+
+function autoSplit() {
+  if (cType !== 'expense') return;
   var catId = document.getElementById('fCat')?.value;
-  if(!catId) return;
+  if (!catId) return;
   var cat = catMap[catId];
-  splitOn = cat ? cat.split_default : false;
-  updateSplitUI();
-}
-
-function toggleSplit(){
-  splitOn = !splitOn;
-  updateSplitUI();
-}
-
-function updateSplitUI(){
-  var t = document.getElementById('splitToggle');
-  var d = document.getElementById('splitDesc');
-  if(splitOn){ t.classList.add('on'); d.textContent='แบ่งค่าใช้จ่ายส่วนกลางเท่ากัน (คนละครึ่ง)'; }
-  else { t.classList.remove('on'); d.textContent='ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร'; }
+  var shouldSplit = cat ? cat.split_default : false;
+  setSplitType(shouldSplit ? 'equal' : 'personal');
 }
 
 function addEntry(){
@@ -195,7 +300,11 @@ function addEntry(){
   }
 
   db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt, person:person,
-    split:cType==='expense'?splitOn:false, status:status, note:note, item_id:item_id, vendor_id:vendor_id,
+    split:cType==='expense'?splitOn:false,
+    split_type:cType==='expense'?splitType:'personal',
+    split_members:cType==='expense'&&splitType==='custom'?splitMembers.slice():[],
+    split_ratios:cType==='expense'&&splitType==='ratio'?Object.assign({},splitRatios):{},
+    status:status, note:note, item_id:item_id, vendor_id:vendor_id,
     _salary_cycle:_salary_cycle,
     cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null});
   save();

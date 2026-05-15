@@ -13,27 +13,40 @@ function renderSplitGroupsSection() {
   var groups = getSplitGroups();
   if (!groups.length) {
     el.innerHTML =
-      '<div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">' +
-      'ยังไม่มีกลุ่ม — กด "<strong>+ สร้างกลุ่ม</strong>" เพื่อเริ่มต้น</div>';
+      '<div style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">' +
+      'ยังไม่มีกลุ่ม — กด <strong>+ สร้างกลุ่ม</strong> เพื่อเริ่มต้น</div>';
     return;
   }
 
-  var typeLabel = { personal:'ส่วนตัว', equal:'หารเท่ากัน', ratio:'ตามสัดส่วน', custom:'เลือกคน' };
+  var typeMap = {
+    personal: { label:'ส่วนตัว',      cls:'sg-badge-personal', icon:'💼', bg:'#faeeda' },
+    equal:    { label:'หารเท่ากัน',   cls:'sg-badge-equal',    icon:'👥', bg:'#e1f5ee' },
+    ratio:    { label:'ตามสัดส่วน %', cls:'sg-badge-ratio',    icon:'📊', bg:'#e6f1fb' },
+    custom:   { label:'เลือกคน',      cls:'sg-badge-custom',   icon:'🎯', bg:'#eeedfe' },
+  };
 
   el.innerHTML = groups.map(function(g) {
-    var label = typeLabel[g.split_type] || g.split_type;
+    var tm = typeMap[g.split_type] || { label:g.split_type, cls:'sg-badge-equal', icon:'🏠', bg:'#e1f5ee' };
     var activeMembers = (g.members || []).filter(function(m) { return m.active; });
     var summary = activeMembers.map(function(m) {
-      var p = (typeof persons !== 'undefined') ? persons.find(function(p) { return p.user_id === m.user_id; }) : null;
+      var p = (typeof persons !== 'undefined') ? persons.find(function(x) { return x.user_id === m.user_id; }) : null;
       var name = p ? p.name : (m.label || '?');
-      return g.split_type === 'ratio' ? name + ' ' + m.ratio + '%' : name;
+      return g.split_type === 'ratio' ? name + ' ' + m.ratio + '%' : name;
     }).join(' · ') || (activeMembers.length + ' คน');
 
+    var hasActive = activeMembers.length > 0;
+
     return '<div class="sg-item" onclick="openSplitGroupModal(\'' + _escHtml(g.id) + '\')">' +
-      '<div class="sg-item-icon">🏠</div>' +
+      '<div class="sg-item-icon" style="background:' + tm.bg + ';border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">' + tm.icon + '</div>' +
       '<div class="sg-item-body">' +
-        '<div class="sg-item-name">' + _escHtml(g.name) + '</div>' +
-        '<div class="sg-item-sub">' + _escHtml(label) + ' · ' + _escHtml(summary) + '</div>' +
+        '<div class="sg-item-name" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">' +
+          _escHtml(g.name) +
+          '<span class="sg-badge ' + tm.cls + '">' + tm.label + '</span>' +
+          '<span class="sg-badge ' + (hasActive ? 'sg-badge-active' : 'sg-badge-inactive') + '">' +
+            (hasActive ? 'เปิดใช้' : 'ปิดใช้') +
+          '</span>' +
+        '</div>' +
+        '<div class="sg-item-sub">' + _escHtml(summary) + ' · ' + activeMembers.length + ' คน</div>' +
       '</div>' +
       '<div class="sg-item-arrow">›</div>' +
     '</div>';

@@ -97,6 +97,29 @@ body.app-ready #page-login { display: none !important; }
 }
 .sg-val-bar.ok  { background:var(--green-bg,#f0fdf4); color:var(--green,#166534); }
 .sg-val-bar.err { background:#fef2f2; color:#dc2626; }
+
+/* sg-item: ยกเป็น card style แทน border แบบเดิม */
+.sg-item {
+  display:flex; align-items:center; gap:12px; padding:11px 14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer; transition:background .15s; margin-bottom:0 !important;
+  border:none; border-radius:0;
+}
+.sg-item:last-child { border-bottom:none; }
+.sg-item:hover { background:var(--surface2,#f9fafb); }
+
+/* badges สำหรับ type + active/inactive */
+.sg-badge {
+  display:inline-flex; align-items:center;
+  font-size:10px; font-weight:600; padding:2px 7px;
+  border-radius:20px; line-height:1.4;
+}
+.sg-badge-equal    { background:#e1f5ee; color:#0f6e56; }
+.sg-badge-ratio    { background:#e6f1fb; color:#185fa5; }
+.sg-badge-personal { background:#faeeda; color:#854f0b; }
+.sg-badge-custom   { background:#eeedfe; color:#3c3489; }
+.sg-badge-active   { background:#eaf3de; color:#3b6d11; }
+.sg-badge-inactive { background:#f1efe8; color:#5f5e5a; }
 </style>
 </head>
 <body>
@@ -1396,11 +1419,9 @@ create policy "public write" on transactions for all using (true);</div>
     <span>🏠 Settlement Groups</span>
     <button onclick="openSplitGroupModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">+ สร้างกลุ่ม</button>
   </div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div style="padding:10px 14px">
-      <div id="splitGroupsList">
-        <div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">กำลังโหลด...</div>
-      </div>
+  <div class="settings-section card" style="max-width:700px;padding:0;overflow:hidden">
+    <div id="splitGroupsList">
+      <div style="color:var(--ink3);font-size:13px;text-align:center;padding:20px">กำลังโหลด...</div>
     </div>
   </div>
   <div id="adminMsg" class="msg" style="max-width:700px;text-align:center;margin:4px 0"></div>

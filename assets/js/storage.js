@@ -96,8 +96,13 @@ function getCyclesFromStorage() {
 
 // ─── SUPABASE CREDS ───────────────────────────────────────
 function getSbCreds(){
-  var url = (localStorage.getItem('hf2_sb_url')||'').trim().replace(/\/+$/,'');
-  var key = (localStorage.getItem('hf2_sb_key')||'').trim();
+  // Fallback: ถ้า localStorage ว่างเปล่า ใช้ค่า default จาก config.js
+  var url = (localStorage.getItem('hf2_sb_url') ||
+             (typeof SB_URL_DEFAULT !== 'undefined' ? SB_URL_DEFAULT : '') ||
+             '').trim().replace(/\/+$/, '');
+  var key = (localStorage.getItem('hf2_sb_key') ||
+             (typeof SB_KEY_DEFAULT !== 'undefined' ? SB_KEY_DEFAULT : '') ||
+             '').trim();
   return { url: url, key: key, ok: !!(url && key) };
 }
 
@@ -110,6 +115,16 @@ function sbHeadersFrom(key){
     'apikey': key,
     'Authorization': 'Bearer ' + token,
     'Prefer': 'return=minimal',
+  };
+}
+
+/** Headers สำหรับ GET request — ไม่มี Content-Type / Prefer เพื่อหลีกเลี่ยง
+ *  พฤติกรรมที่ไม่คาดหวังจาก PostgREST เมื่อส่ง return=minimal บน SELECT */
+function sbGetHeaders(key){
+  var token = (typeof getAuthToken === 'function' && getAuthToken()) ? getAuthToken() : key;
+  return {
+    'apikey': key,
+    'Authorization': 'Bearer ' + token,
   };
 }
 

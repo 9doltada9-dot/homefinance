@@ -293,11 +293,9 @@ function _showSignupPendingEmail(name, email) {
       '<div style="font-size:14px;font-weight:600;color:var(--blue);background:var(--blue-bg);padding:8px 16px;border-radius:8px;margin-bottom:12px;word-break:break-all">' + email + '</div>' +
       '<div style="font-size:12px;color:var(--ink3);margin-bottom:6px;line-height:1.6">คลิกลิงก์ยืนยันใน Email เพื่อเปิดใช้งานบัญชี<br>แล้วกลับมา Login ได้เลย</div>' +
       '<div style="font-size:11px;color:#e67e22;background:#fef9f0;border:1px solid #f0c060;border-radius:8px;padding:8px 12px;margin-bottom:16px;line-height:1.6">' +
-        '⚠️ ไม่เจอ Email? ลองตรวจ <strong>Spam / Junk</strong><br>' +
-        'Email อาจใช้เวลา 1-5 นาที' +
+        '⚠️ ไม่เจอ Email? ลองตรวจ <strong>Spam / Junk</strong><br>Email อาจใช้เวลา 1-5 นาที' +
       '</div>' +
-      '<button id="resendEmailBtn" class="btn" onclick="resendConfirmEmail(\'' + email.replace(/'/g,"&#39;") + '\')" ' +
-        'style="width:100%;min-height:44px;font-size:13px;margin-bottom:8px;background:var(--surface);border:1.5px solid var(--border);color:var(--ink2)">📤 ส่ง Email ยืนยันใหม่</button>' +
+      '<button id="resendEmailBtn" class="btn" onclick="resendConfirmEmail(\'' + email.replace(/'/g,"&#39;") + '\')" style="width:100%;min-height:44px;font-size:13px;margin-bottom:8px;background:var(--surface);border:1.5px solid var(--border);color:var(--ink2)">📤 ส่ง Email ยืนยันใหม่</button>' +
       '<div id="resendMsg" style="font-size:12px;text-align:center;margin-bottom:12px;min-height:16px"></div>' +
       '<button class="btn btn-primary" onclick="switchAuthTab(\'login\')" style="width:100%;min-height:44px;font-size:14px">→ ไปหน้า Login</button>' +
     '</div>';
@@ -323,7 +321,6 @@ async function resendConfirmEmail(email) {
     }
     if (msgEl) { msgEl.textContent = '✅ ส่งแล้ว! ตรวจ Inbox และ Spam'; msgEl.style.color = '#1a7a4a'; }
     if (btn) { btn.textContent = '✅ ส่งแล้ว'; }
-    // reset ปุ่มหลัง 30 วินาที
     setTimeout(function() {
       if (btn) { btn.disabled = false; btn.textContent = '📤 ส่ง Email ยืนยันใหม่'; }
       if (msgEl) { msgEl.textContent = ''; }
@@ -333,7 +330,6 @@ async function resendConfirmEmail(email) {
     if (btn) { btn.disabled = false; btn.textContent = '📤 ส่ง Email ยืนยันใหม่'; }
   }
 }
-
 function _showSignupMsg(text, ok) {
   var msgEl = document.getElementById('signupMsg');
   if (!msgEl) return;
@@ -907,4 +903,63 @@ async function doChangeName() {
     setTimeout(function(){ msgEl.style.display = 'none'; }, 3000);
   }
 
- 
+  if (!newName) { _showNameMsg('⚠️ กรอกชื่อที่ต้องการเปลี่ยน', false); return; }
+  if (!_authUser) { _showNameMsg('⚠️ ยังไม่ได้เข้าสู่ระบบ', false); return; }
+
+  var creds = getSbCreds();
+  if (!creds.ok) {
+    if (_authProfile) _authProfile.name = newName;
+    _updateUserBar();
+    if (input) input.value = '';
+    _showNameMsg('✅ เปลี่ยนชื่อเป็น "' + newName + '" แล้ว', true);
+    return;
+  }
+
+  try {
+    var r = await fetch(
+      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': creds.key,
+          'Authorization': 'Bearer ' + _authToken,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ name: newName, id: _authUser.id })
+      }
+    );
+    if (!r.ok) {
+      var errBody = '';
+      try { errBody = await r.text(); } catch(_) {}
+      throw new Error('HTTP ' + r.status + (errBody ? ' — ' + errBody.slice(0, 120) : ''));
+    }
+    if (!_authProfile) _authProfile = {};
+    _authProfile.name = newName;
+    var saved = _loadSavedSession();
+    if (saved) { saved.profile = _authProfile; try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_){} }
+    _updateUserBar();
+    if (input) input.value = '';
+    _showNameMsg('✅ เปลี่ยนชื่อเป็น "' + newName + '" แล้ว', true);
+  } catch (e) {
+    _showNameMsg('❌ เปลี่ยนชื่อไม่สำเร็จ: ' + e.message, false);
+  }
+}
+
+// ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
+function getCurrentPerson() {
+  var name = getAuthProfileName().toLowerCase();
+  if (!name || typeof persons === 'undefined') return 'A';
+  for (var i = 0; i < persons.length; i++) {
+    if (persons[i].name.toLowerCase() === name) return persons[i].id;
+  }
+  var email = _authUser ? (_authUser.email || '') : '';
+  return email ? (email.charCodeAt(0) % 2 === 0 ? 'A' : 'B') : 'A';
+}
+
+function _updateAdminNav() {
+  var show = isAdminUser();
+  document.querySelectorAll('.admin-only').forEach(function (el) {
+    el.style.display = show ? '' : 'none';
+  });
+}

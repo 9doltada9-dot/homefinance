@@ -77,21 +77,12 @@ function openSplitGroupModal(groupId) {
     btn.classList.toggle('active', btn.dataset.type === type);
   });
 
-  // Build member working list from persons array
-  var allPersons = (typeof persons !== 'undefined') ? persons : [];
-  _sgMembers = allPersons.map(function(p) {
-    var existing = g ? (g.members || []).find(function(m) { return m.user_id === p.user_id; }) : null;
-    return {
-      user_id: p.user_id || ('__legacy_' + p.id),
-      label:   existing ? existing.label : p.name,
-      ratio:   existing ? (parseFloat(existing.ratio) || 0) : 0,
-      active:  existing ? !!existing.active : false,
-      _name:   p.name,   // display name (internal)
-      _hasAccount: !!p.user_id,
-    };
-  });
+  // แสดง loading ก่อน แล้วดึง profiles จาก Supabase
+  var el = document.getElementById('sgMemberList');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:12px;font-size:12px;color:var(--ink3)">⏳ กำลังโหลดสมาชิก...</div>';
+  modal.style.display = 'flex';
 
-  _renderSgMembers(type);
+  _sgLoadProfilesAndRender(g, type);
   _updateSgValidation(type);
 
   // Show/hide delete button
@@ -99,12 +90,49 @@ function openSplitGroupModal(groupId) {
   if (delBtn) delBtn.style.display = g ? '' : 'none';
 
   document.getElementById('sgMsg').textContent = '';
-  modal.style.display = 'flex';
 }
 
 function closeSplitGroupModal() {
   var modal = document.getElementById('splitGroupModal');
   if (modal) modal.style.display = 'none';
+}
+
+// ── โหลด profiles จาก Supabase แล้ว render สมาชิก ─────────────────────────────
+async function _sgLoadProfilesAndRender(g, type) {
+  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
+  var token = (typeof getAuthToken === 'function') ? getAuthToken() : null;
+  var profiles = [];
+
+  if (creds.ok && token) {
+    try {
+      var r = await fetch(
+        creds.url + '/rest/v1/profiles?select=id,name,label&order=name',
+        { headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + token } }
+      );
+      if (r.ok) profiles = await r.json();
+    } catch (e) { console.warn('[sg] loadProfiles:', e); }
+  }
+
+  // fallback: ใช้ persons ถ้าดึงไม่ได้
+  if (!profiles.length && typeof persons !== 'undefined') {
+    profiles = persons
+      .filter(function(p) { return p.user_id; })
+      .map(function(p) { return { id: p.user_id, name: p.name, label: p.label || '' }; });
+  }
+
+  _sgMembers = profiles.map(function(p) {
+    var existing = g ? (g.members || []).find(function(m) { return m.user_id === p.id; }) : null;
+    return {
+      user_id: p.id,
+      label:   existing ? existing.label : (p.label || p.name),
+      ratio:   existing ? (parseFloat(existing.ratio) || 0) : 0,
+      active:  existing ? !!existing.active : false,
+      _name:   p.name,
+    };
+  });
+
+  _renderSgMembers(type);
+  _updateSgValidation(type);
 }
 
 // ── Render member rows inside modal ──────────────────────────────────────────
@@ -119,9 +147,7 @@ function _renderSgMembers(type) {
 
   el.innerHTML = _sgMembers.map(function(m, i) {
     var initials = (m._name || '?').charAt(0);
-    var accountBadge = m._hasAccount
-      ? '<span style="font-size:10px;color:var(--green);background:var(--green-bg);border-radius:4px;padding:1px 5px">มีบัญชี</span>'
-      : '<span style="font-size:10px;color:#f97316;background:#fff7ed;border-radius:4px;padding:1px 5px">ยังไม่มีบัญชี</span>';
+    var accountBadge = '';  // profiles จาก Supabase มีบัญชีทั้งหมด
 
     var pctHtml = '';
     if (type === 'ratio' && m.active) {

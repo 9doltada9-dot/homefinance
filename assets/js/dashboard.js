@@ -56,8 +56,40 @@ function renderDash(){
   var curM = (sel && sel.value) || thisM;
   var parts = curM.split('-').map(Number);
   var y=parts[0], mo=parts[1];
-  document.getElementById('dashSub').textContent='ภาพรวมการเงิน '+SHORT_M[mo-1]+' '+(y+543);
-  var me = db.filter(function(e){return e.date.startsWith(curM);});
+
+  // ─── Admin person filter ────────────────────────────────
+  var _adminMode = (typeof isAdminUser === 'function' && isAdminUser());
+  var personFilterEl = document.getElementById('dashPersonFilter');
+  var dashPersonFilter = '';
+  if (personFilterEl) {
+    if (_adminMode) {
+      personFilterEl.style.display = '';
+      var _allPersonIds = Array.from(new Set(db.map(function(e){return e.person;}).filter(Boolean))).sort();
+      var _curPF = personFilterEl.value;
+      personFilterEl.innerHTML = '<option value="">\ud83d\udc65 \u0e17\u0e38\u0e01\u0e04\u0e19</option>' +
+        _allPersonIds.map(function(pid){
+          var p = persons.find(function(x){return x.id===pid;});
+          return '<option value="'+pid+'"'+(_curPF===pid?' selected':'')+'>'+
+            (p ? p.name : pid)+'</option>';
+        }).join('');
+      dashPersonFilter = personFilterEl.value;
+    } else {
+      personFilterEl.style.display = 'none';
+      personFilterEl.value = '';
+    }
+  }
+
+  var _personLabel = dashPersonFilter
+    ? (persons.find(function(x){return x.id===dashPersonFilter;}) || {name:dashPersonFilter}).name
+    : '';
+  document.getElementById('dashSub').textContent =
+    'ภาพรวมการเงิน '+SHORT_M[mo-1]+' '+(y+543) +
+    (_personLabel ? ' · '+_personLabel : (_adminMode ? ' · ทุกคน' : ''));
+
+  var me = db.filter(function(e){
+    return e.date.startsWith(curM) &&
+      (!dashPersonFilter || e.person === dashPersonFilter);
+  });
   var inc = me.filter(function(e){return e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
   var exp = me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
   var pIn = me.filter(function(e){return e.type==='income'&&e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
@@ -73,7 +105,10 @@ function renderDash(){
   var activeChart = localStorage.getItem('hf2_chart')||'bar';
   switchChart(activeChart, curM);
   // Recent & Pending for selected month
-  var recent = curM === thisM ? db.slice(0,6) : db.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
+  var _dbFiltered = dashPersonFilter
+    ? db.filter(function(e){return e.person===dashPersonFilter;})
+    : db;
+  var recent = curM === thisM ? _dbFiltered.slice(0,6) : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
   document.getElementById('recentTx').innerHTML=recent.length?'<table><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
     '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
@@ -81,7 +116,7 @@ function renderDash(){
     '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)')+'">'+fmt(e.amt)+'</td>'+
     '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
-  var pend=db.filter(function(e){return e.status==='pending';});
+  var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
   document.getElementById('pendingTx').innerHTML=pend.length?'<table><tr><th>รายการ</th><th>ผู้บันทึก</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
     '<td>'+e.desc+'<br><span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+(e.note?'<br><span style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</span>':'')+
     '</td>'+

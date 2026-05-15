@@ -78,9 +78,14 @@ document.addEventListener('DOMContentLoaded', function(){
 function startAppAfterAuth() {
   var startCreds = getSbCreds();
   if(startCreds.ok){
+    // Admin ดึง transactions ทั้งหมด, User ดึงเฉพาะของตัวเอง
+    var _startUserId = (typeof getAuthUserId === 'function' ? getAuthUserId() : null);
+    var _isAdmin     = (typeof isAdminUser   === 'function' && isAdminUser());
+    var _txUrl = startCreds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc' +
+                 (!_isAdmin && _startUserId ? '&user_id=eq.'+encodeURIComponent(_startUserId) : '');
     Promise.all([
-      fetch(startCreds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc', { headers: sbHeadersFrom(startCreds.key) })
-        .then(function(r){return r.ok?r.json():[];}).catch(function(){return [];}),
+      fetch(_txUrl, { headers: sbGetHeaders(startCreds.key) })
+        .then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
       sbLoadSettings(),
       sbLoadCategories(),
       sbLoadItems(),
@@ -113,14 +118,9 @@ function startAppAfterAuth() {
         applySettingsFromMap(settingsMap);
         updatePersonLabels(); applyViewMode();
       }
-      // apply transactions — merge: Supabase wins for rows it has,
-      // keep local-only rows so old offline data is never lost
-      if(rows.length > 0){
-        var sbMapped = rows.map(mapSbRow);
-        var sbIdSet  = {};
-        sbMapped.forEach(function(r){ sbIdSet[String(r.id)] = true; });
-        var localOnly = db.filter(function(e){ return !sbIdSet[String(e.id)]; });
-        db = sbMapped.concat(localOnly);
+      // Supabase เป็น source of truth — null = offline, [] = online ไม่มีข้อมูล
+      if(rows !== null){
+        db = rows.map(mapSbRow);
         db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
         save();
       }

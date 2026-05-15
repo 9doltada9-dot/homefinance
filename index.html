@@ -78,7 +78,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.4.1 · THB</div>
+    <div class="brand-sub">v3.5.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
@@ -138,7 +138,7 @@ body.app-ready #page-login { display: none !important; }
       <span id="sidebarOnlineTxt" style="font-size:11px;color:var(--ink3)">กำลังตรวจสอบ...</span>
     </div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.4.1 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.5.0 © 2025</div>
   </div>
 </nav>
 
@@ -158,6 +158,10 @@ body.app-ready #page-login { display: none !important; }
       </select>
       <select id="dashMonth" onchange="renderDash()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
         <option value="">เดือน</option>
+      </select>
+      <!-- Admin only: person filter -->
+      <select id="dashPersonFilter" onchange="renderDash()" style="display:none;font-size:13px !important;padding:6px 10px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-bg);color:var(--blue);min-height:36px;font-weight:600">
+        <option value="">👥 ทุกคน</option>
       </select>
     </div>
   </div>
@@ -725,7 +729,8 @@ body.app-ready #page-login { display: none !important; }
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.4.1</strong> — เพิ่มปุ่ม "ส่ง Email ยืนยันใหม่" + แจ้งเตือนตรวจ Spam เมื่อ email ยืนยันไม่มา (Resend API)
+        <strong>v3.5.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
+        <br><strong>v3.4.1</strong> — Email confirmation redirect
         <br><strong>v3.4.0</strong> — Email confirmation redirect: หลังกดลิงก์ยืนยัน email แอปจะ redirect กลับหน้า Login พร้อมข้อความ "ยืนยัน Email สำเร็จ", แก้ signup crash เมื่อ Supabase ต้องยืนยัน email ก่อน (null access_token), เพิ่ม redirect_to ใน signup URL
         <br><strong>v3.2.1</strong> — แก้ HTTP 500 บันทึกชื่อ (เพิ่ม user_id ใน settings), แก้ข้อมูลหายหลัง login (sbGetHeaders + user_id filter), แก้ "ตรวจสอบ Database" แสดงผล error ถูกต้อง, getSbCreds fallback config.js defaults
       </div>
@@ -1355,7 +1360,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.4.1</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.5.0</div>
   </div>
 </div>
 

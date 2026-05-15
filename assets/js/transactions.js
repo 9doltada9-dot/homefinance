@@ -79,9 +79,22 @@ function populateMFPerson(){
   var el = document.getElementById('mfPersonList');
   if(!el) return;
   var cur = getMFValues('mfPerson');
-  el.innerHTML = persons.map(function(p){return '<label>'+
-    '<input type="checkbox" value="'+p.id+'" '+(cur.indexOf(p.id)>-1?'checked':'')+' onchange="updateMFLabel(\'mfPerson\',\'คน\');renderTx()">'+
-    ' '+p.name+'</label>';}).join('');
+  var _isAdmin = (typeof isAdminUser === 'function' && isAdminUser());
+  var personList;
+  if (_isAdmin) {
+    var _uniqueIds = Array.from(new Set(db.map(function(e){return e.person;}).filter(Boolean))).sort();
+    personList = _uniqueIds.map(function(pid){
+      var p = persons.find(function(x){return x.id===pid;});
+      return {id:pid, name:(p?p.name:pid)};
+    });
+  } else {
+    personList = persons;
+  }
+  el.innerHTML = personList.length
+    ? personList.map(function(p){return '<label>'+
+        '<input type="checkbox" value="'+p.id+'" '+(cur.indexOf(p.id)>-1?'checked':'')+' onchange="updateMFLabel(\'mfPerson\',\'คน\');renderTx()">'+
+        ' '+p.name+'</label>';}).join('')
+    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ไม่มีข้อมูล</div>';
 }
 
 function resetFilters(){

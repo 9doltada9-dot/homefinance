@@ -254,23 +254,23 @@ async function sbDeleteVendor(id){
 var _lastPullTs = 0;
 var _pullInProgress = false;
 
-/** ผลลัพธ์: merged db array หรือ null ถ้าล้มเหลว */
+/** ผลลัพธ์: db array จาก Supabase หรือ null ถ้าล้มเหลว
+ *  Admin ดึงทั้งหมด | User ดึงเฉพาะของตัวเอง | Supabase = source of truth */
 async function _fetchAndMerge(creds, timeoutMs) {
   var ctrl = new AbortController();
   var t = setTimeout(function(){ ctrl.abort(); }, timeoutMs || 8000);
+  var userId   = (typeof getAuthUserId === 'function' ? getAuthUserId() : null);
+  var _isAdmin = (typeof isAdminUser   === 'function' && isAdminUser());
   var r = await fetch(
-    creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc',
-    { headers: sbHeadersFrom(creds.key), signal: ctrl.signal }
+    creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc' +
+    (!_isAdmin && userId ? '&user_id=eq.'+encodeURIComponent(userId) : ''),
+    { headers: sbGetHeaders(creds.key), signal: ctrl.signal }
   );
   clearTimeout(t);
   if(!r.ok) throw new Error('HTTP '+r.status);
   var rows = await r.json();
   if(!rows) return null;
-  var sbMapped = rows.map(mapSbRow);
-  var sbIdSet  = {};
-  sbMapped.forEach(function(x){ sbIdSet[String(x.id)] = true; });
-  var localOnly = db.filter(function(e){ return !sbIdSet[String(e.id)]; });
-  var merged = sbMapped.concat(localOnly);
+  var merged = rows.map(mapSbRow);
   merged.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
   return merged;
 }
@@ -443,7 +443,13 @@ function updateConnectionUI(online){
   var sidebarDot = document.getElementById('sidebarOnlineDot');
   var sidebarTxt = document.getElementById('sidebarOnlineTxt');
   if(sidebarDot) sidebarDot.style.background = color;
-  if(sidebarTxt){ sidebarTxt.textContent = online ? 'Online' : 'Offline'; sidebarTxt.style.color = color; }
+  if(sidebarTxt){
+    var _pCount = (typeof _getPendingQueue === 'function') ? _getPendingQueue().length : 0;
+    sidebarTxt.textContent = online
+      ? (_pCount > 0 ? 'Online · รอ sync '+_pCount : 'Online')
+      : 'Offline';
+    sidebarTxt.style.color = (_pCount > 0 && online) ? '#e67e22' : color;
+  }
   // Legacy elements (Supabase page — kept for backward compat)
   var dot = document.getElementById('sbDot');
   var txt = document.getElementById('sbStatusText');
@@ -538,31 +544,46 @@ function checkOnlineForAction(){
   return true;
 }
 
+// ─── OFFLINE PENDING QUEUE ────────────────────────────────
+function _getPendingQueue(){
+  try { return JSON.parse(localStorage.getItem('hf2_pending_sync')||'[]'); }
+  catch(_){ return []; }
+}
+function _addPending(e){
+  var q = _getPendingQueue();
+  q = q.filter(function(x){ return String(x.id) !== String(e.id); });
+  q.push(e);
+  localStorage.setItem('hf2_pending_sync', JSON.stringify(q));
+}
+function _removePending(id){
+  var q = _getPendingQueue();
+  q = q.filter(function(x){ return String(x.id) !== String(id); });
+  localStorage.setItem('hf2_pending_sync', JSON.stringify(q));
+}
+function getPendingCount(){ return _getPendingQueue().length; }
+
 async function syncOnReconnect(){
   var creds = getSbCreds();
   if(!creds.ok) return;
   try {
-    var results = await Promise.all([
-      fetch(creds.url+'/rest/v1/'+SB_TABLE+'?select=*&order=date.desc', {
-        headers: sbHeadersFrom(creds.key)
-      }).then(function(r){return r.ok?r.json():[];}).catch(function(){return [];}),
-      sbLoadCategories()
-    ]);
-    var rows = results[0], catsData = results[1];
-    if(rows.length > 0){
-      var sbMapped2 = rows.map(mapSbRow);
-      var sbIdSet2  = {};
-      sbMapped2.forEach(function(r){ sbIdSet2[String(r.id)] = true; });
-      var localOnly2 = db.filter(function(e){ return !sbIdSet2[String(e.id)]; });
-      db = sbMapped2.concat(localOnly2);
-      db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
-      save();
+    // 1. Push pending offline entries ก่อน (เน็ตตัดกลางคัน)
+    var pending = _getPendingQueue();
+    if(pending.length > 0){
+      await Promise.all(pending.map(function(e){ return sbAdd(e); }));
     }
+    // 2. Load categories
+    var catsData = await sbLoadCategories();
     if(catsData && Array.isArray(catsData)){
       categories = catsData; buildCategoryMap();
     }
+    // 3. Pull fresh — Supabase เป็น source of truth
+    var merged = await _fetchAndMerge(creds, 8000);
+    if(merged){ db = merged; save(); }
     renderDash(); renderTx();
-    showConnectToast('เชื่อมต่อแล้ว — อัปเดตข้อมูลล่าสุดเรียบร้อย');
+    var pendLeft = _getPendingQueue().length;
+    showConnectToast(pendLeft > 0
+      ? '⚠️ เชื่อมต่อแล้ว แต่ sync ไม่ครบ '+pendLeft+' รายการ'
+      : 'เชื่อมต่อแล้ว — อัปเดตข้อมูลล่าสุดเรียบร้อย');
   } catch(_){}
 }
 
@@ -674,10 +695,9 @@ async function sbAdd(e){
   try {
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
     var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'resolution=merge-duplicates,return=minimal'});
-    // Ensure cycle_id + billing_month are populated (v3)
     var cycleId      = e.cycle_id      || (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : null);
     var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : null);
-    await fetch(creds.url+'/rest/v1/'+SB_TABLE, {
+    var r = await fetch(creds.url+'/rest/v1/'+SB_TABLE, {
       method:'POST',
       headers: headers,
       body:JSON.stringify([{
@@ -690,18 +710,18 @@ async function sbAdd(e){
         note:e.note||'',
         item_id:e.item_id||null,
         vendor_id:e.vendor_id||null,
-        // v3 new fields
         cycle_id:       cycleId||null,
         billing_month:  billingMonth||null,
         account_id:     e.account_id||null,
         transfer_direction: e.transfer_direction||null,
         transfer_pair_id:   e.transfer_pair_id||null,
         _recurring_id:  e._recurring_id||null,
-        // v3.2: user isolation
         user_id: (typeof getAuthUserId==='function' ? getAuthUserId() : null) || e.user_id || null,
       }])
     });
-  } catch(_){}
+    if(r.ok){ _removePending(String(e.id)); }
+    else { _addPending(e); }
+  } catch(_){ _addPending(e); }
 }
 
 async function sbUpdate(e){

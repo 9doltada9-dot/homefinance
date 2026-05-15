@@ -149,7 +149,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.8.0 · THB</div>
+    <div class="brand-sub">v3.9.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:2px 0">
@@ -230,10 +230,7 @@ body.app-ready #page-login { display: none !important; }
       <select id="dashMonth" onchange="renderDash()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
         <option value="">เดือน</option>
       </select>
-      <!-- Admin only: person filter -->
-      <select id="dashPersonFilter" onchange="renderDash()" style="display:none;font-size:13px !important;padding:6px 10px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-bg);color:var(--blue);min-height:36px;font-weight:600">
-        <option value="">👥 ทุกคน</option>
-      </select>
+
     </div>
   </div>
   <div class="metrics" id="metrics"></div>
@@ -444,12 +441,6 @@ body.app-ready #page-login { display: none !important; }
           <label><input type="checkbox" value="received" onchange="renderTx()"> รับแล้ว</label>
           <label><input type="checkbox" value="pending" onchange="renderTx()"> รอดำเนินการ</label>
         </div>
-      </div>
-
-      <!-- Person multi -->
-      <div class="multi-filter" id="mfPerson">
-        <div class="mf-label" onclick="toggleMF('mfPerson')">คน ▾</div>
-        <div class="mf-dropdown" id="mfPersonList"></div>
       </div>
 
       <!-- Vendor multi -->

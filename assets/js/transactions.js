@@ -75,27 +75,6 @@ function populateMFCat(){
     ' '+c.name+'</label>';}).join('');
 }
 
-function populateMFPerson(){
-  var el = document.getElementById('mfPersonList');
-  if(!el) return;
-  var cur = getMFValues('mfPerson');
-  var _isAdmin = (typeof isAdminUser === 'function' && isAdminUser());
-  var personList;
-  if (_isAdmin) {
-    var _uniqueIds = Array.from(new Set(db.map(function(e){return e.person;}).filter(Boolean))).sort();
-    personList = _uniqueIds.map(function(pid){
-      var p = persons.find(function(x){return x.id===pid;});
-      return {id:pid, name:(p?p.name:pid)};
-    });
-  } else {
-    personList = persons;
-  }
-  el.innerHTML = personList.length
-    ? personList.map(function(p){return '<label>'+
-        '<input type="checkbox" value="'+p.id+'" '+(cur.indexOf(p.id)>-1?'checked':'')+' onchange="updateMFLabel(\'mfPerson\',\'คน\');renderTx()">'+
-        ' '+p.name+'</label>';}).join('')
-    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ไม่มีข้อมูล</div>';
-}
 
 function resetFilters(){
   document.getElementById('fltMonth').value='';
@@ -103,7 +82,7 @@ function resetFilters(){
   var fltBM = document.getElementById('fltBillingMonth');
   if (fltBM) { fltBM.value = ''; populateFltBillingMonth(fltBM); }
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
-  [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ'],['mfPerson','คน']].forEach(function(pair){
+  [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ']].forEach(function(pair){
     var id=pair[0], def=pair[1];
     var label=document.querySelector('#'+id+' .mf-label');
     if(label){ label.textContent=def+' ▾'; label.classList.remove('active'); }
@@ -138,8 +117,6 @@ function getFilteredTx(){
   if(fitems.length)   list = list.filter(function(e){ return fitems.indexOf(e.desc)>-1; });
   var fstats   = getMFValues('mfStatus');
   if(fstats.length)   list = list.filter(function(e){ return fstats.indexOf(e.status)>-1; });
-  var fpers    = getMFValues('mfPerson');
-  if(fpers.length)    list = list.filter(function(e){ return fpers.indexOf(e.person)>-1; });
   var fvendors = getMFValues('mfVendor');
   if(fvendors.length) list = list.filter(function(e){ return fvendors.indexOf(e.vendor_id)>-1; });
   return list;
@@ -181,7 +158,6 @@ function renderTx(){
 
   // always rebuild multi filters
   populateMFCat();
-  populateMFPerson();
   populateMFVendor();
   populateFltBillingMonth();
 
@@ -213,8 +189,6 @@ function renderTx(){
   var fstats = getMFValues('mfStatus');
   if(fstats.length) list=list.filter(function(e){return fstats.indexOf(e.status)>-1;});
 
-  var fpers = getMFValues('mfPerson');
-  if(fpers.length) list=list.filter(function(e){return fpers.indexOf(e.person)>-1;});
 
   var fvendors = getMFValues('mfVendor');
   if(fvendors.length) list=list.filter(function(e){return fvendors.indexOf(e.vendor_id)>-1;});
@@ -268,7 +242,6 @@ function renderTx(){
                 '<div style="flex:1;min-width:0">'+
                   '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'+
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
-                    personPill(e.person)+
                     '<span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+

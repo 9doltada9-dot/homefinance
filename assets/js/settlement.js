@@ -117,13 +117,30 @@ function _uidToName(uid) {
   return p ? p.name : uid;
 }
 
-/** สร้าง nameMap: uid → name สำหรับ persons ทั้งหมด */
+/** สร้าง nameMap: uid → name — รวมจาก persons + _allProfiles + group members */
 function _buildNameMap() {
   var m = {};
+  // 1. persons array
   persons.forEach(function(p) {
     var uid = p.user_id || p.id;
-    m[uid] = p.name;
+    if (uid) m[uid] = p.name;
   });
+  // 2. Supabase profiles (แม่นที่สุด — override ชื่อเก่า)
+  if (window._allProfiles && Array.isArray(window._allProfiles)) {
+    window._allProfiles.forEach(function(prof) {
+      if (prof.id && prof.name) m[prof.id] = prof.name;
+    });
+  }
+  // 3. group member labels (user_id → label ที่ตั้งไว้ในกลุ่ม)
+  if (typeof getSplitGroups === 'function') {
+    getSplitGroups().forEach(function(g) {
+      (g.members || []).forEach(function(mem) {
+        if (mem.user_id && mem.label && !m[mem.user_id]) {
+          m[mem.user_id] = mem.label;
+        }
+      });
+    });
+  }
   return m;
 }
 
@@ -161,6 +178,16 @@ function renderSettle(){
 
   // ── คำนวณ paid / owed per uid ──────────────────────────────
   var nameMap = _buildNameMap();
+  // เพิ่มชื่อจาก split_snapshot.label ของรายการในเดือนนี้
+  db.filter(function(e){ return e.date.startsWith(m); }).forEach(function(e){
+    if (e.split_snapshot) {
+      Object.keys(e.split_snapshot).forEach(function(uid){
+        if (!nameMap[uid] && e.split_snapshot[uid].label) {
+          nameMap[uid] = e.split_snapshot[uid].label;
+        }
+      });
+    }
+  });
   var paid = {}, owed = {};
 
   // เริ่มต้น uid จาก group members ถ้ามี หรือจาก persons
@@ -168,7 +195,7 @@ function renderSettle(){
   initUids.forEach(function(uid){ paid[uid]=0; owed[uid]=0; });
 
   splitExp.forEach(function(e) {
-    var payerUid = _pidToUid(e.person) || e.person;
+    var payerUid = e.user_id || e.user_id || _pidToUid(e.person) || e.person;
 
     if (e.split_snapshot && Object.keys(e.split_snapshot).length) {
       // ✅ ใช้ split_snapshot (immutable)

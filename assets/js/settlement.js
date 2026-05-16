@@ -321,6 +321,7 @@ function renderSettle(){
   var detailMobile = splitExp.map(function(e){
     var payerU = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[payerU] || e.person;
+    var vendor = _vendorName(e.vendor_id);
     var snap = e.split_snapshot;
     // on-the-fly ถ้าไม่มี snapshot
     if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') {

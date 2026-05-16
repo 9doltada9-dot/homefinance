@@ -1079,30 +1079,22 @@ async function doSaveLabel(label) {
   }
 }
 
-// ─── MAP LOGGED-IN USER → PERSON A/B ─────────────────────
+// ─── CURRENT USER → UUID ──────────────────────────────────
+/**
+ * คืน UUID (user_id) ของผู้ใช้ที่ login อยู่
+ * — ใช้แทน A/B person ID (ระบบเก่า)
+ * Backward compat: ถ้ายังไม่ login → คืน 'A' (old default)
+ */
 function getCurrentPerson() {
-  if (typeof persons === 'undefined' || !persons.length) return 'A';
-  // 1. match by user_id (most reliable)
-  var userId = _authUser ? _authUser.id : null;
-  if (userId) {
-    var byId = persons.find(function(p){ return p.user_id === userId; });
-    if (byId) return byId.id;
+  // ระบบใหม่: คืน UUID จาก Supabase Auth โดยตรง
+  var userId = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+  if (userId) return userId;
+  // Fallback legacy: คืน person.id (A/B) ถ้ายังไม่ login
+  if (typeof persons !== 'undefined' && persons.length) {
+    var linked = persons.find(function(p){ return !!p.user_id; });
+    return linked ? linked.id : persons[0].id;
   }
-  // 2. match by profile name (fallback)
-  var name = getAuthProfileName().toLowerCase();
-  if (name) {
-    var byName = persons.find(function(p){ return p.name.toLowerCase() === name; });
-    if (byName) {
-      // auto-link ถ้ายังไม่ link
-      if (userId && !byName.user_id && typeof linkPersonToUser === 'function') {
-        linkPersonToUser(userId, byName.id);
-      }
-      return byName.id;
-    }
-  }
-  // 3. fallback: คืน person แรกที่ไม่มี user_id (ยังไม่ถูก link)
-  var unlinked = persons.find(function(p){ return !p.user_id; });
-  return unlinked ? unlinked.id : persons[0].id;
+  return null;
 }
 
 function _updateAdminNav() {

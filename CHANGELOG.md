@@ -1,5 +1,30 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v3.10.0 — 2026-05-16
+
+### feat: refactor person system → user system (UUID-based)
+
+- **utils.js** `nm(pid)` — resolve UUID via `_allProfiles` first, fallback to A/B persons array
+- **utils.js** `names()` — build name map from `_allProfiles` when available  
+- **utils.js** `personPill(pid)` — support UUID as pid, index color by profile order
+- **auth.js** `getCurrentPerson()` — now returns Supabase `user_id` (UUID) directly; no more A/B mapping
+- **persons.js** `populatePersonSelects()` — populate fPerson/ePerson selects with UUID values from `_allProfiles`
+- **dashboard.js** bar + person charts — filter by `e.user_id === p.user_id || e.person === p.id` (backward compat)
+- **transactions.js** mobile card — show person name from `e.user_id || e.person` via `nm()`
+- **transactions.js** `_personName()` — delegates to `nm()` for unified UUID + A/B resolution
+- **form.js** `addEntry()` — set `user_id` on new local entry (matches what sbAdd sends to Supabase)
+- **edit.js** `openEdit()` — prefer `e.user_id` over `e.person` for ePerson select
+- **edit.js** save — update both `e.person` and `e.user_id` from ePerson select value
+- **features.js** CSV export — person column uses `nm(e.user_id || e.person)`
+- **supabase.js** CSV export — same fix
+- **report.js** admin report — `personPill(e.user_id || e.person)`
+- **accounts.js** — remove hardcoded `'A'` fallbacks → use `getCurrentPerson()` or `null`
+- **recurringEngine.js** — replace `'A'` fallback with `getCurrentPerson()` or `null`
+
+**ผลลัพธ์:** ทุกหน้าแสดงชื่อผู้ใช้จาก Supabase profiles โดยตรง ไม่มีชื่อ ต้น/เจี๊ยบ hardcode
+**Backward compat:** ข้อมูลเก่าที่ใช้ person A/B ยังคงทำงานได้ปกติ
+
+
 ## v3.9.11 — 2026-05-16  (Settlement on-the-fly snapshot fix)
 
 ### แก้บัค

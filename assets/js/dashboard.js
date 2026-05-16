@@ -253,7 +253,9 @@ function switchChart(type, passedMonth){
   if(type==='bar'){
     // รายรับ vs รายจ่ายแยกคน
     var labels = persons.map(function(p){return _personDisplayName(p)+'\n(รับ)';}).concat(['รายจ่าย\nรวม']);
-    var vals = persons.map(function(p){return me.filter(function(e){return e.type==='income'&&e.person===p.id&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);})
+    var vals = persons.map(function(p){return me.filter(function(e){
+      return e.type==='income'&&isPaid(e)&&(e.user_id?e.user_id===p.user_id:e.person===p.id);
+    }).reduce(function(s,e){return s+e.amt;},0);})
       .concat([me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0)]);
     chartMain = new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:['#4ade80','#86efac','#f87171'],borderRadius:6,borderWidth:0}]},options:opts});
     document.getElementById('chartLegend').innerHTML='รายรับ vs รายจ่ายเดือนนี้';
@@ -290,7 +292,9 @@ function switchChart(type, passedMonth){
     if(!catsP.length){ document.getElementById('chartLegend').innerHTML='ยังไม่มีข้อมูลรายจ่าย'; return; }
     var datasets = persons.map(function(p,i){return {
       label:_personDisplayName(p),
-      data:catsP.map(function(c){return me.filter(function(e){return e.person===p.id&&(e.cat_name||'—')===c&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);}),
+      data:catsP.map(function(c){return me.filter(function(e){
+        return (e.user_id?e.user_id===p.user_id:e.person===p.id)&&(e.cat_name||'—')===c&&e.type==='expense'&&isPaid(e);
+      }).reduce(function(s,e){return s+e.amt;},0);}),
       backgroundColor:['rgba(74,222,128,.8)','rgba(96,165,250,.8)'][i]||PALETTE[i],
       borderRadius:4,borderWidth:0
     };});

@@ -5,8 +5,22 @@ function populatePersonSelects(){
     var sel=document.getElementById(sid);
     if(!sel) return;
     var cur=sel.value;
-    sel.innerHTML=persons.map(function(p){return '<option value="'+p.id+'">'+p.name+'</option>';}).join('');
-    if(cur) sel.value=cur;
+    // ระบบใหม่: ใช้ UUID จาก _allProfiles เป็น value
+    if(window._allProfiles && window._allProfiles.length){
+      sel.innerHTML=window._allProfiles.map(function(p){
+        return '<option value="'+p.id+'">'+p.name+'</option>';
+      }).join('');
+    } else {
+      // fallback: A/B persons array
+      sel.innerHTML=persons.map(function(p){return '<option value="'+p.id+'">'+p.name+'</option>';}).join('');
+    }
+    // คืนค่าที่เลือกไว้ก่อนหน้า (UUID หรือ A/B)
+    if(cur && sel.querySelector('option[value="'+cur+'"]')) sel.value=cur;
+    else {
+      // ถ้าไม่มีค่าเดิม — ใช้ UUID ของ user ที่ login อยู่
+      var myUid=(typeof getAuthUserId==='function')?getAuthUserId():null;
+      if(myUid && sel.querySelector('option[value="'+myUid+'"]')) sel.value=myUid;
+    }
   });
 }
 

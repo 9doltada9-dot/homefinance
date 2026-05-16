@@ -157,11 +157,10 @@ function _splitBadge(e) {
   return '<span class="badge badge-personal">💼 ส่วนตัว</span>';
 }
 
-/** ชื่อผู้บันทึกจาก person id */
+/** ชื่อผู้บันทึก — รองรับทั้ง UUID (user system) และ A/B (legacy) */
 function _personName(pid) {
   if (!pid) return '—';
-  var p = (typeof persons !== 'undefined') ? persons.find(function(x){ return x.id === pid; }) : null;
-  return p ? p.name : pid;
+  return (typeof nm === 'function') ? nm(pid) : pid;
 }
 
 function renderTx(){
@@ -270,7 +269,7 @@ function renderTx(){
                     '<span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
-                    (e.person ? '<span style="font-size:11px;color:var(--ink3)">👤 '+_personName(e.person)+'</span>' : '')+
+                    (e.user_id||e.person ? '<span style="font-size:11px;color:var(--ink3)">👤 '+nm(e.user_id||e.person)+'</span>' : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
                   (e.note ? '<div style="font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic">📝 '+e.note+'</div>' : '')+

@@ -117,7 +117,7 @@ function renderAdminReport(data, month) {
         '<td style="font-size:12px;white-space:nowrap">' + e.date + '</td>' +
         '<td style="font-size:12px">' + (e.desc||'—') + '</td>' +
         '<td style="font-size:12px">' + (e.cat_name||'—') + '</td>' +
-        '<td>' + (typeof personPill==='function'?personPill(e.person):e.person) + '</td>' +
+        '<td>' + (typeof personPill==='function'?personPill(e.user_id||e.person):e.person) + '</td>' +
         '<td style="text-align:right;font-family:monospace;font-size:12px">' + (typeof fmt==='function'?fmt(e.amt):e.amt) + '</td>' +
         '<td style="text-align:center;font-size:11px">÷2</td>' +
       '</tr>';
@@ -135,7 +135,7 @@ function renderAdminReport(data, month) {
         '<div style="font-weight:600;color:var(--ink3);margin-bottom:4px">รายจ่ายส่วนตัว (' + personal.length + ' รายการ · ' + (typeof fmt==='function'?fmt(personal.reduce(function(s,e){return s+e.amt;},0)):personal.reduce(function(s,e){return s+e.amt;},0)) + ' บาท)</div>' +
         personal.map(function(e){
           return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line)">' +
-            '<span>' + (typeof personPill==='function'?personPill(e.person):e.person) + ' · ' + (e.desc||'—') + '</span>' +
+            '<span>' + (typeof personPill==='function'?personPill(e.user_id||e.person):e.person) + ' · ' + (e.desc||'—') + '</span>' +
             '<span style="font-family:monospace">' + (typeof fmt==='function'?fmt(e.amt):e.amt) + '</span>' +
           '</div>';
         }).join('') +

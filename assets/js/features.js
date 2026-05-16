@@ -53,7 +53,7 @@ function exportFilteredCSV(){
       e.desc || '',
       vendorName,
       e.amt,
-      (typeof nm === 'function' ? nm(e.person) : e.person),
+      (typeof nm === 'function' ? nm(e.user_id||e.person) : (e.user_id||e.person)),
       e.split ? 'TRUE' : 'FALSE',
       e.status || '',
       e.note || ''

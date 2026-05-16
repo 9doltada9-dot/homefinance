@@ -7,7 +7,7 @@ function initForm(){
   }
   // auto-set person จาก logged-in user
   var pSel = document.getElementById('fPerson');
-  if(pSel) pSel.value = (typeof getCurrentPerson==='function') ? getCurrentPerson() : 'A';
+  if(pSel) { var _cp=(typeof getCurrentPerson==='function')?getCurrentPerson():null; if(_cp && pSel.querySelector('option[value="'+_cp+'"]')) pSel.value=_cp; }
   // hook amount input to refresh group preview
   var amtInp = document.getElementById('fAmt');
   if(amtInp) amtInp.addEventListener('input', _updateGroupPreview);
@@ -382,7 +382,10 @@ function addEntry(){
       ? buildSplitSnapshot(splitGroupId, amt) : {};
   }
 
-  db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt, person:person,
+  // ระบบใหม่: user_id = UUID; person = backward compat (อาจเป็น UUID หรือ A/B)
+  var _currentUserId = (typeof getAuthUserId==='function') ? getAuthUserId() : null;
+  db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt,
+    person:person, user_id:_currentUserId||person,
     split:cType==='expense'?splitOn:false,
     split_type:cType==='expense'?splitType:'personal',
     split_members:cType==='expense'&&splitType==='custom'?splitMembers.slice():[],

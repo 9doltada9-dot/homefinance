@@ -21,14 +21,37 @@ var viewMode = localStorage.getItem('hf2_viewmode') || 'desktop';
 // ─── FORMATTERS ───────────────────────────────────────────
 function fmt(n){ return Math.round(n).toLocaleString('th-TH'); }
 function fmtB(n){ return Math.round(n).toLocaleString('th-TH')+' บาท'; }
-function nm(pid){ var p=persons.find(function(x){return x.id===pid;}); return p?p.name:pid; }
-function names(){ return { A: nm('A'), B: nm('B') }; }
+function nm(pid){
+  if(!pid) return '—';
+  // 1. UUID lookup via _allProfiles (new user system)
+  if(window._allProfiles && window._allProfiles.length){
+    var prof=window._allProfiles.find(function(x){return x.id===pid;});
+    if(prof && prof.name) return prof.name;
+  }
+  // 2. Legacy A/B persons array
+  var p=persons.find(function(x){return x.id===pid;});
+  return p?p.name:pid;
+}
+function names(){
+  // backward compat — prefer _allProfiles if available
+  if(window._allProfiles && window._allProfiles.length){
+    var map={};
+    window._allProfiles.forEach(function(p){ map[p.id]=p.name; });
+    return map;
+  }
+  return { A: nm('A'), B: nm('B') };
+}
 function personPill(pid){
+  var displayName=nm(pid);
   var colors=['#ebf0fe:#1a4fa0','#fef8e7:#b5600a','#eef7f2:#1a7a4a','#f0eef9:#4a3a9a','#fdf4e7:#b5600a'];
+  // try persons array first, then _allProfiles
   var idx=persons.findIndex(function(x){return x.id===pid;});
-  var parts=(colors[idx]||colors[0]).split(':');
+  if(idx===-1 && window._allProfiles){
+    idx=window._allProfiles.findIndex(function(x){return x.id===pid;});
+  }
+  var parts=(colors[Math.max(0,idx)]||colors[0]).split(':');
   var bg=parts[0], cl=parts[1];
-  return '<span style="background:'+bg+';color:'+cl+';font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500">'+nm(pid)+'</span>';
+  return '<span style="background:'+bg+';color:'+cl+';font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500">'+displayName+'</span>';
 }
 
 // ─── THAI DATE/TIME helpers ───────────────────────────────

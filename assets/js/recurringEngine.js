@@ -82,7 +82,7 @@ function processRecurring() {
       cat_name:       t.cat_name || '',
       desc:           t.desc || '',
       amt:            Number(t.amt) || 0,
-      person:         t.person || (persons[0] ? persons[0].id : 'A'),
+      person:         t.person || (typeof getCurrentPerson==='function' ? getCurrentPerson() : null),
       split:          !!t.split,
       status:         t.status || (t.type === 'income' ? 'received' : 'paid'),
       note:           (t.note || '') + ' [auto]',
@@ -182,7 +182,7 @@ function openRecurringModal() {
   // Auto-assign person จาก user ที่ login อยู่ (ซ่อน dropdown แล้ว)
   var perSel = document.getElementById('recPerson');
   if (perSel) {
-    var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : 'A';
+    var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
     perSel.innerHTML = '<option value="' + _myPerson + '">' + _myPerson + '</option>';
     perSel.value = _myPerson;
   }
@@ -217,7 +217,7 @@ function onSaveRecurring() {
   var desc    = ((document.getElementById('recDesc')   || {}).value || '').trim();
   var amt     = parseFloat((document.getElementById('recAmt')    || {}).value) || 0;
   var day     = parseInt((document.getElementById('recDay')      || {}).value, 10) || 1;
-  var person  = (document.getElementById('recPerson')  || {}).value || 'A';
+  var person  = (document.getElementById('recPerson')  || {}).value || null;
   var split   = !!(document.getElementById('recSplit') || {}).checked;
   var offset  = parseInt((document.getElementById('recBillingOffset') || {}).value, 10) || 0;
   var note    = ((document.getElementById('recNote')   || {}).value || '').trim();

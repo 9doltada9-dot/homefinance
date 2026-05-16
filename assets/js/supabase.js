@@ -953,7 +953,7 @@ async function sbPullAllFull(){
 function exportCSV(){
   var n=names();
   var hdr='วันที่,ประเภท,หมวด,รายการ,จำนวน,ผู้บันทึก,หาร2,สถานะ,หมายเหตุ\n';
-  var rows=db.map(function(e){return [e.date,e.type,e.cat_name||'—',e.desc,e.amt,nm(e.person),e.split?'TRUE':'FALSE',e.status,e.note||''].join(',');}).join('\n');
+  var rows=db.map(function(e){return [e.date,e.type,e.cat_name||'—',e.desc,e.amt,nm(e.user_id||e.person),e.split?'TRUE':'FALSE',e.status,e.note||''].join(',');}).join('\n');
   var blob=new Blob(['﻿'+hdr+rows],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='home_finance_'+new Date().toISOString().split('T')[0]+'.csv';a.click();

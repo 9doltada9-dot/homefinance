@@ -159,6 +159,7 @@ function renderSettle(){
   var showPersonal = _settleShowPersonal;
   var out     = document.getElementById('settleContent');
   if (!m) { out.innerHTML = '<div class="empty">เลือกเดือน</div>'; return; }
+  try {
 
   // ── หา group object + members ──────────────────────────────
   var group = null;
@@ -424,10 +425,19 @@ function renderSettle(){
       +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
     +'</div>'
     +personalHtml;
+  } catch(err) {
+    console.error('[Settlement] renderSettle error:', err);
+    out.innerHTML = '<div style="padding:20px;color:var(--red,#dc2626);background:var(--red-bg,#fef2f2);border-radius:10px;margin:12px 0">'
+      +'<div style="font-weight:700;margin-bottom:4px">⚠️ เกิดข้อผิดพลาดในการแสดงผล</div>'
+      +'<div style="font-size:12px;color:var(--ink3)">'+(err && err.message ? err.message : String(err))+'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);margin-top:8px">กรุณาแจ้ง error นี้ให้นักพัฒนาทราบ</div>'
+    +'</div>';
+  }
 }
 
 
 function exportSettlePDF(month, groupId) {
+  try {
   var nameMap = _buildNameMap();
   var allExp  = db.filter(function(e){ return e.date.startsWith(month) && e.type==='expense' && isPaid(e); });
 
@@ -602,6 +612,10 @@ function exportSettlePDF(month, groupId) {
   win.document.write(html);
   win.document.close();
   win.onload = function(){ win.focus(); win.print(); };
+  } catch(err) {
+    console.error('[Settlement] exportSettlePDF error:', err);
+    alert('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)));
+  }
 }
 
 

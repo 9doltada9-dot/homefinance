@@ -227,9 +227,11 @@ function renderSettle(){
   var allUids = Object.keys(paid).concat(Object.keys(owed))
     .filter(function(v,i,a){ return a.indexOf(v)===i && ((paid[v]||0)+(owed[v]||0) > 0); });
 
-  // ถ้ามี group filter → จำกัดเฉพาะ member ของกลุ่ม
+  // ถ้ามี group filter → เอา member + payer (แม้ไม่ใช่ member ก็ตาม)
   if (groupMemberUids) {
-    allUids = allUids.filter(function(uid){ return groupMemberUids.indexOf(uid)!==-1; });
+    allUids = allUids.filter(function(uid){
+      return groupMemberUids.indexOf(uid) !== -1 || (paid[uid]||0) > 0.5;
+    });
   }
 
   var balances = {};
@@ -420,7 +422,11 @@ function exportSettlePDF(month, groupId) {
 
   var allUids = Object.keys(paid).concat(Object.keys(owed))
     .filter(function(v,i,a){ return a.indexOf(v)===i && ((paid[v]||0)+(owed[v]||0)>0); });
-  if (groupMemberUids) allUids = allUids.filter(function(u){ return groupMemberUids.indexOf(u)!==-1; });
+  if (groupMemberUids) {
+    allUids = allUids.filter(function(u){
+      return groupMemberUids.indexOf(u) !== -1 || (paid[u]||0) > 0.5;
+    });
+  }
 
   var balances = {};
   allUids.forEach(function(uid){ balances[uid]=(paid[uid]||0)-(owed[uid]||0); });

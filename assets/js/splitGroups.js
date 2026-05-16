@@ -89,7 +89,7 @@ function openSplitGroupModal(groupId) {
   var delBtn = document.getElementById('sgDeleteBtn');
   if (delBtn) delBtn.style.display = g ? '' : 'none';
 
-  document.getElementById('sgMsg').textContent = '';
+  _sgSetModalMsg('', false);
 }
 
 function closeSplitGroupModal() {
@@ -269,10 +269,27 @@ function sgAutoBalance() {
 }
 
 // ── Save group ────────────────────────────────────────────────────────────────
+function _sgSetModalMsg(text, isError) {
+  var el = document.getElementById('sgMsg');
+  if (!el) return;
+  el.textContent = text;
+  // .msg class มี display:none — ต้อง override ด้วย inline style
+  el.style.display = text ? 'block' : 'none';
+  el.style.color = isError ? 'var(--red,#dc2626)' : 'var(--green,#166534)';
+  el.style.background = isError ? '#fef2f2' : 'var(--green-bg,#f0fdf4)';
+  el.style.borderRadius = '8px';
+  el.style.padding = '8px 12px';
+  el.style.fontSize = '13px';
+  el.style.fontWeight = '600';
+}
+
 function saveSplitGroupFromModal() {
+  _sgSetModalMsg('', false);  // clear
+
   var name = (document.getElementById('sgName').value || '').trim();
   if (!name) {
-    document.getElementById('sgMsg').textContent = '⚠️ กรุณาใส่ชื่อกลุ่ม';
+    _sgSetModalMsg('⚠️ กรุณาใส่ชื่อกลุ่ม', true);
+    document.getElementById('sgName').focus();
     return;
   }
 
@@ -280,40 +297,45 @@ function saveSplitGroupFromModal() {
   var activeMembers = _sgMembers.filter(function(m) { return m.active; });
 
   if (!activeMembers.length) {
-    document.getElementById('sgMsg').textContent = '⚠️ เลือกสมาชิกอย่างน้อย 1 คน';
+    _sgSetModalMsg('⚠️ เลือกสมาชิกอย่างน้อย 1 คน (กด toggle เพื่อเปิด)', true);
     return;
   }
 
   if (type === 'ratio') {
     var total = activeMembers.reduce(function(s, m) { return s + (parseFloat(m.ratio) || 0); }, 0);
     if (Math.abs(total - 100) > 0.5) {
-      document.getElementById('sgMsg').textContent = '⚠️ % รวมต้องเท่ากับ 100 (' + Math.round(total) + '%)';
+      _sgSetModalMsg('⚠️ % รวมต้องเท่ากับ 100 (ตอนนี้ ' + Math.round(total) + '%)', true);
       return;
     }
   }
 
-  var groupData = {
-    name:       name,
-    split_type: type,
-    members:    _sgMembers.map(function(m) {
-      return {
-        user_id: m.user_id,
-        label:   m.label || m._name,
-        ratio:   parseFloat(m.ratio) || 0,
-        active:  !!m.active,
-      };
-    }),
-  };
+  try {
+    var groupData = {
+      name:       name,
+      split_type: type,
+      members:    _sgMembers.map(function(m) {
+        return {
+          user_id: m.user_id,
+          label:   m.label || m._name,
+          ratio:   parseFloat(m.ratio) || 0,
+          active:  !!m.active,
+        };
+      }),
+    };
 
-  if (_sgEditId) {
-    updateSplitGroup(_sgEditId, groupData);
-  } else {
-    addSplitGroup(groupData);
+    if (_sgEditId) {
+      updateSplitGroup(_sgEditId, groupData);
+    } else {
+      addSplitGroup(groupData);
+    }
+
+    closeSplitGroupModal();
+    renderSplitGroupsSection();
+    _sgShowMsg(_sgEditId ? 'อัปเดตกลุ่มเรียบร้อย ✅' : 'สร้างกลุ่มใหม่เรียบร้อย ✅');
+  } catch(err) {
+    _sgSetModalMsg('❌ เกิดข้อผิดพลาด: ' + err.message, true);
+    console.error('[sg] saveSplitGroup error:', err);
   }
-
-  closeSplitGroupModal();
-  renderSplitGroupsSection();
-  _sgShowMsg(_sgEditId ? 'อัปเดตกลุ่มเรียบร้อย ✅' : 'สร้างกลุ่มใหม่เรียบร้อย ✅');
 }
 
 // ── Delete group ──────────────────────────────────────────────────────────────

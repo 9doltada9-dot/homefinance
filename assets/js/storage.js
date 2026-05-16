@@ -41,9 +41,30 @@ function saveCats(c){
 
 // ─── PERSONS ──────────────────────────────────────────────
 function loadPersons(){
-  return JSON.parse(localStorage.getItem('hf2_persons')||'null') || [
-    {id:'A',name:'คนA'},{id:'B',name:'คนB'}
+  var saved = JSON.parse(localStorage.getItem('hf2_persons')||'null');
+  if (saved) {
+    // migrate: เพิ่ม user_id field ถ้ายังไม่มี (backward compat)
+    saved = saved.map(function(p){ return Object.assign({user_id:null}, p); });
+    return saved;
+  }
+  return [
+    {id:'A', name:'สมาชิก A', user_id:null},
+    {id:'B', name:'สมาชิก B', user_id:null},
   ];
+}
+
+/** link person ↔ app user (เรียกหลัง login สำเร็จ) */
+function linkPersonToUser(userId, personId) {
+  // unlink คนอื่นที่ใช้ user_id นี้ก่อน
+  persons.forEach(function(p){ if(p.user_id === userId) p.user_id = null; });
+  var p = persons.find(function(x){ return x.id === personId; });
+  if (p) p.user_id = userId;
+  savePersons(persons);
+}
+
+/** หา person ที่ linked กับ userId นี้ */
+function getPersonByUserId(userId) {
+  return persons.find(function(p){ return p.user_id === userId; }) || null;
 }
 function savePersons(p){
   localStorage.setItem('hf2_persons',JSON.stringify(p));
@@ -143,4 +164,44 @@ function sbHeaders(){
     'Authorization': 'Bearer ' + token,
     'Prefer': 'return=minimal',
   };
+}
+
+// ─── SPLIT GROUPS ──────────────────────────────────────────
+function getSplitGroups(){
+  try{ return JSON.parse(localStorage.getItem('hf2_split_groups')||'[]'); }catch(_){ return []; }
+}
+function saveSplitGroups(groups){
+  localStorage.setItem('hf2_split_groups', JSON.stringify(groups));
+}
+function addSplitGroup(g){
+  var list = getSplitGroups();
+  g.id = 'sg-'+Date.now();
+  g.created_at = new Date().toISOString();
+  list.push(g);
+  saveSplitGroups(list);
+  return g.id;
+}
+function updateSplitGroup(id, fields){
+  var list = getSplitGroups();
+  var g = list.find(function(x){ return x.id===id; });
+  if(g) Object.assign(g, fields);
+  saveSplitGroups(list);
+}
+function deleteSplitGroup(id){
+  saveSplitGroups(getSplitGroups().filter(function(g){ return g.id!==id; }));
+}
+/** snapshot สัดส่วน active ณ ปัจจุบัน → ใช้แนบกับ transaction */
+function snapshotGroupRatios(groupId){
+  var g = getSplitGroups().find(function(x){ return x.id===groupId; });
+  if(!g) return {};
+  var active = (g.members||[]).filter(function(m){ return m.active; });
+  var snap = {};
+  if(g.split_type === 'ratio'){
+    var total = active.reduce(function(s,m){ return s+(parseFloat(m.ratio)||0); }, 0) || 100;
+    active.forEach(function(m){ snap[m.person_id] = (parseFloat(m.ratio)||0)/total*100; });
+  } else {
+    var n = active.length || 1;
+    active.forEach(function(m){ snap[m.person_id] = 100/n; });
+  }
+  return snap;
 }

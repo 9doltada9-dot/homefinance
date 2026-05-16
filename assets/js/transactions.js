@@ -164,7 +164,6 @@ function _personName(pid) {
 }
 
 function renderTx(){
-  var n=names();
   var now = new Date();
   var thisM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   var months=Array.from(new Set(db.map(function(e){return e.date.substring(0,7);}))).sort().reverse();
@@ -410,7 +409,7 @@ function renderTx(){
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
-        '<td style="font-size:12px;color:var(--ink3)">'+_personName(e.person)+'</td>'+
+        '<td style="font-size:12px;color:var(--ink3)">'+nm(e.user_id||e.person)+'</td>'+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
           (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+

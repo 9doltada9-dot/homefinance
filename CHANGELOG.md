@@ -1,5 +1,16 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v3.10.1 — 2026-05-16
+
+### fix: dashboard charts use _allProfiles UUID correctly
+
+- เพิ่ม `_getChartUsers()` — build chart user list จาก `_allProfiles` (UUID) + legacyId mapping ไปยัง A/B
+- เพิ่ม `_isEntryByUser(e, user)` — match entry กับ user ถูกต้องทั้ง UUID (entry ใหม่) และ A/B (entry เก่า)
+- แก้ bar chart + person chart ไม่แสดงข้อมูลเมื่อ `p.user_id` เป็น null (persons ยังไม่ได้ link)
+- desktop table: แก้ person column ใช้ `nm(e.user_id||e.person)` แทน `_personName(e.person)`
+- ลบ `var n=names()` ที่ไม่ได้ใช้ใน renderTx()
+
+
 ## v3.10.0 — 2026-05-16
 
 ### feat: refactor person system → user system (UUID-based)

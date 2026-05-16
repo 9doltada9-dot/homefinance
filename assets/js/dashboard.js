@@ -220,13 +220,39 @@ function activateSalaryNow(){
 // ─── DASHBOARD CHARTS ─────────────────────────────────────
 var chartMain = null;
 
-/** ดึงชื่อที่ดีที่สุดสำหรับ person entry */
+/** ดึงชื่อที่ดีที่สุดสำหรับ person entry (legacy — ใช้กับ persons array) */
 function _personDisplayName(p) {
   if (p.user_id && window._allProfiles && window._allProfiles.length) {
     var prof = window._allProfiles.find(function(x) { return x.id === p.user_id; });
     if (prof && prof.name) return prof.name;
   }
   return p.name || '?';
+}
+
+/**
+ * สร้าง list ผู้ใช้สำหรับ chart จาก _allProfiles (UUID) + persons (A/B legacy map)
+ * Returns: [{uid: uuid, name: 'ชื่อ', legacyId: 'A'|'B'|null}]
+ */
+function _getChartUsers() {
+  if (window._allProfiles && window._allProfiles.length) {
+    return window._allProfiles.map(function(prof) {
+      // หา persons ที่ link กับ UUID นี้ (สำหรับ backward compat ข้อมูลเก่า)
+      var linked = (typeof persons !== 'undefined')
+        ? persons.find(function(p){ return p.user_id === prof.id; })
+        : null;
+      return { uid: prof.id, name: prof.name, legacyId: linked ? linked.id : null };
+    });
+  }
+  // fallback: persons array (ไม่มี _allProfiles เช่น offline)
+  return (typeof persons !== 'undefined' ? persons : []).map(function(p) {
+    return { uid: p.user_id || p.id, name: _personDisplayName(p), legacyId: p.id };
+  });
+}
+
+/** ตรวจว่า entry e เป็นของ user นี้ (รองรับทั้ง UUID ใหม่ และ A/B เก่า) */
+function _isEntryByUser(e, user) {
+  if (e.user_id) return e.user_id === user.uid;            // ใหม่: match by UUID
+  return !!(user.legacyId && e.person === user.legacyId);  // เก่า: match by A/B
 }
 
 function switchChart(type, passedMonth){
@@ -251,13 +277,16 @@ function switchChart(type, passedMonth){
             x:{grid:{display:false},ticks:{font:{size:10}}}}};
 
   if(type==='bar'){
-    // รายรับ vs รายจ่ายแยกคน
-    var labels = persons.map(function(p){return _personDisplayName(p)+'\n(รับ)';}).concat(['รายจ่าย\nรวม']);
-    var vals = persons.map(function(p){return me.filter(function(e){
-      return e.type==='income'&&isPaid(e)&&(e.user_id?e.user_id===p.user_id:e.person===p.id);
-    }).reduce(function(s,e){return s+e.amt;},0);})
-      .concat([me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0)]);
-    chartMain = new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:['#4ade80','#86efac','#f87171'],borderRadius:6,borderWidth:0}]},options:opts});
+    // รายรับ vs รายจ่ายแยกคน — ใช้ _allProfiles (UUID) เป็น source
+    var _cu = _getChartUsers();
+    var labels = _cu.map(function(u){ return u.name+'\n(รับ)'; }).concat(['รายจ่าย\nรวม']);
+    var _incColors = ['#4ade80','#86efac','#60a5fa','#f472b6','#a78bfa'];
+    var bgColors   = _cu.map(function(_,i){ return _incColors[i]||PALETTE[i]; }).concat(['#f87171']);
+    var vals = _cu.map(function(u){
+      return me.filter(function(e){ return e.type==='income'&&isPaid(e)&&_isEntryByUser(e,u); })
+               .reduce(function(s,e){return s+e.amt;},0);
+    }).concat([me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0)]);
+    chartMain = new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:bgColors,borderRadius:6,borderWidth:0}]},options:opts});
     document.getElementById('chartLegend').innerHTML='รายรับ vs รายจ่ายเดือนนี้';
 
   } else if(type==='donut'){
@@ -290,13 +319,15 @@ function switchChart(type, passedMonth){
     me.filter(function(e){return e.type==='expense'&&isPaid(e);}).forEach(function(e){var k=e.cat_name||'—';bycat2[k]=(bycat2[k]||0)+e.amt;});
     var catsP = Object.keys(bycat2);
     if(!catsP.length){ document.getElementById('chartLegend').innerHTML='ยังไม่มีข้อมูลรายจ่าย'; return; }
-    var datasets = persons.map(function(p,i){return {
-      label:_personDisplayName(p),
-      data:catsP.map(function(c){return me.filter(function(e){
-        return (e.user_id?e.user_id===p.user_id:e.person===p.id)&&(e.cat_name||'—')===c&&e.type==='expense'&&isPaid(e);
+    var _cu2 = _getChartUsers();
+    var _expColors = ['rgba(74,222,128,.8)','rgba(96,165,250,.8)','rgba(244,114,182,.8)','rgba(251,191,36,.8)'];
+    var datasets = _cu2.map(function(u,i){return {
+      label: u.name,
+      data: catsP.map(function(c){return me.filter(function(e){
+        return _isEntryByUser(e,u)&&(e.cat_name||'—')===c&&e.type==='expense'&&isPaid(e);
       }).reduce(function(s,e){return s+e.amt;},0);}),
-      backgroundColor:['rgba(74,222,128,.8)','rgba(96,165,250,.8)'][i]||PALETTE[i],
-      borderRadius:4,borderWidth:0
+      backgroundColor: _expColors[i]||PALETTE[i],
+      borderRadius:4, borderWidth:0
     };});
     chartMain = new Chart(ctx,{type:'bar',data:{labels:catsP,datasets:datasets},
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},indexAxis:'y',scales:{x:{ticks:{callback:function(v){return fmt(v);},font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'}},y:{grid:{display:false},ticks:{font:{size:10}}}}})});

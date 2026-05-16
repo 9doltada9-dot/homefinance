@@ -506,12 +506,14 @@ body.app-ready #page-login { display: none !important; }
   </div>
   <div class="filter-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
     <select id="settleMonth" onchange="renderSettle()" style="flex:1;min-width:130px"><option value="">เลือกเดือน</option></select>
+    <select id="settleGroup" onchange="renderSettle()" style="flex:1;min-width:150px">
+      <option value="">ทุกกลุ่ม</option>
+    </select>
     <button id="settlePersonalBtn" onclick="toggleSettlePersonal()"
       style="background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink3);white-space:nowrap;transition:all .15s">
       👁 แสดงรายจ่ายส่วนตัว
     </button>
   </div>
-  <div id="settleUserChips" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;min-height:32px"></div>
   <div id="settleContent"></div>
 </div>
 

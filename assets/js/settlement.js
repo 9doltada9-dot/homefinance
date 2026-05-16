@@ -37,6 +37,59 @@ function getSplitShares(entry) {
 // ─── PERSONAL EXPENSE TOGGLE ─────────────────────────────
 var _settleShowPersonal = false;
 
+// ─── USER PAIR FILTER ──────────────────────────────────────
+var _settleUsers = [];   // [] = ทุกคน, [uid,...] = เฉพาะที่เลือก
+
+function toggleSettleUser(uid) {
+  var idx = _settleUsers.indexOf(uid);
+  if (idx !== -1) { _settleUsers.splice(idx, 1); }
+  else            { _settleUsers.push(uid); }
+  renderSettleUserChips();
+  renderSettle();
+}
+
+async function renderSettleUserChips() {
+  var el = document.getElementById('settleUserChips');
+  if (!el) return;
+
+  // Load profiles (use cache if available)
+  var profiles = (window._allProfiles && window._allProfiles.length)
+    ? window._allProfiles : [];
+
+  if (!profiles.length) {
+    var creds = (typeof getSbCreds==='function') ? getSbCreds() : {ok:false};
+    var token = (typeof getAuthToken==='function') ? getAuthToken() : null;
+    if (creds.ok && token) {
+      try {
+        var r = await fetch(creds.url+'/rest/v1/profiles?select=id,name&order=name',
+          {headers:{'apikey':creds.key,'Authorization':'Bearer '+token}});
+        if (r.ok) profiles = await r.json();
+      } catch(e) {}
+    }
+  }
+
+  if (!profiles.length) { el.innerHTML = ''; return; }
+
+  var chips = profiles.map(function(p) {
+    var on = _settleUsers.indexOf(p.id) !== -1;
+    return '<button onclick="toggleSettleUser(\''+p.id+'\')"
+      style="border:1.5px solid '+(on?'var(--blue)':'var(--line)')+';'
+      +'background:'+(on?'var(--blue)':'var(--surface)')+';'
+      +'color:'+(on?'#fff':'var(--ink3)')+';'
+      +'border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;'
+      +'cursor:pointer;font-family:Sarabun,sans-serif;transition:all .15s">'+(on?'✓ ':'')+p.name+'</button>';
+  }).join('');
+
+  var clearBtn = _settleUsers.length
+    ? '<button onclick="_settleUsers=[];renderSettleUserChips();renderSettle();"
+        style="border:1.5px solid var(--line);background:var(--surface);color:var(--ink3);'
+        +'border-radius:20px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:Sarabun,sans-serif">✕ ทั้งหมด</button>'
+    : '';
+
+  var label = '<span style="font-size:11px;color:var(--ink3);font-weight:600;flex-shrink:0">คิดกับ:</span>';
+  el.innerHTML = label + chips + clearBtn;
+}
+
 function toggleSettlePersonal() {
   _settleShowPersonal = !_settleShowPersonal;
   var btn = document.getElementById('settlePersonalBtn');
@@ -63,14 +116,8 @@ function populateMths(selId){
   var cur=sel.value||months[0];
   sel.innerHTML='<option value="">เลือกเดือน</option>'+months.map(function(m){return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+m+'</option>';}).join('');
   if(!sel.value && months[0]) sel.value=months[0];
-  // populate group select
-  var grpSel=document.getElementById('settleGroup');
-  if(grpSel && typeof getSplitGroups==='function'){
-    var curGrp=grpSel.value;
-    var groups=getSplitGroups();
-    grpSel.innerHTML='<option value="">ทุกกลุ่ม</option>'+
-      groups.map(function(g){return '<option value="'+g.id+'"'+(g.id===curGrp?' selected':'')+'>'+g.name+'</option>';}).join('');
-  }
+  // render user chips
+  if (typeof renderSettleUserChips === 'function') renderSettleUserChips();
 }
 
 // ─── HELPERS ──────────────────────────────────────────────
@@ -130,49 +177,75 @@ function _buildNameMap() {
 // ─── RENDER SETTLEMENT ────────────────────────────────────
 function renderSettle(){
   var m       = document.getElementById('settleMonth').value;
-  var groupId = (document.getElementById('settleGroup') || {}).value || '';
   var showPersonal = _settleShowPersonal;
   var out     = document.getElementById('settleContent');
   if (!m) { out.innerHTML = '<div class="empty">เลือกเดือน</div>'; return; }
 
   var allExp = db.filter(function(e){ return e.date.startsWith(m) && e.type==='expense' && isPaid(e); });
 
-  // แยก split entries กับ personal entries
-  var splitExp, personalExp;
-  if (groupId) {
-    // กรองเฉพาะ group นั้น
-    splitExp    = allExp.filter(function(e){ return e.split_group_id === groupId; });
-    personalExp = allExp.filter(function(e){ return e.split_group_id !== groupId || !e.split_group_id; });
-  } else {
-    splitExp    = allExp.filter(function(e){ var t=e.split_type||(e.split?'equal':'personal'); return t!=='personal'; });
-    personalExp = allExp.filter(function(e){ var t=e.split_type||(e.split?'equal':'personal'); return t==='personal'; });
-  }
+  // ── แยก split / personal โดยกรองตาม _settleUsers ──────
+  var selUids = _settleUsers.length ? _settleUsers : null;  // null = ทั้งหมด
 
-  // ── คำนวณ paid / owed per uid ──────────────────────────
+  var splitExp = allExp.filter(function(e) {
+    var t = e.split_type || (e.split ? 'equal' : 'personal');
+    if (t === 'personal') return false;
+    if (!selUids) return true;  // ไม่มี filter = เอาทั้งหมด
+    // มี filter: เอาเฉพาะ entry ที่มี user ที่เลือกอยู่ใน snapshot
+    if (e.split_snapshot && Object.keys(e.split_snapshot).length) {
+      return selUids.some(function(uid){ return !!e.split_snapshot[uid]; });
+    }
+    // backward compat: เช็ค payer
+    var payerUid = _pidToUid(e.person) || e.person;
+    return selUids.indexOf(payerUid) !== -1;
+  });
+
+  var personalExp = allExp.filter(function(e){
+    var t = e.split_type || (e.split ? 'equal' : 'personal');
+    return t === 'personal';
+  });
+
+  // ── คำนวณ paid / owed per uid (bilateral: เฉพาะ selUids) ──
   var paid = {}, owed = {};
-  persons.forEach(function(p){ var u=p.user_id||p.id; paid[u]=0; owed[u]=0; });
+  var calcUids = selUids || persons.map(function(p){ return p.user_id||p.id; });
+  calcUids.forEach(function(uid){ paid[uid]=0; owed[uid]=0; });
 
   splitExp.forEach(function(e) {
     var payerUid = _pidToUid(e.person) || e.person;
-    paid[payerUid] = (paid[payerUid] || 0) + e.amt;
 
     if (e.split_snapshot && Object.keys(e.split_snapshot).length) {
-      // ✅ ใช้ snapshot โดยตรง (immutable)
-      Object.keys(e.split_snapshot).forEach(function(uid) {
-        owed[uid] = (owed[uid] || 0) + (e.split_snapshot[uid].amount || 0);
-      });
+      if (selUids) {
+        // bilateral: effective paid = ผลรวมเฉพาะ portion ของ selUids
+        var effectivePaid = selUids.reduce(function(sum, uid){
+          return sum + ((e.split_snapshot[uid] && e.split_snapshot[uid].amount) || 0);
+        }, 0);
+        if (paid[payerUid] !== undefined) paid[payerUid] += effectivePaid;
+        selUids.forEach(function(uid){
+          if (e.split_snapshot[uid]) owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
+        });
+      } else {
+        // ทั้งหมด: paid = full amount
+        paid[payerUid] = (paid[payerUid]||0) + e.amt;
+        Object.keys(e.split_snapshot).forEach(function(uid){
+          owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
+        });
+      }
     } else {
-      // ⬅ backward compat: ใช้ getSplitShares() map pid → uid
+      // ⬅ backward compat
+      paid[payerUid] = (paid[payerUid]||0) + e.amt;
       var shares = getSplitShares(e);
-      Object.keys(shares).forEach(function(pid) {
-        var uid = _pidToUid(pid) || pid;
-        owed[uid] = (owed[uid] || 0) + (shares[pid] || 0);
+      Object.keys(shares).forEach(function(pid){
+        var uid = _pidToUid(pid)||pid;
+        owed[uid] = (owed[uid]||0) + (shares[pid]||0);
       });
     }
   });
 
   // รวม uid ทั้งหมดที่มีส่วนร่วม
-  var allUids = Object.keys(paid).concat(Object.keys(owed));
+  var allUids = calcUids.slice();
+  // เพิ่ม uid จาก paid/owed ที่ยังไม่มี
+  Object.keys(paid).concat(Object.keys(owed)).forEach(function(uid){
+    if (allUids.indexOf(uid) === -1) allUids.push(uid);
+  });
   allUids = allUids.filter(function(v,i,a){ return a.indexOf(v)===i; });
 
   var balances = {};
@@ -185,10 +258,11 @@ function renderSettle(){
   var totalSplit = splitExp.reduce(function(s,e){ return s+e.amt; }, 0);
 
   // ── สร้าง HTML ─────────────────────────────────────────
+  // user filter label
   var grpTitle = '';
-  if (groupId && typeof getSplitGroups === 'function') {
-    var g = getSplitGroups().find(function(x){ return x.id===groupId; });
-    if (g) grpTitle = ' · ' + g.name;
+  if (selUids && selUids.length) {
+    var nameMap2 = _buildNameMap();
+    grpTitle = ' · ' + selUids.map(function(uid){ return nameMap2[uid]||uid; }).join(' + ');
   }
 
   // summary cards per person
@@ -307,7 +381,7 @@ function renderSettle(){
         '<span>รายละเอียด</span>' +
         '<button onclick="exportSettlePDF(\''+m+'\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;min-height:36px">📄 PDF</button>' +
       '</div>' +
-      (splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ' + (groupId ? 'ในกลุ่มนี้' : '') + '</div>') +
+      (splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ' + (selUids ? ' สำหรับคู่ที่เลือก' : '') + '</div>') +
     '</div>' +
     personalHtml;
 }

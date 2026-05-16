@@ -1,4 +1,4 @@
-/* HomeFinance · module: splitGroups.js · v1.0.0 */
+/* HomeFinance · module: splitGroups.js · v1.1.0 */
 /* Settlement Groups — Admin management UI */
 
 // ── Module state ──────────────────────────────────────────────────────────────
@@ -13,8 +13,16 @@ function renderSplitGroupsSection() {
   var groups = getSplitGroups();
   if (!groups.length) {
     el.innerHTML =
-      '<div style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">' +
-      'ยังไม่มีกลุ่ม — กด <strong>+ สร้างกลุ่ม</strong> เพื่อเริ่มต้น</div>';
+      '<div style="text-align:center;padding:28px 20px;color:var(--ink3)">' +
+      '<div style="font-size:32px;margin-bottom:8px">🏠</div>' +
+      '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px">ยังไม่มีกลุ่ม Settlement</div>' +
+      '<div style="font-size:12px;margin-bottom:16px">สร้างกลุ่มเพื่อกำหนดวิธีหารค่าใช้จ่ายร่วมกัน</div>' +
+      '<button onclick="sgCreatePresetGroups()" ' +
+        'style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 20px;' +
+        'font-size:13px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;margin-bottom:8px">' +
+        '✨ สร้างกลุ่มพื้นฐาน 4 กลุ่ม</button>' +
+      '<div style="font-size:11px;color:var(--ink3)">ค่าบ้าน · ค่าลูก · ค่าครัวเรือน · ส่วนตัว</div>' +
+      '</div>';
     return;
   }
 
@@ -401,6 +409,70 @@ function buildSplitSnapshot(groupId, totalAmount) {
   }
 
   return snapshot;
+}
+
+// ── Preset groups (ค่าบ้าน · ค่าลูก · ค่าครัวเรือน · ส่วนตัว) ────────────────
+async function sgCreatePresetGroups() {
+  var existing = getSplitGroups();
+  if (existing.length > 0) {
+    if (!confirm(
+      'มีกลุ่มอยู่แล้ว ' + existing.length + ' กลุ่ม\n\n' +
+      'ต้องการเพิ่มกลุ่มพื้นฐาน 4 กลุ่มเพิ่มเติมหรือไม่?'
+    )) return;
+  }
+
+  // โหลด profiles จาก Supabase
+  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
+  var token = (typeof getAuthToken === 'function') ? getAuthToken() : null;
+  var profiles = [];
+
+  if (creds.ok && token) {
+    try {
+      var r = await fetch(
+        creds.url + '/rest/v1/profiles?select=id,name,label&order=name',
+        { headers: { 'apikey': creds.key, 'Authorization': 'Bearer ' + token } }
+      );
+      if (r.ok) profiles = await r.json();
+    } catch(e) { console.warn('[sg] preset load profiles:', e); }
+  }
+
+  // fallback: ใช้ window._allProfiles ถ้าดึงใหม่ไม่ได้
+  if (!profiles.length && window._allProfiles && window._allProfiles.length) {
+    profiles = window._allProfiles;
+  }
+
+  if (!profiles.length) {
+    alert('❌ ไม่พบข้อมูล Profile\nกรุณาล็อกอินก่อนสร้างกลุ่ม');
+    return;
+  }
+
+  var myId = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+
+  // helper สร้าง members array
+  function makeMembers(activeAll) {
+    return profiles.map(function(p) {
+      return { user_id: p.id, label: p.name || p.label || '', ratio: 0, active: activeAll };
+    });
+  }
+
+  // 1. ค่าบ้าน — หารเท่ากัน
+  addSplitGroup({ name: 'ค่าบ้าน',             split_type: 'equal',    members: makeMembers(true) });
+  // 2. ค่าลูก — หารเท่ากัน
+  addSplitGroup({ name: 'ค่าลูก',              split_type: 'equal',    members: makeMembers(true) });
+  // 3. ค่าครัวเรือนทั่วไป — หารเท่ากัน
+  addSplitGroup({ name: 'ค่าครัวเรือนทั่วไป', split_type: 'equal',    members: makeMembers(true) });
+  // 4. ส่วนตัว — เฉพาะผู้ใช้ปัจจุบัน
+  addSplitGroup({
+    name: 'ส่วนตัว',
+    split_type: 'personal',
+    members: profiles.map(function(p) {
+      return { user_id: p.id, label: p.name || p.label || '', ratio: 0,
+               active: myId ? (p.id === myId) : false };
+    }),
+  });
+
+  renderSplitGroupsSection();
+  _sgShowMsg('✅ สร้างกลุ่มพื้นฐาน 4 กลุ่มเรียบร้อยแล้ว');
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

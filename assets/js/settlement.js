@@ -176,8 +176,17 @@ function renderSettle(){
       Object.keys(e.split_snapshot).forEach(function(uid){
         owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
       });
+    } else if (e.split_group_id && typeof buildSplitSnapshot === 'function') {
+      // ✅ ไม่มี snapshot แต่มี group_id → สร้าง on-the-fly จากนิยามกลุ่ม
+      var onTheFly = buildSplitSnapshot(e.split_group_id, e.amt);
+      if (Object.keys(onTheFly).length) {
+        paid[payerUid] = (paid[payerUid]||0) + e.amt;
+        Object.keys(onTheFly).forEach(function(uid){
+          owed[uid] = (owed[uid]||0) + (onTheFly[uid].amount||0);
+        });
+      }
     } else {
-      // ⬅ backward compat
+      // ⬅ backward compat (split boolean เก่า)
       paid[payerUid] = (paid[payerUid]||0) + e.amt;
       var shares = getSplitShares(e);
       Object.keys(shares).forEach(function(pid){
@@ -358,6 +367,14 @@ function exportSettlePDF(month, groupId) {
       Object.keys(e.split_snapshot).forEach(function(uid){
         owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
       });
+    } else if (e.split_group_id && typeof buildSplitSnapshot === 'function') {
+      var onTheFly2 = buildSplitSnapshot(e.split_group_id, e.amt);
+      if (Object.keys(onTheFly2).length) {
+        paid[payerUid] = (paid[payerUid]||0) + e.amt;
+        Object.keys(onTheFly2).forEach(function(uid){
+          owed[uid] = (owed[uid]||0) + (onTheFly2[uid].amount||0);
+        });
+      }
     } else {
       paid[payerUid] = (paid[payerUid]||0) + e.amt;
       var shares = getSplitShares(e);

@@ -1,5 +1,13 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v3.9.11 — 2026-05-16  (Settlement on-the-fly snapshot fix)
+
+### แก้บัค
+- 🐛 **Settlement แสดง "ไม่มียอดค้างชำระ" ผิดพลาด** — เมื่อรายการมี `split_group_id` แต่ไม่มี `split_snapshot` (รายการเก่าที่บันทึกก่อนระบบ snapshot) ตอนนี้จะสร้าง snapshot on-the-fly จากนิยามกลุ่มปัจจุบัน ทำให้คำนวณการโอนเงินได้ถูกต้อง
+- 🐛 **PDF Export** — แก้บัคเดียวกันใน `exportSettlePDF()` ด้วย
+
+---
+
 ## v3.3.1 — 2026-05-12  (Transfer type — modular)
 
 ### ฟีเจอร์ใหม่

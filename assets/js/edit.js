@@ -2,8 +2,21 @@
 
 // ─── EDIT MODAL ──────────────────────────────────────────
 var editId = null;
-var eSplitOn = false;
 var eType = 'expense';
+
+// ── Populate กลุ่มหาร ───────────────────────────────────────────────
+function ePopulateGroups(selectedGroupId) {
+  var sel = document.getElementById('eSplitGroup');
+  if (!sel) return;
+  var groups = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
+  var typeIcon = { personal:'💼', equal:'👥', ratio:'📊', custom:'🎯' };
+  sel.innerHTML = '<option value="">💼 ส่วนตัว (ไม่หาร)</option>'
+    + groups.map(function(g){
+        var icon = typeIcon[g.split_type] || '🏠';
+        return '<option value="'+g.id+'"'+(g.id===selectedGroupId?' selected':'')+'>'
+          +icon+' '+g.name+'</option>';
+      }).join('');
+}
 
 function openEdit(id){
   var sid=String(id);
@@ -11,7 +24,6 @@ function openEdit(id){
   if(!e) return;
   editId = id;
   eType = e.type;
-  eSplitOn = e.split;
   document.getElementById('editOverlay').style.display='flex';
   document.getElementById('editIdLabel').textContent='รายการ: '+e.desc;
   document.getElementById('eDate').value = e.date;
@@ -45,8 +57,7 @@ function openEdit(id){
       }
       dSel.value = e.desc;
     }
-    eSplitOn = e.split;
-    updateESplitUI();
+    ePopulateGroups(e.split_group_id || '');
   },10);
 }
 
@@ -96,28 +107,17 @@ function eSetType(t, autoS){
   if(autoS && catsByType.length>0){
     sel.value = catsByType[0].id;
     var cat = catMap[sel.value];
-    eSplitOn = t==='expense' && (cat ? cat.split_default : false);
-    updateESplitUI();
+    ePopulateGroups('');
   }
   sel.onchange = function(){
     if(t==='expense'){
       var cat2 = catMap[sel.value];
-      eSplitOn = cat2 ? cat2.split_default : false;
-      updateESplitUI();
     }
     // update eDesc based on category
     eUpdateDescByCat(sel.value);
   };
 }
 
-function eToggleSplit(){ eSplitOn=!eSplitOn; updateESplitUI(); }
-
-function updateESplitUI(){
-  var t=document.getElementById('eSplitToggle');
-  var d=document.getElementById('eSplitDesc');
-  if(eSplitOn){t.classList.add('on');d.textContent='แบ่งค่าใช้จ่ายส่วนกลางเท่ากัน (คนละครึ่ง)';}
-  else{t.classList.remove('on');d.textContent='ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร';}
-}
 
 function saveEdit(){
   if(!checkOnlineForAction()) return;
@@ -133,7 +133,19 @@ function saveEdit(){
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});
   e.date=date; e.type=eType; e.cat_id=cat_id; e.cat_name=cat_name;
   e.desc=desc; e.amt=amt; e.person=document.getElementById('ePerson').value;
-  e.split=eType==='expense'?eSplitOn:false;
+  // settlement group
+  var eSplitGroupEl = document.getElementById('eSplitGroup');
+  var eSplitGroupId = eSplitGroupEl ? eSplitGroupEl.value : '';
+  if (eType === 'expense' && eSplitGroupId) {
+    var selGroup = (typeof getSplitGroups==='function' ? getSplitGroups() : []).find(function(g){ return g.id===eSplitGroupId; });
+    e.split_group_id = eSplitGroupId;
+    e.split_type = selGroup ? selGroup.split_type : 'equal';
+    e.split = true;
+  } else {
+    e.split_group_id = null;
+    e.split_type = eType==='expense' ? 'personal' : null;
+    e.split = false;
+  }
   e.status=document.getElementById('eStatus').value || doneStatus(eType);
   e.note=document.getElementById('eNote').value.trim();
   e.item_id=(itemObj && itemObj.id)||e.item_id||null;

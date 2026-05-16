@@ -139,6 +139,31 @@ function populateFltBillingMonth(sel) {
   if (cur) sel.value = cur;
 }
 
+
+/** badge แสดงสถานะการหารต่อรายการ */
+function _splitBadge(e) {
+  if (e.type !== 'expense') return '-';
+  if (e.split_group_id) {
+    var groups = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
+    var grp = groups.find(function(g){ return g.id === e.split_group_id; });
+    var typeIcon = { equal:'👥', ratio:'📊', custom:'🎯', personal:'💼' };
+    var icon = grp ? (typeIcon[grp.split_type] || '🏠') : '🏠';
+    var name = grp ? grp.name : '(กลุ่ม)';
+    return '<span class="badge badge-split" style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+name+'">'+icon+' '+name+'</span>';
+  }
+  if (e.split) {
+    return '<span class="badge badge-split">÷ หาร</span>';
+  }
+  return '<span class="badge badge-personal">💼 ส่วนตัว</span>';
+}
+
+/** ชื่อผู้บันทึกจาก person id */
+function _personName(pid) {
+  if (!pid) return '—';
+  var p = (typeof persons !== 'undefined') ? persons.find(function(x){ return x.id === pid; }) : null;
+  return p ? p.name : pid;
+}
+
 function renderTx(){
   var n=names();
   var now = new Date();
@@ -245,7 +270,9 @@ function renderTx(){
                     '<span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
+                    (e.person ? '<span style="font-size:11px;color:var(--ink3)">👤 '+_personName(e.person)+'</span>' : '')+
                   '</div>'+
+                  (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
                   (e.note ? '<div style="font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic">📝 '+e.note+'</div>' : '')+
                 '</div>'+
                 '<div style="text-align:right;flex-shrink:0">'+
@@ -378,13 +405,14 @@ function renderTx(){
 
   } else {
     document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>หาร2</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
+      '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
       list.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
         '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
-        '<td>'+(e.type==='expense'?'<span class="badge '+(e.split?'badge-split':'badge-personal')+'">'+(e.split?'÷2':'ส่วนตัว')+'</span>':'-')+'</td>'+
+        '<td style="font-size:12px;color:var(--ink3)">'+_personName(e.person)+'</td>'+
+        '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
           (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
         '</td>'+

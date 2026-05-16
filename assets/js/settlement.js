@@ -293,46 +293,88 @@ function renderSettle(){
     }).join('');
   }
 
-  // ── Detail rows ────────────────────────────────────────────
+  // ── Detail rows — dynamic columns per member ─────────────
+  // รวบรวม uid ทุกคนที่ปรากฏใน snapshot (เรียง: payers ก่อน แล้ว members)
+  var detailUids = [];
+  splitExp.forEach(function(e){
+    var payerU = e.user_id || _pidToUid(e.person) || e.person;
+    if (payerU && detailUids.indexOf(payerU) === -1) detailUids.push(payerU);
+    var snap = e.split_snapshot;
+    if (snap) Object.keys(snap).forEach(function(uid){
+      if (detailUids.indexOf(uid) === -1) detailUids.push(uid);
+    });
+  });
+  // fallback: ใช้ allUids ถ้าไม่มี snapshot
+  if (!detailUids.length) detailUids = allUids.slice();
+
   var isMobile = window.innerWidth <= 900;
-  var detailRows = isMobile
-    ? splitExp.map(function(e){
-        var payer = nameMap[_pidToUid(e.person)||e.person] || e.person;
-        var snap  = e.split_snapshot;
-        var parts = snap ? Object.keys(snap).map(function(uid){
-          return (snap[uid].label||nameMap[uid]||uid)+' ฿'+fmt(snap[uid].amount);
-        }).join(' / ') : '';
-        return '<div style="padding:10px 0;border-bottom:1px solid var(--line)">'
-          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
-            +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.desc+'</div>'
-              +'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+payer+(e.split_group_id?' · 🏠':'')+'</div>'
-              +(parts?'<div style="font-size:11px;color:var(--blue);margin-top:2px">'+parts+'</div>':'')
-            +'</div>'
-            +'<div style="text-align:right;flex-shrink:0;font-size:13px;font-family:monospace;font-weight:600">'+fmt(e.amt)+'</div>'
-          +'</div>'
-        +'</div>';
-      }).join('')
-    : '<div class="table-scroll"><table>'
-      +'<tr><th>รายการ</th><th>ผู้จ่าย</th><th>จำนวน</th><th>การแบ่ง</th></tr>'
-      +splitExp.map(function(e){
-        var payer = nameMap[_pidToUid(e.person)||e.person] || e.person;
-        var snap  = e.split_snapshot;
-        var breakdown = snap
-          ? Object.keys(snap).map(function(uid){
-              return '<span style="white-space:nowrap">'+(snap[uid].label||nameMap[uid]||uid)+' <b>฿'+fmt(snap[uid].amount)+'</b></span>';
-            }).join(' · ')
-          : '';
-        return '<tr>'
-          +'<td>'+e.desc+(e.split_group_id?' 🏠':'')+'</td>'
-          +'<td>'+payer+'</td>'
-          +'<td class="mono" style="text-align:right">'+fmt(e.amt)+'</td>'
-          +'<td style="font-size:11px;color:var(--blue)">'+breakdown+'</td>'
-        +'</tr>';
-      }).join('')
-      +'<tr style="font-weight:700;background:var(--surface2)"><td colspan="2">รวม</td>'
-      +'<td class="mono" style="text-align:right">'+fmt(totalSplit)+'</td><td></td></tr>'
-      +'</table></div>';
+
+  // ── Mobile: cards ──────────────────────────────────────────
+  var detailMobile = splitExp.map(function(e){
+    var payerU = e.user_id || _pidToUid(e.person) || e.person;
+    var payerName = nameMap[payerU] || e.person;
+    var snap = e.split_snapshot;
+    // on-the-fly ถ้าไม่มี snapshot
+    if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') {
+      snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    }
+    var memberRows = snap ? Object.keys(snap).map(function(uid){
+      var isPayer = uid === payerU;
+      var name = snap[uid].label || nameMap[uid] || uid;
+      var amt  = snap[uid].amount || 0;
+      return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">'
+        +'<span style="color:'+(isPayer?'var(--green,#16a34a)':'var(--ink2)')+'">'+name+(isPayer?' (จ่ายแล้ว)':'')+'</span>'
+        +'<span style="font-family:monospace;font-weight:600;color:'+(isPayer?'var(--green,#16a34a)':'var(--ink)')+'">฿'+fmt(amt)+'</span>'
+      +'</div>';
+    }).join('') : '';
+    return '<div style="padding:10px 12px;border-bottom:1px solid var(--line)">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+        +'<span style="font-size:13px;font-weight:600">'+e.desc+'</span>'
+        +'<span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--red,#dc2626)">฿'+fmt(e.amt)+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">📅 '+toThaiDateShort(e.date)+' · 👤 ผู้จ่าย: '+payerName+'</div>'
+      +(memberRows ? '<div style="background:var(--surface2);border-radius:8px;padding:6px 10px;margin-top:4px">'+memberRows+'</div>' : '')
+    +'</div>';
+  }).join('');
+
+  // ── Desktop: dynamic table ──────────────────────────────────
+  var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
+    + detailUids.map(function(uid){ return '<th style="text-align:right;white-space:nowrap">'+( nameMap[uid]||uid)+'</th>'; }).join('');
+  var totalCols = {}; detailUids.forEach(function(u){ totalCols[u]=0; });
+  var trRows = splitExp.map(function(e){
+    var payerU = e.user_id || _pidToUid(e.person) || e.person;
+    var payerName = nameMap[payerU] || e.person;
+    var snap = e.split_snapshot;
+    if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') {
+      snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    }
+    var cols = detailUids.map(function(uid){
+      var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
+      totalCols[uid] = (totalCols[uid]||0) + amt;
+      var isPayer = uid === payerU;
+      return '<td style="text-align:right;font-family:monospace;font-size:12px;'+(isPayer?'color:var(--green,#16a34a);font-weight:700':'')+'">'
+        +(amt>0 ? '฿'+fmt(amt) : '—')
+        +(isPayer?' ✓':'')
+      +'</td>';
+    }).join('');
+    return '<tr>'
+      +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
+      +'<td style="font-size:13px">'+e.desc+'</td>'
+      +'<td style="font-size:12px;font-weight:600;color:var(--green,#16a34a)">'+payerName+'</td>'
+      +'<td style="text-align:right;font-family:monospace;font-weight:600">฿'+fmt(e.amt)+'</td>'
+      +cols
+    +'</tr>';
+  }).join('');
+  var totalRow = '<tr style="font-weight:700;background:var(--surface2)">'
+    +'<td colspan="2">รวม</td>'
+    +'<td></td>'
+    +'<td style="text-align:right;font-family:monospace">฿'+fmt(totalSplit)+'</td>'
+    +detailUids.map(function(uid){ return '<td style="text-align:right;font-family:monospace">฿'+fmt(totalCols[uid]||0)+'</td>'; }).join('')
+  +'</tr>';
+  var detailDesktop = '<div class="table-scroll"><table>'
+    +'<tr>'+thCells+'</tr>'+trRows+totalRow+'</table></div>';
+
+  var detailRows = isMobile ? detailMobile : detailDesktop;
 
   // ── Personal section ───────────────────────────────────────
   var personalHtml = '';
@@ -467,21 +509,42 @@ function exportSettlePDF(month, groupId) {
         +'</div>';
       }).join('');
 
-  // ── Detail rows ───────────────────────────────────────────
+  // ── Detail rows — dynamic columns per uid ────────────────
+  var pdfUids = [];
+  splitExp.forEach(function(e){
+    var pu = e.user_id || _pidToUid(e.person) || e.person;
+    if (pu && pdfUids.indexOf(pu)===-1) pdfUids.push(pu);
+    var sn = e.split_snapshot;
+    if (!sn && e.split_group_id && typeof buildSplitSnapshot==='function') sn = buildSplitSnapshot(e.split_group_id, e.amt);
+    if (sn) Object.keys(sn).forEach(function(uid){ if (pdfUids.indexOf(uid)===-1) pdfUids.push(uid); });
+  });
+
+  var pdfTotals = {}; pdfUids.forEach(function(u){ pdfTotals[u]=0; });
   var detailRows = splitExp.map(function(e){
-    var payer = nameMap[_pidToUid(e.person)||e.person]||e.person;
-    var snap  = e.split_snapshot;
-    var breakdown = snap
-      ? Object.keys(snap).map(function(uid){ return (snap[uid].label||nameMap[uid]||uid)+' ฿'+fmt(snap[uid].amount); }).join(' / ')
-      : '';
+    var pu = e.user_id || _pidToUid(e.person) || e.person;
+    var payerName = nameMap[pu] || e.person;
+    var snap = e.split_snapshot;
+    if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    var cols = pdfUids.map(function(uid){
+      var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
+      pdfTotals[uid] = (pdfTotals[uid]||0) + amt;
+      var isPayer = uid === pu;
+      return '<td style="text-align:right;'+(isPayer?'color:#1a7a4a;font-weight:700':'')+'">'+(amt>0?fmt(amt):'—')+(isPayer?' ✓':'')+'</td>';
+    }).join('');
     return '<tr>'
-      +'<td>'+toThaiDateShort(e.date)+'</td>'
+      +'<td style="white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td>'+e.desc+'</td>'
-      +'<td>'+payer+'</td>'
-      +'<td style="text-align:right">'+fmt(e.amt)+'</td>'
-      +'<td style="font-size:11px;color:#666">'+breakdown+'</td>'
+      +'<td style="color:#1a7a4a;font-weight:600">'+payerName+'</td>'
+      +'<td style="text-align:right;font-weight:600">'+fmt(e.amt)+'</td>'
+      +cols
     +'</tr>';
   }).join('');
+  var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
+    +'<td colspan="2">รวม</td><td></td>'
+    +'<td style="text-align:right">'+fmt(totalExp)+'</td>'
+    +pdfUids.map(function(uid){ return '<td style="text-align:right">'+fmt(pdfTotals[uid]||0)+'</td>'; }).join('')
+  +'</tr>';
+  var pdfThCols = pdfUids.map(function(uid){ return '<th style="text-align:right">'+( nameMap[uid]||uid)+'</th>'; }).join('');
 
   // ── HTML ──────────────────────────────────────────────────
   var todayStr = toThaiDateStr(new Date().toISOString().split('T')[0]);
@@ -514,10 +577,9 @@ function exportSettlePDF(month, groupId) {
     +'</table>\n'
     +'<h2>รายการทั้งหมด</h2>\n'
     +'<table>\n'
-    +'<tr><th>วันที่</th><th>รายการ</th><th>ผู้จ่าย</th><th style="text-align:right">จำนวน</th><th>การแบ่ง</th></tr>\n'
+    +'<tr><th>วันที่</th><th>รายการ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
     +detailRows
-    +'<tr style="font-weight:700;background:#f0f0f0"><td colspan="3">รวม</td>'
-    +'<td style="text-align:right">'+fmt(totalExp)+'</td><td></td></tr>\n'
+    +detailTotalRow+'\n'
     +'</table>\n'
     +'<div class="footer">HomeFinance v3.9.9 · Settlement Report</div>\n'
     +'</body>\n</html>';

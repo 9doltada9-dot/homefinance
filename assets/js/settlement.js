@@ -117,6 +117,14 @@ function _uidToName(uid) {
   return p ? p.name : uid;
 }
 
+/** ดึงชื่อร้านค้าจาก vendor_id */
+function _vendorName(vid) {
+  if (!vid) return '';
+  var arr = (typeof vendorsData !== 'undefined') ? vendorsData : [];
+  var v = arr.find(function(x){ return x.id === vid; });
+  return v ? v.name : '';
+}
+
 /** สร้าง nameMap: uid → name — รวมจาก persons + _allProfiles + group members */
 function _buildNameMap() {
   var m = {};
@@ -332,13 +340,13 @@ function renderSettle(){
         +'<span style="font-size:13px;font-weight:600">'+e.desc+'</span>'
         +'<span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--red,#dc2626)">฿'+fmt(e.amt)+'</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">📅 '+toThaiDateShort(e.date)+' · 👤 ผู้จ่าย: '+payerName+'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">📅 '+toThaiDateShort(e.date)+(vendor?' · 🏪 '+vendor:'')+' · 👤 ผู้จ่าย: '+payerName+'</div>'
       +(memberRows ? '<div style="background:var(--surface2);border-radius:8px;padding:6px 10px;margin-top:4px">'+memberRows+'</div>' : '')
     +'</div>';
   }).join('');
 
   // ── Desktop: dynamic table ──────────────────────────────────
-  var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
+  var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
     + detailUids.map(function(uid){ return '<th style="text-align:right;white-space:nowrap">'+( nameMap[uid]||uid)+'</th>'; }).join('');
   var totalCols = {}; detailUids.forEach(function(u){ totalCols[u]=0; });
   var trRows = splitExp.map(function(e){
@@ -357,16 +365,18 @@ function renderSettle(){
         +(isPayer?' ✓':'')
       +'</td>';
     }).join('');
+    var vendor = _vendorName(e.vendor_id);
     return '<tr>'
       +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td style="font-size:13px">'+e.desc+'</td>'
+      +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
       +'<td style="font-size:12px;font-weight:600;color:var(--green,#16a34a)">'+payerName+'</td>'
       +'<td style="text-align:right;font-family:monospace;font-weight:600">฿'+fmt(e.amt)+'</td>'
       +cols
     +'</tr>';
   }).join('');
   var totalRow = '<tr style="font-weight:700;background:var(--surface2)">'
-    +'<td colspan="2">รวม</td>'
+    +'<td colspan="3">รวม</td>'
     +'<td></td>'
     +'<td style="text-align:right;font-family:monospace">฿'+fmt(totalSplit)+'</td>'
     +detailUids.map(function(uid){ return '<td style="text-align:right;font-family:monospace">฿'+fmt(totalCols[uid]||0)+'</td>'; }).join('')
@@ -525,6 +535,7 @@ function exportSettlePDF(month, groupId) {
     var payerName = nameMap[pu] || e.person;
     var snap = e.split_snapshot;
     if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    var vname = _vendorName(e.vendor_id);
     var cols = pdfUids.map(function(uid){
       var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
       pdfTotals[uid] = (pdfTotals[uid]||0) + amt;
@@ -534,13 +545,14 @@ function exportSettlePDF(month, groupId) {
     return '<tr>'
       +'<td style="white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td>'+e.desc+'</td>'
+      +'<td style="color:#555">'+vname+'</td>'
       +'<td style="color:#1a7a4a;font-weight:600">'+payerName+'</td>'
       +'<td style="text-align:right;font-weight:600">'+fmt(e.amt)+'</td>'
       +cols
     +'</tr>';
   }).join('');
   var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
-    +'<td colspan="2">รวม</td><td></td>'
+    +'<td colspan="3">รวม</td><td></td>'
     +'<td style="text-align:right">'+fmt(totalExp)+'</td>'
     +pdfUids.map(function(uid){ return '<td style="text-align:right">'+fmt(pdfTotals[uid]||0)+'</td>'; }).join('')
   +'</tr>';
@@ -577,7 +589,7 @@ function exportSettlePDF(month, groupId) {
     +'</table>\n'
     +'<h2>รายการทั้งหมด</h2>\n'
     +'<table>\n'
-    +'<tr><th>วันที่</th><th>รายการ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
+    +'<tr><th>วันที่</th><th>รายการ</th><th>ร้านค้า</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
     +detailRows
     +detailTotalRow+'\n'
     +'</table>\n'

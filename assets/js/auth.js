@@ -727,6 +727,10 @@ async function _syncPersonNamesFromProfiles(creds) {
     var profiles = await r.json();
     // เก็บ profiles ไว้ใช้ทั่วทั้งแอป (chart labels ฯลฯ)
     window._allProfiles = profiles;
+    // re-render settlement user chips ถ้าหน้า settlement เปิดอยู่
+    if (typeof renderSettleUserChips === 'function') {
+      try { renderSettleUserChips(); } catch(_) {}
+    }
 
     var changed = false;
     profiles.forEach(function(prof) {

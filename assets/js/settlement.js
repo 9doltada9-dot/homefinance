@@ -52,9 +52,8 @@ async function renderSettleUserChips() {
   var el = document.getElementById('settleUserChips');
   if (!el) return;
 
-  // Load profiles (use cache if available)
-  var profiles = (window._allProfiles && window._allProfiles.length)
-    ? window._allProfiles : [];
+  // ใช้ cache ก่อน ถ้าไม่มีค่อย fetch
+  var profiles = (window._allProfiles && window._allProfiles.length) ? window._allProfiles : [];
 
   if (!profiles.length) {
     var creds = (typeof getSbCreds==='function') ? getSbCreds() : {ok:false};
@@ -71,22 +70,24 @@ async function renderSettleUserChips() {
   if (!profiles.length) { el.innerHTML = ''; return; }
 
   var chips = profiles.map(function(p) {
-    var on = _settleUsers.indexOf(p.id) !== -1;
-    return '<button onclick="toggleSettleUser(\''+p.id+'\')"
-      style="border:1.5px solid '+(on?'var(--blue)':'var(--line)')+';'
-      +'background:'+(on?'var(--blue)':'var(--surface)')+';'
-      +'color:'+(on?'#fff':'var(--ink3)')+';'
-      +'border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;'
-      +'cursor:pointer;font-family:Sarabun,sans-serif;transition:all .15s">'+(on?'✓ ':'')+p.name+'</button>';
+    var on  = _settleUsers.indexOf(p.id) !== -1;
+    var bg  = on ? 'var(--blue)' : 'var(--surface)';
+    var col = on ? '#fff' : 'var(--ink3)';
+    var brd = on ? 'var(--blue)' : 'var(--line)';
+    return '<button onclick="toggleSettleUser(\'' + p.id + '\')"'
+      + ' style="border:1.5px solid ' + brd + ';background:' + bg + ';color:' + col + ';'
+      + 'border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;'
+      + 'cursor:pointer;font-family:Sarabun,sans-serif;transition:all .15s">'
+      + (on ? '✓ ' : '') + p.name + '</button>';
   }).join('');
 
   var clearBtn = _settleUsers.length
-    ? '<button onclick="_settleUsers=[];renderSettleUserChips();renderSettle();"
-        style="border:1.5px solid var(--line);background:var(--surface);color:var(--ink3);'
-        +'border-radius:20px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:Sarabun,sans-serif">✕ ทั้งหมด</button>'
+    ? '<button onclick="_settleUsers=[];renderSettleUserChips();renderSettle();"'
+      + ' style="border:1.5px solid var(--line);background:var(--surface);color:var(--ink3);'
+      + 'border-radius:20px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:Sarabun,sans-serif">✕ ทั้งหมด</button>'
     : '';
 
-  var label = '<span style="font-size:11px;color:var(--ink3);font-weight:600;flex-shrink:0">คิดกับ:</span>';
+  var label = '<span style="font-size:11px;color:var(--ink3);font-weight:600;flex-shrink:0;margin-right:2px">คิดกับ:</span>';
   el.innerHTML = label + chips + clearBtn;
 }
 

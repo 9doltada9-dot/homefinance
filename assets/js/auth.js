@@ -185,6 +185,13 @@ async function doLogin() {
 
     // บันทึก recent account
     _saveRecentAccount(email, getAuthProfileName());
+    // จดจำรหัสผ่าน ถ้าผู้ใช้เลือก checkbox
+    var rememberChk = document.getElementById('rememberMeChk');
+    if (rememberChk && rememberChk.checked) {
+      _saveRememberedLogin(email, passEl ? passEl.value : '');
+    } else {
+      _clearRememberedLogin();
+    }
 
     if (passEl) passEl.value = '';
     showMsg('loginMsg', '', '');
@@ -366,7 +373,10 @@ function switchAuthTab(tab) {
   if (tabL) { tabL.style.background = isLogin ? 'var(--blue)' : 'var(--surface2)'; tabL.style.color = isLogin ? '#fff' : 'var(--ink2)'; }
   if (tabS) { tabS.style.background = isLogin ? 'var(--surface2)' : 'var(--blue)'; tabS.style.color = isLogin ? 'var(--ink2)' : '#fff'; }
 
-  if (isLogin) _renderRecentAccounts();
+  if (isLogin) {
+    _renderRecentAccounts();
+    _applyRememberedLogin();
+  }
 }
 
 function _rebuildSignupForm() {
@@ -518,6 +528,30 @@ function showPasswordResetForm(show) {
 }
 
 // ─── RECENT ACCOUNTS ──────────────────────────────────────
+// ─── REMEMBER LOGIN ──────────────────────────────────────
+function _saveRememberedLogin(email, password) {
+  try { localStorage.setItem('hf2_remember', JSON.stringify({ email: email, password: password })); }
+  catch(_) {}
+}
+function _clearRememberedLogin() {
+  localStorage.removeItem('hf2_remember');
+}
+function _loadRememberedLogin() {
+  try { return JSON.parse(localStorage.getItem('hf2_remember') || 'null'); }
+  catch(_) { return null; }
+}
+/** เรียกตอน showLoginPage() เพื่อ autofill ถ้า remember เปิดอยู่ */
+function _applyRememberedLogin() {
+  var saved = _loadRememberedLogin();
+  if (!saved) return;
+  var emailEl = document.getElementById('loginEmail');
+  var passEl  = document.getElementById('loginPassword');
+  var chkEl   = document.getElementById('rememberMeChk');
+  if (emailEl) emailEl.value = saved.email || '';
+  if (passEl)  passEl.value  = saved.password || '';
+  if (chkEl)   chkEl.checked = true;
+}
+
 function _saveRecentAccount(email, name) {
   try {
     var accounts = JSON.parse(localStorage.getItem('hf2_recent_accounts') || '[]');
@@ -691,6 +725,9 @@ async function _syncPersonNamesFromProfiles(creds) {
     );
     if (!r.ok) return;
     var profiles = await r.json();
+    // เก็บ profiles ไว้ใช้ทั่วทั้งแอป (chart labels ฯลฯ)
+    window._allProfiles = profiles;
+
     var changed = false;
     profiles.forEach(function(prof) {
       if (!prof.id || !prof.name) return;
@@ -703,6 +740,10 @@ async function _syncPersonNamesFromProfiles(creds) {
     if (changed) {
       if (typeof savePersons === 'function') savePersons(persons);
       if (typeof populatePersonSelects === 'function') populatePersonSelects();
+      // re-render dashboard chart ถ้าอยู่หน้า dashboard
+      if (typeof renderChart === 'function') {
+        try { renderChart(); } catch(_) {}
+      }
     }
   } catch (e) { console.warn('[auth] syncPersonNames:', e); }
 }

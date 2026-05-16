@@ -220,6 +220,15 @@ function activateSalaryNow(){
 // ─── DASHBOARD CHARTS ─────────────────────────────────────
 var chartMain = null;
 
+/** ดึงชื่อที่ดีที่สุดสำหรับ person entry */
+function _personDisplayName(p) {
+  if (p.user_id && window._allProfiles && window._allProfiles.length) {
+    var prof = window._allProfiles.find(function(x) { return x.id === p.user_id; });
+    if (prof && prof.name) return prof.name;
+  }
+  return p.name || '?';
+}
+
 function switchChart(type, passedMonth){
   localStorage.setItem('hf2_chart', type);
   document.querySelectorAll('.chart-tab').forEach(function(b){
@@ -243,7 +252,7 @@ function switchChart(type, passedMonth){
 
   if(type==='bar'){
     // รายรับ vs รายจ่ายแยกคน
-    var labels = persons.map(function(p){return p.name+'\n(รับ)';}).concat(['รายจ่าย\nรวม']);
+    var labels = persons.map(function(p){return _personDisplayName(p)+'\n(รับ)';}).concat(['รายจ่าย\nรวม']);
     var vals = persons.map(function(p){return me.filter(function(e){return e.type==='income'&&e.person===p.id&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);})
       .concat([me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0)]);
     chartMain = new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:['#4ade80','#86efac','#f87171'],borderRadius:6,borderWidth:0}]},options:opts});
@@ -280,7 +289,7 @@ function switchChart(type, passedMonth){
     var catsP = Object.keys(bycat2);
     if(!catsP.length){ document.getElementById('chartLegend').innerHTML='ยังไม่มีข้อมูลรายจ่าย'; return; }
     var datasets = persons.map(function(p,i){return {
-      label:p.name,
+      label:_personDisplayName(p),
       data:catsP.map(function(c){return me.filter(function(e){return e.person===p.id&&(e.cat_name||'—')===c&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);}),
       backgroundColor:['rgba(74,222,128,.8)','rgba(96,165,250,.8)'][i]||PALETTE[i],
       borderRadius:4,borderWidth:0

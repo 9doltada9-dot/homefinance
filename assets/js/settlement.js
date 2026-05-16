@@ -249,11 +249,17 @@ function renderSettle(){
     +'</div>';
   } else {
     transferHtml = transfers.map(function(t){
-      return '<div style="background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-        +'<span style="font-size:13px;font-weight:600">'+t.from+'</span>'
-        +'<span style="font-size:18px;color:var(--blue)">→</span>'
-        +'<span style="font-size:13px;font-weight:600">'+t.to+'</span>'
-        +'<span style="margin-left:auto;font-family:monospace;font-size:16px;font-weight:700;color:var(--blue)">฿'+fmt(t.amount)+'</span>'
+      return '<div style="background:var(--surface2);border:1.5px solid var(--orange,#f97316);border-radius:12px;padding:14px 16px">'
+        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+          +'<span style="font-size:16px">💸</span>'
+          +'<span style="font-size:11px;font-weight:700;color:var(--orange,#ea580c);text-transform:uppercase;letter-spacing:.5px">ต้องโอนเงิน</span>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          +'<span style="font-size:14px;font-weight:700;color:var(--red,#dc2626);background:var(--red-bg,#fef2f2);padding:4px 10px;border-radius:20px">'+t.from+'</span>'
+          +'<span style="font-size:12px;color:var(--ink3)">ต้องโอนให้</span>'
+          +'<span style="font-size:14px;font-weight:700;color:var(--green,#16a34a);background:var(--green-bg,#f0fdf4);padding:4px 10px;border-radius:20px">'+t.to+'</span>'
+          +'<span style="margin-left:auto;font-family:monospace;font-size:18px;font-weight:700;color:var(--orange,#ea580c)">฿'+fmt(t.amount)+'</span>'
+        +'</div>'
       +'</div>';
     }).join('');
   }
@@ -417,11 +423,14 @@ function exportSettlePDF(month, groupId) {
         +'<div style="font-size:14px;color:#1a7a4a;font-weight:600">✅ ไม่มียอดค้างชำระ</div>'
       +'</div>'
     : transfers.map(function(t){
-        return '<div style="background:#fdf4e7;border:1.5px solid #b5600a;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">'
-          +'<div style="font-size:13px;font-weight:600">'+t.from+'</div>'
-          +'<div style="color:#b5600a;font-size:18px">→</div>'
-          +'<div style="font-size:13px;font-weight:600">'+t.to+'</div>'
-          +'<div style="margin-left:auto;font-size:20px;font-weight:700;color:#b5600a;font-family:monospace">฿'+fmt(t.amount)+'</div>'
+        return '<div style="background:#fdf4e7;border:1.5px solid #b5600a;border-radius:10px;padding:14px 16px;margin-bottom:8px">'
+          +'<div style="font-size:10px;font-weight:700;color:#b5600a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">💸 ต้องโอนเงิน</div>'
+          +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+            +'<span style="font-size:13px;font-weight:700;color:#c0392b;background:#fee2e2;padding:3px 10px;border-radius:20px">'+t.from+'</span>'
+            +'<span style="font-size:12px;color:#666">ต้องโอนให้</span>'
+            +'<span style="font-size:13px;font-weight:700;color:#1a7a4a;background:#d1fae5;padding:3px 10px;border-radius:20px">'+t.to+'</span>'
+            +'<span style="margin-left:auto;font-size:18px;font-weight:700;color:#b5600a;font-family:monospace">฿'+fmt(t.amount)+'</span>'
+          +'</div>'
         +'</div>';
       }).join('');
 

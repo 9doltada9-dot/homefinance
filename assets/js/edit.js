@@ -4,18 +4,47 @@
 var editId = null;
 var eType = 'expense';
 
-// ── Populate กลุ่มหาร ───────────────────────────────────────────────
+// ── Populate กลุ่มหาร (icon buttons) ──────────────────────────────
 function ePopulateGroups(selectedGroupId) {
-  var sel = document.getElementById('eSplitGroup');
-  if (!sel) return;
-  var groups = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
+  var container = document.getElementById('eSplitBtnContainer');
+  var hidden    = document.getElementById('eSplitGroup');
+  if (!container || !hidden) return;
+  var groups   = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
   var typeIcon = { personal:'💼', equal:'👥', ratio:'📊', custom:'🎯' };
-  sel.innerHTML = '<option value="">💼 ส่วนตัว (ไม่หาร)</option>'
-    + groups.map(function(g){
-        var icon = typeIcon[g.split_type] || '🏠';
-        return '<option value="'+g.id+'"'+(g.id===selectedGroupId?' selected':'')+'>'
-          +icon+' '+g.name+'</option>';
-      }).join('');
+  var items = [{ id:'', icon:'💼', label:'ส่วนตัว\n(ไม่หาร)' }].concat(
+    groups.map(function(g){
+      return { id: g.id, icon: typeIcon[g.split_type] || '🏠', label: g.name };
+    })
+  );
+  var cur = selectedGroupId || '';
+  hidden.value = cur;
+  container.innerHTML = items.map(function(item){
+    var active = item.id === cur;
+    var lines  = item.label.split('\n');
+    return '<button type="button" onclick="eSetSplitGroup(\''+item.id+'\')" data-sgid="'+item.id+'"'
+      +' style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;'
+      +'padding:8px 12px;font-size:11px;font-weight:600;border:1.5px solid '+(active?'var(--blue)':'var(--line)')+';'
+      +'border-radius:10px;background:'+(active?'var(--blue)':'var(--surface2)')+';'
+      +'color:'+(active?'#fff':'var(--ink2)')+';'
+      +'cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;min-width:64px;line-height:1.3">'
+      +'<span style="font-size:18px;line-height:1">'+item.icon+'</span>'
+      +'<span>'+lines[0]+'</span>'
+      +(lines[1]?'<span style="font-size:10px;opacity:.8">'+lines[1]+'</span>':'')
+      +'</button>';
+  }).join('');
+}
+
+function eSetSplitGroup(id) {
+  var hidden    = document.getElementById('eSplitGroup');
+  var container = document.getElementById('eSplitBtnContainer');
+  if (hidden) hidden.value = id;
+  if (!container) return;
+  [].slice.call(container.querySelectorAll('button[data-sgid]')).forEach(function(btn){
+    var active = btn.getAttribute('data-sgid') === id;
+    btn.style.borderColor = active ? 'var(--blue)' : 'var(--line)';
+    btn.style.background  = active ? 'var(--blue)' : 'var(--surface2)';
+    btn.style.color       = active ? '#fff'        : 'var(--ink2)';
+  });
 }
 
 function openEdit(id){

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
-<title>HomeFinance v3.10.2</title>
+<title>HomeFinance v3.10.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -26,16 +26,6 @@ body:not(.app-ready) .layout { display: none !important; }
 body.login-visible #page-login { display: flex !important; }
 body.app-ready #page-login { display: none !important; }
 .admin-only { display: none; }
-
-/* ── Profile Label Buttons ── */
-.stg-label-btn {
-  padding:7px 14px; border:1.5px solid var(--line); border-radius:8px;
-  background:var(--surface2); color:var(--ink2); font-size:13px; font-weight:500;
-  cursor:pointer; font-family:Sarabun,sans-serif; transition:all .15s;
-}
-.stg-label-btn.active {
-  border-color:var(--blue); background:var(--blue-bg,#eff6ff); color:var(--blue); font-weight:700;
-}
 
 /* ── Split Groups UI ── */
 .sg-item {
@@ -173,7 +163,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.10.2 · THB</div>
+    <div class="brand-sub">v3.10.3 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -233,7 +223,7 @@ body.app-ready #page-login { display: none !important; }
       <span id="sidebarOnlineTxt" style="font-size:11px;color:var(--ink3)">กำลังตรวจสอบ...</span>
     </div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.10.2 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.10.3 © 2025</div>
   </div>
 </nav>
 
@@ -661,24 +651,7 @@ body.app-ready #page-login { display: none !important; }
       <button class="btn btn-primary" onclick="doChangeName()" style="white-space:nowrap;min-height:40px;font-size:13px">บันทึกชื่อ</button>
     </div>
     <div id="changeNameMsg" style="padding:0 14px 10px;font-size:12px;display:none"></div>
-    <!-- label picker -->
-    <div style="border-top:1px solid var(--line);padding:12px 14px 14px">
-      <div style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🏷 Label ในครัวเรือน</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-        <button class="stg-label-btn" data-label="พ่อ"  onclick="doSaveLabel('พ่อ')" >พ่อ</button>
-        <button class="stg-label-btn" data-label="แม่"  onclick="doSaveLabel('แม่')" >แม่</button>
-        <button class="stg-label-btn" data-label="ลูก1" onclick="doSaveLabel('ลูก1')">ลูก1</button>
-        <button class="stg-label-btn" data-label="ลูก2" onclick="doSaveLabel('ลูก2')">ลูก2</button>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="text" id="stgLabelCustom" placeholder="หรือพิมพ์เอง..." maxlength="20"
-          style="flex:1;font-size:13px !important;padding:7px 10px"
-          onkeydown="if(event.key==='Enter') doSaveLabel(this.value.trim())">
-        <button class="btn btn-ghost" onclick="doSaveLabel(document.getElementById('stgLabelCustom').value.trim())"
-          style="white-space:nowrap;min-height:38px;font-size:12px">บันทึก Label</button>
-      </div>
-      <div style="font-size:11px;color:var(--ink3);margin-top:6px">ใช้แสดงใน Settlement Groups · ตั้งได้อิสระ</div>
-    </div>
+
     <!-- change password section -->
     <div style="border-top:1px solid var(--line);padding:14px 14px 6px">
       <div style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">🔐 เปลี่ยนรหัสผ่าน</div>
@@ -1550,7 +1523,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.10.2</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.10.3</div>
   </div>
 </div>
 

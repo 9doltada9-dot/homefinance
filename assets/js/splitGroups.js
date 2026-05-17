@@ -117,7 +117,7 @@ async function _sgLoadProfilesAndRender(g, type) {
   if (!profiles.length && typeof persons !== 'undefined') {
     profiles = persons
       .filter(function(p) { return p.user_id; })
-      .map(function(p) { return { id: p.user_id, name: p.name, label: p.label || '' }; });
+      .map(function(p) { return { id: p.user_id, name: p.name }; });
   }
 
   var myId = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
@@ -133,7 +133,7 @@ async function _sgLoadProfilesAndRender(g, type) {
     }
     return {
       user_id: p.id,
-      label:   existing ? existing.label : (p.label || p.name),
+      label:   p.name,  // ใช้ชื่อ user โดยตรง (label system ถูกยกเลิก)
       ratio:   existing ? (parseFloat(existing.ratio) || 0) : 0,
       active:  existing ? !!existing.active : defaultActive,
       _name:   p.name,

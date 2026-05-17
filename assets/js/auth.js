@@ -970,15 +970,6 @@ function _updateUserBar() {
     stgRole.style.background = isAdminUser() ? 'var(--green-bg)' : 'var(--surface2)';
     stgRole.style.color      = isAdminUser() ? 'var(--green)'    : 'var(--ink3)';
   }
-  // Refresh label picker active state
-  var currentLabel = getAuthLabel();
-  document.querySelectorAll('.stg-label-btn').forEach(function(b) {
-    b.classList.toggle('active', b.dataset.label === currentLabel);
-  });
-  var customInp = document.getElementById('stgLabelCustom');
-  if (customInp && currentLabel && ['พ่อ','แม่','ลูก1','ลูก2'].indexOf(currentLabel) === -1) {
-    customInp.value = currentLabel;
-  }
 }
 
 // ─── CHANGE DISPLAY NAME ──────────────────────────────────
@@ -1038,46 +1029,10 @@ async function doChangeName() {
   }
 }
 
-// ─── SAVE PROFILE LABEL ──────────────────────────────────────
-async function doSaveLabel(label) {
-  if (!_authUser) return;
-  var prev = getAuthLabel();
-  if (!_authProfile) _authProfile = {};
-  _authProfile.label = label;
-
-  // Update picker UI
-  document.querySelectorAll('.stg-label-btn').forEach(function(b) {
-    b.classList.toggle('active', b.dataset.label === label);
-  });
-
-  // Persist to localStorage session cache
-  var saved = _loadSavedSession();
-  if (saved) {
-    saved.profile = _authProfile;
-    try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_) {}
-  }
-
-  // Persist to Supabase (graceful — column may not exist yet)
-  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
-  if (!creds.ok) return;
-  try {
-    await fetch(
-      creds.url + '/rest/v1/profiles?id=eq.' + _authUser.id,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': creds.key,
-          'Authorization': 'Bearer ' + _authToken,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ label: label })
-      }
-    );
-  } catch (e) {
-    // silent — label is stored locally anyway
-  }
-}
+// ─── PROFILE LABEL (deprecated — ใช้ชื่อ user แทน) ────────────────────────────
+// getAuthLabel() คงไว้เพื่อ backward compat (split_snapshot เก่าอาจอ้างถึง label)
+// doSaveLabel() เป็น no-op แล้ว — ไม่ได้ใช้ label system อีกต่อไป
+async function doSaveLabel(label) { /* no-op: label system ถูกยกเลิกแล้ว */ }
 
 // ─── CURRENT USER → UUID ──────────────────────────────────
 /**

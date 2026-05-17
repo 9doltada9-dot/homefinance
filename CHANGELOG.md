@@ -1,5 +1,17 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v3.10.3 — 2026-05-16
+
+### feat: ยกเลิก Label ในครัวเรือน — ใช้ชื่อ user โดยตรง
+
+- ลบ label picker (พ่อ/แม่/ลูก1/ลูก2 + กรอกเอง) ออกจากหน้าตั้งค่า
+- ลบ CSS `.stg-label-btn` ออกจาก index.html
+- `doSaveLabel()` เป็น no-op (deprecated gracefully)
+- `getAuthLabel()` คงไว้เพื่อ backward compat กับ split_snapshot เก่า
+- `splitGroups.js` — member label ใช้ `p.name` (ชื่อ user จริง) แทน `p.label`
+- `auth.js` `_updateUserBar()` — ลบ label picker refresh code ออก
+
+
 ## v3.10.2 — 2026-05-16
 
 ### fix: แสดงเศษสตางค์ (ทศนิยม) ในการแสดงผลตัวเลขทุกหน้า

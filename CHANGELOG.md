@@ -1,5 +1,15 @@
 # 📋 HomeFinance — CHANGELOG
 
+## v3.10.2 — 2026-05-16
+
+### fix: แสดงเศษสตางค์ (ทศนิยม) ในการแสดงผลตัวเลขทุกหน้า
+
+- `fmt(n)` และ `fmtB(n)` ใน utils.js — ปัดเศษสูงสุด 2 ตำแหน่ง
+- ถ้าไม่มีเศษ (เช่น 15000.00) → แสดงเป็น 15,000 (ไม่มี .00)
+- ถ้ามีเศษ (เช่น 1450.50) → แสดงเป็น 1,450.50
+- ครอบคลุมทุกหน้า: Dashboard, Transactions, Settlement, Report, PDF Export
+
+
 ## v3.10.1 — 2026-05-16
 
 ### fix: dashboard charts use _allProfiles UUID correctly

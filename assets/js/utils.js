@@ -19,8 +19,13 @@ var itemsData = {};   // { catId: [{id, name, sort_order}] }
 var viewMode = localStorage.getItem('hf2_viewmode') || 'desktop';
 
 // ─── FORMATTERS ───────────────────────────────────────────
-function fmt(n){ return Math.round(n).toLocaleString('th-TH'); }
-function fmtB(n){ return Math.round(n).toLocaleString('th-TH')+' บาท'; }
+function fmt(n){
+  // ปัดเศษทศนิยมสูงสุด 2 ตำแหน่ง — ถ้าไม่มีเศษให้แสดงเป็นจำนวนเต็ม
+  var r = Math.round(n * 100) / 100;
+  if(r % 1 === 0) return r.toLocaleString('th-TH');
+  return r.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtB(n){ return fmt(n)+' บาท'; }
 function nm(pid){
   if(!pid) return '—';
   // 1. UUID lookup via _allProfiles (new user system)

@@ -32,6 +32,7 @@ function setType(t){
   var btnTr = document.getElementById('btnTransfer');
   if(btnTr) btnTr.className = 'type-btn' + (t==='transfer'?' active-transfer':'');
   document.getElementById('splitSection').style.display = t==='expense'?'block':'none';
+  if (t === 'expense') buildSplitButtons();
   var fCatRow = document.getElementById('fCatRow');
   if(fCatRow) fCatRow.style.display = t==='transfer'?'none':'';
   updateStatusOptions();
@@ -135,50 +136,70 @@ function updateDescStar(){
   if(btn) btn.textContent = isFavItem(desc) ? '⭐' : '☆';
 }
 
-// ─── SPLIT TYPE (v3.6) ───────────────────────────────────
-// splitType: 'personal' | 'equal' | 'ratio' | 'custom'
+// ─── SPLIT TYPE (v3.10) ──────────────────────────────────
 var splitType     = 'personal';
-var splitMembers  = [];   // สำหรับ custom
-var splitRatios   = {};   // สำหรับ ratio {personId: percent}
-var splitGroupId  = null; // สำหรับ group
+var splitMembers  = [];   // backward compat
+var splitRatios   = {};   // backward compat
+var splitGroupId  = null; // กลุ่ม Settlement ที่เลือก
 
-function setSplitType(type) {
-  splitType = type;
-  splitOn   = (type !== 'personal');
-  // update button styles
-  ['personal','equal','ratio','custom','group'].forEach(function(t) {
-    var btn = document.getElementById('stBtn-' + t);
-    if (!btn) return;
-    var active = (t === type);
-    btn.style.background   = active ? 'var(--blue)'     : 'var(--surface2)';
-    btn.style.color        = active ? '#fff'             : 'var(--ink2)';
-    btn.style.borderColor  = active ? 'var(--blue)'     : 'var(--line)';
-  });
-  var ratioRow    = document.getElementById('splitRatioRow');
-  var customRow   = document.getElementById('splitCustomRow');
-  var groupRow    = document.getElementById('splitGroupRow');
-  var previewRow  = document.getElementById('splitPreviewRow');
-  var desc        = document.getElementById('splitDesc');
-  if (ratioRow)   ratioRow.style.display   = (type === 'ratio')   ? 'flex'  : 'none';
-  if (customRow)  customRow.style.display  = (type === 'custom')  ? 'flex'  : 'none';
-  if (groupRow)   groupRow.style.display   = (type === 'group')   ? 'block' : 'none';
-  if (previewRow) previewRow.style.display = 'none'; // hide until group chosen
+/** สร้างปุ่ม dynamic: ส่วนตัว + แต่ละ Settlement group */
+function buildSplitButtons() {
+  var container = document.getElementById('splitBtnContainer');
+  if (!container) return;
+  var groups   = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
+  var typeIcon  = { personal:'💼', equal:'👥', ratio:'📊', custom:'🎯' };
+  var items = [{ id:'', icon:'💼', label:'ส่วนตัว\n(ไม่หาร)' }].concat(
+    groups.map(function(g){
+      return { id: g.id, icon: typeIcon[g.split_type] || '🏠', label: g.name };
+    })
+  );
+  var cur = splitGroupId || '';
+  container.innerHTML = items.map(function(item){
+    var active = (item.id === '' && !splitGroupId) || (item.id !== '' && item.id === cur);
+    var lines  = item.label.split('\n');
+    return '<button type="button" onclick="selectSplitBtn(\''+item.id+'\')" data-sbid="'+item.id+'"'
+      +' style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;'
+      +'padding:8px 12px;font-size:11px;font-weight:600;border:1.5px solid '+(active?'var(--blue)':'var(--line)')+';'
+      +'border-radius:10px;background:'+(active?'var(--blue)':'var(--surface2)')+';'
+      +'color:'+(active?'#fff':'var(--ink2)')+';'
+      +'cursor:pointer;font-family:Sarabun,sans-serif;transition:.15s;min-width:64px;line-height:1.3">'
+      +'<span style="font-size:18px;line-height:1">'+item.icon+'</span>'
+      +'<span>'+lines[0]+'</span>'
+      +(lines[1]?'<span style="font-size:10px;opacity:.8">'+lines[1]+'</span>':'')
+      +'</button>';
+  }).join('');
+}
 
-  if (type === 'personal') {
-    if (desc) desc.textContent = 'ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร';
-  } else if (type === 'equal') {
-    var n = (typeof persons !== 'undefined') ? persons.length : 2;
-    if (desc) desc.textContent = 'หารเท่ากันทุกคน (คนละ ' + (100/n).toFixed(0) + '%)';
-  } else if (type === 'ratio') {
-    _buildRatioUI();
-    _updateRatioDesc();
-  } else if (type === 'custom') {
-    _buildCustomUI();
-    if (desc) desc.textContent = 'เลือกคนที่ร่วมจ่ายค่าใช้จ่ายนี้';
-  } else if (type === 'group') {
-    _buildGroupUI();
-    if (desc) desc.textContent = 'เลือกกลุ่ม Settlement ด้านบน';
+function selectSplitBtn(id) {
+  if (!id) {
+    splitType    = 'personal';
+    splitOn      = false;
+    splitGroupId = null;
+  } else {
+    splitType    = 'group';
+    splitOn      = true;
+    splitGroupId = id;
   }
+  // toggle button styles
+  var container = document.getElementById('splitBtnContainer');
+  if (container) {
+    [].slice.call(container.querySelectorAll('button[data-sbid]')).forEach(function(btn){
+      var bid    = btn.getAttribute('data-sbid');
+      var active = (bid === '' && !splitGroupId) || (bid !== '' && bid === splitGroupId);
+      btn.style.borderColor = active ? 'var(--blue)' : 'var(--line)';
+      btn.style.background  = active ? 'var(--blue)' : 'var(--surface2)';
+      btn.style.color       = active ? '#fff'        : 'var(--ink2)';
+    });
+  }
+  var desc = document.getElementById('splitDesc');
+  if (desc) desc.textContent = !id ? 'ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร' : '';
+  _updateGroupPreview();
+}
+
+/** backward compat — ใช้โดย autoSplit() */
+function setSplitType(type) {
+  if (type === 'personal') selectSplitBtn('');
+  // group/equal/ratio/custom: ไม่เปลี่ยน (ไม่มีปุ่มเหล่านี้แล้ว)
 }
 
 function _buildRatioUI() {
@@ -376,7 +397,7 @@ function addEntry(){
   // group split: build snapshot before saving
   var _split_snapshot = {};
   var _split_group_id = null;
-  if (cType === 'expense' && splitType === 'group' && splitGroupId) {
+  if (cType === 'expense' && splitGroupId) {
     _split_group_id  = splitGroupId;
     _split_snapshot  = (typeof buildSplitSnapshot === 'function')
       ? buildSplitSnapshot(splitGroupId, amt) : {};
@@ -406,6 +427,7 @@ function clearForm(){
   document.getElementById('fDesc').value='';
   document.getElementById('fAmt').value='';
   document.getElementById('fNote').value='';
+  selectSplitBtn(''); // reset split → ส่วนตัว
   // reset billing_month back to current month
   var bmSel = document.getElementById('fBillingMonth');
   if(bmSel){

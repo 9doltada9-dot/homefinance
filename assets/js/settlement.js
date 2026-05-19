@@ -248,6 +248,14 @@ function renderSettle(){
     });
   }
 
+  // กรองเฉพาะ uid ที่ยังมีอยู่ใน system — ไม่แสดง user ที่ถูกลบออกไปแล้ว
+  var _activeUidSet = {};
+  if (window._allProfiles && window._allProfiles.length) {
+    window._allProfiles.forEach(function(p){ if(p.id) _activeUidSet[p.id] = true; });
+  }
+  persons.forEach(function(p){ _activeUidSet[p.user_id || p.id] = true; });
+  allUids = allUids.filter(function(uid){ return _activeUidSet[uid]; });
+
   var balances = {};
   allUids.forEach(function(uid){ balances[uid] = (paid[uid]||0) - (owed[uid]||0); });
 
@@ -318,6 +326,8 @@ function renderSettle(){
       if (detailUids.indexOf(uid) === -1) detailUids.push(uid);
     });
   });
+  // กรอง detailUids ให้เหลือเฉพาะ active users (ไม่แสดง user ที่ถูกลบ)
+  detailUids = detailUids.filter(function(uid){ return _activeUidSet[uid]; });
   // fallback: ใช้ allUids ถ้าไม่มี snapshot
   if (!detailUids.length) detailUids = allUids.slice();
 

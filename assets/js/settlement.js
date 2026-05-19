@@ -108,11 +108,16 @@ function _pidToUid(pid) {
   return (p && p.user_id) ? p.user_id : pid;
 }
 
-/** ดึงชื่อที่แสดง จาก uid */
+/** ดึงชื่อที่แสดง จาก uid — ให้ความสำคัญ _allProfiles (ชื่อล่าสุด) ก่อนเสมอ */
 function _uidToName(uid) {
+  // 1. _allProfiles (Supabase — ชื่อล่าสุดที่แก้ไขแล้ว)
+  if (window._allProfiles && window._allProfiles.length) {
+    var prof = window._allProfiles.find(function(x){ return x.id === uid; });
+    if (prof && prof.name) return prof.name;
+  }
+  // 2. persons array (local)
   var p = persons.find(function(x){ return x.user_id === uid; });
   if (p) return p.name;
-  // fallback: person.id
   p = persons.find(function(x){ return x.id === uid; });
   return p ? p.name : uid;
 }
@@ -254,7 +259,7 @@ function renderSettle(){
   if (group) {
     var memberNames = (group.members||[])
       .filter(function(m){ return m.active; })
-      .map(function(m){ return m.label || nameMap[m.user_id] || m.user_id; })
+      .map(function(m){ return nameMap[m.user_id] || m.label || m.user_id; })
       .join(' + ');
     grpTitle = ' · ' + group.name + (memberNames ? ' (' + memberNames + ')' : '');
   }
@@ -330,7 +335,7 @@ function renderSettle(){
     }
     var memberRows = snap ? Object.keys(snap).map(function(uid){
       var isPayer = uid === payerU;
-      var name = snap[uid].label || nameMap[uid] || uid;
+      var name = nameMap[uid] || snap[uid].label || uid;
       var amt  = snap[uid].amount || 0;
       return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px">'
         +'<span style="color:'+(isPayer?'var(--green,#16a34a)':'var(--ink2)')+'">'+name+(isPayer?' (จ่ายแล้ว)':'')+'</span>'

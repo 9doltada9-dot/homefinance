@@ -489,17 +489,40 @@ function exportSettlePDF(month, groupId) {
     : allExp.filter(function(e){ var t=e.split_type||(e.split?'equal':'personal'); return t!=='personal'; });
 
   // ── คำนวณ balances ────────────────────────────────────────
+  // สร้าง active uid set — กรอง snapshot ที่มี user ถูกลบ
+  var _pdfActiveUidSet = {};
+  if (window._allProfiles && window._allProfiles.length) {
+    window._allProfiles.forEach(function(p){ if(p.id) _pdfActiveUidSet[p.id] = true; });
+  }
+  persons.forEach(function(p){ _pdfActiveUidSet[p.user_id || p.id] = true; });
+
   var paid = {}, owed = {};
   var initUids = groupMemberUids || persons.map(function(p){ return p.user_id||p.id; });
   initUids.forEach(function(uid){ paid[uid]=0; owed[uid]=0; });
 
   splitExp.forEach(function(e){
-    var payerUid = _pidToUid(e.person)||e.person;
+    var payerUid = e.user_id || _pidToUid(e.person) || e.person;
     if (e.split_snapshot && Object.keys(e.split_snapshot).length) {
-      paid[payerUid] = (paid[payerUid]||0) + e.amt;
-      Object.keys(e.split_snapshot).forEach(function(uid){
-        owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
-      });
+      var snapKeys2 = Object.keys(e.split_snapshot);
+      var nonPayers2 = snapKeys2.filter(function(uid){ return uid !== payerUid; });
+      var hasDeleted2 = nonPayers2.length > 0 &&
+        nonPayers2.every(function(uid){ return !_pdfActiveUidSet[uid]; });
+
+      if (hasDeleted2 && e.split_group_id && typeof buildSplitSnapshot === 'function') {
+        // non-payer ทุกคนใน snapshot ถูกลบ → ใช้กลุ่มปัจจุบันแทน
+        var freshSnap2 = buildSplitSnapshot(e.split_group_id, e.amt);
+        if (Object.keys(freshSnap2).length) {
+          paid[payerUid] = (paid[payerUid]||0) + e.amt;
+          Object.keys(freshSnap2).forEach(function(uid){
+            owed[uid] = (owed[uid]||0) + (freshSnap2[uid].amount||0);
+          });
+        }
+      } else {
+        paid[payerUid] = (paid[payerUid]||0) + e.amt;
+        snapKeys2.forEach(function(uid){
+          owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
+        });
+      }
     } else if (e.split_group_id && typeof buildSplitSnapshot === 'function') {
       var onTheFly2 = buildSplitSnapshot(e.split_group_id, e.amt);
       if (Object.keys(onTheFly2).length) {
@@ -520,6 +543,8 @@ function exportSettlePDF(month, groupId) {
 
   var allUids = Object.keys(paid).concat(Object.keys(owed))
     .filter(function(v,i,a){ return a.indexOf(v)===i && ((paid[v]||0)+(owed[v]||0)>0); });
+  // กรองเฉพาะ active users (ไม่แสดง user ที่ถูกลบ)
+  allUids = allUids.filter(function(uid){ return _pdfActiveUidSet[uid]; });
   if (groupMemberUids) {
     allUids = allUids.filter(function(u){
       return groupMemberUids.indexOf(u) !== -1 || (paid[u]||0) > 0.5;
@@ -571,8 +596,20 @@ function exportSettlePDF(month, groupId) {
     var pu = e.user_id || _pidToUid(e.person) || e.person;
     if (pu && pdfUids.indexOf(pu)===-1) pdfUids.push(pu);
     var sn = e.split_snapshot;
-    if (!sn && e.split_group_id && typeof buildSplitSnapshot==='function') sn = buildSplitSnapshot(e.split_group_id, e.amt);
-    if (sn) Object.keys(sn).forEach(function(uid){ if (pdfUids.indexOf(uid)===-1) pdfUids.push(uid); });
+    // ถ้า snapshot มี deleted members → ใช้ fresh snap แทน
+    if (sn && Object.keys(sn).length) {
+      var snNonPayers = Object.keys(sn).filter(function(uid){ return uid !== pu; });
+      var snHasDeleted = snNonPayers.length > 0 &&
+        snNonPayers.every(function(uid){ return !_pdfActiveUidSet[uid]; });
+      if (snHasDeleted && e.split_group_id && typeof buildSplitSnapshot==='function') {
+        sn = buildSplitSnapshot(e.split_group_id, e.amt);
+      }
+    } else if (!sn && e.split_group_id && typeof buildSplitSnapshot==='function') {
+      sn = buildSplitSnapshot(e.split_group_id, e.amt);
+    }
+    if (sn) Object.keys(sn).forEach(function(uid){
+      if (_pdfActiveUidSet[uid] && pdfUids.indexOf(uid)===-1) pdfUids.push(uid);
+    });
   });
 
   var pdfTotals = {}; pdfUids.forEach(function(u){ pdfTotals[u]=0; });
@@ -580,7 +617,17 @@ function exportSettlePDF(month, groupId) {
     var pu = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[pu] || e.person;
     var snap = e.split_snapshot;
-    if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    // ถ้า snapshot มี deleted non-payer → ใช้ fresh snap
+    if (snap && Object.keys(snap).length) {
+      var drNonPayers = Object.keys(snap).filter(function(uid){ return uid !== pu; });
+      var drHasDeleted = drNonPayers.length > 0 &&
+        drNonPayers.every(function(uid){ return !_pdfActiveUidSet[uid]; });
+      if (drHasDeleted && e.split_group_id && typeof buildSplitSnapshot==='function') {
+        snap = buildSplitSnapshot(e.split_group_id, e.amt);
+      }
+    } else if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') {
+      snap = buildSplitSnapshot(e.split_group_id, e.amt);
+    }
     var vname = _vendorName(e.vendor_id);
     var cols = pdfUids.map(function(uid){
       var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
@@ -639,7 +686,7 @@ function exportSettlePDF(month, groupId) {
     +detailRows
     +detailTotalRow+'\n'
     +'</table>\n'
-    +'<div class="footer">HomeFinance v3.9.9 · Settlement Report</div>\n'
+    +'<div class="footer">HomeFinance v3.11.2 · Settlement Report</div>\n'
     +'</body>\n</html>';
 
   var win = window.open('','_blank','width=960,height=720');

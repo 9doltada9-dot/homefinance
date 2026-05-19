@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
-<title>HomeFinance v3.11.3</title>
+<title>HomeFinance v3.11.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -163,14 +163,19 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.11.3 · THB</div>
+    <div class="brand-sub">v3.11.4 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
-      <div id="sidebarAvatar" style="width:36px;height:36px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0">👤</div>
+      <div id="sidebarAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0">👤</div>
       <div style="flex:1;min-width:0">
         <div id="sidebarAuthName" style="font-size:14px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
-        <div id="sidebarAuthRole" style="font-size:11px;color:var(--ink3);margin-top:1px"></div>
+        <div id="sidebarAuthEmail" style="font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px"></div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+          <div id="sidebarOnlineDot" style="width:7px;height:7px;border-radius:50%;background:#d4d1c8;flex-shrink:0;transition:background .4s"></div>
+          <span id="sidebarOnlineTxt" style="font-size:10px;color:var(--ink3)">กำลังตรวจสอบ...</span>
+          <span id="sidebarAuthRole" style="font-size:10px;color:var(--ink3)"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -218,12 +223,8 @@ body.app-ready #page-login { display: none !important; }
   </div>
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-      <div id="sidebarOnlineDot" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8;flex-shrink:0;transition:background .4s"></div>
-      <span id="sidebarOnlineTxt" style="font-size:11px;color:var(--ink3)">กำลังตรวจสอบ...</span>
-    </div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.11.3 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.11.4 © 2025</div>
   </div>
 </nav>
 
@@ -1508,7 +1509,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.11.3</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.11.4</div>
   </div>
 </div>
 
@@ -1541,9 +1542,4 @@ create policy "public write" on transactions for all using (true);</div>
 <script src="assets/js/recurringEngine.js"></script>
 <script src="assets/js/splitGroups.js"></script>
 <script src="assets/js/features.js"></script>
-<script src="assets/js/settings.js"></script>
-<script src="assets/js/auth.js"></script>
-<script src="assets/js/report.js"></script>
-<script src="assets/js/app.js"></script>
-</body>
-</html>
+<script src="assets/js/setting

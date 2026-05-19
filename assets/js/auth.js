@@ -957,7 +957,9 @@ function _updateUserBar() {
   var sidebarRole   = document.getElementById('sidebarAuthRole');
   var sidebarAvatar = document.getElementById('sidebarAvatar');
   if (sidebarName)   sidebarName.textContent = name || email.split('@')[0] || '—';
-  if (sidebarRole)   sidebarRole.textContent = roleLabel;
+  var sidebarEmail = document.getElementById('sidebarAuthEmail');
+  if (sidebarEmail)  sidebarEmail.textContent = email || '';
+  if (sidebarRole)   sidebarRole.textContent = roleLabel ? ('· ' + roleLabel) : '';
   if (sidebarAvatar) {
     var avatarColor = isAdminUser() ? '#0f6e56' : '#185fa5';
     var avatarBg    = isAdminUser() ? '#e1f5ee' : '#e6f1fb';

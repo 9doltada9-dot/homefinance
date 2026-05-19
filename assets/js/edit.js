@@ -170,10 +170,14 @@ function saveEdit(){
     e.split_group_id = eSplitGroupId;
     e.split_type = selGroup ? selGroup.split_type : 'equal';
     e.split = true;
+    // rebuild split_snapshot ใหม่จาก group ปัจจุบัน
+    var newSnap = (typeof buildSplitSnapshot === 'function') ? buildSplitSnapshot(eSplitGroupId, amt) : {};
+    e.split_snapshot = Object.keys(newSnap).length ? newSnap : null;
   } else {
     e.split_group_id = null;
     e.split_type = eType==='expense' ? 'personal' : null;
     e.split = false;
+    e.split_snapshot = null;
   }
   e.status=document.getElementById('eStatus').value || doneStatus(eType);
   e.note=document.getElementById('eNote').value.trim();

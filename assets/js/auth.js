@@ -184,7 +184,7 @@ async function doLogin() {
     await _loadProfile(creds);
 
     // บันทึก recent account
-    _saveRecentAccount(email, getAuthProfileName());
+    _saveRecentAccount(email, getAuthProfileName(), _authUser && _authUser.id);
     // จดจำรหัสผ่าน ถ้าผู้ใช้เลือก checkbox
     var rememberChk = document.getElementById('rememberMeChk');
     if (rememberChk && rememberChk.checked) {
@@ -279,7 +279,7 @@ async function doSignup() {
     localStorage.removeItem('hf2_pending_signup_email');
     _authProfile = { id: data.user.id, name: name, role: 'user' };
     _saveSession(data.access_token, data.refresh_token, data.user);
-    _saveRecentAccount(email, name);
+    _saveRecentAccount(email, name, data.user.id);
     _showSignupMsg('✅ สมัครสำเร็จ! กำลังเข้าสู่ระบบ...', true);
     setTimeout(function() { _showApp(); }, 600);
 
@@ -552,11 +552,11 @@ function _applyRememberedLogin() {
   if (chkEl)   chkEl.checked = true;
 }
 
-function _saveRecentAccount(email, name) {
+function _saveRecentAccount(email, name, uid) {
   try {
     var accounts = JSON.parse(localStorage.getItem('hf2_recent_accounts') || '[]');
     accounts = accounts.filter(function(a) { return a.email !== email; });
-    accounts.unshift({ email: email, name: name || email.split('@')[0], ts: Date.now() });
+    accounts.unshift({ email: email, name: name || email.split('@')[0], uid: uid || null, ts: Date.now() });
     if (accounts.length > 5) accounts = accounts.slice(0, 5);
     localStorage.setItem('hf2_recent_accounts', JSON.stringify(accounts));
   } catch(_) {}
@@ -577,7 +577,17 @@ function _renderRecentAccounts() {
     '<div style="font-size:12px;color:var(--ink3);margin-bottom:6px;font-weight:500">บัญชีที่เคยเข้าระบบ</div>' +
     accounts.map(function(a) {
       var safeEmail = a.email.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-      var safeName  = (a.name || a.email.split('@')[0]).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      // ดึงชื่อล่าสุดจาก _allProfiles ก่อน (ถ้ามี uid ที่ตรงกัน) ไม่อย่างนั้นใช้ชื่อ cached
+      var currentName = a.name || a.email.split('@')[0];
+      if (a.uid && window._allProfiles && window._allProfiles.length) {
+        var prof = window._allProfiles.find(function(p){ return p.id === a.uid; });
+        if (prof && prof.name) {
+          currentName = prof.name;
+          // อัปเดต cache ด้วย
+          a.name = prof.name;
+        }
+      }
+      var safeName = currentName.replace(/</g,'&lt;').replace(/>/g,'&gt;');
       return '<div onclick="_fillRecentAccount(\'' + safeEmail.replace(/'/g,'\\\'') + '\')" ' +
         'style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;' +
         'border:1px solid var(--line);margin-bottom:6px;background:var(--surface2);transition:background .15s" ' +
@@ -591,6 +601,8 @@ function _renderRecentAccounts() {
         '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--ink3)" stroke-width="1.5"><path d="M6 3l5 5-5 5"/></svg>' +
       '</div>';
     }).join('');
+  // persist updated names back to cache
+  try { localStorage.setItem('hf2_recent_accounts', JSON.stringify(accounts)); } catch(_) {}
 }
 
 function _fillRecentAccount(email) {

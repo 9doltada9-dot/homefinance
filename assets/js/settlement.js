@@ -202,6 +202,13 @@ function renderSettle(){
       });
     }
   });
+  // สร้าง active uid set ก่อน — ใช้กรอง snapshot ที่มี user ถูกลบ
+  var _activeUidSet = {};
+  if (window._allProfiles && window._allProfiles.length) {
+    window._allProfiles.forEach(function(p){ if(p.id) _activeUidSet[p.id] = true; });
+  }
+  persons.forEach(function(p){ _activeUidSet[p.user_id || p.id] = true; });
+
   var paid = {}, owed = {};
 
   // เริ่มต้น uid จาก group members ถ้ามี หรือจาก persons
@@ -212,11 +219,28 @@ function renderSettle(){
     var payerUid = e.user_id || e.user_id || _pidToUid(e.person) || e.person;
 
     if (e.split_snapshot && Object.keys(e.split_snapshot).length) {
-      // ✅ ใช้ split_snapshot (immutable)
-      paid[payerUid] = (paid[payerUid]||0) + e.amt;
-      Object.keys(e.split_snapshot).forEach(function(uid){
-        owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
-      });
+      // ตรวจว่า non-payer ใน snapshot ยังมีอยู่ในระบบหรือไม่
+      var snapKeys = Object.keys(e.split_snapshot);
+      var nonPayerKeys = snapKeys.filter(function(uid){ return uid !== payerUid; });
+      var hasDeletedMember = nonPayerKeys.length > 0 &&
+        nonPayerKeys.every(function(uid){ return !_activeUidSet[uid]; });
+
+      if (hasDeletedMember && e.split_group_id && typeof buildSplitSnapshot === 'function') {
+        // non-payer ทุกคนใน snapshot ถูกลบแล้ว → ใช้นิยามกลุ่มปัจจุบันแทน
+        var freshSnap = buildSplitSnapshot(e.split_group_id, e.amt);
+        if (Object.keys(freshSnap).length) {
+          paid[payerUid] = (paid[payerUid]||0) + e.amt;
+          Object.keys(freshSnap).forEach(function(uid){
+            owed[uid] = (owed[uid]||0) + (freshSnap[uid].amount||0);
+          });
+        }
+      } else {
+        // ✅ snapshot ปกติ — ใช้ตามเดิม
+        paid[payerUid] = (paid[payerUid]||0) + e.amt;
+        snapKeys.forEach(function(uid){
+          owed[uid] = (owed[uid]||0) + (e.split_snapshot[uid].amount||0);
+        });
+      }
     } else if (e.split_group_id && typeof buildSplitSnapshot === 'function') {
       // ✅ ไม่มี snapshot แต่มี group_id → สร้าง on-the-fly จากนิยามกลุ่ม
       var onTheFly = buildSplitSnapshot(e.split_group_id, e.amt);
@@ -249,11 +273,6 @@ function renderSettle(){
   }
 
   // กรองเฉพาะ uid ที่ยังมีอยู่ใน system — ไม่แสดง user ที่ถูกลบออกไปแล้ว
-  var _activeUidSet = {};
-  if (window._allProfiles && window._allProfiles.length) {
-    window._allProfiles.forEach(function(p){ if(p.id) _activeUidSet[p.id] = true; });
-  }
-  persons.forEach(function(p){ _activeUidSet[p.user_id || p.id] = true; });
   allUids = allUids.filter(function(uid){ return _activeUidSet[uid]; });
 
   var balances = {};
@@ -328,6 +347,7 @@ function renderSettle(){
   });
   // กรอง detailUids ให้เหลือเฉพาะ active users (ไม่แสดง user ที่ถูกลบ)
   detailUids = detailUids.filter(function(uid){ return _activeUidSet[uid]; });
+  if (!detailUids.length) detailUids = allUids.slice();
   // fallback: ใช้ allUids ถ้าไม่มี snapshot
   if (!detailUids.length) detailUids = allUids.slice();
 

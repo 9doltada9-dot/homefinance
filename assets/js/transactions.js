@@ -193,12 +193,64 @@ function _splitBadge(e) {
     var typeIcon = { equal:'👥', ratio:'📊', custom:'🎯', personal:'💼' };
     var icon = grp ? (typeIcon[grp.split_type] || '🏠') : '🏠';
     var name = grp ? grp.name : '(กลุ่ม)';
-    return '<span class="badge badge-split" style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+name+'">'+icon+' '+name+'</span>';
+    // สร้างรายชื่อสมาชิกสำหรับ tooltip
+    var lines = [];
+    if (e.split_snapshot && typeof e.split_snapshot === 'object') {
+      Object.keys(e.split_snapshot).forEach(function(uid) {
+        var s = e.split_snapshot[uid];
+        var mName = s.label || (typeof nm === 'function' ? nm(uid) : uid);
+        var fmtAmt = (typeof fmt === 'function') ? fmt(s.amount || 0) : (s.amount || 0);
+        lines.push(mName + ' — ' + fmtAmt + ' บาท' + (s.pct ? ' (' + s.pct + '%)' : ''));
+      });
+    } else if (grp && grp.members) {
+      (grp.members || []).filter(function(m){ return m.active; }).forEach(function(m){
+        lines.push(m.label || (typeof nm === 'function' ? nm(m.user_id) : m.user_id));
+      });
+    }
+    var tipData = encodeURIComponent(JSON.stringify({ title: name, lines: lines }));
+    return '<span class="badge badge-split" style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default"'
+      +' onmouseenter="_showSplitTip(this,\''+tipData+'\')"'
+      +' onmouseleave="_hideSplitTip()"'
+      +' onclick="_toggleSplitTip(this,\''+tipData+'\')"'
+      +'>'+icon+' '+name+'</span>';
   }
   if (e.split) {
     return '<span class="badge badge-split">÷ หาร</span>';
   }
   return '<span class="badge badge-personal">💼 ส่วนตัว</span>';
+}
+
+/** Tooltip helpers สำหรับ split badge */
+var _splitTipVisible = false;
+function _showSplitTip(el, tipData) {
+  try {
+    var data = JSON.parse(decodeURIComponent(tipData));
+    var tip = document.getElementById('splitMemberTip');
+    if (!tip) return;
+    tip.innerHTML =
+      '<div style="font-weight:700;margin-bottom:6px;font-size:12px">'+_escTip(data.title)+'</div>'+
+      (data.lines.length
+        ? data.lines.map(function(l){ return '<div style="font-size:12px;padding:2px 0">👤 '+_escTip(l)+'</div>'; }).join('')
+        : '<div style="font-size:11px;color:rgba(255,255,255,.6)">ไม่มีข้อมูลสมาชิก</div>');
+    var rect = el.getBoundingClientRect();
+    tip.style.display = 'block';
+    var tipW = tip.offsetWidth || 200;
+    var left = Math.min(rect.left + window.scrollX, window.innerWidth - tipW - 8);
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top  = (rect.bottom + window.scrollY + 6) + 'px';
+    _splitTipVisible = true;
+  } catch(_){}
+}
+function _hideSplitTip() {
+  var tip = document.getElementById('splitMemberTip');
+  if (tip) tip.style.display = 'none';
+  _splitTipVisible = false;
+}
+function _toggleSplitTip(el, tipData) {
+  if (_splitTipVisible) { _hideSplitTip(); } else { _showSplitTip(el, tipData); }
+}
+function _escTip(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 /** ชื่อผู้บันทึก — รองรับทั้ง UUID (user system) และ A/B (legacy) */

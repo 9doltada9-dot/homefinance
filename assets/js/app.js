@@ -110,7 +110,15 @@ function startAppAfterAuth() {
         loadItemsLocal();
       }
       if(vendorRows && Array.isArray(vendorRows)){
-        vendorsData = vendorRows;
+        // Merge: ถ้า Supabase ไม่มี vendor_type ให้เอาค่าจาก local มาแทน
+        var _localVendors = JSON.parse(localStorage.getItem('hf2_vendors') || '[]');
+        var _localVMap = {};
+        _localVendors.forEach(function(v){ _localVMap[v.id] = v; });
+        vendorsData = vendorRows.map(function(v){
+          var lv = _localVMap[v.id];
+          if(lv && lv.vendor_type && !v.vendor_type) v.vendor_type = lv.vendor_type;
+          return v;
+        });
         saveVendorsLocal();
       } else {
         loadVendorsLocal();

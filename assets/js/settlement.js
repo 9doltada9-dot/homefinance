@@ -383,12 +383,30 @@ function renderSettle(){
   }).join('');
 
   // ── Desktop: dynamic table ──────────────────────────────────
+  // color palette ต่อ uid (เหมือน personPill)
+  var _SETTLE_COLORS = [
+    { bg:'#ebf0fe', cl:'#1a4fa0' },
+    { bg:'#fef8e7', cl:'#b5600a' },
+    { bg:'#eef7f2', cl:'#1a7a4a' },
+    { bg:'#f0eef9', cl:'#4a3a9a' },
+    { bg:'#fff0f0', cl:'#b91c1c' },
+    { bg:'#e8faf4', cl:'#0e7354' },
+  ];
+  var _uidColorMap = {};
+  detailUids.forEach(function(uid, i){
+    _uidColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
+  });
+
   var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
-    + detailUids.map(function(uid){ return '<th style="text-align:right;white-space:nowrap">'+( nameMap[uid]||uid)+'</th>'; }).join('');
+    + detailUids.map(function(uid){
+        var c = _uidColorMap[uid] || { bg:'var(--surface2)', cl:'var(--ink)' };
+        return '<th style="text-align:right;white-space:nowrap;background:'+c.bg+';color:'+c.cl+';border-radius:6px;padding:6px 10px">'+( nameMap[uid]||uid)+'</th>';
+      }).join('');
   var totalCols = {}; detailUids.forEach(function(u){ totalCols[u]=0; });
-  var trRows = splitExp.map(function(e){
+  var trRows = splitExp.map(function(e, rowIdx){
     var payerU = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[payerU] || e.person;
+    var payerColor = _uidColorMap[payerU] || { bg:'#eef7f2', cl:'#1a7a4a' };
     var snap = e.split_snapshot;
     if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') {
       snap = buildSplitSnapshot(e.split_group_id, e.amt);
@@ -397,17 +415,19 @@ function renderSettle(){
       var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
       totalCols[uid] = (totalCols[uid]||0) + amt;
       var isPayer = uid === payerU;
-      return '<td style="text-align:right;font-family:monospace;font-size:12px;'+(isPayer?'color:var(--green,#16a34a);font-weight:700':'')+'">'
+      var c = _uidColorMap[uid] || {};
+      return '<td style="text-align:right;font-family:monospace;font-size:12px;'+(isPayer?'color:'+c.cl+';font-weight:700':'')+'">'
         +(amt>0 ? '฿'+fmt(amt) : '—')
         +(isPayer?' ✓':'')
       +'</td>';
     }).join('');
     var vendor = _vendorName(e.vendor_id);
-    return '<tr>'
+    var rowBg = rowIdx % 2 === 1 ? 'background:rgba(0,0,0,.025)' : '';
+    return '<tr style="'+rowBg+'">'
       +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td style="font-size:13px">'+e.desc+'</td>'
       +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
-      +'<td style="font-size:12px;font-weight:600;color:var(--green,#16a34a)">'+payerName+'</td>'
+      +'<td><span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span></td>'
       +'<td style="text-align:right;font-family:monospace;font-weight:600">฿'+fmt(e.amt)+'</td>'
       +cols
     +'</tr>';
@@ -416,7 +436,10 @@ function renderSettle(){
     +'<td colspan="3">รวม</td>'
     +'<td></td>'
     +'<td style="text-align:right;font-family:monospace">฿'+fmt(totalSplit)+'</td>'
-    +detailUids.map(function(uid){ return '<td style="text-align:right;font-family:monospace">฿'+fmt(totalCols[uid]||0)+'</td>'; }).join('')
+    +detailUids.map(function(uid){
+        var c = _uidColorMap[uid] || {};
+        return '<td style="text-align:right;font-family:monospace;color:'+(c.cl||'var(--ink)')+';font-weight:700">฿'+fmt(totalCols[uid]||0)+'</td>';
+      }).join('')
   +'</tr>';
   var detailDesktop = '<div class="table-scroll"><table>'
     +'<tr>'+thCells+'</tr>'+trRows+totalRow+'</table></div>';

@@ -1,6 +1,12 @@
 /* HomeFinance · module: form.js · v3.0.0 */
 
 function initForm(){
+  var amtEl  = document.getElementById('fAmt');
+  var noteEl = document.getElementById('fNote');
+  // ตรวจว่ากำลังบันทึกอยู่หรือเปล่า (มี amt หรือ note ค้าง)
+  var _inProgress = (amtEl && parseFloat(amtEl.value) > 0)
+                 || (noteEl && noteEl.value.trim() !== '');
+
   if(!document.getElementById('fDate').value){
     document.getElementById('fDate').value = todayISO();
     updateThaiDate();
@@ -8,20 +14,30 @@ function initForm(){
   // auto-set person จาก logged-in user
   var pSel = document.getElementById('fPerson');
   if(pSel) { var _cp=(typeof getCurrentPerson==='function')?getCurrentPerson():null; if(_cp && pSel.querySelector('option[value="'+_cp+'"]')) pSel.value=_cp; }
-  // hook amount input to refresh group preview
-  var amtInp = document.getElementById('fAmt');
-  if(amtInp) amtInp.addEventListener('input', _updateGroupPreview);
-  setType('expense');
-  updatePersonLabels();
-  renderNoteHistory();
-  fillVendors();
-  // v3: populate account selector
-  if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
-  // v3: auto-set billing_month to current month
-  var bmSel = document.getElementById('fBillingMonth');
-  if(bmSel && !bmSel.value){
-    var now = new Date();
-    bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  // hook amount input ครั้งเดียว (ป้องกัน duplicate listener)
+  if(amtEl && !amtEl._gpHooked){
+    amtEl.addEventListener('input', _updateGroupPreview);
+    amtEl._gpHooked = true;
+  }
+
+  if(_inProgress){
+    // ── form มีข้อมูลค้างอยู่ — อย่า reset, refresh เฉพาะที่จำเป็น ──
+    fillVendors(cType);
+    if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
+    updatePersonLabels();
+    renderNoteHistory();
+  } else {
+    // ── form ว่าง — full reset ──
+    setType('expense');
+    updatePersonLabels();
+    renderNoteHistory();
+    if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
+    // v3: auto-set billing_month to current month
+    var bmSel = document.getElementById('fBillingMonth');
+    if(bmSel && !bmSel.value){
+      var now = new Date();
+      bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    }
   }
 }
 

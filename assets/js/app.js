@@ -76,6 +76,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // ─── CALLED AFTER AUTH IS CONFIRMED ──────────────────────
 function startAppAfterAuth() {
+  // ล้าง db ก่อนทุกครั้ง — ป้องกันข้อมูล user เก่าค้างอยู่ระหว่างรอ Supabase
+  db = [];
   var startCreds = getSbCreds();
   if(startCreds.ok){
     // Admin ดึง transactions ทั้งหมด, User ดึงเฉพาะของตัวเอง

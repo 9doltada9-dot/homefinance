@@ -45,6 +45,32 @@ function eSetSplitGroup(id) {
     btn.style.background  = active ? 'var(--blue)' : 'var(--surface2)';
     btn.style.color       = active ? '#fff'        : 'var(--ink2)';
   });
+  eUpdateSplitPreview();
+}
+
+/** Preview สมาชิก + จำนวนเงินแต่ละคนข้างๆ ปุ่มกลุ่มหาร */
+function eUpdateSplitPreview() {
+  var previewRow = document.getElementById('eSplitPreviewRow');
+  var previewEl  = document.getElementById('eSplitPreviewContent');
+  if (!previewRow || !previewEl) return;
+  var groupId = (document.getElementById('eSplitGroup') || {}).value || '';
+  if (!groupId) { previewRow.style.display = 'none'; return; }
+  var amt = parseFloat((document.getElementById('eAmt') || {}).value) || 0;
+  var snapshot = (typeof buildSplitSnapshot === 'function') ? buildSplitSnapshot(groupId, amt || 1000) : {};
+  var keys = Object.keys(snapshot);
+  if (!keys.length) { previewRow.style.display = 'none'; return; }
+  previewRow.style.display = '';
+  previewEl.innerHTML = keys.map(function(uid) {
+    var s = snapshot[uid];
+    var mName = s.label || (typeof nm === 'function' ? nm(uid) : uid);
+    var amtStr = amt > 0
+      ? '<strong style="color:var(--blue)">' + (typeof fmt === 'function' ? fmt(s.amount || 0) : (s.amount || 0)) + '</strong> ฿'
+      : '<strong style="color:var(--blue)">' + (s.pct || 0).toFixed(0) + '%</strong>';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;gap:8px">'
+      + '<span style="color:var(--ink2);white-space:nowrap">👤 ' + mName + '</span>'
+      + '<span style="white-space:nowrap">' + amtStr + '</span>'
+      + '</div>';
+  }).join('');
 }
 
 function openEdit(id){
@@ -88,6 +114,7 @@ function openEdit(id){
       dSel.value = e.desc;
     }
     ePopulateGroups(e.split_group_id || '');
+    eUpdateSplitPreview();
   },10);
 }
 

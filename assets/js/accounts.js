@@ -13,8 +13,8 @@ function loadAccountsLocal() {
   try {
     var all = JSON.parse(localStorage.getItem('hf2_accounts') || '[]');
     var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
-    // กรองเฉพาะบัญชีของ user ปัจจุบัน (หรือบัญชีเก่าที่ยังไม่มี user_id)
-    accountsData = uid ? all.filter(function(a){ return !a.user_id || a.user_id === uid; }) : all;
+    // กรองเฉพาะบัญชีของ user ปัจจุบันเท่านั้น (ไม่รวมบัญชีที่ user_id=null — เป็น orphaned records)
+    accountsData = uid ? all.filter(function(a){ return a.user_id === uid; }) : all;
   }
   catch(_) { accountsData = []; }
   if (!accountsData.length) {
@@ -174,7 +174,10 @@ async function sbSyncAccount(acct, action) {
         body: JSON.stringify([acct]),
       });
     } else if (action === 'delete') {
-      await fetch(creds.url + '/rest/v1/accounts?id=eq.' + encodeURIComponent(acct.id), {
+      var _delUid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+      var _delFilter = '?id=eq.' + encodeURIComponent(acct.id) +
+                       (_delUid ? '&user_id=eq.' + encodeURIComponent(_delUid) : '');
+      await fetch(creds.url + '/rest/v1/accounts' + _delFilter, {
         method: 'DELETE',
         headers: sbHeadersFrom(creds.key),
       });

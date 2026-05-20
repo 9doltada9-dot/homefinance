@@ -190,7 +190,14 @@ function fillAccountSelectors() {
                ' (' + (ACCOUNT_TYPES[a.type] || a.type) + ')' +
                '</option>';
       }).join('');
-    if (cur) sel.value = cur;
+    if (cur) {
+      sel.value = cur;
+    } else if (id === 'fAccount' || id === 'eAccount') {
+      // ค่าเริ่มต้น: บัญชีธนาคารแรกที่ active
+      var defAcct = accountsData.filter(function(a){ return a.is_active; })
+        .find(function(a){ return a.type === 'bank'; });
+      if (defAcct) sel.value = defAcct.id;
+    }
   });
 }
 

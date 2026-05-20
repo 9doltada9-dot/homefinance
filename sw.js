@@ -5,7 +5,7 @@
  *
  * NOTE: เปลี่ยน CACHE_VERSION ทุกครั้งที่ deploy ใหม่ เพื่อให้ user ได้ของใหม่
  */
-const CACHE_VERSION = 'hf-v3.12.8';
+const CACHE_VERSION = 'hf-v3.12.9';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [

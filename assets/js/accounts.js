@@ -10,22 +10,39 @@ var ACCOUNT_COLORS = ['#1a4fa0','#16a34a','#d97706','#7c3aed','#db2777'];
 var accountsData = [];
 
 function loadAccountsLocal() {
-  try { accountsData = JSON.parse(localStorage.getItem('hf2_accounts') || '[]'); }
+  try {
+    var all = JSON.parse(localStorage.getItem('hf2_accounts') || '[]');
+    var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+    // กรองเฉพาะบัญชีของ user ปัจจุบัน (หรือบัญชีเก่าที่ยังไม่มี user_id)
+    accountsData = uid ? all.filter(function(a){ return !a.user_id || a.user_id === uid; }) : all;
+  }
   catch(_) { accountsData = []; }
   if (!accountsData.length) {
     // Seed one default account so the app works immediately
+    var _uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
     accountsData = [{
-      id: 'acct-default',
+      id: 'acct-default-' + (_uid || 'anon'),
       name: 'บัญชีหลัก',
       type: 'bank',
       color: '#1a4fa0',
       initial_balance: 0,
       is_active: true,
+      user_id: _uid || null,
     }];
     saveAccountsLocal();
   }
 }
 function saveAccountsLocal() {
+  // Merge กับบัญชีของ user อื่นๆ ที่อาจอยู่ใน localStorage ด้วย
+  var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+  if (uid) {
+    try {
+      var all = JSON.parse(localStorage.getItem('hf2_accounts') || '[]');
+      var others = all.filter(function(a){ return a.user_id && a.user_id !== uid; });
+      localStorage.setItem('hf2_accounts', JSON.stringify(others.concat(accountsData)));
+      return;
+    } catch(_) {}
+  }
   localStorage.setItem('hf2_accounts', JSON.stringify(accountsData));
 }
 
@@ -38,6 +55,7 @@ function addAccount(name, type, color, initialBalance) {
     color: color || ACCOUNT_COLORS[accountsData.length % ACCOUNT_COLORS.length],
     initial_balance: Number(initialBalance) || 0,
     is_active: true,
+    user_id: (typeof getAuthUserId === 'function' ? getAuthUserId() : null) || null,
   };
   accountsData.push(acct);
   saveAccountsLocal();
@@ -168,7 +186,9 @@ async function sbLoadAccounts() {
   var creds = getSbCreds();
   if (!creds.ok) return null;
   try {
-    var r = await fetch(creds.url + '/rest/v1/accounts?select=*&order=created_at', {
+    var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+    var filter = uid ? '&user_id=eq.' + encodeURIComponent(uid) : '';
+    var r = await fetch(creds.url + '/rest/v1/accounts?select=*&order=created_at' + filter, {
       headers: sbHeadersFrom(creds.key)
     });
     if (!r.ok) return null;

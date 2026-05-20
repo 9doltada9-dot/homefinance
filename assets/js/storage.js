@@ -172,6 +172,8 @@ function getSplitGroups(){
 }
 function saveSplitGroups(groups){
   localStorage.setItem('hf2_split_groups', JSON.stringify(groups));
+  // push ขึ้น Supabase อัตโนมัติ (non-blocking) — ทำให้ sync ข้ามอุปกรณ์ได้
+  if(typeof sbSaveSplitGroups === 'function') sbSaveSplitGroups(groups);
 }
 function addSplitGroup(g){
   var list = getSplitGroups();

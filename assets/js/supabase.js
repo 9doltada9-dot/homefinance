@@ -161,6 +161,21 @@ async function sbPushAllSettings(){
   }
 }
 
+// ─── SPLIT GROUPS SYNC ───────────────────────────────────
+/** บันทึก split_groups ขึ้น Supabase settings (key=split_groups, value=JSON array) */
+async function sbSaveSplitGroups(groups){
+  var creds = getSbCreds();
+  if(!creds.ok) return;
+  try {
+    var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'resolution=merge-duplicates,return=minimal'});
+    await fetch(creds.url+'/rest/v1/'+SB_SETTINGS_TABLE, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify([{ key: 'split_groups', value: groups }]),
+    });
+  } catch(e){ console.warn('[sg] sbSaveSplitGroups:', e); }
+}
+
 // ─── ITEMS SYNC ───────────────────────────────────────────
 async function sbLoadItems(){
   var creds = getSbCreds();
@@ -576,10 +591,14 @@ async function syncOnReconnect(){
     if(pending.length > 0){
       await Promise.all(pending.map(function(e){ return sbAdd(e); }));
     }
-    // 2. Load categories
+    // 2. Load categories + settings (รวม split_groups)
     var catsData = await sbLoadCategories();
     if(catsData && Array.isArray(catsData)){
       categories = catsData; buildCategoryMap();
+    }
+    var settingsOnReconnect = await sbLoadSettings();
+    if(settingsOnReconnect && typeof applySettingsFromMap === 'function'){
+      applySettingsFromMap(settingsOnReconnect);
     }
     // 3. Pull fresh — Supabase เป็น source of truth
     var merged = await _fetchAndMerge(creds, 8000);

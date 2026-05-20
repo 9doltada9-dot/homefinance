@@ -21,6 +21,10 @@ function applySettingsFromMap(map){
     if(f.vendor_ctx) delete f.vendor_ctx;
     if(typeof saveFavsLocal === 'function') saveFavsLocal(f);
   }
+  // sync split_groups จาก Supabase → localStorage (ไม่ push กลับเพื่อป้องกัน loop)
+  if(map.split_groups && Array.isArray(map.split_groups)){
+    localStorage.setItem('hf2_split_groups', JSON.stringify(map.split_groups));
+  }
 }
 
 function renderCatList(type){

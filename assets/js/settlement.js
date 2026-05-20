@@ -578,6 +578,18 @@ function exportSettlePDF(month, groupId) {
   allUids.forEach(function(uid){ balances[uid]=(paid[uid]||0)-(owed[uid]||0); });
   var transfers = _computeTransfers(Object.assign({},balances), nameMap);
 
+  // ── Color palette ต่อ uid (เหมือน personPill) ─────────────
+  var _PDF_COLORS = [
+    { bg:'#ebf0fe', cl:'#1a4fa0' },
+    { bg:'#fef8e7', cl:'#b5600a' },
+    { bg:'#eef7f2', cl:'#1a7a4a' },
+    { bg:'#f0eef9', cl:'#4a3a9a' },
+    { bg:'#fee2e2', cl:'#c0392b' },
+    { bg:'#e8faf4', cl:'#0e7354' },
+  ];
+  var pdfUidColorMap = {};
+  allUids.forEach(function(uid, i){ pdfUidColorMap[uid] = _PDF_COLORS[i % _PDF_COLORS.length]; });
+
   // ── Thai date ─────────────────────────────────────────────
   var mp = month.split('-').map(Number);
   var monthThai = THAI_MONTHS[mp[1]-1]+' '+(mp[0]+543);
@@ -587,9 +599,11 @@ function exportSettlePDF(month, groupId) {
   // ── Member summary rows ───────────────────────────────────
   var summaryRows = allUids.map(function(uid){
     var name = nameMap[uid]||uid;
+    var c = pdfUidColorMap[uid] || { bg:'#eef7f2', cl:'#1a7a4a' };
     var p=paid[uid]||0, o=owed[uid]||0, bal=p-o;
+    var pill = '<span style="background:'+c.bg+';color:'+c.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+name+'</span>';
     return '<tr>'
-      +'<td>'+name+'</td>'
+      +'<td>'+pill+'</td>'
       +'<td style="text-align:right">'+fmt(p)+'</td>'
       +'<td style="text-align:right">'+fmt(o)+'</td>'
       +'<td style="text-align:right;font-weight:600;color:'+(bal>=0?'#1a7a4a':'#c0392b')+'">'+(bal>=0?'+':'')+fmt(bal)+'</td>'
@@ -635,10 +649,19 @@ function exportSettlePDF(month, groupId) {
     });
   });
 
+  // ── ขยาย color map ให้ครอบ pdfUids ด้วย ────────────────────
+  pdfUids.forEach(function(uid){
+    if (!pdfUidColorMap[uid]) {
+      var i = Object.keys(pdfUidColorMap).length;
+      pdfUidColorMap[uid] = _PDF_COLORS[i % _PDF_COLORS.length];
+    }
+  });
+
   var pdfTotals = {}; pdfUids.forEach(function(u){ pdfTotals[u]=0; });
-  var detailRows = splitExp.map(function(e){
+  var detailRows = splitExp.map(function(e, rowIdx){
     var pu = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[pu] || e.person;
+    var payerColor = pdfUidColorMap[pu] || { bg:'#eef7f2', cl:'#1a7a4a' };
     var snap = e.split_snapshot;
     // ถ้า snapshot มี deleted non-payer → ใช้ fresh snap
     if (snap && Object.keys(snap).length) {
@@ -656,13 +679,16 @@ function exportSettlePDF(month, groupId) {
       var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
       pdfTotals[uid] = (pdfTotals[uid]||0) + amt;
       var isPayer = uid === pu;
-      return '<td style="text-align:right;'+(isPayer?'color:#1a7a4a;font-weight:700':'')+'">'+(amt>0?fmt(amt):'—')+(isPayer?' ✓':'')+'</td>';
+      var uc = pdfUidColorMap[uid] || {};
+      return '<td style="text-align:right;'+(isPayer?'color:'+uc.cl+';font-weight:700':'')+'">'+(amt>0?fmt(amt):'—')+(isPayer?' ✓':'')+'</td>';
     }).join('');
-    return '<tr>'
+    var rowBg = rowIdx % 2 === 1 ? '#f7f9ff' : '#ffffff';
+    var payerPill = '<span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span>';
+    return '<tr style="background:'+rowBg+'">'
       +'<td style="white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td>'+e.desc+'</td>'
       +'<td style="color:#555">'+vname+'</td>'
-      +'<td style="color:#1a7a4a;font-weight:600">'+payerName+'</td>'
+      +'<td>'+payerPill+'</td>'
       +'<td style="text-align:right;font-weight:600">'+fmt(e.amt)+'</td>'
       +cols
     +'</tr>';
@@ -670,9 +696,15 @@ function exportSettlePDF(month, groupId) {
   var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
     +'<td colspan="3">รวม</td><td></td>'
     +'<td style="text-align:right">'+fmt(totalExp)+'</td>'
-    +pdfUids.map(function(uid){ return '<td style="text-align:right">'+fmt(pdfTotals[uid]||0)+'</td>'; }).join('')
+    +pdfUids.map(function(uid){
+        var c = pdfUidColorMap[uid] || {};
+        return '<td style="text-align:right;color:'+(c.cl||'#1a1a1a')+';font-weight:700">'+fmt(pdfTotals[uid]||0)+'</td>';
+      }).join('')
   +'</tr>';
-  var pdfThCols = pdfUids.map(function(uid){ return '<th style="text-align:right">'+( nameMap[uid]||uid)+'</th>'; }).join('');
+  var pdfThCols = pdfUids.map(function(uid){
+    var c = pdfUidColorMap[uid] || { bg:'#f0f0f0', cl:'#333' };
+    return '<th style="text-align:right;background:'+c.bg+';color:'+c.cl+'">'+(nameMap[uid]||uid)+'</th>';
+  }).join('');
 
   // ── HTML ──────────────────────────────────────────────────
   var todayStr = toThaiDateStr(new Date().toISOString().split('T')[0]);
@@ -688,7 +720,6 @@ function exportSettlePDF(month, groupId) {
     +'table{width:100%;border-collapse:collapse;margin-bottom:12px}\n'
     +'th{background:#f0f0f0;padding:7px 8px;text-align:left;font-size:12px;font-weight:600;border-bottom:1.5px solid #ccc}\n'
     +'td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:top}\n'
-    +'tr:nth-child(even) td{background:#fafafa}\n'
     +'.footer{margin-top:24px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:12px}\n'
     +'@media print{body{padding:12px}@page{margin:15mm}}\n'
     +'</style>\n</head>\n<body>\n'
@@ -709,7 +740,7 @@ function exportSettlePDF(month, groupId) {
     +detailRows
     +detailTotalRow+'\n'
     +'</table>\n'
-    +'<div class="footer">HomeFinance v3.11.2 · Settlement Report</div>\n'
+    +'<div class="footer">HomeFinance v3.12.8 · Settlement Report</div>\n'
     +'</body>\n</html>';
 
   var win = window.open('','_blank','width=960,height=720');

@@ -89,8 +89,8 @@ function openEdit(id){
   document.getElementById('eAmt').value = e.amt;
   document.getElementById('eStatus').value = e.status;
   document.getElementById('eNote').value = e.note||'';
-  // populate vendors (with smart sort via fillEditVendors)
-  fillEditVendors();
+  // populate vendors (with smart sort via fillEditVendors) — filter by tx type
+  fillEditVendors(e.type);
   if(e.vendor_id) document.getElementById('eVendor').value = e.vendor_id;
   // v3: billing_month + account
   var eBM = document.getElementById('eBillingMonth');
@@ -166,6 +166,7 @@ function eSetType(t, autoS){
     var cat = catMap[sel.value];
     ePopulateGroups('');
   }
+  fillEditVendors(t);
   sel.onchange = function(){
     if(t==='expense'){
       var cat2 = catMap[sel.value];

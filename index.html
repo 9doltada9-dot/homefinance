@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.13.0</title>
+<title>HomeFinance v3.13.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -165,7 +165,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.13.0 · THB</div>
+    <div class="brand-sub">v3.13.1 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -226,7 +226,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.13.0 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.13.1 © 2025</div>
   </div>
 </nav>
 
@@ -339,7 +339,7 @@ body.app-ready #page-login { display: none !important; }
     <!-- VENDOR FIELD -->
     <div class="form-row full" style="margin-bottom:8px">
       <div class="field">
-        <label>ร้านค้า / แหล่งรายรับ <span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+        <label><span id="fVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
         <div style="display:flex;align-items:center;gap:6px">
           <select id="fVendor" style="flex:1;font-size:15px !important">
             <option value="">-- ไม่ระบุ --</option>
@@ -561,7 +561,7 @@ body.app-ready #page-login { display: none !important; }
       </div>
     </div></div>
     <div class="form-row full">
-      <div class="field"><label>ร้านค้า <span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+      <div class="field"><label><span id="eVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
         <div style="display:flex;align-items:center;gap:6px">
           <select id="eVendor" style="flex:1"><option value="">-- ไม่ระบุ --</option></select>
           <button id="eVendorStar" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
@@ -748,8 +748,13 @@ body.app-ready #page-login { display: none !important; }
     </div>
     <div style="padding:0 14px 14px">
       <div id="vendorList" style="margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;font-size:16px !important">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;min-width:140px;font-size:16px !important">
+        <select id="newVendorType" style="font-size:14px !important;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:var(--surface);color:var(--ink)">
+          <option value="expense">🛒 ร้านค้า (รายจ่าย)</option>
+          <option value="income">💰 แหล่งรายรับ</option>
+          <option value="both">🔄 ทั้งคู่</option>
+        </select>
         <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
       </div>
       <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
@@ -1523,7 +1528,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.13.0</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.13.1</div>
   </div>
 </div>
 

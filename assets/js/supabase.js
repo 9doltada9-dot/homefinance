@@ -231,15 +231,17 @@ async function sbLoadVendors(){
   } catch(_){ return null; }
 }
 
-async function sbAddVendor(name, sortOrder){
+async function sbAddVendor(name, sortOrder, vendorType){
   var creds = getSbCreds();
   if(!creds.ok) return null;
   try {
     var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'return=representation'});
+    var payload = {name:name, sort_order:sortOrder};
+    if(vendorType) payload.vendor_type = vendorType;
     var r = await fetchWithTimeout(
       creds.url+'/rest/v1/vendors',
       { method:'POST', headers: headers,
-        body: JSON.stringify({name:name, sort_order:sortOrder}) }, 8000
+        body: JSON.stringify(payload) }, 8000
     );
     if(!r.ok) return null;
     var rows = await r.json();
@@ -247,14 +249,16 @@ async function sbAddVendor(name, sortOrder){
   } catch(_){ return null; }
 }
 
-async function sbUpdateVendor(id, newName){
+async function sbUpdateVendor(id, newName, vendorType){
   var creds = getSbCreds();
   if(!creds.ok) return;
   try {
+    var payload = {name: newName};
+    if(vendorType !== undefined) payload.vendor_type = vendorType;
     await fetchWithTimeout(
       creds.url+'/rest/v1/vendors?id=eq.'+encodeURIComponent(id),
       { method:'PATCH', headers:sbHeadersFrom(creds.key),
-        body: JSON.stringify({name: newName}) }, 8000
+        body: JSON.stringify(payload) }, 8000
     );
   } catch(_){}
 }

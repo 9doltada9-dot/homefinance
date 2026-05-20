@@ -37,6 +37,7 @@ function setType(t){
   if(fCatRow) fCatRow.style.display = t==='transfer'?'none':'';
   updateStatusOptions();
   fillCats();
+  fillVendors(t);
   updateThaiDate(); // refresh salary cycle warning
 }
 

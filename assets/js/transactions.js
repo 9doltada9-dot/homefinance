@@ -62,14 +62,15 @@ function updateMFLabel(id, def){
   var label = document.querySelector('#'+id+' .mf-label');
   if(!label) return;
   if(vals.length===0){
-    label.textContent = def+' ▾';
+    label.innerHTML = def+' ▾';
     label.classList.remove('active');
-  } else if(vals.length<=2 && vals.every(function(v){return MF_LABELS[v];})){
-    // show names for small selections like type/status
-    label.textContent = vals.map(function(v){return MF_LABELS[v];}).join(', ')+' ▾';
-    label.classList.add('active');
   } else {
-    label.textContent = vals.length+' รายการ ▾';
+    label.innerHTML = def
+      +' <span style="display:inline-flex;align-items:center;justify-content:center;'
+      +'min-width:18px;height:18px;padding:0 5px;border-radius:20px;'
+      +'background:var(--blue);color:#fff;font-size:10px;font-weight:700;'
+      +'line-height:1;vertical-align:middle;margin:0 1px">'
+      +vals.length+'</span> ▾';
     label.classList.add('active');
   }
 }

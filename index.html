@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.12.9</title>
+<title>HomeFinance v3.13.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -165,7 +165,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.12.9 · THB</div>
+    <div class="brand-sub">v3.13.0 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -226,7 +226,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.12.9 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.13.0 © 2025</div>
   </div>
 </nav>
 
@@ -1414,18 +1414,6 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
   <div id="adminMsg" class="msg" style="max-width:700px;text-align:center;margin:4px 0"></div>
 
-  <!-- รายงาน Settlement -->
-  <div class="stg-group-label">📊 รายงาน Settlement</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
-    <div style="padding:12px 14px">
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <select id="adminReportMonth" style="flex:1;min-width:130px;font-size:14px !important"><option value="">เลือกเดือน</option></select>
-        <button class="btn btn-primary" onclick="loadAdminReport()" style="min-height:40px;white-space:nowrap">🔄 โหลดรายงาน</button>
-        <button class="btn btn-ghost" onclick="exportAdminPDF()" style="min-height:40px;white-space:nowrap">📄 Export PDF</button>
-      </div>
-      <div id="adminReportContent"></div>
-    </div>
-  </div>
 </div>
 
 </main>
@@ -1535,7 +1523,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.12.9</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.13.0</div>
   </div>
 </div>
 

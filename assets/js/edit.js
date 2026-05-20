@@ -57,8 +57,9 @@ function openEdit(id){
   document.getElementById('editIdLabel').textContent='รายการ: '+e.desc;
   document.getElementById('eDate').value = e.date;
   // person คงค่าเดิม (hidden input — ไม่ให้ user เปลี่ยน)
+  // ❌ ห้าม fallback ไป getCurrentPerson() เด็ดขาด เพราะจะทำให้ user อื่น overwrite ผู้จ่ายต้นฉบับ
   var ePersonEl = document.getElementById('ePerson');
-  if(ePersonEl) ePersonEl.value = e.user_id || e.person || (typeof getCurrentPerson==='function' ? getCurrentPerson() : '');
+  if(ePersonEl) ePersonEl.value = e.user_id || e.person || '';
   document.getElementById('eAmt').value = e.amt;
   document.getElementById('eStatus').value = e.status;
   document.getElementById('eNote').value = e.note||'';
@@ -161,7 +162,10 @@ function saveEdit(){
   var cat_name = eType==='transfer' ? 'โอนเงิน' : (catObj ? catObj.name : '');
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});
   e.date=date; e.type=eType; e.cat_id=cat_id; e.cat_name=cat_name;
-  e.desc=desc; e.amt=amt; var _ePersonVal=document.getElementById('ePerson').value; e.person=_ePersonVal; e.user_id=_ePersonVal;
+  e.desc=desc; e.amt=amt;
+  // คงผู้จ่ายเดิม — ไม่ overwrite ด้วย user ที่กำลัง login อยู่
+  var _ePersonVal = document.getElementById('ePerson').value || e.user_id || e.person || '';
+  if (_ePersonVal) { e.person = _ePersonVal; e.user_id = _ePersonVal; }
   // settlement group
   var eSplitGroupEl = document.getElementById('eSplitGroup');
   var eSplitGroupId = eSplitGroupEl ? eSplitGroupEl.value : '';

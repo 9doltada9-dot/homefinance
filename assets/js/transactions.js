@@ -1,49 +1,13 @@
 /* HomeFinance · module: transactions.js · v3.0.0 */
 
 // ─── ADMIN "SHOW ALL USERS" TOGGLE ───────────────────────
-var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin + รหัสผ่าน)
+var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin)
 
 function txAdminUnlockAll() {
   if (typeof isAdminUser !== 'function' || !isAdminUser()) return;
-  var ov = document.getElementById('txAdminPwdOverlay');
-  if (!ov) return;
-  ov.style.display = 'flex';
-  var inp = document.getElementById('txAdminPwdInput');
-  if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 120); }
-  var msg = document.getElementById('txAdminPwdMsg');
-  if (msg) msg.textContent = '';
-  var btn = document.getElementById('txAdminPwdConfirmBtn');
-  if (btn) { btn.disabled = false; btn.textContent = 'ยืนยัน'; }
-}
-
-async function txAdminConfirmPwd() {
-  var inp = document.getElementById('txAdminPwdInput');
-  var pwd = inp ? inp.value.trim() : '';
-  var msg = document.getElementById('txAdminPwdMsg');
-  var btn = document.getElementById('txAdminPwdConfirmBtn');
-  if (!pwd) { if (msg) msg.textContent = '⚠️ กรุณากรอกรหัสผ่าน'; return; }
-
-  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
-  var email = (typeof getAuthEmail === 'function') ? getAuthEmail() : '';
-  if (!creds.ok || !email) { if (msg) msg.textContent = '⚠️ ไม่พบ session'; return; }
-
-  if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...'; }
-  try {
-    var r = await fetch(creds.url + '/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: pwd })
-    });
-    if (!r.ok) throw new Error('รหัสผ่านไม่ถูกต้อง');
-    // รหัสถูก — unlock แสดงทุก user
-    _txShowAllUsers = true;
-    document.getElementById('txAdminPwdOverlay').style.display = 'none';
-    _txUpdateAdminBar();
-    renderTx();
-  } catch(e) {
-    if (msg) msg.textContent = '❌ รหัสผ่านไม่ถูกต้อง';
-    if (btn) { btn.disabled = false; btn.textContent = 'ยืนยัน'; }
-  }
+  _txShowAllUsers = true;
+  _txUpdateAdminBar();
+  renderTx();
 }
 
 function txAdminLockAll() {

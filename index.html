@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.12.0</title>
+<title>HomeFinance v3.12.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -165,7 +165,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.12.0 · THB</div>
+    <div class="brand-sub">v3.12.1 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -226,7 +226,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.12.0 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.12.1 © 2025</div>
   </div>
 </nav>
 
@@ -472,9 +472,46 @@ body.app-ready #page-login { display: none !important; }
         color:var(--ink2);white-space:nowrap;min-height:34px;
         touch-action:manipulation
       ">× รีเซ็ต</button>
+
+      <!-- Admin: unlock all users (hidden for non-admin) -->
+      <button id="txAdminUnlockBtn" onclick="txAdminUnlockAll()" style="display:none;
+        background:#fff5e6;border:1.5px solid var(--amber);border-radius:8px;
+        padding:6px 14px;font-size:12px;font-family:Sarabun,sans-serif;
+        cursor:pointer;color:#92600a;white-space:nowrap;min-height:34px;
+        font-weight:600;touch-action:manipulation">🔒 ดูทุก User</button>
+      <button id="txAdminLockBtn" onclick="txAdminLockAll()" style="display:none;
+        background:#fff0f0;border:1.5px solid var(--red);border-radius:8px;
+        padding:6px 14px;font-size:12px;font-family:Sarabun,sans-serif;
+        cursor:pointer;color:var(--red);white-space:nowrap;min-height:34px;
+        font-weight:600;touch-action:manipulation">✕ กลับมาดูของฉัน</button>
+    </div>
+    <!-- Admin mode banner -->
+    <div id="txAdminBanner" style="display:none;background:#e1f5ee;border:1px solid #a7d7c5;
+      border-radius:8px;padding:8px 14px;margin-top:8px;font-size:12px;
+      color:#1a7a4a;font-weight:600;display:none;align-items:center;gap:8px">
+      🛡 Admin Mode — กำลังแสดงรายการของทุก User
     </div>
     <div class="table-scroll" id="txContent"></div>
     <div id="txTotal" style="border-top:2px solid var(--line);padding:10px 12px;display:none;gap:16px;flex-wrap:wrap;background:var(--surface2);border-radius:0 0 var(--r) var(--r)"></div>
+  </div>
+</div>
+
+<!-- ADMIN UNLOCK ALL USERS MODAL -->
+<div id="txAdminPwdOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">🔒 ยืนยันตัวตน Admin</div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:18px">กรอกรหัสผ่าน Admin เพื่อแสดงรายการทุก User</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="txAdminPwdInput" placeholder="รหัสผ่านของคุณ"
+        onkeydown="if(event.key==='Enter')txAdminConfirmPwd()"
+        style="font-size:15px;letter-spacing:2px">
+    </div>
+    <div id="txAdminPwdMsg" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="document.getElementById('txAdminPwdOverlay').style.display='none'" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button id="txAdminPwdConfirmBtn" class="btn btn-primary" onclick="txAdminConfirmPwd()" style="flex:1;min-height:44px">ยืนยัน</button>
+    </div>
   </div>
 </div>
 
@@ -1511,7 +1548,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.12.0</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.12.1</div>
   </div>
 </div>
 

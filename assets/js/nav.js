@@ -27,7 +27,10 @@ function nav(page){
 
   closeSidebar();
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
-  if(page==='transactions') renderTx();
+  if(page==='transactions'){
+    if(typeof _txUpdateAdminBar === 'function') _txUpdateAdminBar();
+    renderTx();
+  }
   if(page==='settlement'){ populateMths('settleMonth'); renderSettle(); }
   if(page==='monthly'){ populateMths('monthSel'); renderMonthly(); }
   if(page==='add'){ initForm(); }

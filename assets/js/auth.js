@@ -14,6 +14,7 @@ var _tempResetToken = null; // token สำหรับ reset password
 // ─── PUBLIC ACCESSORS ─────────────────────────────────────
 function getAuthToken()       { return _authToken; }
 function getAuthUserId()      { return _authUser   ? _authUser.id    : null; }
+function getAuthEmail()       { return _authUser   ? _authUser.email : ''; }
 function getAuthProfileName() { return _authProfile ? (_authProfile.name || (_authUser && _authUser.email.split('@')[0]) || '') : ''; }
 function isAdminUser()        { return !!(_authProfile && _authProfile.role === 'admin'); }
 function getAuthLabel()        { return (_authProfile && _authProfile.label) ? _authProfile.label : ''; }
@@ -681,6 +682,8 @@ async function doChangePassword() {
 // ─── LOGOUT ───────────────────────────────────────────────
 async function doLogout() {
   if (!confirm('ออกจากระบบ?')) return;
+  // reset admin unlock state
+  if (typeof _txShowAllUsers !== 'undefined') window._txShowAllUsers = false;
 
   var creds = getSbCreds();
   try {

@@ -1,5 +1,80 @@
 /* HomeFinance · module: transactions.js · v3.0.0 */
 
+// ─── ADMIN "SHOW ALL USERS" TOGGLE ───────────────────────
+var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin + รหัสผ่าน)
+
+function txAdminUnlockAll() {
+  if (typeof isAdminUser !== 'function' || !isAdminUser()) return;
+  var ov = document.getElementById('txAdminPwdOverlay');
+  if (!ov) return;
+  ov.style.display = 'flex';
+  var inp = document.getElementById('txAdminPwdInput');
+  if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 120); }
+  var msg = document.getElementById('txAdminPwdMsg');
+  if (msg) msg.textContent = '';
+  var btn = document.getElementById('txAdminPwdConfirmBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'ยืนยัน'; }
+}
+
+async function txAdminConfirmPwd() {
+  var inp = document.getElementById('txAdminPwdInput');
+  var pwd = inp ? inp.value.trim() : '';
+  var msg = document.getElementById('txAdminPwdMsg');
+  var btn = document.getElementById('txAdminPwdConfirmBtn');
+  if (!pwd) { if (msg) msg.textContent = '⚠️ กรุณากรอกรหัสผ่าน'; return; }
+
+  var creds = (typeof getSbCreds === 'function') ? getSbCreds() : { ok: false };
+  var email = (typeof getAuthEmail === 'function') ? getAuthEmail() : '';
+  if (!creds.ok || !email) { if (msg) msg.textContent = '⚠️ ไม่พบ session'; return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...'; }
+  try {
+    var r = await fetch(creds.url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': creds.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pwd })
+    });
+    if (!r.ok) throw new Error('รหัสผ่านไม่ถูกต้อง');
+    // รหัสถูก — unlock แสดงทุก user
+    _txShowAllUsers = true;
+    document.getElementById('txAdminPwdOverlay').style.display = 'none';
+    _txUpdateAdminBar();
+    renderTx();
+  } catch(e) {
+    if (msg) msg.textContent = '❌ รหัสผ่านไม่ถูกต้อง';
+    if (btn) { btn.disabled = false; btn.textContent = 'ยืนยัน'; }
+  }
+}
+
+function txAdminLockAll() {
+  _txShowAllUsers = false;
+  _txUpdateAdminBar();
+  renderTx();
+}
+
+/** อัปเดต UI ของ admin bar ตาม state */
+function _txUpdateAdminBar() {
+  var isAdmin = typeof isAdminUser === 'function' && isAdminUser();
+  var unlockBtn = document.getElementById('txAdminUnlockBtn');
+  var lockBtn   = document.getElementById('txAdminLockBtn');
+  var banner    = document.getElementById('txAdminBanner');
+  if (!isAdmin) {
+    if (unlockBtn) unlockBtn.style.display = 'none';
+    if (lockBtn)   lockBtn.style.display   = 'none';
+    if (banner)    banner.style.display    = 'none';
+    return;
+  }
+  if (_txShowAllUsers) {
+    if (unlockBtn) unlockBtn.style.display = 'none';
+    if (lockBtn)   lockBtn.style.display   = '';
+    if (banner)    banner.style.display    = '';
+  } else {
+    if (unlockBtn) unlockBtn.style.display = '';
+    if (lockBtn)   lockBtn.style.display   = 'none';
+    if (banner)    banner.style.display    = 'none';
+  }
+}
+
 // ─── MULTI FILTER ─────────────────────────────────────────
 function toggleMF(id){
   var el = document.getElementById(id);
@@ -100,6 +175,11 @@ function getFilteredTx(){
   var list  = db.slice();
   // ซ่อน transfer IN — แสดงเฉพาะ OUT
   list = list.filter(function(e){ return e.transfer_direction !== 'in'; });
+  // กรอง: เฉพาะของ user ปัจจุบัน (Admin ปลดล็อกด้วยรหัสผ่านเพื่อดูทั้งหมด)
+  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  if (!_txShowAllUsers && _myUid) {
+    list = list.filter(function(e){ return (e.user_id || e.person) === _myUid; });
+  }
   // transaction_date filter
   if(fltM  && fltM.value)  list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
   // billing_month filter (v3)
@@ -187,6 +267,11 @@ function renderTx(){
   var list = db.slice();
   // ซ่อน transfer IN entry — แสดงเฉพาะ OUT (ตัวเดียวต่อการโอน)
   list = list.filter(function(e){ return e.transfer_direction !== 'in'; });
+  // กรอง: เฉพาะของ user ปัจจุบัน (Admin ปลดล็อกด้วยรหัสผ่านเพื่อดูทั้งหมด)
+  var _myUid2 = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  if (!_txShowAllUsers && _myUid2) {
+    list = list.filter(function(e){ return (e.user_id || e.person) === _myUid2; });
+  }
   if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
 
   // billing_month filter (v3)

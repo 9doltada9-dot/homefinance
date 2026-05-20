@@ -1,4 +1,4 @@
-/* HomeFinance · module: accounts.js · v3.0.0
+/* HomeFinance · module: accounts.js · v3.13.8
  * Multi-account management: bank, cash, e-wallet
  * Stored in localStorage (hf2_accounts) + optionally Supabase.
  */
@@ -18,17 +18,47 @@ function loadAccountsLocal() {
   }
   catch(_) { accountsData = []; }
   if (!accountsData.length) {
-    // Seed one default account so the app works immediately
     var _uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
-    accountsData = [{
-      id: 'acct-default-' + (_uid || 'anon'),
-      name: 'บัญชีหลัก',
-      type: 'bank',
-      color: '#1a4fa0',
-      initial_balance: 0,
-      is_active: true,
-      user_id: _uid || null,
-    }];
+    // Migration: กู้คืนบัญชีจาก transaction history เพื่อรักษา account_id เดิม ยอดเงินจะลิงก์ถูกต้อง
+    var _restored = false;
+    if (_uid && typeof db !== 'undefined' && db.length) {
+      var _usedIds = {};
+      db.forEach(function(e){ if (e.account_id) _usedIds[e.account_id] = true; });
+      var _idList = Object.keys(_usedIds);
+      if (_idList.length) {
+        // ดึง legacy null-user_id accounts จาก localStorage เป็น template
+        var _legacyMap = {};
+        try {
+          JSON.parse(localStorage.getItem('hf2_accounts') || '[]')
+            .filter(function(a){ return !a.user_id; })
+            .forEach(function(a){ _legacyMap[a.id] = a; });
+        } catch(_){}
+        accountsData = _idList.map(function(aid){
+          var lg = _legacyMap[aid];
+          return lg
+            ? Object.assign({}, lg, { user_id: _uid })
+            : { id: aid, name: 'บัญชีหลัก', type: 'bank', color: '#1a4fa0',
+                initial_balance: 0, is_active: true, user_id: _uid };
+        });
+        _restored = true;
+        // Claim in Supabase ด้วย ignore-duplicates (ถ้า user อื่น claim ก่อนแล้วก็ไม่ overwrite)
+        if (typeof sbSyncAccount === 'function') {
+          accountsData.forEach(function(acct){ sbSyncAccount(acct, 'claim'); });
+        }
+      }
+    }
+    if (!_restored) {
+      // ไม่มี transaction เลย → สร้างบัญชีเริ่มต้นใหม่
+      accountsData = [{
+        id: 'acct-default-' + (_uid || 'anon'),
+        name: 'บัญชีหลัก',
+        type: 'bank',
+        color: '#1a4fa0',
+        initial_balance: 0,
+        is_active: true,
+        user_id: _uid || null,
+      }];
+    }
     saveAccountsLocal();
   }
 }
@@ -171,6 +201,15 @@ async function sbSyncAccount(acct, action) {
       await fetch(creds.url + '/rest/v1/accounts', {
         method: 'POST',
         headers: headers,
+        body: JSON.stringify([acct]),
+      });
+    } else if (action === 'claim') {
+      // Migration claim — ignore-duplicates: ถ้ามีคนอื่น claim บัญชีนี้ไปก่อนแล้วจะไม่ overwrite
+      var claimHeaders = Object.assign({}, sbHeadersFrom(creds.key),
+        { 'Prefer': 'resolution=ignore-duplicates,return=minimal' });
+      await fetch(creds.url + '/rest/v1/accounts', {
+        method: 'POST',
+        headers: claimHeaders,
         body: JSON.stringify([acct]),
       });
     } else if (action === 'delete') {

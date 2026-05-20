@@ -774,8 +774,8 @@ async function sbUpdate(e){
         cycle_id:      cycleId||null,
         billing_month: billingMonth||null,
         account_id:    e.account_id||null,
-        // v3.2: user isolation
-        user_id: (typeof getAuthUserId==='function' ? getAuthUserId() : null) || e.user_id || null,
+        // v3.2: คงผู้จ่ายต้นฉบับ — ❌ ห้ามใช้ getAuthUserId() ตอน PATCH เพราะ admin แก้ไขจะ overwrite user_id ของ user อื่น
+        user_id: e.user_id || null,
         // settlement group
         split_group_id: e.split_group_id||null,
         split_type:     e.split_type||null,

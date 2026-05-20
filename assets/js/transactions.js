@@ -268,7 +268,7 @@ function renderTx(){
                     '<span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
-                    (e.user_id||e.person ? '<span style="font-size:11px;color:var(--ink3)">👤 '+nm(e.user_id||e.person)+'</span>' : '')+
+                    (e.user_id||e.person ? personPill(e.user_id||e.person) : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
                   (e.note ? '<div style="font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic">📝 '+e.note+'</div>' : '')+
@@ -293,7 +293,7 @@ function renderTx(){
                   '<div style="margin-top:3px">'+
                     (e.type==='transfer'
                       ? '<span class="badge badge-paid" style="font-size:10px;background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
-                      : '<span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
+                      : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
                     )+
                   '</div>'+
                 '</div>'+
@@ -409,14 +409,14 @@ function renderTx(){
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
-        '<td style="font-size:12px;color:var(--ink3)">'+nm(e.user_id||e.person)+'</td>'+
+        '<td>'+personPill(e.user_id||e.person)+'</td>'+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
           (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
         '</td>'+
         '<td>'+(e.type==='transfer'
           ? '<span class="badge badge-paid" style="background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
-          : '<span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
+          : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
         )+'</td>'+
         '<td style="font-size:11px;color:var(--ink3);font-style:italic">'+(e.note||'—')+'</td>'+
         '<td style="white-space:nowrap;display:flex;gap:4px;align-items:center" onclick="event.stopPropagation()">'+

@@ -18,12 +18,15 @@ th{text-align:left;padding:9px 12px;color:var(--ink3);font-size:11px;font-weight
 td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
+tr.tx-row:nth-child(even) td{background:rgba(0,0,0,.025)}
+tr.tx-row:nth-child(even):hover td{background:var(--surface2)}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .badge-income{background:var(--green-bg);color:var(--green)}
 .badge-expense{background:var(--red-bg);color:var(--red)}
 .badge-paid{background:var(--green-bg);color:var(--green)}
+.badge-received{background:var(--blue-bg);color:var(--blue)}
 .badge-pending{background:var(--amber-bg);color:var(--amber)}
 .badge-split{background:var(--blue-bg);color:var(--blue)}
 .badge-personal{background:var(--violet-bg);color:var(--violet)}

@@ -100,11 +100,18 @@ function updateThaiDate(){
 function fillCats(){
   var sel = document.getElementById('fCat');
   if(!sel) return;
+  var prevCat = sel.value;  // เก็บค่าเดิมก่อน rebuild
   var catsByType = categories.filter(function(c){return c.type === cType;});
   var sorted = catsByType.slice().sort(function(a,b){return (isFavCat(b.id)?1:0)-(isFavCat(a.id)?1:0);});
   sel.innerHTML = sorted.map(function(c){return '<option value="'+c.id+'">'+(isFavCat(c.id)?'⭐ ':'')+c.name+'</option>';}).join('');
-  var fav = sorted.find(function(c){return isFavCat(c.id);});
-  sel.value = fav ? fav.id : ((sorted[0]||{}).id||'');
+  // คืนค่าเดิมถ้ายังอยู่ในลิสต์ ไม่ดึงดาวขึ้นมาบัง
+  var stillValid = sorted.find(function(c){ return c.id === prevCat; });
+  if(stillValid){
+    sel.value = prevCat;
+  } else {
+    var fav = sorted.find(function(c){return isFavCat(c.id);});
+    sel.value = fav ? fav.id : ((sorted[0]||{}).id||'');
+  }
   sel.onchange = onCatChange;
   // update star button
   updateCatStar();
@@ -134,14 +141,20 @@ function onCatChange(){
 function fillDescByCat(catId){
   var sel = document.getElementById('fDesc');
   if(!sel) return;
+  var prevDesc = sel.value;  // เก็บค่าเดิมก่อน rebuild
   // only items from items table — no DB history to avoid showing deleted items
   var saved = (itemsData[catId]||[]).map(function(x){return x.name;});
   var sorted = saved.slice().sort(function(a,b){return (isFavItem(b)?1:0)-(isFavItem(a)?1:0);});
   sel.innerHTML = sorted.length
     ? sorted.map(function(d){return '<option value="'+d+'">'+(isFavItem(d)?'⭐ ':'')+d+'</option>';}).join('')
     : '<option value="">-- ยังไม่มีรายการ (เพิ่มที่หน้าตั้งค่า) --</option>';
-  var fav = sorted.find(function(d){return isFavItem(d);});
-  if(fav) sel.value = fav;
+  // คืนค่าเดิมถ้ายังอยู่ในลิสต์ ไม่ดึงดาวขึ้นมาบัง
+  if(prevDesc && sorted.indexOf(prevDesc) !== -1){
+    sel.value = prevDesc;
+  } else {
+    var fav = sorted.find(function(d){return isFavItem(d);});
+    if(fav) sel.value = fav;
+  }
   // update star button
   updateDescStar();
   sel.onchange = updateDescStar;

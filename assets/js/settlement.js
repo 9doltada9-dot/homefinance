@@ -377,7 +377,7 @@ function renderSettle(){
         +'<span style="font-size:13px;font-weight:600">'+e.desc+'</span>'
         +'<span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--red,#dc2626)">฿'+fmt(e.amt)+'</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">📅 '+toThaiDateShort(e.date)+(vendor?' · 🏪 '+vendor:'')+' · 👤 ผู้จ่าย: '+payerName+'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);margin-bottom:4px">📅 '+toThaiDateShort(e.date)+(vendor?' · 🏪 '+vendor:'')+' · 👤 ผู้จ่าย: '+payerName+(e.note&&e.note.trim()?' · 📝 '+e.note.trim():'')+'</div>'
       +(memberRows ? '<div style="background:var(--surface2);border-radius:8px;padding:6px 10px;margin-top:4px">'+memberRows+'</div>' : '')
     +'</div>';
   }).join('');
@@ -397,7 +397,7 @@ function renderSettle(){
     _uidColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
   });
 
-  var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
+  var thCells = '<th style="white-space:nowrap">วันที่</th><th>รายการ</th><th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">หมายเหตุ</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
     + detailUids.map(function(uid){
         var c = _uidColorMap[uid] || { bg:'var(--surface2)', cl:'var(--ink)' };
         return '<th style="text-align:right;white-space:nowrap;background:'+c.bg+';color:'+c.cl+';border-radius:6px;padding:6px 10px">'+( nameMap[uid]||uid)+'</th>';
@@ -422,11 +422,13 @@ function renderSettle(){
       +'</td>';
     }).join('');
     var vendor = _vendorName(e.vendor_id);
+    var noteText = (e.note || '').trim();
     var rowBg = rowIdx % 2 === 1 ? 'background:rgba(0,0,0,.025)' : '';
     return '<tr style="'+rowBg+'">'
       +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td style="font-size:13px">'+e.desc+'</td>'
       +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
+      +'<td style="font-size:12px;color:var(--ink3);max-width:160px">'+noteText+'</td>'
       +'<td><span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span></td>'
       +'<td style="text-align:right;font-family:monospace;font-weight:600">฿'+fmt(e.amt)+'</td>'
       +cols
@@ -434,6 +436,7 @@ function renderSettle(){
   }).join('');
   var totalRow = '<tr style="font-weight:700;background:var(--surface2)">'
     +'<td colspan="3">รวม</td>'
+    +'<td></td>'
     +'<td></td>'
     +'<td style="text-align:right;font-family:monospace">฿'+fmt(totalSplit)+'</td>'
     +detailUids.map(function(uid){
@@ -675,6 +678,7 @@ function exportSettlePDF(month, groupId) {
       snap = buildSplitSnapshot(e.split_group_id, e.amt);
     }
     var vname = _vendorName(e.vendor_id);
+    var pdfNote = (e.note || '').trim();
     var cols = pdfUids.map(function(uid){
       var amt = snap && snap[uid] ? (snap[uid].amount||0) : 0;
       pdfTotals[uid] = (pdfTotals[uid]||0) + amt;
@@ -688,13 +692,14 @@ function exportSettlePDF(month, groupId) {
       +'<td style="white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
       +'<td>'+e.desc+'</td>'
       +'<td style="color:#555">'+vname+'</td>'
+      +'<td style="color:#666;font-size:12px">'+pdfNote+'</td>'
       +'<td>'+payerPill+'</td>'
       +'<td style="text-align:right;font-weight:600">'+fmt(e.amt)+'</td>'
       +cols
     +'</tr>';
   }).join('');
   var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
-    +'<td colspan="3">รวม</td><td></td>'
+    +'<td colspan="3">รวม</td><td></td><td></td>'
     +'<td style="text-align:right">'+fmt(totalExp)+'</td>'
     +pdfUids.map(function(uid){
         var c = pdfUidColorMap[uid] || {};
@@ -736,7 +741,7 @@ function exportSettlePDF(month, groupId) {
     +'</table>\n'
     +'<h2>รายการทั้งหมด</h2>\n'
     +'<table>\n'
-    +'<tr><th>วันที่</th><th>รายการ</th><th>ร้านค้า</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
+    +'<tr><th>วันที่</th><th>รายการ</th><th>ร้านค้า</th><th>หมายเหตุ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
     +detailRows
     +detailTotalRow+'\n'
     +'</table>\n'

@@ -342,8 +342,8 @@ function switchChart(type, passedMonth){
       data:{
         labels:['รายรับ','รายจ่าย'],
         datasets:[
-          {label:'เสร็จแล้ว',data:[incPaid,expPaid],backgroundColor:'rgba(74,222,128,.85)',borderRadius:4,borderWidth:0},
-          {label:'รอดำเนินการ',data:[incPend,expPend],backgroundColor:'rgba(248,189,71,.85)',borderRadius:4,borderWidth:0},
+          {label:'เสร็จแล้ว',data:[incPaid,expPaid],backgroundColor:['rgba(74,222,128,.85)','rgba(248,113,113,.85)'],borderRadius:4,borderWidth:0},
+          {label:'รอดำเนินการ',data:[incPend,expPend],backgroundColor:['rgba(248,189,71,.85)','rgba(251,146,60,.85)'],borderRadius:4,borderWidth:0},
         ]
       },
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},scales:Object.assign({}, opts.scales, {x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:Object.assign({stacked:false}, opts.scales.y)})})

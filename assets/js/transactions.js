@@ -22,21 +22,42 @@ function _txUpdateAdminBar() {
   var unlockBtn = document.getElementById('txAdminUnlockBtn');
   var lockBtn   = document.getElementById('txAdminLockBtn');
   var banner    = document.getElementById('txAdminBanner');
+  var mfUser    = document.getElementById('mfUser');
   if (!isAdmin) {
     if (unlockBtn) unlockBtn.style.display = 'none';
     if (lockBtn)   lockBtn.style.display   = 'none';
     if (banner)    banner.style.display    = 'none';
+    if (mfUser)    mfUser.style.display    = 'none';
     return;
   }
   if (_txShowAllUsers) {
     if (unlockBtn) unlockBtn.style.display = 'none';
     if (lockBtn)   lockBtn.style.display   = '';
     if (banner)    banner.style.display    = '';
+    if (mfUser)  { mfUser.style.display = ''; populateMFUser(); }
   } else {
     if (unlockBtn) unlockBtn.style.display = '';
     if (lockBtn)   lockBtn.style.display   = 'none';
     if (banner)    banner.style.display    = 'none';
+    if (mfUser)    mfUser.style.display    = 'none';
   }
+}
+
+/** Populate ผู้บันทึก filter จาก _allProfiles */
+function populateMFUser() {
+  var el = document.getElementById('mfUserList');
+  if (!el) return;
+  var cur      = getMFValues('mfUser');
+  var profiles = window._allProfiles || [];
+  el.innerHTML = profiles.length
+    ? profiles.map(function(p) {
+        var safeId   = p.id;
+        var safeName = (p.name || p.id.slice(0, 8)).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return '<label><input type="checkbox" value="' + safeId + '" ' +
+          (cur.indexOf(safeId) > -1 ? 'checked' : '') +
+          ' onchange="updateMFLabel(\'mfUser\',\'ผู้บันทึก\');renderTx()"> ' + safeName + '</label>';
+      }).join('')
+    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ไม่มีข้อมูลผู้ใช้</div>';
 }
 
 // ─── MULTI FILTER ─────────────────────────────────────────
@@ -122,7 +143,7 @@ function resetFilters(){
   var fltBM = document.getElementById('fltBillingMonth');
   if (fltBM) { fltBM.value = ''; populateFltBillingMonth(fltBM); }
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
-  [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ']].forEach(function(pair){
+  [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ'],['mfUser','ผู้บันทึก']].forEach(function(pair){
     var id=pair[0], def=pair[1];
     var label=document.querySelector('#'+id+' .mf-label');
     if(label){ label.textContent=def+' ▾'; label.classList.remove('active'); }
@@ -164,6 +185,10 @@ function getFilteredTx(){
   if(fstats.length)   list = list.filter(function(e){ return fstats.indexOf(e.status)>-1; });
   var fvendors = getMFValues('mfVendor');
   if(fvendors.length) list = list.filter(function(e){ return fvendors.indexOf(e.vendor_id)>-1; });
+  var fusers = getMFValues('mfUser');
+  if(fusers.length && _txShowAllUsers) {
+    list = list.filter(function(e){ return fusers.indexOf(e.user_id || e.person) > -1; });
+  }
   return list;
 }
 
@@ -317,6 +342,12 @@ function renderTx(){
 
   var fvendors = getMFValues('mfVendor');
   if(fvendors.length) list=list.filter(function(e){return fvendors.indexOf(e.vendor_id)>-1;});
+
+  // filter ผู้บันทึก (เฉพาะ admin mode)
+  var fusers2 = getMFValues('mfUser');
+  if(fusers2.length && _txShowAllUsers) {
+    list = list.filter(function(e){ return fusers2.indexOf(e.user_id || e.person) > -1; });
+  }
 
   // Total bar
   var totalEl = document.getElementById('txTotal');

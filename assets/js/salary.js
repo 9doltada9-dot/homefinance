@@ -11,6 +11,19 @@ function hideSal(id){ var el=document.getElementById('sal-'+id); if(el) el.style
 
 // ─── SALARY CYCLE ─────────────────────────────────────────
 /**
+ * คืนวันจ่ายเงินที่แท้จริง: ถ้า SALARY_DAY ตรงเสาร์/อาทิตย์ → วันศุกร์ก่อนหน้า
+ * @param {number} year - ปีคริสต์ศักราช
+ * @param {number} month - เดือน 0-indexed
+ */
+function _effectiveSalaryDay(year, month) {
+  var d = new Date(year, month, SALARY_DAY);
+  var dow = d.getDay(); // 0=อาทิตย์, 6=เสาร์
+  if (dow === 6) return SALARY_DAY - 1; // เสาร์ → ศุกร์ก่อนหน้า (เช่น 24)
+  if (dow === 0) return SALARY_DAY - 2; // อาทิตย์ → ศุกร์ก่อนหน้า (เช่น 23)
+  return SALARY_DAY;
+}
+
+/**
  * Returns the current salary cycle for a given date:
  * { start: 'YYYY-MM-DD', end: 'YYYY-MM-DD', label: 'พ.ค. - มิ.ย. 2569' }
  */
@@ -20,15 +33,20 @@ function getSalaryCycle(date){
   var y = d.getFullYear();
   var m = d.getMonth(); // 0-indexed
 
+  // วันจ่ายที่แท้จริงของเดือนนี้และเดือนก่อน
+  var effDay     = _effectiveSalaryDay(y, m);
+  var effPrevDay = _effectiveSalaryDay(y, m - 1);
+
   var cycleStart, cycleEnd;
-  if(day >= SALARY_DAY){
-    // e.g. May 25 → cycle: May 25 – Jun 24
-    cycleStart = new Date(y, m, SALARY_DAY);
-    cycleEnd   = new Date(y, m+1, SALARY_DAY-1);
+  if(day >= effDay){
+    // เช่น 25 พ.ค. (หรือ 24 ถ้าเสาร์) → รอบ: effDay พ.ค. – effNextDay-1 มิ.ย.
+    var effNextDay = _effectiveSalaryDay(y, m + 1);
+    cycleStart = new Date(y, m, effDay);
+    cycleEnd   = new Date(y, m + 1, effNextDay - 1);
   } else {
-    // e.g. May 10 → cycle: Apr 25 – May 24
-    cycleStart = new Date(y, m-1, SALARY_DAY);
-    cycleEnd   = new Date(y, m, SALARY_DAY-1);
+    // เช่น 10 พ.ค. → รอบ: effPrevDay เม.ย. – effDay-1 พ.ค.
+    cycleStart = new Date(y, m - 1, effPrevDay);
+    cycleEnd   = new Date(y, m, effDay - 1);
   }
   var fmt8 = function(d2){ return d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0')+'-'+String(d2.getDate()).padStart(2,'0'); };
   var sm = SHORT_M[cycleStart.getMonth()];
@@ -44,22 +62,24 @@ function getSalaryCycle(date){
 
 /**
  * Is this income entry an "early salary"?
- * Income arrives before the 25th but within EARLY_DAYS buffer.
+ * Income arrives before the effective salary day but within EARLY_DAYS buffer.
  */
 function isEarlySalary(entry){
   if(entry.type !== 'income') return false;
-  var d   = new Date(entry.date);
-  var day = d.getDate();
-  // early if day is in [25-EARLY_DAYS, 24] i.e. 23 or 24
-  return day >= (SALARY_DAY - EARLY_DAYS) && day < SALARY_DAY;
+  var d      = new Date(entry.date);
+  var day    = d.getDate();
+  var effDay = _effectiveSalaryDay(d.getFullYear(), d.getMonth());
+  // early if day is in [effDay-EARLY_DAYS, effDay-1]
+  return day >= (effDay - EARLY_DAYS) && day < effDay;
 }
 
 /**
- * The date this early salary will activate.
+ * The date this early salary will activate (วันจ่ายที่แท้จริง).
  */
 function salaryActivateDate(entry){
-  var d = new Date(entry.date);
-  return new Date(d.getFullYear(), d.getMonth(), SALARY_DAY);
+  var d      = new Date(entry.date);
+  var effDay = _effectiveSalaryDay(d.getFullYear(), d.getMonth());
+  return new Date(d.getFullYear(), d.getMonth(), effDay);
 }
 
 /**
@@ -79,7 +99,7 @@ function autoActivateSalary(){
       changed = true;
     }
   });
-  if(changed){ save(); renderDash(); renderTx(); showCycleToast('💰 รายรับถึงวันที่ 25 แล้ว — อัปเดตสถานะเป็น รับแล้ว'); }
+  if(changed){ save(); renderDash(); renderTx(); showCycleToast('💰 ถึงวันจ่ายเงินเดือนแล้ว — อัปเดตสถานะเป็น รับแล้ว'); }
 }
 
 var _cycleToastTimer = null;

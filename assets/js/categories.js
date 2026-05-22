@@ -35,18 +35,27 @@ function renderCatList(type){
     listEl.innerHTML = '<div style="padding:12px 16px;color:var(--ink3);font-size:13px">ยังไม่มีหมวด</div>';
     return;
   }
+  var _isAdmin = typeof isAdminUser === 'function' && isAdminUser();
   listEl.innerHTML = catsOfType.map(function(c){
     var inUse = db.some(function(e){return e.cat_id === c.id;});
+    var delBtn = '';
+    if (inUse) {
+      delBtn = '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:11px;opacity:.4">ใช้อยู่</button>';
+    } else if (_isAdmin) {
+      delBtn = '<button class="btn btn-sm" onclick="delCat(\''+c.id+'\')" style="min-width:36px;min-height:36px;padding:4px;font-size:14px;color:var(--red);border-color:var(--red)" title="ลบหมวด (Admin)">×</button>';
+    } else {
+      delBtn = '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:14px;opacity:.35" title="เฉพาะ Admin เท่านั้น">🔒</button>';
+    }
     return '<div class="settings-row">'+
       '<div style="flex:1;min-width:0">'+
         '<div style="font-weight:500;color:var(--ink)">'+c.name+'</div>'+
         (type==='expense' ? '<div style="font-size:12px;margin-top:2px;color:'+(c.split_default?'var(--green)':'var(--ink3)')+'">'+
-          (c.split_default ? '÷ หาร 2 อัตโนมัติ' : '● ไม่หาร 2')+
+          (c.split_default ? '÷ ระบบหาร' : '● ส่วนตัว')+
         '</div>' : '')+
       '</div>'+
       '<div class="settings-row-right" style="gap:6px">'+
         '<button class="btn btn-sm" onclick="editCat(\''+c.id+'\')" style="min-width:36px;min-height:36px;padding:4px;font-size:14px">✎</button>'+
-        (!inUse ? '<button class="btn btn-sm" onclick="delCat(\''+c.id+'\')" style="min-width:36px;min-height:36px;padding:4px;font-size:14px;color:var(--red);border-color:var(--red)">×</button>' : '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:11px;opacity:.4">ใช้อยู่</button>')+
+        delBtn+
       '</div>'+
     '</div>';
   }).join('');
@@ -148,7 +157,10 @@ function showDelCatConfirm(catId, catName, catType){
   document.getElementById('catModalTitle').textContent = 'ลบหมวด "'+catName+'"?';
   document.getElementById('catModalName').style.display = 'none';
   document.getElementById('catModalSplitRow').style.display = 'none';
-  document.getElementById('catModalMsg').className = 'msg';
+  // แสดง warning ว่ากระทบทุก user
+  var msgEl = document.getElementById('catModalMsg');
+  msgEl.className = 'msg msg-error';
+  msgEl.textContent = '⚠️ หมวดนี้เป็นข้อมูลร่วม — การลบจะมีผลกับผู้ใช้ทุกคน';
   var btns = overlay.querySelector('div[style*="display:flex;gap"]');
   btns.innerHTML =
     '<button class="btn btn-ghost" onclick="cancelDelCat()" style="flex:1;min-height:44px">ยกเลิก</button>'+

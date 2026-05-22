@@ -609,8 +609,18 @@ function _renderRecentAccounts() {
 function _fillRecentAccount(email) {
   var emailEl = document.getElementById('loginEmail');
   var passEl  = document.getElementById('loginPassword');
+  var chkEl   = document.getElementById('rememberMeChk');
   if (emailEl) emailEl.value = email;
-  if (passEl)  passEl.focus();
+  // ถ้ามีรหัสที่จำสำหรับ email นี้ → ใส่ให้ / ถ้าไม่มี → เคลียร์รหัสเก่าออก
+  var remembered = _loadRememberedLogin();
+  if (remembered && remembered.email === email) {
+    if (passEl) passEl.value  = remembered.password || '';
+    if (chkEl)  chkEl.checked = true;
+  } else {
+    if (passEl) passEl.value  = '';
+    if (chkEl)  chkEl.checked = false;
+  }
+  if (passEl) passEl.focus();
 }
 
 // ─── CHANGE PASSWORD (ขณะ logged in) ─────────────────────

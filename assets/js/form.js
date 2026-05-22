@@ -86,8 +86,9 @@ function updateThaiDate(){
   if(!warn) return;
   if(v && cType==='income' && isEarlySalary({type:'income', date:v})){
     var d = new Date(v);
-    var actLabel = SALARY_DAY+' '+SHORT_M[d.getMonth()]+' '+(d.getFullYear()+543);
-    warn.innerHTML='⏳ รายรับก่อนวันที่ 25 — จะตั้งเป็น <b>รอรับ</b> อัตโนมัติ และเปลี่ยนเป็น <b>รับแล้ว</b> วันที่ '+actLabel;
+    var _effDay = (typeof _effectiveSalaryDay === 'function') ? _effectiveSalaryDay(d.getFullYear(), d.getMonth()) : SALARY_DAY;
+    var actLabel = _effDay+' '+SHORT_M[d.getMonth()]+' '+(d.getFullYear()+543);
+    warn.innerHTML='⏳ รายรับก่อนวันที่ '+_effDay+' — จะตั้งเป็น <b>รอรับ</b> อัตโนมัติ และเปลี่ยนเป็น <b>รับแล้ว</b> วันที่ '+actLabel;
     warn.style.display='block';
     // force status to pending in UI
     var fs = document.getElementById('fStatus');
@@ -376,11 +377,22 @@ function _updateGroupPreview() {
 
 function autoSplit() {
   if (cType !== 'expense') return;
-  var catId = document.getElementById('fCat')?.value;
+  var catId = document.getElementById('fCat') ? document.getElementById('fCat').value : null;
   if (!catId) return;
   var cat = catMap[catId];
   var shouldSplit = cat ? cat.split_default : false;
-  setSplitType(shouldSplit ? 'equal' : 'personal');
+  if (shouldSplit) {
+    // หา equal-type split group ตัวแรก → เลือกปุ่มนั้นเป็น default
+    var groups = (typeof getSplitGroups === 'function') ? getSplitGroups() : [];
+    var equalGrp = groups.find(function(g){ return g.split_type === 'equal'; });
+    if (equalGrp) {
+      selectSplitBtn(equalGrp.id);
+    } else {
+      setSplitType('equal'); // fallback ถ้ายังไม่มีกลุ่ม
+    }
+  } else {
+    setSplitType('personal');
+  }
 }
 
 function addEntry(){
@@ -419,9 +431,10 @@ function addEntry(){
   if(cType==='income' && isEarlySalary({type:cType, date:date})){
     status = 'pending';
     var d = new Date(date);
-    _salary_cycle = toISO(new Date(d.getFullYear(), d.getMonth(), SALARY_DAY));
-    var actLabel = SALARY_DAY+' '+SHORT_M[d.getMonth()]+' '+(d.getFullYear()+543);
-    showCycleToast('⏳ รายรับก่อนวันที่ 25 — จะเป็น "รับแล้ว" อัตโนมัติวันที่ '+actLabel);
+    var _eff = (typeof _effectiveSalaryDay === 'function') ? _effectiveSalaryDay(d.getFullYear(), d.getMonth()) : SALARY_DAY;
+    _salary_cycle = toISO(new Date(d.getFullYear(), d.getMonth(), _eff));
+    var actLabel = _eff+' '+SHORT_M[d.getMonth()]+' '+(d.getFullYear()+543);
+    showCycleToast('⏳ รายรับก่อนวันที่ '+_eff+' — จะเป็น "รับแล้ว" อัตโนมัติวันที่ '+actLabel);
   }
 
   // group split: build snapshot before saving

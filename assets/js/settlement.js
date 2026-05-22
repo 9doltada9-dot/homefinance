@@ -449,23 +449,80 @@ function renderSettle(){
 
   var detailRows = isMobile ? detailMobile : detailDesktop;
 
-  // ── Personal section ───────────────────────────────────────
+  // ── Personal section — ใช้รูปแบบเดียวกับตาราง detail หลัก ──
   var personalHtml = '';
   if (showPersonal && personalExp.length) {
-    personalHtml = '<div class="card" style="width:100%;margin-top:8px">'
-      +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
-      +personalExp.map(function(e){
-        var payer = nameMap[_pidToUid(e.person)||e.person] || e.person;
-        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px">'
-          +'<div><span>'+e.desc+'</span><span style="font-size:11px;color:var(--ink3);margin-left:6px">'+payer+'</span></div>'
-          +'<span style="font-family:monospace;color:var(--red,#dc2626)">'+fmt(e.amt)+'</span>'
+    var persTotal = personalExp.reduce(function(s,e){ return s+e.amt; }, 0);
+
+    // รวบรวม uid ที่จ่ายรายการส่วนตัว (สำหรับสีผู้จ่าย)
+    var persUids = [];
+    personalExp.forEach(function(e){
+      var pu = e.user_id || _pidToUid(e.person) || e.person;
+      if (pu && persUids.indexOf(pu) === -1) persUids.push(pu);
+    });
+    var _persColorMap = {};
+    persUids.forEach(function(uid, i){
+      _persColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
+    });
+
+    if (isMobile) {
+      // Mobile: cards เหมือน splitExp
+      var persMobile = personalExp.map(function(e){
+        var pu = e.user_id || _pidToUid(e.person) || e.person;
+        var payerName = nameMap[pu] || e.person;
+        var vendor = _vendorName(e.vendor_id);
+        var noteText = (e.note || '').trim();
+        return '<div style="padding:10px 12px;border-bottom:1px solid var(--line)">'
+          +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+            +'<span style="font-size:13px;font-weight:600">'+e.desc+'</span>'
+            +'<span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--red,#dc2626)">฿'+fmt(e.amt)+'</span>'
+          +'</div>'
+          +'<div style="font-size:11px;color:var(--ink3)">📅 '+toThaiDateShort(e.date)+(vendor?' · 🏪 '+vendor:'')+' · 👤 '+payerName+(noteText?' · 📝 '+noteText:'')+'</div>'
         +'</div>';
-      }).join('')
-      +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600;font-size:13px">'
-        +'<span>รวมส่วนตัว</span>'
-        +'<span style="font-family:monospace">'+fmt(personalExp.reduce(function(s,e){return s+e.amt;},0))+'</span>'
-      +'</div>'
-    +'</div>';
+      }).join('');
+      personalHtml = '<div class="card" style="width:100%;margin-top:8px">'
+        +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
+        +persMobile
+        +'<div style="display:flex;justify-content:space-between;padding:8px 12px;font-weight:700;font-size:13px">'
+          +'<span>รวมส่วนตัว</span>'
+          +'<span style="font-family:monospace">฿'+fmt(persTotal)+'</span>'
+        +'</div>'
+      +'</div>';
+    } else {
+      // Desktop: table เหมือน detailDesktop (วันที่, รายการ, ร้านค้า, หมายเหตุ, ผู้จ่าย, รวม)
+      var persRows = personalExp.map(function(e, rowIdx){
+        var pu = e.user_id || _pidToUid(e.person) || e.person;
+        var payerName = nameMap[pu] || e.person;
+        var payerColor = _persColorMap[pu] || { bg:'var(--surface2)', cl:'var(--ink2)' };
+        var vendor = _vendorName(e.vendor_id);
+        var noteText = (e.note || '').trim();
+        var rowBg = rowIdx % 2 === 1 ? 'background:rgba(0,0,0,.025)' : '';
+        return '<tr style="'+rowBg+'">'
+          +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
+          +'<td style="font-size:13px">'+e.desc+'</td>'
+          +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
+          +'<td style="font-size:12px;color:var(--ink3);max-width:160px">'+noteText+'</td>'
+          +'<td><span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span></td>'
+          +'<td style="text-align:right;font-family:monospace;font-weight:600;color:var(--red,#dc2626)">฿'+fmt(e.amt)+'</td>'
+        +'</tr>';
+      }).join('');
+      var persTotalRow = '<tr style="font-weight:700;background:var(--surface2)">'
+        +'<td colspan="3">รวมส่วนตัว</td>'
+        +'<td></td><td></td>'
+        +'<td style="text-align:right;font-family:monospace">฿'+fmt(persTotal)+'</td>'
+      +'</tr>';
+      personalHtml = '<div class="card" style="width:100%;margin-top:8px">'
+        +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
+        +'<div class="table-scroll"><table>'
+          +'<tr style="font-size:11px;color:var(--ink3)">'
+            +'<th style="white-space:nowrap">วันที่</th><th>รายการ</th>'
+            +'<th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">หมายเหตุ</th>'
+            +'<th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
+          +'</tr>'
+          +persRows+persTotalRow
+        +'</table></div>'
+      +'</div>';
+    }
   }
 
   // ── Render ─────────────────────────────────────────────────

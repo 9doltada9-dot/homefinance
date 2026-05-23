@@ -348,6 +348,27 @@ function deleteSplitGroupConfirm() {
   _sgShowMsg('ลบกลุ่มแล้ว');
 }
 
+// ── Push split groups ขึ้น Supabase (Admin ปุ่ม backup) ──────────────────────
+async function adminPushSplitGroups() {
+  var groups = getSplitGroups();
+  var msgEl  = document.getElementById('adminMsg');
+  if (!groups.length) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='⚠️ ไม่มีกลุ่มในเครื่อง ไม่มีอะไร push'; }
+    return;
+  }
+  if (typeof sbSaveSplitGroups !== 'function') {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='❌ ฟังก์ชัน sbSaveSplitGroups ไม่พร้อม'; }
+    return;
+  }
+  if (msgEl) { msgEl.className='msg'; msgEl.textContent='⏳ กำลัง push '+groups.length+' กลุ่ม...'; }
+  try {
+    await sbSaveSplitGroups(groups);
+    if (msgEl) { msgEl.className='msg msg-success'; msgEl.textContent='✅ Push '+groups.length+' กลุ่มขึ้น Supabase เรียบร้อย'; }
+  } catch(e) {
+    if (msgEl) { msgEl.className='msg msg-error'; msgEl.textContent='❌ Push ไม่สำเร็จ: '+(e.message||e); }
+  }
+}
+
 // ── Get groups for dropdowns (used by form.js) ────────────────────────────────
 function getSplitGroupOptions() {
   return getSplitGroups().map(function(g) {

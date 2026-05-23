@@ -21,9 +21,15 @@ function applySettingsFromMap(map){
     if(f.vendor_ctx) delete f.vendor_ctx;
     if(typeof saveFavsLocal === 'function') saveFavsLocal(f);
   }
-  // sync split_groups จาก Supabase → localStorage (ไม่ push กลับเพื่อป้องกัน loop)
+  // sync split_groups จาก Supabase → localStorage
+  // ป้องกัน: ถ้า Supabase ส่งกลับมาว่าง [] แต่ local ยังมีอยู่ → ให้ local ชนะ (กัน data หาย)
   if(map.split_groups && Array.isArray(map.split_groups)){
-    localStorage.setItem('hf2_split_groups', JSON.stringify(map.split_groups));
+    var _localGrps = [];
+    try { _localGrps = JSON.parse(localStorage.getItem('hf2_split_groups') || '[]'); } catch(_){}
+    // Supabase ชนะเฉพาะเมื่อ: มีกลุ่มอยู่ใน Supabase, หรือ local ก็ว่างเปล่าอยู่แล้ว
+    if(map.split_groups.length > 0 || _localGrps.length === 0){
+      localStorage.setItem('hf2_split_groups', JSON.stringify(map.split_groups));
+    }
   }
 }
 

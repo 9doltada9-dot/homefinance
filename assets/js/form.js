@@ -95,6 +95,11 @@ function updateThaiDate(){
     if(fs){ fs.value='pending'; }
   } else {
     warn.style.display='none';
+    // reset status กลับเป็น default เมื่อวันที่ไม่ใช่ early salary อีกต่อไป
+    var fs2 = document.getElementById('fStatus');
+    if(fs2 && (fs2.value === 'pending')){
+      fs2.value = (typeof doneStatus === 'function') ? doneStatus(cType) : (cType === 'income' ? 'received' : 'paid');
+    }
   }
 }
 

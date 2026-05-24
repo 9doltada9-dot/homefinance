@@ -609,6 +609,8 @@ async function syncOnReconnect(){
     if(merged){ db = merged; save(); }
     renderDash(); renderTx();
     var pendLeft = _getPendingQueue().length;
+    // อัปเดต badge sidebar ให้ตรงกับ queue จริงหลัง sync
+    updateConnectionUI(true);
     showConnectToast(pendLeft > 0
       ? '⚠️ เชื่อมต่อแล้ว แต่ sync ไม่ครบ '+pendLeft+' รายการ'
       : 'เชื่อมต่อแล้ว — อัปเดตข้อมูลล่าสุดเรียบร้อย');
@@ -979,6 +981,4 @@ function exportCSV(){
   var rows=db.map(function(e){return [e.date,e.type,e.cat_name||'—',e.desc,e.amt,nm(e.user_id||e.person),e.split?'TRUE':'FALSE',e.status,e.note||''].join(',');}).join('\n');
   var blob=new Blob(['﻿'+hdr+rows],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='home_finance_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
-  showMsg('sbExportMsg','Export CSV เรียบร้อย!','success');
-}
+  a.download='home_finance_'+new

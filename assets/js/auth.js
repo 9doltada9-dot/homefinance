@@ -691,7 +691,15 @@ async function doChangePassword() {
 
 // ─── LOGOUT ───────────────────────────────────────────────
 async function doLogout() {
-  if (!confirm('ออกจากระบบ?')) return;
+  var _pendingCount = (typeof getPendingCount === 'function') ? getPendingCount() : 0;
+  if (_pendingCount > 0) {
+    var _confirmMsg = 'มีรายการค้าง sync ' + _pendingCount + ' รายการที่ยังไม่ได้บันทึกขึ้น cloud\n\n' +
+      'รายการเหล่านี้จะ sync อัตโนมัติเมื่อเชื่อมต่ออินเทอร์เน็ตครั้งถัดไป\n\n' +
+      'ต้องการออกจากระบบหรือไม่?';
+    if (!confirm(_confirmMsg)) return;
+  } else {
+    if (!confirm('ออกจากระบบ?')) return;
+  }
   // reset admin unlock state
   if (typeof _txShowAllUsers !== 'undefined') window._txShowAllUsers = false;
 
@@ -1089,20 +1097,4 @@ function _updateAdminNav() {
 // รีเฟรช profile จาก Supabase (ใช้ใน Settings → ปุ่มรีเฟรช)
 async function refreshAuthProfile() {
   var creds = getSbCreds();
-  if (!creds.ok || !_authUser) {
-    showMsg('settingsMsg', '⚠️ ไม่ได้เชื่อมต่อ Supabase', 'error');
-    return;
-  }
-  var old = _authProfile ? _authProfile.role : '—';
-  await _loadProfile(creds);
-  var saved = _loadSavedSession();
-  if (saved) {
-    saved.profile = _authProfile;
-    try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_) {}
-  }
-  _updateAdminNav();
-  var newRole = _authProfile ? _authProfile.role : '—';
-  showMsg('settingsMsg',
-    'รีเฟรชแล้ว — role: ' + newRole + (old !== newRole ? ' (เปลี่ยนจาก ' + old + ')' : ''),
-    'success');
-}
+  if (!creds.ok || !_auth

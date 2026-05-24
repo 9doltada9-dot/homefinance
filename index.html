@@ -847,7 +847,7 @@ body.app-ready #page-login { display: none !important; }
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.15.3</strong> — แก้ badge "รอ sync" ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงถูกต้องหลัง login ใหม่แม้ยังไม่มีเน็ต
+        <strong>v3.15.3</strong> — บล็อกปุ่มบันทึก/เพิ่ม/แก้ไข/ลบทุกหน้าเมื่อ offline; แก้ badge “รอ sync” ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงหลัง login ใหม่
         <br><strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
         <br><strong>v3.4.1</strong> — Email confirmation redirect
         <br><strong>v3.4.0</strong> — Email confirmation redirect: หลังกดลิงก์ยืนยัน email แอปจะ redirect กลับหน้า Login พร้อมข้อความ "ยืนยัน Email สำเร็จ", แก้ signup crash เมื่อ Supabase ต้องยืนยัน email ก่อน (null access_token), เพิ่ม redirect_to ใน signup URL
@@ -1582,4 +1582,16 @@ create policy "public write" on transactions for all using (true);</div>
   background:#1e293b;color:#f1f5f9;
   border-radius:10px;padding:10px 14px;
   box-shadow:0 4px 20px rgba(0,0,0,.3);
-  min-width:160px;max-width:260p
+  min-width:160px;max-width:260px;
+  pointer-events:none;line-height:1.6;
+"></div>
+<script>
+  // ปิด tooltip เมื่อคลิกที่อื่น
+  document.addEventListener('click', function(ev){
+    if (!ev.target.closest || !ev.target.closest('.badge-split')){
+      if (typeof _hideSplitTip === 'function') _hideSplitTip();
+    }
+  });
+</script>
+</body>
+</html>

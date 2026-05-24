@@ -62,15 +62,19 @@ function getSalaryCycle(date){
 
 /**
  * Is this income entry an "early salary"?
- * Income arrives before the effective salary day but within EARLY_DAYS buffer.
+ * "Early salary" = ใช้เฉพาะเมื่อวันที่ 25 ตรงเสาร์/อาทิตย์
+ * → effective pay day เลื่อนมาเป็นวันศุกร์ก่อนหน้า
+ * Entry ที่ date ตรงกับ effective Friday นั้นถือเป็น "รอรับ" จนถึงวันนั้น
  */
 function isEarlySalary(entry){
   if(entry.type !== 'income') return false;
   var d      = new Date(entry.date);
   var day    = d.getDate();
   var effDay = _effectiveSalaryDay(d.getFullYear(), d.getMonth());
-  // early if day is in [effDay-EARLY_DAYS, effDay-1]
-  return day >= (effDay - EARLY_DAYS) && day < effDay;
+  // ไม่มี early window ถ้า 25 เป็นวันธรรมดา
+  if(effDay === SALARY_DAY) return false;
+  // 25 ตรงเสาร์/อาทิตย์ → early เฉพาะ entry ที่ date = effective Friday นั้น
+  return day === effDay;
 }
 
 /**

@@ -15,7 +15,6 @@ var SB_KEY_DEFAULT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // ─── SALARY CYCLE ─────────────────────────────────────────
 var SALARY_DAY = 25;        // รอบเงินเดือน เริ่มทุกวันที่ 25
-var EARLY_DAYS = 2;         // รับก่อนได้สูงสุด 2 วัน (23, 24)
 
 // ─── THAI DATE/TIME ───────────────────────────────────────
 var THAI_DAYS   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];

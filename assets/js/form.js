@@ -88,7 +88,9 @@ function updateThaiDate(){
     var d = new Date(v);
     var _effDay = (typeof _effectiveSalaryDay === 'function') ? _effectiveSalaryDay(d.getFullYear(), d.getMonth()) : SALARY_DAY;
     var actLabel = _effDay+' '+SHORT_M[d.getMonth()]+' '+(d.getFullYear()+543);
-    warn.innerHTML='⏳ รายรับก่อนวันที่ '+_effDay+' — จะตั้งเป็น <b>รอรับ</b> อัตโนมัติ และเปลี่ยนเป็น <b>รับแล้ว</b> วันที่ '+actLabel;
+    var _dow25 = new Date(d.getFullYear(), d.getMonth(), 25).getDay();
+    var _dowName = _dow25 === 6 ? 'เสาร์' : 'อาทิตย์';
+    warn.innerHTML='📅 วันที่ 25 ตรงกับวัน<b>'+_dowName+'</b> — วันที่ '+actLabel+' ถือเป็นวันเงินเดือน จะตั้งสถานะเป็น <b>รอรับ</b> อัตโนมัติ';
     warn.style.display='block';
     // force status to pending in UI
     var fs = document.getElementById('fStatus');

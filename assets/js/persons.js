@@ -71,6 +71,7 @@ function openLinkPersonModal(personId) {
 
 
 function renamePerson(id, newName){
+  if(!checkOnlineForAction()) return;
   var p=persons.find(function(x){return x.id===id;});
   if(p){ p.name=newName.trim()||p.name; savePersons(persons); }
   populatePersonSelects();
@@ -81,6 +82,7 @@ function renamePerson(id, newName){
 }
 
 function addPerson(){
+  if(!checkOnlineForAction()) return;
   var inp=document.getElementById('newPersonName');
   var name=inp.value.trim();
   if(!name){showMsg('personMsg','กรุณาระบุชื่อ','error');return;}
@@ -94,6 +96,7 @@ function addPerson(){
 }
 
 function deletePerson(id){
+  if(!checkOnlineForAction()) return;
   var inUse=db.some(function(e){return e.person===id;});
   if(inUse){showMsg('personMsg','ไม่สามารถลบได้ เพราะมีรายการที่ใช้ชื่อนี้อยู่','error');return;}
   persons=persons.filter(function(x){return x.id!==id;});

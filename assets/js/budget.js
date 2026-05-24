@@ -186,6 +186,7 @@ function budgetRow(catId, name, spent, budget) {
 
 // ─── ADD / DELETE ─────────────────────────────────────────
 function addBudgetItem() {
+  if(!checkOnlineForAction()) return;
   var catId = ((document.getElementById('budgetAddCat')||{}).value||'').trim();
   var amt   = parseFloat((document.getElementById('budgetAddAmt')||{}).value) || 0;
   if (!catId) { showCycleToast('⚠️ เลือกหมวดหมู่ก่อน'); return; }
@@ -196,6 +197,7 @@ function addBudgetItem() {
 }
 
 function deleteBudgetItem(catId) {
+  if(!checkOnlineForAction()) return;
   delete budgets[catId];
   saveBudgets();
   renderBudget();

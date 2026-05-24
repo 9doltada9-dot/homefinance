@@ -31,6 +31,7 @@ function renderItemList(){
 }
 
 async function addItem(){
+  if(!checkOnlineForAction()) return;
   var catId = document.getElementById('itemCatSel')?.value;
   var name = document.getElementById('newItemName')?.value.trim();
   if(!catId||!name){ showMsg('itemMsg','กรุณาใส่ชื่อรายการ','error'); return; }
@@ -48,6 +49,7 @@ async function addItem(){
 }
 
 async function deleteItem(itemId, catId){
+  if(!checkOnlineForAction()) return;
   var list = itemsData[catId]||[];
   var item = list.find(function(x){return x.id===itemId;});
   if(!item) return;

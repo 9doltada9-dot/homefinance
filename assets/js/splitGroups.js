@@ -284,6 +284,7 @@ function _sgSetModalMsg(text, isError) {
 }
 
 function saveSplitGroupFromModal() {
+  if(!checkOnlineForAction()) return;
   _sgSetModalMsg('', false);  // clear
 
   var name = (document.getElementById('sgName').value || '').trim();
@@ -340,6 +341,7 @@ function saveSplitGroupFromModal() {
 
 // ── Delete group ──────────────────────────────────────────────────────────────
 function deleteSplitGroupConfirm() {
+  if(!checkOnlineForAction()) return;
   if (!_sgEditId) return;
   if (!confirm('ลบกลุ่มนี้?\n\nรายการที่บันทึกไว้แล้วจะไม่ถูกลบ (snapshot คงอยู่)')) return;
   deleteSplitGroup(_sgEditId);

@@ -103,6 +103,7 @@ function closeCatModal(){
 }
 
 async function saveCatModal(){
+  if(!checkOnlineForAction()) return;
   var name = document.getElementById('catModalName').value.trim();
   if(!name){ showMsg('catModalMsg','กรุณาใส่ชื่อหมวด','error'); return; }
   var split = _catModalType==='expense' ? document.getElementById('catModalSplit').checked : false;
@@ -175,6 +176,7 @@ function showDelCatConfirm(catId, catName, catType){
 }
 
 async function confirmDelCat(catId, catName, catType){
+  if(!checkOnlineForAction()) return;
   await sbDeleteCategory(catId);
   categories = categories.filter(function(c){return c.id !== catId;});
   buildCategoryMap();

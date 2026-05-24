@@ -159,6 +159,7 @@ function renderRecurringList() {
 }
 
 function onDeleteRecurring(id) {
+  if(!checkOnlineForAction()) return;
   if (!confirm('ลบรายการประจำนี้?')) return;
   deleteRecurring(id);
   renderRecurringList();
@@ -209,6 +210,7 @@ function onRecurringTypeChange() {
 }
 
 function onSaveRecurring() {
+  if(!checkOnlineForAction()) return;
   var type    = (document.getElementById('recType')    || {}).value || 'expense';
   var catSel  = document.getElementById('recCat');
   var cat     = catSel ? catSel.options[catSel.selectedIndex] : null;

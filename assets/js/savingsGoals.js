@@ -122,6 +122,7 @@ function renderSavingsGoals() {
 
 // ─── ADD FORM ─────────────────────────────────────────────
 function onAddSavingsGoal() {
+  if(!checkOnlineForAction()) return;
   var name   = (document.getElementById('goalName')   || {}).value || '';
   var target = parseFloat((document.getElementById('goalTarget') || {}).value) || 0;
   var date   = (document.getElementById('goalDate')   || {}).value || '';

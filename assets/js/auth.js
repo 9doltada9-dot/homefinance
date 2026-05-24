@@ -1097,4 +1097,20 @@ function _updateAdminNav() {
 // รีเฟรช profile จาก Supabase (ใช้ใน Settings → ปุ่มรีเฟรช)
 async function refreshAuthProfile() {
   var creds = getSbCreds();
-  if (!creds.ok || !_auth
+  if (!creds.ok || !_authUser) {
+    showMsg('settingsMsg', '⚠️ ไม่ได้เชื่อมต่อ Supabase', 'error');
+    return;
+  }
+  var old = _authProfile ? _authProfile.role : '—';
+  await _loadProfile(creds);
+  var saved = _loadSavedSession();
+  if (saved) {
+    saved.profile = _authProfile;
+    try { localStorage.setItem('hf2_auth_session', JSON.stringify(saved)); } catch(_) {}
+  }
+  _updateAdminNav();
+  var newRole = _authProfile ? _authProfile.role : '—';
+  showMsg('settingsMsg',
+    'รีเฟรชแล้ว — role: ' + newRole + (old !== newRole ? ' (เปลี่ยนจาก ' + old + ')' : ''),
+    'success');
+}

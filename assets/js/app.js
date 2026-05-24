@@ -178,4 +178,24 @@ function startAppAfterAuth() {
 // ─── V3 MODULE INIT ───────────────────────────────────────
 function initV3Modules() {
   // Cycle engine: ensure current + next cycle exist
-  if (typeof initCycleEngine === 'fu
+  if (typeof initCycleEngine === 'function') initCycleEngine();
+
+  // Accounts
+  if (typeof loadAccountsLocal === 'function') loadAccountsLocal();
+  if (typeof fillAccountSelectors === 'function') fillAccountSelectors();
+
+  // Savings goals
+  if (typeof loadSavingsGoals === 'function') loadSavingsGoals();
+
+  // Recurring engine (replaces features.js recurring)
+  if (typeof initRecurringEngine === 'function') initRecurringEngine();
+
+  // Notification engine
+  if (typeof initNotificationEngine === 'function') initNotificationEngine();
+
+  // Salary auto-activate (from salary.js)
+  if (typeof autoActivateSalary === 'function') autoActivateSalary();
+
+  // PWA service worker (from features.js)
+  if (typeof registerServiceWorker === 'function') registerServiceWorker();
+}

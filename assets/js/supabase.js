@@ -981,4 +981,6 @@ function exportCSV(){
   var rows=db.map(function(e){return [e.date,e.type,e.cat_name||'—',e.desc,e.amt,nm(e.user_id||e.person),e.split?'TRUE':'FALSE',e.status,e.note||''].join(',');}).join('\n');
   var blob=new Blob(['﻿'+hdr+rows],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='home_finance_'+new
+  a.download='home_finance_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+  showMsg('sbExportMsg','Export CSV เรียบร้อย!','success');
+}

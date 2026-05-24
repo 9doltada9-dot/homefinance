@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.15.1</title>
+<title>HomeFinance v3.15.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -165,7 +165,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.15.1 · THB</div>
+    <div class="brand-sub">v3.15.2 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -226,7 +226,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.15.1 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.15.2 © 2025</div>
   </div>
 </nav>
 
@@ -847,7 +847,8 @@ body.app-ready #page-login { display: none !important; }
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
+        <strong>v3.15.2</strong> — แก้ badge "รอ sync" ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงถูกต้องหลัง login ใหม่แม้ยังไม่มีเน็ต
+        <br><strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
         <br><strong>v3.4.1</strong> — Email confirmation redirect
         <br><strong>v3.4.0</strong> — Email confirmation redirect: หลังกดลิงก์ยืนยัน email แอปจะ redirect กลับหน้า Login พร้อมข้อความ "ยืนยัน Email สำเร็จ", แก้ signup crash เมื่อ Supabase ต้องยืนยัน email ก่อน (null access_token), เพิ่ม redirect_to ใน signup URL
         <br><strong>v3.2.1</strong> — แก้ HTTP 500 บันทึกชื่อ (เพิ่ม user_id ใน settings), แก้ข้อมูลหายหลัง login (sbGetHeaders + user_id filter), แก้ "ตรวจสอบ Database" แสดงผล error ถูกต้อง, getSbCreds fallback config.js defaults

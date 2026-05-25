@@ -191,7 +191,7 @@ async function doLogin() {
     if (rememberChk && rememberChk.checked) {
       _saveRememberedLogin(email, passEl ? passEl.value : '');
     } else {
-      _clearRememberedLogin();
+      _clearRememberedLogin(email);
     }
 
     if (passEl) passEl.value = '';
@@ -531,24 +531,39 @@ function showPasswordResetForm(show) {
 // ─── RECENT ACCOUNTS ──────────────────────────────────────
 // ─── REMEMBER LOGIN ──────────────────────────────────────
 function _saveRememberedLogin(email, password) {
-  try { localStorage.setItem('hf2_remember', JSON.stringify({ email: email, password: password })); }
-  catch(_) {}
+  try {
+    var map = JSON.parse(localStorage.getItem('hf2_remember_map') || '{}');
+    map[email] = password;
+    localStorage.setItem('hf2_remember_map', JSON.stringify(map));
+  } catch(_) {}
 }
-function _clearRememberedLogin() {
-  localStorage.removeItem('hf2_remember');
+function _clearRememberedLogin(email) {
+  try {
+    if (!email) { localStorage.removeItem('hf2_remember_map'); return; }
+    var map = JSON.parse(localStorage.getItem('hf2_remember_map') || '{}');
+    delete map[email];
+    localStorage.setItem('hf2_remember_map', JSON.stringify(map));
+  } catch(_) {}
 }
-function _loadRememberedLogin() {
-  try { return JSON.parse(localStorage.getItem('hf2_remember') || 'null'); }
-  catch(_) { return null; }
+function _loadRememberedLogin(email) {
+  try {
+    var map = JSON.parse(localStorage.getItem('hf2_remember_map') || '{}');
+    if (email) return map[email] != null ? { email: email, password: map[email] } : null;
+    // backward compat: คืน entry แรกที่เจอ
+    var keys = Object.keys(map);
+    return keys.length ? { email: keys[0], password: map[keys[0]] } : null;
+  } catch(_) { return null; }
 }
 /** เรียกตอน showLoginPage() เพื่อ autofill ถ้า remember เปิดอยู่ */
 function _applyRememberedLogin() {
-  var saved = _loadRememberedLogin();
-  if (!saved) return;
+  // ถ้ามี email ในช่อง → ลอง autofill รหัสให้ตรงกัน
   var emailEl = document.getElementById('loginEmail');
   var passEl  = document.getElementById('loginPassword');
   var chkEl   = document.getElementById('rememberMeChk');
-  if (emailEl) emailEl.value = saved.email || '';
+  var curEmail = emailEl ? emailEl.value.trim() : '';
+  var saved = _loadRememberedLogin(curEmail || undefined);
+  if (!saved) return;
+  if (emailEl && !curEmail) emailEl.value = saved.email || '';
   if (passEl)  passEl.value  = saved.password || '';
   if (chkEl)   chkEl.checked = true;
 }
@@ -611,9 +626,9 @@ function _fillRecentAccount(email) {
   var passEl  = document.getElementById('loginPassword');
   var chkEl   = document.getElementById('rememberMeChk');
   if (emailEl) emailEl.value = email;
-  // ถ้ามีรหัสที่จำสำหรับ email นี้ → ใส่ให้ / ถ้าไม่มี → เคลียร์รหัสเก่าออก
-  var remembered = _loadRememberedLogin();
-  if (remembered && remembered.email === email) {
+  // ดึงรหัสจาก map ตาม email ที่เลือก
+  var remembered = _loadRememberedLogin(email);
+  if (remembered) {
     if (passEl) passEl.value  = remembered.password || '';
     if (chkEl)  chkEl.checked = true;
   } else {

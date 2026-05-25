@@ -3,11 +3,16 @@
 function initForm(){
   var amtEl  = document.getElementById('fAmt');
   var noteEl = document.getElementById('fNote');
-  // ตรวจว่ากำลังบันทึกอยู่หรือเปล่า (มี amt หรือ note ค้าง)
+  var descEl = document.getElementById('fDesc');
+  // ตรวจว่ากำลังบันทึกอยู่หรือเปล่า (มี desc, amt หรือ note ค้าง)
   var _inProgress = (amtEl && parseFloat(amtEl.value) > 0)
-                 || (noteEl && noteEl.value.trim() !== '');
+                 || (noteEl && noteEl.value.trim() !== '')
+                 || (descEl && descEl.value.trim() !== '');
 
-  if(!document.getElementById('fDate').value){
+  if(_inProgress){
+    // มีข้อมูลค้าง — คงวันที่เดิมไว้
+  } else {
+    // ฟอร์มว่าง — รีเซ็ตวันที่เป็นวันนี้เสมอ
     document.getElementById('fDate').value = todayISO();
     updateThaiDate();
   }

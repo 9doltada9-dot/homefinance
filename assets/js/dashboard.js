@@ -76,7 +76,12 @@ function renderDash(){
   var activeChart = localStorage.getItem('hf2_chart')||'bar';
   switchChart(activeChart, curM);
   // Recent & Pending for selected month
-  var _dbFiltered = db;
+  // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกันเรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
+  var _dbFiltered = db.slice().sort(function(a, b){
+    if(a.date > b.date) return -1;
+    if(a.date < b.date) return 1;
+    return Number(b.id) - Number(a.id);
+  });
   var recent = curM === thisM ? _dbFiltered.slice(0,6) : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
   document.getElementById('recentTx').innerHTML=recent.length?'<table><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+

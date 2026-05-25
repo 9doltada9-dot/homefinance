@@ -349,6 +349,13 @@ function renderTx(){
     list = list.filter(function(e){ return fusers2.indexOf(e.user_id || e.person) > -1; });
   }
 
+  // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกัน เรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
+  list.sort(function(a, b){
+    if(a.date > b.date) return -1;
+    if(a.date < b.date) return 1;
+    return Number(b.id) - Number(a.id);
+  });
+
   // Total bar
   var totalEl = document.getElementById('txTotal');
   if(totalEl && list.length){

@@ -503,10 +503,15 @@ function openAccountLedger(accountId) {
   if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmt(acct.initial_balance || 0) + ' บาท';
 
   // filter + sort entries for this account
+  // เรียง ASC ก่อนเพื่อคำนวณ running balance ให้ถูก แล้ว reverse แสดงล่าสุดก่อน
   var entries = db
     .filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
     .slice()
-    .sort(function(a, b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    .sort(function(a, b){
+      if(a.date < b.date) return -1;
+      if(a.date > b.date) return 1;
+      return Number(a.id) - Number(b.id);
+    });
 
   // running balance starting from initial
   var running = acct.initial_balance || 0;
@@ -573,7 +578,7 @@ function openAccountLedger(accountId) {
             '<th style="text-align:right;padding:6px 6px;font-weight:600">รายรับ</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">ยอดคงเหลือ</th>' +
           '</tr></thead>' +
-          '<tbody>' + openRow + rows.join('') + '</tbody>' +
+          '<tbody>' + rows.slice().reverse().join('') + openRow + '</tbody>' +
         '</table>'
       : '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:14px">ยังไม่มีรายการในบัญชีนี้</div>';
   }

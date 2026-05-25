@@ -361,7 +361,9 @@ function renderTx(){
   if(totalEl && list.length){
     var inc  = list.filter(function(e){return e.type==='income' &&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
     var exp  = list.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
-    var pend = list.filter(function(e){return e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
+    var pendIn  = list.filter(function(e){return e.status==='pending'&&e.type==='income';}).reduce(function(s,e){return s+e.amt;},0);
+    var pendOut = list.filter(function(e){return e.status==='pending'&&e.type==='expense';}).reduce(function(s,e){return s+e.amt;},0);
+    var pend = pendIn - pendOut; // net: รอรับ − รอจ่าย
     totalEl.style.display='flex';
     totalEl.innerHTML=
       '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายรับ ('+list.filter(function(e){return e.type==='income'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmt(inc)+'</div></div>'+

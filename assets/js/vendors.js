@@ -233,3 +233,122 @@ async function deleteVendor(id) {
   if (!String(id).startsWith('local-')) await sbDeleteVendor(id);
   showMsg('vendorMsg', 'ลบ "' + v.name + '" แล้ว', 'success');
 }
+
+// ─── INLINE VENDOR PANEL (จากหน้าบันทึกรายการ) ────────────
+function toggleFVendorPanel() {
+  var panel = document.getElementById('fVendorPanel');
+  if (!panel) return;
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    renderFVendorPanelList();
+    var inp = document.getElementById('fVendorNewName');
+    if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 50); }
+  }
+}
+
+function renderFVendorPanelList() {
+  var el = document.getElementById('fVendorPanelList');
+  if (!el) return;
+  var txType = (typeof cType !== 'undefined') ? cType : 'expense';
+  var list = _filterVendorsByType(txType);
+  var sorted = _sortedVendors(list);
+  if (!sorted.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:4px 0">ยังไม่มีร้านค้า</div>';
+    return;
+  }
+  el.innerHTML = sorted.map(function(v) {
+    var sid = v.id;
+    var sn  = v.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+    return '<div id="fvrow-'+sid+'" style="display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid var(--line)">'
+      + '<span id="fvname-'+sid+'" style="flex:1;font-size:13px">'+sn+'</span>'
+      + '<input id="fvinput-'+sid+'" type="text" value="'+sn+'" style="flex:1;font-size:13px !important;display:none;padding:2px 6px" '
+      +   'onkeydown="if(event.key===\'Enter\')fVendorPanelSaveRename(\''+sid+'\');else if(event.key===\'Escape\')fVendorPanelCancelRename(\''+sid+'\')">'
+      + '<button id="fvbtn-edit-'+sid+'" onclick="fVendorPanelStartRename(\''+sid+'\')" '
+      +   'style="background:none;border:none;font-size:13px;cursor:pointer;padding:2px 5px;color:var(--blue)" title="แก้ไข">✏️</button>'
+      + '<button id="fvbtn-save-'+sid+'" onclick="fVendorPanelSaveRename(\''+sid+'\')" '
+      +   'style="display:none;background:none;border:none;font-size:14px;cursor:pointer;padding:2px 5px;color:var(--green)">✓</button>'
+      + '<button onclick="fVendorPanelDelete(\''+sid+'\')" '
+      +   'style="background:none;border:none;font-size:17px;cursor:pointer;padding:2px 5px;color:var(--red)" title="ลบ">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+async function fVendorAdd() {
+  var inp  = document.getElementById('fVendorNewName');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) { showMsg('fVendorPanelMsg','กรุณาใส่ชื่อ','error'); return; }
+  if (vendorsData.find(function(v){ return v.name === name; })) {
+    showMsg('fVendorPanelMsg','มีชื่อนี้แล้ว','error'); return;
+  }
+  var txType = (typeof cType !== 'undefined') ? cType : 'expense';
+  var vType  = txType === 'income' ? 'income' : 'expense';
+  var sort   = vendorsData.length;
+  // optimistic
+  var tempId = 'local-' + Date.now();
+  vendorsData.push({ id: tempId, name: name, sort_order: sort, vendor_type: vType });
+  saveVendorsLocal();
+  if (inp) inp.value = '';
+  fillVendors(txType);
+  renderFVendorPanelList();
+  showMsg('fVendorPanelMsg', 'เพิ่ม "'+name+'" แล้ว ✓', 'success');
+  // sync Supabase
+  var saved = await sbAddVendor(name, sort, vType);
+  if (saved && saved.id) {
+    var idx = vendorsData.findIndex(function(v){ return v.id === tempId; });
+    if (idx >= 0) vendorsData[idx].id = saved.id;
+    saveVendorsLocal();
+  }
+}
+
+function fVendorPanelStartRename(id) {
+  var nameEl  = document.getElementById('fvname-'+id);
+  var inputEl = document.getElementById('fvinput-'+id);
+  var editBtn = document.getElementById('fvbtn-edit-'+id);
+  var saveBtn = document.getElementById('fvbtn-save-'+id);
+  if (nameEl)  nameEl.style.display  = 'none';
+  if (inputEl) { inputEl.style.display = ''; inputEl.focus(); inputEl.select(); }
+  if (editBtn) editBtn.style.display = 'none';
+  if (saveBtn) saveBtn.style.display = '';
+}
+
+function fVendorPanelCancelRename(id) {
+  var v = vendorsData.find(function(x){ return x.id === id; });
+  var nameEl  = document.getElementById('fvname-'+id);
+  var inputEl = document.getElementById('fvinput-'+id);
+  var editBtn = document.getElementById('fvbtn-edit-'+id);
+  var saveBtn = document.getElementById('fvbtn-save-'+id);
+  if (nameEl)  nameEl.style.display  = '';
+  if (inputEl) { inputEl.style.display = 'none'; if (v) inputEl.value = v.name; }
+  if (editBtn) editBtn.style.display = '';
+  if (saveBtn) saveBtn.style.display = 'none';
+}
+
+async function fVendorPanelSaveRename(id) {
+  var inputEl = document.getElementById('fvinput-'+id);
+  var newName = inputEl ? inputEl.value.trim() : '';
+  if (!newName) return;
+  var v = vendorsData.find(function(x){ return x.id === id; });
+  if (!v) return;
+  var oldName = v.name;
+  v.name = newName;
+  saveVendorsLocal();
+  var txType = (typeof cType !== 'undefined') ? cType : 'expense';
+  fillVendors(txType);
+  renderFVendorPanelList();
+  showMsg('fVendorPanelMsg', '"'+oldName+'" → "'+newName+'" แก้ไขแล้ว ✓', 'success');
+  if (!String(id).startsWith('local-')) await sbUpdateVendor(id, newName);
+}
+
+async function fVendorPanelDelete(id) {
+  var v = vendorsData.find(function(x){ return x.id === id; });
+  if (!v) return;
+  if (!confirm('ลบร้านค้า "'+v.name+'" ?')) return;
+  vendorsData = vendorsData.filter(function(x){ return x.id !== id; });
+  saveVendorsLocal();
+  var txType = (typeof cType !== 'undefined') ? cType : 'expense';
+  fillVendors(txType);
+  renderFVendorPanelList();
+  showMsg('fVendorPanelMsg', 'ลบ "'+v.name+'" แล้ว', 'success');
+  if (!String(id).startsWith('local-')) await sbDeleteVendor(id);
+}

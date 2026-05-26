@@ -222,5 +222,10 @@ function saveEdit(){
   save();
   sbUpdate(e);
   showMsg('editMsg','บันทึกการแก้ไขแล้ว','success');
-  setTimeout(function(){ closeEdit(); renderTx(); renderDash(); },800);
+  setTimeout(function(){
+    closeEdit(); renderTx(); renderDash();
+    // อัปเดตยอดบัญชีทุกใบที่อาจได้รับผล (กรณีเปลี่ยนบัญชีจาก A → B)
+    if (typeof renderAccountCards === 'function') renderAccountCards();
+    if (typeof renderAccountList  === 'function') renderAccountList();
+  }, 800);
 }

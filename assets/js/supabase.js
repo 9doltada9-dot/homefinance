@@ -608,6 +608,13 @@ async function syncOnReconnect(){
     var merged = await _fetchAndMerge(creds, 8000);
     if(merged){ db = merged; save(); }
     renderDash(); renderTx();
+    // ล้าง queue entries ที่ยืนยันว่ามีใน DB แล้ว
+    if(merged){
+      var mergedIds = {};
+      merged.forEach(function(r){ mergedIds[String(r.id)] = true; });
+      var stillPending = _getPendingQueue().filter(function(p){ return !mergedIds[String(p.id)]; });
+      localStorage.setItem('hf2_pending_sync', JSON.stringify(stillPending));
+    }
     var pendLeft = _getPendingQueue().length;
     // อัปเดต badge sidebar ให้ตรงกับ queue จริงหลัง sync
     updateConnectionUI(true);
@@ -884,6 +891,9 @@ async function refreshSyncStatus(){
       } else {
         msgEl.style.color = 'var(--green)';
         msgEl.textContent = '✅ ข้อมูลตรงกัน — อัปเดตล่าสุดแล้ว (' + db.length + ' รายการ)';
+        // ล้าง pending queue เมื่อยืนยันว่าข้อมูลตรงกับ DB แล้ว
+        localStorage.removeItem('hf2_pending_sync');
+        if(typeof updateConnectionUI==='function') updateConnectionUI(true);
       }
     }
   } catch(e){
@@ -930,6 +940,8 @@ async function sbPushAllLocal(){
       if(!r.ok){ var t=await r.text(); throw new Error('HTTP '+r.status+': '+t.slice(0,120)); }
       total += chunk.length;
     }
+    localStorage.removeItem('hf2_pending_sync');
+    if(typeof updateConnectionUI==='function') updateConnectionUI(true);
     if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ อัปโหลด '+total+' รายการสำเร็จ'; }
     showCycleToast('✅ อัปโหลด '+total+' รายการขึ้น Database สำเร็จ');
     setTimeout(refreshSyncStatus, 1000);
@@ -965,6 +977,8 @@ async function sbPullAllFull(){
     renderDash(); renderTx();
     if(typeof renderAccountCards==='function') renderAccountCards();
     if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ ดาวน์โหลด '+rows.length+' รายการสำเร็จ (รวมเครื่อง '+db.length+' รายการ)'; }
+    localStorage.removeItem('hf2_pending_sync');
+    if(typeof updateConnectionUI==='function') updateConnectionUI(true);
     showCycleToast('✅ ดาวน์โหลด '+rows.length+' รายการจาก Database');
     setTimeout(refreshSyncStatus, 500);
   } catch(e){

@@ -439,11 +439,12 @@ function renderTx(){
                   '</div>' :
                   e.type==='transfer' ?
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmt(e.amt)+'</div>' :
-                  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px">'+_acctDot(e)+
+                  
                   '<span style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
                     (e.type==='income'?'+':'−')+fmt(e.amt)+
-                  '</span></div>')+
-                  '<div style="margin-top:3px">'+
+                  '</span>')+
+                  '<div style="margin-top:3px;display:flex;align-items:center;gap:5px;justify-content:flex-end">'+
+                    _acctDot(e)+
                     (e.type==='transfer'
                       ? '<span class="badge badge-paid" style="font-size:10px;background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
                       : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'" style="font-size:10px">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
@@ -556,7 +557,7 @@ function renderTx(){
 
   } else {
     document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
+      '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
       list.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
         '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
@@ -565,7 +566,9 @@ function renderTx(){
         '<td>'+personPill(e.user_id||e.person)+'</td>'+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
-          '<span style="display:inline-flex;align-items:center;gap:4px;justify-content:flex-end">'+_acctDot(e)+(e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+'</span>'+
+          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
+        '</td>'+
+        '<td style="text-align:center;vertical-align:middle">'+(function(){ var a=(typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;}); return a ? '<span title="'+(a.name||'').replace(/"/g,'&quot;')+'" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(a.color||'#1a4fa0')+'"></span>' : ''; })()+
         '</td>'+
         '<td>'+(e.type==='transfer'
           ? '<span class="badge badge-paid" style="background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'

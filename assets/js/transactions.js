@@ -378,6 +378,16 @@ function renderTx(){
     ' คืนสถานะ'+
   '</button>'; };
 
+  // จุดสีธนาคาร: คืน <span> สีตาม account หรือ '' ถ้าไม่ระบุ
+  var _acctDot = function(e){
+    if (!e.account_id) return '';
+    var acct = (typeof accountsData !== 'undefined' ? accountsData : []).find(function(a){ return a.id === e.account_id; });
+    if (!acct) return '';
+    var col  = acct.color || '#1a4fa0';
+    var name = (acct.name || '').replace(/"/g,'&quot;');
+    return '<span title="'+name+'" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
+  };
+
   if(isMobile){
     document.getElementById('txContent').innerHTML = list.length
       ? list.map(function(e){return '<div class="swipe-row" id="srow-'+e.id+'">'+
@@ -429,9 +439,10 @@ function renderTx(){
                   '</div>' :
                   e.type==='transfer' ?
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmt(e.amt)+'</div>' :
-                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
+                  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px">'+_acctDot(e)+
+                  '<span style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
                     (e.type==='income'?'+':'−')+fmt(e.amt)+
-                  '</div>')+
+                  '</span></div>')+
                   '<div style="margin-top:3px">'+
                     (e.type==='transfer'
                       ? '<span class="badge badge-paid" style="font-size:10px;background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
@@ -554,7 +565,7 @@ function renderTx(){
         '<td>'+personPill(e.user_id||e.person)+'</td>'+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
-          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
+          '<span style="display:inline-flex;align-items:center;gap:4px;justify-content:flex-end">'+_acctDot(e)+(e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+'</span>'+
         '</td>'+
         '<td>'+(e.type==='transfer'
           ? '<span class="badge badge-paid" style="background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'

@@ -492,9 +492,12 @@ function renderAccountList() {
 }
 
 // ─── ACCOUNT LEDGER (สมุดรายวัน ต่อบัญชี) ────────────────
+var _ledgerAccountId = null;
+
 function openAccountLedger(accountId) {
   var acct = accountsData.find(function(a){ return a.id === accountId; });
   if (!acct) return;
+  _ledgerAccountId = accountId;
 
   // header
   var nameEl = document.getElementById('ledgerAcctName');
@@ -502,9 +505,41 @@ function openAccountLedger(accountId) {
   if (nameEl) nameEl.textContent = acct.name;
   if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmt(acct.initial_balance || 0) + ' บาท';
 
-  // filter + sort entries for this account
-  // เรียง ASC ก่อนเพื่อคำนวณ running balance ให้ถูก แล้ว reverse แสดงล่าสุดก่อน
-  var entries = db
+  // populate month dropdown from transactions of this account
+  var sel = document.getElementById('ledgerMonthFilter');
+  if (sel) {
+    var months = Array.from(new Set(
+      db.filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
+        .map(function(e){ return e.date.slice(0, 7); })
+    )).sort().reverse();
+    var now = new Date();
+    var thisM = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    // default: current month if has data, else most recent month
+    var defM = months.indexOf(thisM) > -1 ? thisM : (months[0] || thisM);
+    sel.innerHTML = '<option value="">ทุกเดือน</option>' +
+      months.map(function(m){
+        var parts = m.split('-').map(Number);
+        return '<option value="' + m + '" ' + (m === defM ? 'selected' : '') + '>' +
+               (typeof SHORT_M !== 'undefined' ? SHORT_M[parts[1]-1] : m) + ' ' + (parts[0]+543) +
+               '</option>';
+      }).join('');
+  }
+
+  document.getElementById('accountLedgerModal').style.display = 'flex';
+  renderLedger();
+}
+
+/** Render ledger table + totals ตาม _ledgerAccountId + ledgerMonthFilter */
+function renderLedger() {
+  var accountId = _ledgerAccountId;
+  if (!accountId) return;
+  var acct = accountsData.find(function(a){ return a.id === accountId; });
+  if (!acct) return;
+
+  var selMonth = (document.getElementById('ledgerMonthFilter') || {}).value || '';
+
+  // เรียง ASC ทั้งหมด (ใช้คำนวณ running balance)
+  var allEntries = db
     .filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
     .slice()
     .sort(function(a, b){
@@ -513,14 +548,33 @@ function openAccountLedger(accountId) {
       return Number(a.id) - Number(b.id);
     });
 
-  // running balance starting from initial
-  var running = acct.initial_balance || 0;
+  // คำนวณ opening balance สำหรับ period ที่เลือก
+  var openBal = acct.initial_balance || 0;
+  if (selMonth) {
+    // รวมทุก transaction ก่อนหน้า period ที่เลือก เพื่อหา opening balance ของ period
+    allEntries.filter(function(e){ return e.date.slice(0,7) < selMonth; })
+      .forEach(function(e){
+        if (e.type === 'income')  openBal += e.amt;
+        else if (e.type === 'expense') openBal -= e.amt;
+        else if (e.type === 'transfer') {
+          if (e.transfer_direction === 'in')  openBal += e.amt;
+          if (e.transfer_direction === 'out') openBal -= e.amt;
+        }
+      });
+  }
+
+  // filter เฉพาะ period
+  var entries = selMonth
+    ? allEntries.filter(function(e){ return e.date.slice(0,7) === selMonth; })
+    : allEntries;
+
+  var running  = openBal;
   var totalIn  = 0;
   var totalOut = 0;
 
   var rows = entries.map(function(e) {
-    var debit  = 0; // เงินออก
-    var credit = 0; // เงินเข้า
+    var debit  = 0;
+    var credit = 0;
     var typeLabel = '';
     var typeColor = 'var(--ink2)';
 
@@ -559,10 +613,10 @@ function openAccountLedger(accountId) {
     '</tr>';
   });
 
-  // summary row
-  var openBal = acct.initial_balance || 0;
+  // opening balance row (ยอดยกมา)
+  var openLabel = selMonth ? 'ยอดยกมา ณ ต้นเดือน' : 'ยอดยกมา (Opening Balance)';
   var openRow = '<tr style="background:var(--surface2);font-size:12px">' +
-    '<td colspan="2" style="padding:8px 6px;color:var(--ink3);font-style:italic">ยอดยกมา (Opening Balance)</td>' +
+    '<td colspan="2" style="padding:8px 6px;color:var(--ink3);font-style:italic">' + openLabel + '</td>' +
     '<td></td><td></td>' +
     '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmt(openBal) + '</td>' +
   '</tr>';
@@ -580,23 +634,22 @@ function openAccountLedger(accountId) {
           '</tr></thead>' +
           '<tbody>' + rows.slice().reverse().join('') + openRow + '</tbody>' +
         '</table>'
-      : '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:14px">ยังไม่มีรายการในบัญชีนี้</div>';
+      : '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:14px">ไม่มีรายการในช่วงที่เลือก</div>';
   }
 
   // summary totals
+  var finalBal  = getAccountBalance(accountId);
   var balEl     = document.getElementById('ledgerBalance');
   var totalInEl = document.getElementById('ledgerTotalIn');
   var totalOutEl= document.getElementById('ledgerTotalOut');
-  var finalBal  = getAccountBalance(accountId);
   if (balEl)     { balEl.textContent = fmt(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
   if (totalInEl) totalInEl.textContent  = '+' + fmt(totalIn)  + ' บาท';
   if (totalOutEl)totalOutEl.textContent = '−' + fmt(totalOut) + ' บาท';
-
-  document.getElementById('accountLedgerModal').style.display = 'flex';
 }
 
 function closeAccountLedger() {
   document.getElementById('accountLedgerModal').style.display = 'none';
+  _ledgerAccountId = null;
 }
 
 function onAddAccount() {

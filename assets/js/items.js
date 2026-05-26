@@ -39,12 +39,23 @@ async function addItem(){
   if(existing.find(function(x){return x.name===name;})){ showMsg('itemMsg','มีรายการนี้แล้ว','error'); return; }
 
   var sortOrder = existing.length;
-  var saved = await sbAddItem(catId, name, sortOrder);
+  // Optimistic update — อัปเดต itemsData ทันที ก่อน await Supabase
+  // เพื่อให้หน้าฟอร์มเห็นรายการใหม่ทันทีแม้ navigate ไปก่อน response กลับมา
+  var _tempId = 'local-' + Date.now();
   if(!itemsData[catId]) itemsData[catId]=[];
-  itemsData[catId].push({id: (saved && saved.id) || ('local-'+Date.now()), name:name, sort_order:sortOrder});
+  itemsData[catId].push({id: _tempId, name:name, sort_order:sortOrder});
   saveItemsLocal();
   document.getElementById('newItemName').value='';
   renderItemList();
+  showMsg('itemMsg', 'กำลังบันทึก...', 'success');
+
+  var saved = await sbAddItem(catId, name, sortOrder);
+  if(saved && saved.id){
+    // อัปเดต id จาก temp → real Supabase id
+    var _idx = (itemsData[catId]||[]).findIndex(function(x){ return x.id === _tempId; });
+    if(_idx >= 0) itemsData[catId][_idx].id = saved.id;
+    saveItemsLocal();
+  }
   showMsg('itemMsg', saved ? ('เพิ่ม "'+name+'" บันทึกแล้ว ✓') : ('เพิ่ม "'+name+'" (offline)'), 'success');
 }
 

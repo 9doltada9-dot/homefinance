@@ -27,6 +27,9 @@ function initForm(){
 
   if(_inProgress){
     // ── form มีข้อมูลค้างอยู่ — อย่า reset, refresh เฉพาะที่จำเป็น ──
+    // แต่ต้อง refresh fDesc เสมอ เผื่อมีรายการใหม่ถูกเพิ่มในหมวดนั้น
+    var _curCat = document.getElementById('fCat')?.value;
+    if(_curCat) fillDescByCat(_curCat);
     fillVendors(cType);
     if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
     updatePersonLabels();

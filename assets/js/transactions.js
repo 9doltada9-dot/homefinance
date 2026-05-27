@@ -225,7 +225,7 @@ function _splitBadge(e) {
       Object.keys(e.split_snapshot).forEach(function(uid) {
         var s = e.split_snapshot[uid];
         var mName = s.label || (typeof nm === 'function' ? nm(uid) : uid);
-        var fmtAmt = (typeof fmt === 'function') ? fmt(s.amount || 0) : (s.amount || 0);
+        var fmtAmt = (typeof fmtH === 'function') ? fmtH(s.amount || 0) : (s.amount || 0);
         lines.push(mName + ' — ' + fmtAmt + ' บาท' + (s.pct ? ' (' + s.pct + '%)' : ''));
       });
     } else if (grp && grp.members) {
@@ -450,7 +450,7 @@ function renderTx(){
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmtH(e.amt)+'</div>' :
                   
                   '<span style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
-                    (e.type==='income'?'+':'−')+fmt(e.amt)+
+                    (e.type==='income'?'+':'−')+fmtH(e.amt)+
                   '</span>')+
                   '<div style="margin-top:3px;display:flex;align-items:center;gap:5px;justify-content:flex-end">'+
                     _acctDot(e)+
@@ -586,7 +586,7 @@ function renderTx(){
         (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
-          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
+          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmtH(e.amt)+
         '</td>'+
         '<td style="text-align:center;vertical-align:middle">'+(function(){ var a=(typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;}); return a ? '<span title="'+(a.name||'').replace(/"/g,'&quot;')+'" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(a.color||'#1a4fa0')+'"></span>' : ''; })()+
         '</td>'+

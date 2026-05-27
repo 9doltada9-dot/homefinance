@@ -188,7 +188,7 @@ function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
   save();
   sbAdd(outEntry);
   sbAdd(inEntry);
-  showCycleToast('โอนเงิน ' + fmt(amount) + ' บาท เรียบร้อย');
+  showCycleToast('โอนเงิน ' + fmtH(amount) + ' บาท เรียบร้อย');
 }
 
 // ─── SUPABASE SYNC ────────────────────────────────────────
@@ -354,7 +354,7 @@ function doDeposit() {
   closeDepositModal();
   renderAccountCards();
   renderAccountList();
-  showCycleToast('ฝากเงิน ' + fmt(amt) + ' บาท เรียบร้อย');
+  showCycleToast('ฝากเงิน ' + fmtH(amt) + ' บาท เรียบร้อย');
 }
 
 // ─── EDIT ACCOUNT ─────────────────────────────────────────
@@ -387,7 +387,7 @@ function openAdjustModal(accountId) {
   if (!acct) return;
   var currentBal = getAccountBalance(accountId);
   document.getElementById('adjustAcctId').value = accountId;
-  document.getElementById('adjustCurrentBal').textContent = fmt(currentBal) + ' บาท';
+  document.getElementById('adjustCurrentBal').textContent = fmtH(currentBal) + ' บาท';
   document.getElementById('adjustCurrentBal').style.color = currentBal >= 0 ? 'var(--green)' : 'var(--red)';
   document.getElementById('adjustTargetAmt').value = '';
   document.getElementById('adjustDate').value = new Date().toISOString().slice(0, 10);
@@ -445,7 +445,7 @@ function doAdjustBalance() {
     id: id, date: date,
     type: entryType,
     cat_id: null, cat_name: 'ปรับยอดบัญชี',
-    desc: 'ปรับยอด' + (acct ? ' – ' + acct.name : '') + ' (' + (diff > 0 ? '+' : '') + fmt(diff) + ')',
+    desc: 'ปรับยอด' + (acct ? ' – ' + acct.name : '') + ' (' + (diff > 0 ? '+' : '') + fmtH(diff) + ')',
     amt: Math.abs(diff),
     person: (typeof getCurrentPerson === 'function' ? getCurrentPerson() : null),
     split: false, status: entryType === 'income' ? 'received' : 'paid',
@@ -461,7 +461,7 @@ function doAdjustBalance() {
   renderAccountCards();
   renderAccountList();
   if (typeof renderDash === 'function') renderDash();
-  showCycleToast('ปรับยอด ' + (diff > 0 ? '+' : '') + fmt(diff) + ' บาท เรียบร้อย');
+  showCycleToast('ปรับยอด ' + (diff > 0 ? '+' : '') + fmtH(diff) + ' บาท เรียบร้อย');
 }
 
 // ─── SETTINGS: ACCOUNT LIST ───────────────────────────────
@@ -503,7 +503,7 @@ function openAccountLedger(accountId) {
   var nameEl = document.getElementById('ledgerAcctName');
   var subEl  = document.getElementById('ledgerAcctSub');
   if (nameEl) nameEl.textContent = acct.name;
-  if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmt(acct.initial_balance || 0) + ' บาท';
+  if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmtH(acct.initial_balance || 0) + ' บาท';
 
   // populate month dropdown from transactions of this account
   var sel = document.getElementById('ledgerMonthFilter');
@@ -609,13 +609,13 @@ function renderLedger() {
         '<div style="font-size:11px;color:' + typeColor + ';font-weight:600">' + typeLabel + (e.cat_name ? ' · ' + e.cat_name : '') + '</div>' +
       '</td>' +
       '<td style="text-align:right;font-family:monospace;font-size:13px;color:var(--red);padding:8px 6px;white-space:nowrap">' +
-        (debit ? '−' + fmt(debit) : '—') +
+        (debit ? '−' + fmtH(debit) : '—') +
       '</td>' +
       '<td style="text-align:right;font-family:monospace;font-size:13px;color:var(--green);padding:8px 6px;white-space:nowrap">' +
-        (credit ? '+' + fmt(credit) : '—') +
+        (credit ? '+' + fmtH(credit) : '—') +
       '</td>' +
       '<td style="text-align:right;font-family:monospace;font-size:13px;font-weight:700;color:' + balColor + ';padding:8px 6px;white-space:nowrap">' +
-        fmt(running) +
+        fmtH(running) +
       '</td>' +
     '</tr>';
   });
@@ -655,9 +655,9 @@ function renderLedger() {
   var balEl     = document.getElementById('ledgerBalance');
   var totalInEl = document.getElementById('ledgerTotalIn');
   var totalOutEl= document.getElementById('ledgerTotalOut');
-  if (balEl)     { balEl.textContent = fmt(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
-  if (totalInEl) totalInEl.textContent  = '+' + fmt(totalIn)  + ' บาท';
-  if (totalOutEl)totalOutEl.textContent = '−' + fmt(totalOut) + ' บาท';
+  if (balEl)     { balEl.textContent = fmtH(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
+  if (totalInEl) totalInEl.textContent  = '+' + fmtH(totalIn)  + ' บาท';
+  if (totalOutEl)totalOutEl.textContent = '−' + fmtH(totalOut) + ' บาท';
 }
 
 function closeAccountLedger() {

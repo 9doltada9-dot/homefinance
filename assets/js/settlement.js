@@ -728,7 +728,12 @@ function exportSettlePDF(month, groupId) {
   });
 
   var pdfTotals = {}; pdfUids.forEach(function(u){ pdfTotals[u]=0; });
-  var detailRows = splitExp.map(function(e, rowIdx){
+  var _pdfGrp=[], _pdfDm={};
+  splitExp.forEach(function(e){ var d=e.date; if(!_pdfDm[d]){_pdfDm[d]=[];_pdfGrp.push({date:d,items:_pdfDm[d]});} _pdfDm[d].push(e); });
+  var detailRows = (function(){
+    return _pdfGrp.map(function(g){
+      return '<tr style="background:#e8edf2"><td colspan="'+(5+pdfUids.length)+'" style="padding:5px 8px;font-size:11px;font-weight:700;color:#334">'+toThaiDateStr(g.date)+'</td></tr>\n'
+        + g.items.map(function(e, rowIdx){
     var pu = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[pu] || e.person;
     var payerColor = pdfUidColorMap[pu] || { bg:'#eef7f2', cl:'#1a7a4a' };
@@ -753,10 +758,8 @@ function exportSettlePDF(month, groupId) {
       var uc = pdfUidColorMap[uid] || {};
       return '<td style="text-align:right;'+(isPayer?'color:'+uc.cl+';font-weight:700':'')+'">'+(amt>0?fmtH(amt):'—')+(isPayer?' ✓':'')+'</td>';
     }).join('');
-    var rowBg = rowIdx % 2 === 1 ? '#f7f9ff' : '#ffffff';
     var payerPill = '<span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span>';
-    return '<tr style="background:'+rowBg+'">'
-      +'<td style="white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
+    return '<tr>'
       +'<td>'+e.desc+'</td>'
       +'<td style="color:#555">'+vname+'</td>'
       +'<td style="color:#666;font-size:12px">'+pdfNote+'</td>'
@@ -764,7 +767,9 @@ function exportSettlePDF(month, groupId) {
       +'<td style="text-align:right;font-weight:600">'+fmtH(e.amt)+'</td>'
       +cols
     +'</tr>';
-  }).join('');
+        }).join('');
+    }).join('');
+  })();
   var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
     +'<td colspan="3">รวม</td><td></td><td></td>'
     +'<td style="text-align:right">'+fmtH(totalExp)+'</td>'
@@ -808,7 +813,7 @@ function exportSettlePDF(month, groupId) {
     +'</table>\n'
     +'<h2>รายการทั้งหมด</h2>\n'
     +'<table>\n'
-    +'<tr><th>วันที่</th><th>รายการ</th><th>ร้านค้า</th><th>หมายเหตุ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
+    +'<tr><th>รายการ</th><th>ร้านค้า</th><th>หมายเหตุ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
     +detailRows
     +detailTotalRow+'\n'
     +'</table>\n'

@@ -125,15 +125,15 @@ function renderForecastCard(cycleId) {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
       '<div style="background:rgba(255,255,255,.6);border-radius:8px;padding:7px 9px">' +
         '<div style="font-size:10px;color:var(--ink3)">อัตราใช้จ่าย/วัน</div>' +
-        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red)">฿' + fmtH(fc.burnRate) + '</div>' +
+        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red)">฿ ' + fmtH(fc.burnRate) + '</div>' +
       '</div>' +
       '<div style="background:rgba(255,255,255,.6);border-radius:8px;padding:7px 9px">' +
         '<div style="font-size:10px;color:var(--ink3)">ใช้ได้วันละ</div>' +
-        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--green)">฿' + fmtH(fc.safeToSpendToday) + '</div>' +
+        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--green)">฿ ' + fmtH(fc.safeToSpendToday) + '</div>' +
       '</div>' +
       '<div style="background:rgba(255,255,255,.6);border-radius:8px;padding:7px 9px">' +
         '<div style="font-size:10px;color:var(--ink3)">คาดว่าสิ้นรอบเหลือ</div>' +
-        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:' + (fc.projectedEndBalance >= 0 ? 'var(--green)' : 'var(--red)') + '">฿' + fmtH(fc.projectedEndBalance) + '</div>' +
+        '<div style="font-size:14px;font-weight:700;font-family:monospace;color:' + (fc.projectedEndBalance >= 0 ? 'var(--green)' : 'var(--red)') + '">฿ ' + fmtH(fc.projectedEndBalance) + '</div>' +
       '</div>' +
       '<div style="background:rgba(255,255,255,.6);border-radius:8px;padding:7px 9px">' +
         '<div style="font-size:10px;color:var(--ink3)">เงินอยู่ได้อีก</div>' +

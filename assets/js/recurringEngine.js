@@ -149,7 +149,7 @@ function renderRecurringList() {
       '<div style="flex:1;min-width:0">' +
         '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + (t.cat_name || '') + ' — ' + (t.desc || '(ไม่มีคำอธิบาย)') + '</div>' +
         '<div style="font-size:11px;color:var(--ink3);margin-top:2px">' +
-          'วันที่ ' + (t.day_of_month || 1) + ' · ฿' + fmtH(t.amt) + ' · ' +
+          'วันที่ ' + (t.day_of_month || 1) + ' · ฿ ' + fmtH(t.amt) + ' · ' +
           (typeof nm === 'function' ? nm(t.person) : t.person) + offsetLbl + ' ' + lastRun +
         '</div>' +
       '</div>' +

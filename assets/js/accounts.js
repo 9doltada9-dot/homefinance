@@ -572,6 +572,13 @@ function renderLedger() {
   var totalIn  = 0;
   var totalOut = 0;
 
+  // group entries by date (ASC order maintained for running balance)
+  var _rowGroups = [], _rowDmap = {};
+  entries.forEach(function(e) {
+    var d = e.date;
+    if (!_rowDmap[d]) { _rowDmap[d] = []; _rowGroups.push({date: d, rows: _rowDmap[d]}); }
+    _rowDmap[d].push(e);
+  });
   var rows = entries.map(function(e) {
     var debit  = 0;
     var credit = 0;
@@ -596,7 +603,7 @@ function renderLedger() {
 
     var balColor = running >= 0 ? 'var(--green)' : 'var(--red)';
     return '<tr style="border-bottom:1px solid var(--line)">' +
-      '<td style="font-size:12px;color:var(--ink3);white-space:nowrap;padding:8px 6px">' + toThaiDateShort(e.date) + '</td>' +
+
       '<td style="padding:8px 6px;max-width:180px">' +
         '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.desc || '—') + '</div>' +
         '<div style="font-size:11px;color:' + typeColor + ';font-weight:600">' + typeLabel + (e.cat_name ? ' · ' + e.cat_name : '') + '</div>' +
@@ -616,7 +623,7 @@ function renderLedger() {
   // opening balance row (ยอดยกมา)
   var openLabel = selMonth ? 'ยอดยกมา ณ ต้นเดือน' : 'ยอดยกมา (Opening Balance)';
   var openRow = '<tr style="background:var(--surface2);font-size:12px">' +
-    '<td colspan="2" style="padding:8px 6px;color:var(--ink3);font-style:italic">' + openLabel + '</td>' +
+    '<td style="padding:8px 6px;color:var(--ink3);font-style:italic">' + openLabel + '</td>' +
     '<td></td><td></td>' +
     '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmt(openBal) + '</td>' +
   '</tr>';
@@ -626,13 +633,19 @@ function renderLedger() {
     wrap.innerHTML = rows.length
       ? '<table style="width:100%;border-collapse:collapse;margin-top:8px">' +
           '<thead><tr style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px">' +
-            '<th style="text-align:left;padding:6px 6px;font-weight:600">วันที่</th>' +
             '<th style="text-align:left;padding:6px 6px;font-weight:600">รายการ</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">รายจ่าย</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">รายรับ</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">ยอดคงเหลือ</th>' +
           '</tr></thead>' +
-          '<tbody>' + rows.slice().reverse().join('') + openRow + '</tbody>' +
+          '<tbody>' + (function(){
+            // Display groups DESC (latest first), rows within each group also reversed
+            var reversed = _rowGroups.slice().reverse();
+            return reversed.map(function(g){
+              return '<tr style="background:var(--surface2)"><td colspan="4" style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+                g.rows.slice().reverse().join('');
+            }).join('');
+          })() + openRow + '</tbody>' +
         '</table>'
       : '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:14px">ไม่มีรายการในช่วงที่เลือก</div>';
   }

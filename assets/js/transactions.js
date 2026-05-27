@@ -390,7 +390,16 @@ function renderTx(){
 
   if(isMobile){
     document.getElementById('txContent').innerHTML = list.length
-      ? list.map(function(e){return '<div class="swipe-row" id="srow-'+e.id+'">'+
+      ? (function(){
+          var _groups=[], _dmap={};
+          list.forEach(function(e){
+            var d=e.date;
+            if(!_dmap[d]){_dmap[d]=[];_groups.push({date:d,items:_dmap[d]});}
+            _dmap[d].push(e);
+          });
+          return _groups.map(function(g){
+            return '<div style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
+              g.items.map(function(e){return '<div class="swipe-row" id="srow-'+e.id+'">'+
           '<div class="swipe-actions">'+
             '<button class="sa-btn sa-edit" onclick="closeAllSwipe();openEdit(\''+e.id+'\')">'+
               '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>'+
@@ -417,7 +426,7 @@ function renderTx(){
                 '<div style="flex:1;min-width:0">'+
                   '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'+
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
-                    '<span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+
+
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
                     (e.user_id||e.person ? personPill(e.user_id||e.person) : '')+
@@ -454,7 +463,9 @@ function renderTx(){
               '</div>'+
             '</div>'+
           '</div>'+
-        '</div>';}).join('')
+        '</div>';}).join('');
+          }).join('');
+        })()
       : '<div class="empty">ไม่พบรายการ</div>';
 
     // ── Swipe via event delegation on container ───────────────
@@ -557,9 +568,18 @@ function renderTx(){
 
   } else {
     document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
-      list.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
-        '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
+      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
+      (function(){
+        var _groups=[], _dmap={};
+        list.forEach(function(e){
+          var d=e.date;
+          if(!_dmap[d]){_dmap[d]=[];_groups.push({date:d,items:_dmap[d]});}
+          _dmap[d].push(e);
+        });
+        return _groups.map(function(g){
+          return '<tr><td colspan="10" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+            g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
+
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
@@ -582,7 +602,10 @@ function renderTx(){
           )+
           '<button class="btn btn-del" id="del-'+e.id+'" onclick="delStep1(\''+e.id+'\')">ลบ</button>'+
         '</td>'+
-      '</tr>';}).join('')+
+      '</tr>';}).join('');
+        }).join('');
+      })()+
+      
     '</table>' : '<div class="empty">ไม่พบรายการ</div>';
   }
 }

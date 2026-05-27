@@ -403,7 +403,12 @@ function renderSettle(){
         return '<th style="text-align:right;white-space:nowrap;background:'+c.bg+';color:'+c.cl+';border-radius:6px;padding:6px 10px">'+( nameMap[uid]||uid)+'</th>';
       }).join('');
   var totalCols = {}; detailUids.forEach(function(u){ totalCols[u]=0; });
-  var trRows = splitExp.map(function(e, rowIdx){
+  var _sGrp=[], _sDm={};
+  splitExp.forEach(function(e){ var d=e.date; if(!_sDm[d]){_sDm[d]=[];_sGrp.push({date:d,items:_sDm[d]});} _sDm[d].push(e); });
+  var trRows = (function(){
+    return _sGrp.map(function(g){
+      return '<tr style="background:var(--surface2)"><td colspan="'+(5+detailUids.length)+'" style="padding:5px 10px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'
+        + g.items.map(function(e, rowIdx){
     var payerU = e.user_id || _pidToUid(e.person) || e.person;
     var payerName = nameMap[payerU] || e.person;
     var payerColor = _uidColorMap[payerU] || { bg:'#eef7f2', cl:'#1a7a4a' };
@@ -423,9 +428,7 @@ function renderSettle(){
     }).join('');
     var vendor = _vendorName(e.vendor_id);
     var noteText = (e.note || '').trim();
-    var rowBg = rowIdx % 2 === 1 ? 'background:rgba(0,0,0,.025)' : '';
-    return '<tr style="'+rowBg+'">'
-      +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
+    return '<tr>'
       +'<td style="font-size:13px">'+e.desc+'</td>'
       +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
       +'<td style="font-size:12px;color:var(--ink3);max-width:160px">'+noteText+'</td>'
@@ -433,9 +436,11 @@ function renderSettle(){
       +'<td style="text-align:right;font-family:monospace;font-weight:600">฿'+fmtH(e.amt)+'</td>'
       +cols
     +'</tr>';
-  }).join('');
+        }).join('');
+    }).join('');
+  })();
   var totalRow = '<tr style="font-weight:700;background:var(--surface2)">'
-    +'<td colspan="3">รวม</td>'
+    +'<td colspan="2">รวม</td>'
     +'<td></td>'
     +'<td></td>'
     +'<td style="text-align:right;font-family:monospace">฿'+fmtH(totalSplit)+'</td>'
@@ -490,24 +495,29 @@ function renderSettle(){
       +'</div>';
     } else {
       // Desktop: table เหมือน detailDesktop (วันที่, รายการ, ร้านค้า, หมายเหตุ, ผู้จ่าย, รวม)
-      var persRows = personalExp.map(function(e, rowIdx){
+      var _pGrp=[], _pDm={};
+      personalExp.forEach(function(e){ var d=e.date; if(!_pDm[d]){_pDm[d]=[];_pGrp.push({date:d,items:_pDm[d]});} _pDm[d].push(e); });
+      var persRows = (function(){
+        return _pGrp.map(function(g){
+          return '<tr style="background:var(--surface2)"><td colspan="5" style="padding:5px 10px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'
+            + g.items.map(function(e, rowIdx){
         var pu = e.user_id || _pidToUid(e.person) || e.person;
         var payerName = nameMap[pu] || e.person;
         var payerColor = _persColorMap[pu] || { bg:'var(--surface2)', cl:'var(--ink2)' };
         var vendor = _vendorName(e.vendor_id);
         var noteText = (e.note || '').trim();
-        var rowBg = rowIdx % 2 === 1 ? 'background:rgba(0,0,0,.025)' : '';
-        return '<tr style="'+rowBg+'">'
-          +'<td style="font-size:11px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'
+        return '<tr>'
           +'<td style="font-size:13px">'+e.desc+'</td>'
           +'<td style="font-size:12px;color:var(--ink3)">'+vendor+'</td>'
           +'<td style="font-size:12px;color:var(--ink3);max-width:160px">'+noteText+'</td>'
           +'<td><span style="background:'+payerColor.bg+';color:'+payerColor.cl+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap">'+payerName+'</span></td>'
           +'<td style="text-align:right;font-family:monospace;font-weight:600;color:var(--red,#dc2626)">฿'+fmtH(e.amt)+'</td>'
         +'</tr>';
-      }).join('');
+          }).join('');
+        }).join('');
+      })();
       var persTotalRow = '<tr style="font-weight:700;background:var(--surface2)">'
-        +'<td colspan="3">รวมส่วนตัว</td>'
+        +'<td colspan="2">รวมส่วนตัว</td>'
         +'<td></td><td></td>'
         +'<td style="text-align:right;font-family:monospace">฿'+fmtH(persTotal)+'</td>'
       +'</tr>';
@@ -515,7 +525,7 @@ function renderSettle(){
         +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
         +'<div class="table-scroll"><table>'
           +'<tr style="font-size:11px;color:var(--ink3)">'
-            +'<th style="white-space:nowrap">วันที่</th><th>รายการ</th>'
+            +'<th>รายการ</th>'
             +'<th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">หมายเหตุ</th>'
             +'<th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
           +'</tr>'

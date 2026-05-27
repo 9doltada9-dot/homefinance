@@ -60,7 +60,9 @@ function renderDash(){
   document.getElementById('dashSub').textContent =
     'ภาพรวมการเงิน '+SHORT_M[mo-1]+' '+(y+543);
 
-  var me = db.filter(function(e){ return e.date.startsWith(curM); });
+  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _dashDb = _myUid ? db.filter(function(e){ return (e.user_id||e.person) === _myUid; }) : db;
+  var me = _dashDb.filter(function(e){ return e.date.startsWith(curM); });
   var inc = me.filter(function(e){return e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
   var exp = me.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
   var pIn = me.filter(function(e){return e.type==='income'&&e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
@@ -77,7 +79,7 @@ function renderDash(){
   switchChart(activeChart, curM);
   // Recent & Pending for selected month
   // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกันเรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
-  var _dbFiltered = db.slice().sort(function(a, b){
+  var _dbFiltered = _dashDb.slice().sort(function(a, b){
     if(a.date > b.date) return -1;
     if(a.date < b.date) return 1;
     return Number(b.id) - Number(a.id);
@@ -124,8 +126,10 @@ function renderSalaryCycleCard(){
     dayLeft  = summary.daysRemaining;
   } else {
     var today = new Date();
-    cycleInc  = db.filter(function(e){return e.type==='income'&&e.date>=cycle.start&&e.date<=cycle.end;});
-    cycleExp  = db.filter(function(e){return e.type==='expense'&&e.date>=cycle.start&&e.date<=cycle.end&&isPaid(e);});
+    var _myUid2 = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+    var _cycleDb = _myUid2 ? db.filter(function(e){ return (e.user_id||e.person) === _myUid2; }) : db;
+    cycleInc  = _cycleDb.filter(function(e){return e.type==='income'&&e.date>=cycle.start&&e.date<=cycle.end;});
+    cycleExp  = _cycleDb.filter(function(e){return e.type==='expense'&&e.date>=cycle.start&&e.date<=cycle.end&&isPaid(e);});
     received  = cycleInc.filter(function(e){return isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
     pending   = cycleInc.filter(function(e){return e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
     totalExp  = cycleExp.reduce(function(s,e){return s+e.amt;},0);
@@ -140,7 +144,9 @@ function renderSalaryCycleCard(){
   }
 
   // Pending salary entries
-  var allInCycle = db.filter(function(e){ return e.date >= cycle.start && e.date <= cycle.end; });
+  var _myUid3 = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _cycleDb2 = _myUid3 ? db.filter(function(e){ return (e.user_id||e.person) === _myUid3; }) : db;
+  var allInCycle = _cycleDb2.filter(function(e){ return e.date >= cycle.start && e.date <= cycle.end; });
   var pendList   = allInCycle.filter(function(e){ return e.type==='income'&&e.status==='pending'&&e._salary_cycle; });
 
   // Progress bar for cycle
@@ -271,7 +277,9 @@ function switchChart(type, passedMonth){
   var now = new Date();
   var thisM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   var curMonth = passedMonth || document.getElementById('dashMonth')?.value || thisM;
-  var me = db.filter(function(e){return e.date.startsWith(curMonth);});
+  var _myUidC = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _chartDb = _myUidC ? db.filter(function(e){ return (e.user_id||e.person) === _myUidC; }) : db;
+  var me = _chartDb.filter(function(e){return e.date.startsWith(curMonth);});
   var canvas = document.getElementById('chartMain');
   if(!canvas) return;
   var ctx = canvas.getContext('2d');
@@ -310,8 +318,8 @@ function switchChart(type, passedMonth){
       var d=new Date(now.getFullYear(), now.getMonth()-i, 1);
       months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
     }
-    var incVals = months.map(function(m){return db.filter(function(e){return e.date.startsWith(m)&&e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
-    var expVals = months.map(function(m){return db.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
+    var incVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
+    var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
     var labelsT = months.map(function(m){ var p=m.split('-').map(Number); return SHORT_M[p[1]-1]+(p[0]+543-2500<100?'':"'"+String(p[0]+543).slice(2)); });
     chartMain = new Chart(ctx,{type:'line',data:{labels:labelsT,datasets:[
       {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
@@ -339,10 +347,10 @@ function switchChart(type, passedMonth){
 
   } else if(type==='status'){
     // สถานะรายการ (paid vs pending แยก income/expense)
-    var incPaid  = db.filter(function(e){return e.type==='income' &&isPaid(e)   &&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
-    var incPend  = db.filter(function(e){return e.type==='income' &&e.status==='pending'&&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
-    var expPaid  = db.filter(function(e){return e.type==='expense'&&isPaid(e)   &&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
-    var expPend  = db.filter(function(e){return e.type==='expense'&&e.status==='pending'&&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
+    var incPaid  = _chartDb.filter(function(e){return e.type==='income' &&isPaid(e)   &&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
+    var incPend  = _chartDb.filter(function(e){return e.type==='income' &&e.status==='pending'&&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
+    var expPaid  = _chartDb.filter(function(e){return e.type==='expense'&&isPaid(e)   &&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
+    var expPend  = _chartDb.filter(function(e){return e.type==='expense'&&e.status==='pending'&&e.date.startsWith(curMonth);}).reduce(function(s,e){return s+e.amt;},0);
     chartMain = new Chart(ctx,{type:'bar',
       data:{
         labels:['รายรับ','รายจ่าย'],

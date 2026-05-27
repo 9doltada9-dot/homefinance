@@ -100,7 +100,11 @@ function saveVendorsLocal(){
 //  that includes default {cat:{},item:{}} structure)
 
 // ─── BUDGETS ──────────────────────────────────────────────
-function saveBudgets(){ localStorage.setItem('hf2_budgets', JSON.stringify(budgets)); }
+function saveBudgets() {
+  var _bUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _bKey = _bUid ? 'hf2_budgets_' + _bUid : 'hf2_budgets';
+  localStorage.setItem(_bKey, JSON.stringify(budgets));
+}
 
 // ─── CYCLES REGISTRY ──────────────────────────────────────
 // (managed by cycleEngine.js — helpers here for completeness)

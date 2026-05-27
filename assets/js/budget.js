@@ -6,8 +6,24 @@
  *   - Cycle-aware spending (cycle / billing / calendar mode)
  */
 
-var budgets = JSON.parse(localStorage.getItem('hf2_budgets')||'{}');
+var budgets = {};
 // budgets: { catId: amount }  — ไม่มี 'custom:' แล้ว เก็บแค่ catId
+// โหลดต่อครั้งที่ render เพื่อให้ scoped ตาม user ที่ login อยู่
+
+function _loadBudgetsNow() {
+  var _bUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _bKey = _bUid ? 'hf2_budgets_' + _bUid : 'hf2_budgets';
+  var _bData = JSON.parse(localStorage.getItem(_bKey) || 'null');
+  // migration: ดึงข้อมูลเก่า (shared key) มาใส่ key ใหม่ครั้งเดียว
+  if (!_bData && _bUid) {
+    var _old = JSON.parse(localStorage.getItem('hf2_budgets') || 'null');
+    if (_old && Object.keys(_old).length) {
+      _bData = _old;
+      localStorage.setItem(_bKey, JSON.stringify(_bData));
+    }
+  }
+  budgets = _bData || {};
+}
 
 // ─── BUDGET MODE ──────────────────────────────────────────
 var _budgetMode = localStorage.getItem('hf2_budget_mode') || 'cycle';
@@ -23,24 +39,26 @@ function getBudgetSpending() {
   var actual = {};
   var now    = new Date();
   var toCheck;
+  var _bSpendUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _bSpendDb  = _bSpendUid ? db.filter(function(e){ return (e.user_id||e.person) === _bSpendUid; }) : db;
 
   if (_budgetMode === 'cycle') {
     var cycleId = typeof getCurrentCycleId === 'function' ? getCurrentCycleId() : null;
     var cy      = cycleId && typeof getCycleById === 'function' ? getCycleById(cycleId) : null;
     toCheck = cy
-      ? db.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date >= cy.start && e.date <= cy.end; })
-      : db.filter(function(e){ return e.type==='expense' && isPaid(e); });
+      ? _bSpendDb.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date >= cy.start && e.date <= cy.end; })
+      : _bSpendDb.filter(function(e){ return e.type==='expense' && isPaid(e); });
 
   } else if (_budgetMode === 'billing') {
     var curBM = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-    toCheck = db.filter(function(e){
+    toCheck = _bSpendDb.filter(function(e){
       var bm = e.billing_month || e.date.slice(0,7);
       return e.type==='expense' && isPaid(e) && bm === curBM;
     });
 
   } else {
     var curMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-    toCheck = db.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date.startsWith(curMonth); });
+    toCheck = _bSpendDb.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date.startsWith(curMonth); });
   }
 
   toCheck.forEach(function(e){
@@ -52,6 +70,7 @@ function getBudgetSpending() {
 
 // ─── RENDER ───────────────────────────────────────────────
 function renderBudget() {
+  _loadBudgetsNow();
   var el = document.getElementById('budgetContent');
   if (!el) return;
 

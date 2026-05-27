@@ -14,7 +14,7 @@ function loadAccountsLocal() {
     var all = JSON.parse(localStorage.getItem('hf2_accounts') || '[]');
     var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
     // กรองเฉพาะบัญชีของ user ปัจจุบันเท่านั้น (ไม่รวมบัญชีที่ user_id=null — เป็น orphaned records)
-    accountsData = uid ? all.filter(function(a){ return a.user_id === uid; }) : all;
+    accountsData = uid ? all.filter(function(a){ return a.user_id === uid; }) : [];
   }
   catch(_) { accountsData = []; }
   if (!accountsData.length) {

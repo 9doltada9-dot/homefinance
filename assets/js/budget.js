@@ -95,7 +95,7 @@ function renderBudget() {
     ? '<div style="padding:10px;background:var(--surface2);border-radius:var(--r);margin-bottom:14px">' +
         '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">' +
           '<span style="font-weight:600">ภาพรวมทั้งหมด</span>' +
-          '<span style="font-family:monospace;font-weight:600">' + fmt(totalSpent) + ' / ' + fmt(totalBudget) + ' บาท</span>' +
+          '<span style="font-family:monospace;font-weight:600">' + fmtH(totalSpent) + ' / ' + fmtH(totalBudget) + ' บาท</span>' +
         '</div>' +
         '<div style="height:8px;background:var(--line);border-radius:4px;overflow:hidden">' +
           '<div style="height:100%;width:' + overallPct + '%;background:' +
@@ -164,7 +164,7 @@ function budgetRow(catId, name, spent, budget) {
     // header row: name | spent | / | input | delete
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
       '<span style="flex:1;font-size:13px;font-weight:600">' + name + '</span>' +
-      '<span style="font-size:12px;font-family:monospace;color:' + (over ? 'var(--red)' : 'var(--ink2)') + '">' + fmt(spent) + '</span>' +
+      '<span style="font-size:12px;font-family:monospace;color:' + (over ? 'var(--red)' : 'var(--ink2)') + '">' + fmtH(spent) + '</span>' +
       '<span style="font-size:11px;color:var(--ink3)">/</span>' +
       '<input type="number" value="' + budget + '" min="0"' +
         ' onchange="budgets[\'' + catId + '\']=parseFloat(this.value)||0;saveBudgets();renderBudget()"' +
@@ -178,8 +178,8 @@ function budgetRow(catId, name, spent, budget) {
     '</div>' +
     // stats row
     '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:3px">' +
-      '<span>' + (over ? '⚠ เกิน ' + fmt(spent - budget) + ' บาท' : pct + '% ใช้แล้ว') + '</span>' +
-      '<span>' + (over ? '' : fmt(Math.max(0, budget - spent)) + ' เหลือ') + '</span>' +
+      '<span>' + (over ? '⚠ เกิน ' + fmtH(spent - budget) + ' บาท' : pct + '% ใช้แล้ว') + '</span>' +
+      '<span>' + (over ? '' : fmtH(Math.max(0, budget - spent)) + ' เหลือ') + '</span>' +
     '</div>' +
   '</div>';
 }

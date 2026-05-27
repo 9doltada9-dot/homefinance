@@ -101,20 +101,20 @@ function renderSavingsGoals() {
         '</div>' +
         '<div style="display:flex;gap:6px">' +
           '<button onclick="depositToGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;background:#1a4fa0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif">+ ฝาก</button>' +
-          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif">ลบ</button>' +
+          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
         '</div>' +
       '</div>' +
       '<div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:6px">' +
         '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;transition:width .4s"></div>' +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2)">' +
-        '<span style="font-family:monospace;font-weight:600">฿' + fmt(g.current_amount) + ' / ฿' + fmt(g.target_amount) + '</span>' +
+        '<span style="font-family:monospace;font-weight:600">฿' + fmtH(g.current_amount) + ' / ฿' + fmtH(g.target_amount) + '</span>' +
         '<span>' + pct + '%</span>' +
       '</div>' +
       (isDone ? '<div style="font-size:12px;color:var(--green);font-weight:600;margin-top:6px">✅ ถึงเป้าหมายแล้ว!</div>' :
         '<div style="font-size:11px;color:var(--ink3);margin-top:4px">' +
-          'ยังขาด: <strong>฿' + fmt(remaining) + '</strong>' +
-          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:#1a4fa0">฿' + fmt(monthly) + '</strong>' : '') +
+          'ยังขาด: <strong>฿' + fmtH(remaining) + '</strong>' +
+          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:#1a4fa0">฿' + fmtH(monthly) + '</strong>' : '') +
         '</div>') +
     '</div>';
   }).join('');

@@ -90,8 +90,8 @@ function renderAdminReport(data, month) {
     persons.map(function(p){
       return '<div class="metric">' +
         '<div class="metric-label">' + p.name + ' จ่าย(หาร2)</div>' +
-        '<div class="metric-val mono">' + (typeof fmt==='function'?fmt(paid[p.id]||0):(paid[p.id]||0)) + '</div>' +
-        '<div class="metric-sub">ควรจ่าย ' + (typeof fmt==='function'?fmt(share[p.id]||0):(share[p.id]||0)) + '</div>' +
+        '<div class="metric-val mono">' + (typeof fmt==='function'?fmtH(paid[p.id]||0):(paid[p.id]||0)) + '</div>' +
+        '<div class="metric-sub">ควรจ่าย ' + (typeof fmt==='function'?fmtH(share[p.id]||0):(share[p.id]||0)) + '</div>' +
       '</div>';
     }).join('') +
   '</div>';
@@ -101,10 +101,10 @@ function renderAdminReport(data, month) {
     (owe < 1
       ? '<div style="font-size:14px;color:var(--green);font-weight:600">✓ ไม่มียอดค้างชำระ</div>'
       : '<div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:4px">ยอดที่ต้องชำระคืน</div>' +
-        '<div class="settle-amount" style="color:var(--amber)">' + (typeof fmt==='function'?fmt(owe):owe) + ' บาท</div>' +
+        '<div class="settle-amount" style="color:var(--amber)">' + (typeof fmt==='function'?fmtH(owe):owe) + ' บาท</div>' +
         '<div style="font-size:14px;font-weight:600;margin-top:4px">' + debtor.name + ' โอนให้ ' + creditor.name + '</div>') +
     '<div style="font-size:11px;color:var(--ink3);margin-top:6px">' +
-      'รายจ่ายส่วนกลาง ' + (typeof fmt==='function'?fmt(totalSh):totalSh) + ' บาท · รวมทั้งหมด ' + (typeof fmt==='function'?fmt(totalAll):totalAll) + ' บาท' +
+      'รายจ่ายส่วนกลาง ' + (typeof fmt==='function'?fmtH(totalSh):totalSh) + ' บาท · รวมทั้งหมด ' + (typeof fmt==='function'?fmtH(totalAll):totalAll) + ' บาท' +
     '</div>' +
   '</div>';
 
@@ -118,13 +118,13 @@ function renderAdminReport(data, month) {
         '<td style="font-size:12px">' + (e.desc||'—') + '</td>' +
         '<td style="font-size:12px">' + (e.cat_name||'—') + '</td>' +
         '<td>' + (typeof personPill==='function'?personPill(e.user_id||e.person):e.person) + '</td>' +
-        '<td style="text-align:right;font-family:monospace;font-size:12px">' + (typeof fmt==='function'?fmt(e.amt):e.amt) + '</td>' +
+        '<td style="text-align:right;font-family:monospace;font-size:12px">' + (typeof fmt==='function'?fmtH(e.amt):e.amt) + '</td>' +
         '<td style="text-align:center;font-size:11px">÷2</td>' +
       '</tr>';
     }).join('') +
     '<tr style="font-weight:700;background:var(--surface2)">' +
       '<td colspan="4" style="font-size:12px">รวมส่วนกลาง</td>' +
-      '<td style="text-align:right;font-family:monospace">' + (typeof fmt==='function'?fmt(totalSh):totalSh) + '</td>' +
+      '<td style="text-align:right;font-family:monospace">' + (typeof fmt==='function'?fmtH(totalSh):totalSh) + '</td>' +
       '<td></td>' +
     '</tr>' +
   '</table></div>';
@@ -132,11 +132,11 @@ function renderAdminReport(data, month) {
   // Personal expenses (collapsed info)
   var personalHTML = personal.length
     ? '<div style="margin-top:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--r);font-size:12px">' +
-        '<div style="font-weight:600;color:var(--ink3);margin-bottom:4px">รายจ่ายส่วนตัว (' + personal.length + ' รายการ · ' + (typeof fmt==='function'?fmt(personal.reduce(function(s,e){return s+e.amt;},0)):personal.reduce(function(s,e){return s+e.amt;},0)) + ' บาท)</div>' +
+        '<div style="font-weight:600;color:var(--ink3);margin-bottom:4px">รายจ่ายส่วนตัว (' + personal.length + ' รายการ · ' + (typeof fmt==='function'?fmtH(personal.reduce(function(s,e){return s+e.amt;},0)):personal.reduce(function(s,e){return s+e.amt;},0)) + ' บาท)</div>' +
         personal.map(function(e){
           return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line)">' +
             '<span>' + (typeof personPill==='function'?personPill(e.user_id||e.person):e.person) + ' · ' + (e.desc||'—') + '</span>' +
-            '<span style="font-family:monospace">' + (typeof fmt==='function'?fmt(e.amt):e.amt) + '</span>' +
+            '<span style="font-family:monospace">' + (typeof fmt==='function'?fmtH(e.amt):e.amt) + '</span>' +
           '</div>';
         }).join('') +
       '</div>'

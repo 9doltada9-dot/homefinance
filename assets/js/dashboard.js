@@ -67,11 +67,11 @@ function renderDash(){
   var pOut = me.filter(function(e){return e.type==='expense'&&e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
   var bal = inc-exp;
   document.getElementById('metrics').innerHTML=
-    '<div class="metric"><div class="metric-label">รายรับ</div><div class="metric-val g mono">'+fmt(inc)+'</div><div class="metric-sub">บาท · รับแล้ว</div></div>'+
-    '<div class="metric"><div class="metric-label">รายจ่าย</div><div class="metric-val r mono">'+fmt(exp)+'</div><div class="metric-sub">บาท · จ่ายแล้ว</div></div>'+
-    '<div class="metric"><div class="metric-label">คงเหลือ</div><div class="metric-val '+(bal>=0?'g':'r')+' mono">'+fmt(bal)+'</div><div class="metric-sub">บาท</div></div>'+
-    '<div class="metric"><div class="metric-label">รอรับ</div><div class="metric-val a mono">'+fmt(pIn)+'</div><div class="metric-sub">บาท</div></div>'+
-    '<div class="metric"><div class="metric-label">รอจ่าย</div><div class="metric-val r mono">'+fmt(pOut)+'</div><div class="metric-sub">บาท</div></div>';
+    '<div class="metric"><div class="metric-label">รายรับ</div><div class="metric-val g mono">'+fmtH(inc)+'</div><div class="metric-sub">บาท · รับแล้ว</div></div>'+
+    '<div class="metric"><div class="metric-label">รายจ่าย</div><div class="metric-val r mono">'+fmtH(exp)+'</div><div class="metric-sub">บาท · จ่ายแล้ว</div></div>'+
+    '<div class="metric"><div class="metric-label">คงเหลือ</div><div class="metric-val '+(bal>=0?'g':'r')+' mono">'+fmtH(bal)+'</div><div class="metric-sub">บาท</div></div>'+
+    '<div class="metric"><div class="metric-label">รอรับ</div><div class="metric-val a mono">'+fmtH(pIn)+'</div><div class="metric-sub">บาท</div></div>'+
+    '<div class="metric"><div class="metric-label">รอจ่าย</div><div class="metric-val r mono">'+fmtH(pOut)+'</div><div class="metric-sub">บาท</div></div>';
   // Charts — pass curM
   var activeChart = localStorage.getItem('hf2_chart')||'bar';
   switchChart(activeChart, curM);
@@ -87,14 +87,14 @@ function renderDash(){
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
     '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
     '</td>'+
-    '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)')+'">'+fmt(e.amt)+'</td>'+
+    '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)')+'">'+fmtH(e.amt)+'</td>'+
     '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
   var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
   document.getElementById('pendingTx').innerHTML=pend.length?'<table><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
     '<td>'+e.desc+'<br><span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+(e.note?'<br><span style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</span>':'')+
     '</td>'+
-    '<td style="text-align:right;font-family:monospace">'+fmt(e.amt)+'</td>'+
+    '<td style="text-align:right;font-family:monospace">'+fmtH(e.amt)+'</td>'+
     '<td><span class="badge badge-pending" style="font-size:10px">'+(e.type==='income'?'รอรับ':e.type==='transfer'?'รอโอน':'รอจ่าย')+'</span></td>'+
     '<td><button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\');renderDash()">✓</button></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ไม่มีรายการรอดำเนินการ</div>';
@@ -176,20 +176,20 @@ function renderSalaryCycleCard(){
     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
         '<div style="font-size:10px;color:var(--ink3)">✅ รับแล้ว (Active)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmt(received)+'</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmtH(received)+'</div>'+
       '</div>'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
         '<div style="font-size:10px;color:var(--ink3)">💸 รายจ่ายรอบนี้</div>'+
-        '<div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmt(totalExp)+'</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmtH(totalExp)+'</div>'+
       '</div>'+
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
         '<div style="font-size:10px;color:var(--ink3)">💰 คงเหลือ (Active)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:'+(remain>=0?'var(--green)':'var(--red)')+';font-family:monospace">'+fmt(remain)+'</div>'+
+        '<div style="font-size:15px;font-weight:700;color:'+(remain>=0?'var(--green)':'var(--red)')+';font-family:monospace">'+fmtH(remain)+'</div>'+
       '</div>'+
       (pending > 0 ?
       '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px">'+
         '<div style="font-size:10px;color:#b5600a">⏳ รอรับ (Pending)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:#b5600a;font-family:monospace">'+fmt(pending)+'</div>'+
+        '<div style="font-size:15px;font-weight:700;color:#b5600a;font-family:monospace">'+fmtH(pending)+'</div>'+
       '</div>'
       :
       '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
@@ -203,7 +203,7 @@ function renderSalaryCycleCard(){
       '<div style="font-size:11px;font-weight:700;color:#b5600a;margin-bottom:6px">⏳ รอรับ — จะเปิดใช้งานวันที่ '+SALARY_DAY+'</div>'+
       pendList.map(function(e){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(240,195,106,.3)">'+
           '<span>'+e.desc+'</span>'+
-          '<span style="font-family:monospace;font-weight:600;color:#b5600a">+'+fmt(e.amt)+'</span>'+
+          '<span style="font-family:monospace;font-weight:600;color:#b5600a">+'+fmtH(e.amt)+'</span>'+
         '</div>';}).join('')+
       '<button onclick="activateSalaryNow()" style="margin-top:8px;width:100%;background:#1a4fa0;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
     '</div>' : '')+

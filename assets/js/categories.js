@@ -171,7 +171,7 @@ function showDelCatConfirm(catId, catName, catType){
   var btns = overlay.querySelector('div[style*="display:flex;gap"]');
   btns.innerHTML =
     '<button class="btn btn-ghost" onclick="cancelDelCat()" style="flex:1;min-height:44px">ยกเลิก</button>'+
-    '<button class="btn" onclick="confirmDelCat(\''+catId+'\',\''+catName+'\',\''+catType+'\')" style="flex:1;min-height:44px;background:var(--red);color:#fff">ลบ</button>';
+    '<button class="btn" onclick="confirmDelCat(\''+catId+'\',\''+catName+'\',\''+catType+'\')" style="flex:1;min-height:44px;background:var(--red);color:#fff"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>';
   overlay.style.display = 'flex';
 }
 

@@ -26,6 +26,13 @@ function fmt(n){
   return r.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 function fmtB(n){ return fmt(n)+' บาท'; }
+/** fmt แต่ทศนิยมแสดงเล็กกว่า (HTML context เท่านั้น) */
+function fmtH(n){
+  var s = fmt(n);
+  var dot = s.indexOf('.');
+  if(dot === -1) return s;
+  return s.slice(0,dot)+'<span style="font-size:.72em;opacity:.85">'+s.slice(dot)+'</span>';
+}
 function nm(pid){
   if(!pid) return '—';
   // 1. UUID lookup via _allProfiles (new user system)

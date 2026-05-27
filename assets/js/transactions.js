@@ -366,10 +366,10 @@ function renderTx(){
     var pend = pendIn - pendOut; // net: รอรับ − รอจ่าย
     totalEl.style.display='flex';
     totalEl.innerHTML=
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายรับ ('+list.filter(function(e){return e.type==='income'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmt(inc)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายจ่าย ('+list.filter(function(e){return e.type==='expense'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmt(exp)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รอดำเนินการ ('+list.filter(function(e){return e.status==='pending';}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--amber);font-family:monospace">'+fmt(pend)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">สุทธิ ('+list.length+' รายการ)</div><div style="font-size:15px;font-weight:700;font-family:monospace;color:'+(inc-exp>=0?'var(--green)':'var(--red)')+'">'+fmt(inc-exp)+'</div></div>';
+      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายรับ ('+list.filter(function(e){return e.type==='income'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmtH(inc)+'</div></div>'+
+      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายจ่าย ('+list.filter(function(e){return e.type==='expense'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmtH(exp)+'</div></div>'+
+      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รอดำเนินการ ('+list.filter(function(e){return e.status==='pending';}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--amber);font-family:monospace">'+fmtH(pend)+'</div></div>'+
+      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">สุทธิ ('+list.length+' รายการ)</div><div style="font-size:15px;font-weight:700;font-family:monospace;color:'+(inc-exp>=0?'var(--green)':'var(--red)')+'">'+fmtH(inc-exp)+'</div></div>';
   } else if(totalEl){ totalEl.style.display='none'; }
 
   var isMobile = window.innerWidth <= 900;
@@ -429,7 +429,7 @@ function renderTx(){
 
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
                     (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
-                    (e.user_id||e.person ? personPill(e.user_id||e.person) : '')+
+                    (_txShowAllUsers && (e.user_id||e.person) ? personPill(e.user_id||e.person) : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
                   (e.note ? '<div style="font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic">📝 '+e.note+'</div>' : '')+
@@ -437,7 +437,7 @@ function renderTx(){
                 '<div style="text-align:right;flex-shrink:0">'+
                   (isSalary(e) ?
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--green);display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
-                    '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">+'+fmt(e.amt)+'</span>'+
+                    '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">+'+fmtH(e.amt)+'</span>'+
                     '<button '+
                       'onpointerdown="revealSal(\''+e.id+'\')" '+
                       'onpointerup="hideSal(\''+e.id+'\')" '+
@@ -447,7 +447,7 @@ function renderTx(){
                     '</button>'+
                   '</div>' :
                   e.type==='transfer' ?
-                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmt(e.amt)+'</div>' :
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmtH(e.amt)+'</div>' :
                   
                   '<span style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
                     (e.type==='income'?'+':'−')+fmt(e.amt)+
@@ -568,7 +568,7 @@ function renderTx(){
 
   } else {
     document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th><th>ผู้บันทึก</th><th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
+      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th>'+(_txShowAllUsers?'<th>ผู้บันทึก</th>':'')+'<th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
       (function(){
         var _groups=[], _dmap={};
         list.forEach(function(e){
@@ -577,13 +577,13 @@ function renderTx(){
           _dmap[d].push(e);
         });
         return _groups.map(function(g){
-          return '<tr><td colspan="10" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+          return '<tr><td colspan="'+(_txShowAllUsers?'10':'9')+'" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
             g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
 
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
-        '<td>'+personPill(e.user_id||e.person)+'</td>'+
+        (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
           (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmt(e.amt)+
@@ -600,7 +600,7 @@ function renderTx(){
             ? '<button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\')">✓ ยืนยัน</button>'
             : revertBtn(e)
           )+
-          '<button class="btn btn-del" id="del-'+e.id+'" onclick="delStep1(\''+e.id+'\')">ลบ</button>'+
+          '<button class="btn btn-del" id="del-'+e.id+'" onclick="delStep1(\''+e.id+'\')"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>'+
         '</td>'+
       '</tr>';}).join('');
         }).join('');
@@ -654,7 +654,7 @@ function delConfirm(id) {
       var sign = entry.type === 'income' ? '+' : '−';
       descEl.innerHTML =
         '<strong>' + entry.desc + '</strong><br>' +
-        '<span style="font-size:12px;color:var(--ink3)">' + (entry.cat_name || '—') + ' · ' + sign + fmt(entry.amt) + ' บาท</span>';
+        '<span style="font-size:12px;color:var(--ink3)">' + (entry.cat_name || '—') + ' · ' + sign + fmtH(entry.amt) + ' บาท</span>';
     }
   }
   if (noteEl) {

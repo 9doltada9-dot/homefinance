@@ -276,14 +276,14 @@ function renderAccountCards() {
         '<span>💳 บัญชีการเงิน</span>' +
         '<button onclick="openTransferModal()" style="font-size:11px;padding:4px 10px;background:#1a4fa0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif">↔ โอน</button>' +
       '</div>' +
-      '<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">ยอดรวมทุกบัญชี: <strong style="font-size:15px;color:var(--green);font-family:monospace">' + fmt(total) + '</strong> บาท</div>' +
+      '<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">ยอดรวมทุกบัญชี: <strong style="font-size:15px;color:var(--green);font-family:monospace">' + fmtH(total) + '</strong> บาท</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">' +
         accountsData.filter(function(a) { return a.is_active; }).map(function(a) {
           var bal = getAccountBalance(a.id);
           return '<div style="background:var(--surface2);border-radius:10px;padding:10px;border-left:3px solid ' + a.color + '">' +
             '<div style="font-size:11px;font-weight:600;color:var(--ink2)">' + a.name + '</div>' +
             '<div style="font-size:10px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
-            '<div style="font-size:16px;font-weight:700;font-family:monospace;color:' + (bal >= 0 ? 'var(--green)' : 'var(--red)') + ';margin-top:4px">' + fmt(bal) + '</div>' +
+            '<div style="font-size:16px;font-weight:700;font-family:monospace;color:' + (bal >= 0 ? 'var(--green)' : 'var(--red)') + ';margin-top:4px">' + fmtH(bal) + '</div>' +
           '</div>';
         }).join('') +
       '</div>' +
@@ -416,12 +416,12 @@ function updateAdjustDiff() {
   } else if (diff > 0) {
     diffBox.style.display = 'block';
     diffBox.style.background = 'var(--green-bg)';
-    diffLabel.innerHTML = '📥 ปรับเพิ่ม <strong style="font-family:monospace">+' + fmt(diff) + ' บาท</strong> (บันทึกเป็นรายรับ)';
+    diffLabel.innerHTML = '📥 ปรับเพิ่ม <strong style="font-family:monospace">+' + fmtH(diff) + ' บาท</strong> (บันทึกเป็นรายรับ)';
     diffLabel.style.color = 'var(--green)';
   } else {
     diffBox.style.display = 'block';
     diffBox.style.background = 'var(--red-bg,#fff0f0)';
-    diffLabel.innerHTML = '📤 ปรับลด <strong style="font-family:monospace">−' + fmt(Math.abs(diff)) + ' บาท</strong> (บันทึกเป็นรายจ่าย)';
+    diffLabel.innerHTML = '📤 ปรับลด <strong style="font-family:monospace">−' + fmtH(Math.abs(diff)) + ' บาท</strong> (บันทึกเป็นรายจ่าย)';
     diffLabel.style.color = 'var(--red)';
   }
 }
@@ -476,7 +476,7 @@ function renderAccountList() {
       '<div style="flex:1;min-width:0">' +
         '<div style="font-size:13px;font-weight:600">' + a.name + '</div>' +
         '<div style="font-size:11px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
-        '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmt(bal) + ' บาท</div>' +
+        '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmtH(bal) + ' บาท</div>' +
       '</div>' +
       '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' +
         '<button onclick="openAccountLedger(\'' + a.id + '\')" title="ดูรายการ" style="background:var(--surface2);border:none;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">📋 รายการ</button>' +
@@ -485,7 +485,7 @@ function renderAccountList() {
         '<button onclick="openEditAccountModal(\'' + a.id + '\')" title="แก้ไข" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>' +
         '<button onclick="deleteAccount(\'' + a.id + '\');renderAccountList();renderAccountCards()" title="ลบ" ' +
           (hasUsage ? 'disabled style="opacity:.35;cursor:not-allowed;' : 'style="') +
-          'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer">×</button>' +
+          'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
       '</div>' +
     '</div>';
   }).join('') || '<div class="empty">ยังไม่มีบัญชี</div>';
@@ -625,7 +625,7 @@ function renderLedger() {
   var openRow = '<tr style="background:var(--surface2);font-size:12px">' +
     '<td style="padding:8px 6px;color:var(--ink3);font-style:italic">' + openLabel + '</td>' +
     '<td></td><td></td>' +
-    '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmt(openBal) + '</td>' +
+    '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmtH(openBal) + '</td>' +
   '</tr>';
 
   var wrap = document.getElementById('ledgerTableWrap');

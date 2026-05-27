@@ -64,7 +64,7 @@ function eUpdateSplitPreview() {
     var s = snapshot[uid];
     var mName = s.label || (typeof nm === 'function' ? nm(uid) : uid);
     var amtStr = amt > 0
-      ? '<strong style="color:var(--blue)">' + (typeof fmt === 'function' ? fmt(s.amount || 0) : (s.amount || 0)) + '</strong> ฿'
+      ? '<strong style="color:var(--blue)">' + (typeof fmt === 'function' ? fmtH(s.amount || 0) : (s.amount || 0)) + '</strong> ฿'
       : '<strong style="color:var(--blue)">' + (s.pct || 0).toFixed(0) + '%</strong>';
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;gap:8px">'
       + '<span style="color:var(--ink2);white-space:nowrap">👤 ' + mName + '</span>'

@@ -108,13 +108,13 @@ function renderSavingsGoals() {
         '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;transition:width .4s"></div>' +
       '</div>' +
       '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2)">' +
-        '<span style="font-family:monospace;font-weight:600">฿ ' + fmtH(g.current_amount) + ' / ฿ ' + fmtH(g.target_amount) + '</span>' +
+        '<span style="font-family:monospace;font-weight:600">' + fmtH(g.current_amount) + ' / ' + fmtH(g.target_amount) + '</span>' +
         '<span>' + pct + '%</span>' +
       '</div>' +
       (isDone ? '<div style="font-size:12px;color:var(--green);font-weight:600;margin-top:6px">✅ ถึงเป้าหมายแล้ว!</div>' :
         '<div style="font-size:11px;color:var(--ink3);margin-top:4px">' +
-          'ยังขาด: <strong>฿ ' + fmtH(remaining) + '</strong>' +
-          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:#1a4fa0">฿ ' + fmtH(monthly) + '</strong>' : '') +
+          'ยังขาด: <strong>' + fmtH(remaining) + '</strong>' +
+          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:#1a4fa0">' + fmtH(monthly) + '</strong>' : '') +
         '</div>') +
     '</div>';
   }).join('');

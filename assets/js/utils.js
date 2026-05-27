@@ -30,7 +30,7 @@ function fmtB(n){ return fmt(n)+' บาท'; }
 function fmtH(n){
   var s = fmt(n);
   var dot = s.indexOf('.');
-  if(dot === -1) return s;
+  if(dot === -1) return s+'<span style="font-size:.72em;opacity:.85">.00</span>';
   return s.slice(0,dot)+'<span style="font-size:.72em;opacity:.85">'+s.slice(dot)+'</span>';
 }
 function nm(pid){

@@ -52,6 +52,26 @@ function markRecurringRun(id) {
   updateRecurring(id, { last_run_yyyymm: yyyymm });
 }
 
+// ─── MARK AND DISMISS FROM MODAL ─────────────────────────
+function markRecurringDone(id) {
+  markRecurringRun(id);
+  // Remove this item's row from the modal without closing it
+  var row = document.getElementById('rec-row-' + id);
+  if (row) {
+    row.style.transition = 'opacity .2s';
+    row.style.opacity = '0';
+    setTimeout(function() {
+      if (row.parentNode) row.parentNode.removeChild(row);
+      // If modal list is now empty, close it
+      var listEl = document.getElementById('recurringDueList');
+      if (listEl && !listEl.querySelector('[id^="rec-row-"]')) {
+        closeRecurringDueModal();
+        if (typeof showCycleToast === 'function') showCycleToast('✅ บันทึกครบทุกรายการแล้ว');
+      }
+    }, 220);
+  }
+}
+
 // ─── PROCESS (find due + upcoming, show modal) ────────────
 function processRecurring() {
   var today    = new Date();
@@ -116,18 +136,25 @@ function showRecurringDueModal(dueList, upcomingList) {
       badge = '<span style="font-size:10px;padding:2px 7px;background:#f59e0b;color:#fff;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle">อีก ' + daysLeft + ' วัน</span>';
     }
 
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:8px;'
+    var actionBtns = isDue
+      ? '<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">'
+          + '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" '
+              + 'style="padding:7px 12px;background:var(--blue);color:#fff;border:none;'
+              + 'border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;'
+              + 'font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">บันทึก →</button>'
+          + '<button onclick="markRecurringDone(\'' + t.id + '\')" '
+              + 'style="padding:5px 12px;background:none;border:1.5px solid var(--line);color:var(--ink3);'
+              + 'border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'
+              + 'font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">✓ ทำแล้ว</button>'
+        + '</div>'
+      : '<span style="flex-shrink:0;font-size:11px;color:var(--ink3);white-space:nowrap">ยังไม่ถึงกำหนด</span>';
+    return '<div id="rec-row-' + t.id + '" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:8px;'
       + 'border-left:4px solid ' + borderColor + ';background:' + bgColor + ';border-radius:0 8px 8px 0">'
       + '<div style="flex:1;min-width:0;padding-right:10px">'
         + '<div style="font-size:13px;font-weight:600;margin-bottom:3px">' + typeLbl + ' ' + label + badge + '</div>'
         + '<div style="font-size:12px;color:var(--ink3)">' + amtStr + ' · ' + dayStr + '</div>'
       + '</div>'
-      + (isDue
-          ? '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" '
-              + 'style="flex-shrink:0;padding:8px 14px;background:var(--blue);color:#fff;border:none;'
-              + 'border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;'
-              + 'font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">บันทึก →</button>'
-          : '<span style="flex-shrink:0;font-size:11px;color:var(--ink3);white-space:nowrap">ยังไม่ถึงกำหนด</span>')
+      + actionBtns
     + '</div>';
   }
 
@@ -489,8 +516,8 @@ function checkRecurringDueNow() {
   var upcomingList = [];
 
   list.forEach(function(t) {
+    if (t.last_run_yyyymm === yyyymm) return; // already done this month — skip
     var dueDay = t.day_of_month || 1;
-    // Include already-run items too — user explicitly wants to see them
     if (todayDay >= dueDay) {
       dueList.push(t);
     } else if (dueDay - todayDay <= 7) {
@@ -499,7 +526,7 @@ function checkRecurringDueNow() {
   });
 
   if (dueList.length === 0 && upcomingList.length === 0) {
-    if (typeof showCycleToast === 'function') showCycleToast('✅ ไม่มีรายการที่ถึงกำหนดในเดือนนี้');
+    if (typeof showCycleToast === 'function') showCycleToast('✅ บันทึกครบทุกรายการแล้ว');
     return;
   }
   showRecurringDueModal(dueList, upcomingList);

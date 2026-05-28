@@ -474,6 +474,37 @@ function onSaveRecurring() {
   renderRecurringList();
 }
 
+// ─── MANUAL CHECK ─────────────────────────────────────────
+/**
+ * Called from the "รายการถึงกำหนด" button in settings.
+ * Shows due + upcoming items — including ones already dismissed this session.
+ * If nothing is due, shows a toast instead.
+ */
+function checkRecurringDueNow() {
+  var today    = new Date();
+  var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+  var todayDay = today.getDate();
+  var list     = getRecurringList();
+  var dueList      = [];
+  var upcomingList = [];
+
+  list.forEach(function(t) {
+    var dueDay = t.day_of_month || 1;
+    // Include already-run items too — user explicitly wants to see them
+    if (todayDay >= dueDay) {
+      dueList.push(t);
+    } else if (dueDay - todayDay <= 7) {
+      upcomingList.push(t);
+    }
+  });
+
+  if (dueList.length === 0 && upcomingList.length === 0) {
+    if (typeof showCycleToast === 'function') showCycleToast('✅ ไม่มีรายการที่ถึงกำหนดในเดือนนี้');
+    return;
+  }
+  showRecurringDueModal(dueList, upcomingList);
+}
+
 // ─── INIT ─────────────────────────────────────────────────
 var _recurringIntervalId = null;
 

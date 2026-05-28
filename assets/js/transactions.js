@@ -382,16 +382,14 @@ function renderTx(){
   // ─── VENDOR AVATAR: วงกลมตัวอักษรแรก ─────────────────────
   var _vendorAvatar = function(name) {
     if (!name || name === '—') return '';
-    var ch   = (name.charAt(0) || '?');
-    var code = name.charCodeAt(0) || 0;
-    var palette  = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
-    var textPal  = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
-    var bg   = palette[code % palette.length];
-    var fg   = textPal[code % textPal.length];
-    return '<span style="display:inline-flex;align-items:center;justify-content:center;'
-         + 'width:24px;height:24px;border-radius:50%;background:'+bg+';color:'+fg+';'
-         + 'font-size:11px;font-weight:700;flex-shrink:0;font-family:Sarabun,sans-serif" '
-         + 'title="'+name+'">'+ch+'</span>';
+    var code = 0; for(var _ci=0;_ci<name.length;_ci++) code = (code*31 + name.charCodeAt(_ci)) & 0xffff;
+    var palette = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
+    var textPal = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
+    var bg = palette[code % palette.length];
+    var fg = textPal[code % textPal.length];
+    return '<span style="display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;background:'+bg+';color:'+fg+';'
+         + 'font-size:11px;font-weight:600;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;'
+         + 'font-family:Sarabun,sans-serif">'+name+'</span>';
   };
 
   var revertBtn = function(e){ return '<button class="btn-revert" title="คืนสถานะ" onclick="if(confirm(\'คืนรายการนี้เป็น รอดำเนินการ?\'))markPending(\''+e.id+'\')">'+
@@ -548,13 +546,13 @@ function txDetailModal(id) {
   var bmStr = '';
   if (e.billing_month) { var bmp=e.billing_month.split('-').map(Number); bmStr=SHORT_M[bmp[1]-1]+' '+(bmp[0]+543); }
 
-  // vendor avatar large
+  // vendor name chip (detail modal)
   var bigAvatar = '';
   if (vendorName) {
-    var c2=vendorName.charCodeAt(0)||0;
+    var c2=0; for(var _ci2=0;_ci2<vendorName.length;_ci2++) c2=(c2*31+vendorName.charCodeAt(_ci2))&0xffff;
     var p2=['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
     var t2=['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
-    bigAvatar='<span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:'+p2[c2%p2.length]+';color:'+t2[c2%t2.length]+';font-size:20px;font-weight:700;flex-shrink:0;margin-right:8px">'+vendorName.charAt(0)+'</span>';
+    bigAvatar='<span style="display:inline-flex;align-items:center;padding:4px 14px;border-radius:20px;background:'+p2[c2%p2.length]+';color:'+t2[c2%t2.length]+';font-size:14px;font-weight:600;font-family:Sarabun,sans-serif">'+vendorName+'</span>';
   }
 
   function row(icon, label, val, valStyle) {

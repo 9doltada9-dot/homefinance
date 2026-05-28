@@ -11,16 +11,21 @@
  */
 
 // ─── STORAGE (user-scoped key) ────────────────────────────
+// Returns null if no user is logged in — callers must guard.
 function _recurringKey() {
   var p = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
-  return p ? 'hf2_recurring_' + p : 'hf2_recurring';
+  return p ? 'hf2_recurring_' + p : null;
 }
 function getRecurringList() {
-  try { return JSON.parse(localStorage.getItem(_recurringKey()) || '[]'); }
+  var k = _recurringKey();
+  if (!k) return []; // no authenticated user — return empty
+  try { return JSON.parse(localStorage.getItem(k) || '[]'); }
   catch(_) { return []; }
 }
 function saveRecurringList(list) {
-  localStorage.setItem(_recurringKey(), JSON.stringify(list));
+  var k = _recurringKey();
+  if (!k) return; // no authenticated user — refuse to write
+  localStorage.setItem(k, JSON.stringify(list));
 }
 
 // ─── CRUD ─────────────────────────────────────────────────
@@ -330,9 +335,13 @@ function onSaveRecurring() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────
+var _recurringIntervalId = null;
+
 function initRecurringEngine() {
+  // Clear previous interval to avoid accumulation on re-login
+  if (_recurringIntervalId) { clearInterval(_recurringIntervalId); _recurringIntervalId = null; }
   processRecurring();
-  setInterval(function() {
+  _recurringIntervalId = setInterval(function() {
     try { processRecurring(); } catch(_) {}
   }, 60 * 60 * 1000);
 }

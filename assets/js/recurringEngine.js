@@ -10,13 +10,17 @@
  * billing_month_offset: -1 = prev month, 0 = same month (default)
  */
 
-// ─── STORAGE ──────────────────────────────────────────────
+// ─── STORAGE (user-scoped key) ────────────────────────────
+function _recurringKey() {
+  var p = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
+  return p ? 'hf2_recurring_' + p : 'hf2_recurring';
+}
 function getRecurringList() {
-  try { return JSON.parse(localStorage.getItem('hf2_recurring') || '[]'); }
+  try { return JSON.parse(localStorage.getItem(_recurringKey()) || '[]'); }
   catch(_) { return []; }
 }
 function saveRecurringList(list) {
-  localStorage.setItem('hf2_recurring', JSON.stringify(list));
+  localStorage.setItem(_recurringKey(), JSON.stringify(list));
 }
 
 // ─── CRUD ─────────────────────────────────────────────────
@@ -58,11 +62,9 @@ function processRecurring() {
   var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
   var todayDay = today.getDate();
   var list     = getRecurringList();
-  var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
   var dueList  = [];
 
   list.forEach(function(t) {
-    if (_myPerson && t.person && t.person !== _myPerson) return;
     if (t.last_run_yyyymm === yyyymm) return;
     var dueDay = t.day_of_month || 1;
     if (todayDay < dueDay) return;
@@ -224,10 +226,7 @@ function getUpcomingRecurring(days) {
 function renderRecurringList() {
   var box = document.getElementById('recurringList');
   if (!box) return;
-  var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
-  var list = getRecurringList().filter(function(t) {
-    return !_myPerson || !t.person || t.person === _myPerson;
-  });
+  var list = getRecurringList();
   if (!list.length) {
     box.innerHTML = '<div class="empty">ยังไม่มีรายการประจำ</div>';
     return;

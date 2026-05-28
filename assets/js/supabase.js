@@ -325,6 +325,14 @@ async function silentPull(){
   try {
     var merged = await _fetchAndMerge(creds, 8000);
     if(!merged){ _pullInProgress=false; return; }
+    // merge pending (offline queue) into result — ป้องกัน pending หาย
+    var _spq = _getPendingQueue();
+    if(_spq.length){
+      var _spqIds = {};
+      merged.forEach(function(e){ _spqIds[String(e.id)] = true; });
+      _spq.forEach(function(e){ if(!_spqIds[String(e.id)]) merged.push(e); });
+      merged.sort(function(a,b){ return a.date>b.date?-1:a.date<b.date?1:0; });
+    }
     // checksum — ไม่ render ถ้าข้อมูลเหมือนเดิม
     var hash = merged.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     var old  = db.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
@@ -379,6 +387,7 @@ function startSilentPullInterval(){
 // ─── CONNECTION MONITOR ───────────────────────────────────
 var _isOnline = true; // assume online until proven otherwise
 var _checkTimer = null;
+var _syncInProgress = false; // ป้องกัน sync ซ้อนกัน
 
 function sbStatus(state, msg){
   msg = msg || '';
@@ -454,9 +463,11 @@ function setOnlineState(online){
   var wasOffline = !_isOnline;
   _isOnline = online;
   updateConnectionUI(online);
-  if(online && wasOffline){
-    hideOfflineBanner();
-    syncOnReconnect();
+  if(online){
+    if(wasOffline) hideOfflineBanner();
+    if(!_syncInProgress && (wasOffline || _getPendingQueue().length > 0)){
+      syncOnReconnect();
+    }
   }
   if(!online) showOfflineBanner();
 }
@@ -466,7 +477,9 @@ function updateConnectionUI(online){
   // Sidebar online dot + label
   var sidebarDot = document.getElementById('sidebarOnlineDot');
   var sidebarTxt = document.getElementById('sidebarOnlineTxt');
-  if(sidebarDot) sidebarDot.style.background = color;
+  var _pCountForDot = (typeof _getPendingQueue === 'function') ? _getPendingQueue().length : 0;
+  var dotColor = (online && _pCountForDot > 0) ? '#e67e22' : color;
+  if(sidebarDot) sidebarDot.style.background = dotColor;
   if(sidebarTxt){
     var _pCount = (typeof _getPendingQueue === 'function') ? _getPendingQueue().length : 0;
     sidebarTxt.textContent = online
@@ -589,6 +602,8 @@ function getPendingCount(){ return _getPendingQueue().length; }
 async function syncOnReconnect(){
   var creds = getSbCreds();
   if(!creds.ok) return;
+  if(_syncInProgress) return;
+  _syncInProgress = true;
   try {
     // 1. Push pending offline entries ก่อน (เน็ตตัดกลางคัน)
     var pending = _getPendingQueue();
@@ -622,6 +637,17 @@ async function syncOnReconnect(){
       ? '⚠️ เชื่อมต่อแล้ว แต่ sync ไม่ครบ '+pendLeft+' รายการ'
       : 'เชื่อมต่อแล้ว — อัปเดตข้อมูลล่าสุดเรียบร้อย');
   } catch(_){}
+  _syncInProgress = false;
+  // merge pending items ที่ยังไม่ sync ได้ กลับเข้า db เพื่อให้ user เห็น
+  var _srpq = _getPendingQueue();
+  if(_srpq.length){
+    var _srpqIds = {};
+    db.forEach(function(e){ _srpqIds[String(e.id)] = true; });
+    _srpq.forEach(function(e){ if(!_srpqIds[String(e.id)]) db.push(e); });
+    db.sort(function(a,b){ return a.date>b.date?-1:a.date<b.date?1:0; });
+    save();
+  }
+  updateConnectionUI(true);
 }
 
 var _toastTimer = null;

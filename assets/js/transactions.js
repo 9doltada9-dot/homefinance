@@ -225,7 +225,7 @@ function _splitBadge(e) {
       Object.keys(e.split_snapshot).forEach(function(uid) {
         var s = e.split_snapshot[uid];
         var mName = s.label || (typeof nm === 'function' ? nm(uid) : uid);
-        var fmtAmt = (typeof fmtH === 'function') ? fmtH(s.amount || 0) : (s.amount || 0);
+        var fmtAmt = (typeof fmt === 'function') ? fmt(s.amount || 0) : (+(s.amount || 0)).toFixed(2);
         lines.push(mName + ' — ' + fmtAmt + ' บาท' + (s.pct ? ' (' + s.pct + '%)' : ''));
       });
     } else if (grp && grp.members) {
@@ -535,7 +535,7 @@ function txDetailModal(id) {
       var gName = grp ? grp.name : '(กลุ่ม)';
       var mLines = [];
       if (e.split_snapshot && typeof e.split_snapshot==='object') {
-        Object.keys(e.split_snapshot).forEach(function(uid){ var s=e.split_snapshot[uid]; var mN=s.label||(typeof nm==='function'?nm(uid):uid); var mA=(typeof fmtH==='function')?fmtH(s.amount||0):(s.amount||0); mLines.push(mN+' — '+mA+' บาท'+(s.pct?' ('+s.pct+'%)':'')); });
+        Object.keys(e.split_snapshot).forEach(function(uid){ var s=e.split_snapshot[uid]; var mN=s.label||(typeof nm==='function'?nm(uid):uid); var mA=(typeof fmt==='function')?fmt(s.amount||0):(+(s.amount||0)).toFixed(2); mLines.push(mN+' — '+mA+' บาท'+(s.pct?' ('+s.pct+'%)':'')); });
       } else if (grp&&grp.members) { (grp.members||[]).filter(function(m){return m.active;}).forEach(function(m){mLines.push(m.label||(typeof nm==='function'?nm(m.user_id):m.user_id));}); }
       splitHtml = '<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:0">'
         +'<div style="font-size:11px;color:var(--ink3);margin-bottom:6px;font-weight:600">👥 รูปแบบหาร · '+gName+'</div>'

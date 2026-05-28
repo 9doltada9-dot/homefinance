@@ -15,6 +15,8 @@ function initForm(){
     // ฟอร์มว่าง — รีเซ็ตวันที่เป็นวันนี้เสมอ
     document.getElementById('fDate').value = todayISO();
     updateThaiDate();
+    // Clear any stale recurring pre-fill tag
+    window._pending_recurring_id = null;
   }
   // auto-set person จาก logged-in user
   var pSel = document.getElementById('fPerson');
@@ -480,6 +482,11 @@ async function addEntry(){
   db.unshift(_entry);
   save();
   addNoteHistory(note);
+  // Mark recurring template as run if this entry came from one
+  if (window._pending_recurring_id) {
+    if (typeof markRecurringRun === 'function') markRecurringRun(window._pending_recurring_id);
+    window._pending_recurring_id = null;
+  }
   showMsg('formMsg','บันทึกเรียบร้อย!','success');
   setTimeout(function(){ document.getElementById('formMsg').className='msg'; clearForm(); }, 1500);
 }

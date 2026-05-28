@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.28</title>
+<title>HomeFinance v3.16.29</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -165,7 +165,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.16.28 · THB</div>
+    <div class="brand-sub">v3.16.29 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -226,7 +226,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.28 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.29 © 2025</div>
   </div>
 </nav>
 
@@ -1270,15 +1270,6 @@ create policy "public write" on transactions for all using (true);</div>
           <option value="-1">เดือนก่อนหน้า (ค่าไฟ/น้ำ)</option>
         </select>
       </div>
-      <div class="field" style="display:none">
-        <label>ผู้บันทึก</label>
-        <select id="recPerson" style="font-size:15px !important"></select>
-      </div>
-    </div>
-    <!-- split toggle — hidden for income -->
-    <div id="recSplitSection" style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <input type="checkbox" id="recSplit" style="width:18px;height:18px;cursor:pointer">
-      <label for="recSplit" style="font-size:14px;cursor:pointer">หาร 2 คน</label>
     </div>
     <div class="form-row full">
       <div class="field">
@@ -1290,6 +1281,18 @@ create policy "public write" on transactions for all using (true);</div>
       <button class="btn btn-ghost" onclick="closeRecurringModal()" style="flex:1;min-height:44px">ยกเลิก</button>
       <button class="btn btn-primary" onclick="onSaveRecurring()" style="flex:1;min-height:44px">บันทึก</button>
     </div>
+  </div>
+</div>
+
+
+<!-- RECURRING DUE MODAL -->
+<div id="recurringDueModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:520px;padding:20px 20px 32px;max-height:80vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:600">🔔 รายการประจำที่ถึงกำหนด</div>
+      <button onclick="closeRecurringDueModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+    </div>
+    <div id="recurringDueList"></div>
   </div>
 </div>
 
@@ -1554,7 +1557,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.28</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.29</div>
   </div>
 </div>
 

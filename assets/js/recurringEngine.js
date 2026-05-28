@@ -1,11 +1,11 @@
-/* HomeFinance · module: recurringEngine.js · v3.0.0
- * Recurring transaction engine — replaces the prompt()-based UI in features.js.
- * Uses a proper modal form + supports billing_month + cycle_id.
+/* HomeFinance · module: recurringEngine.js · v3.1.0
+ * Recurring transaction engine — notification + confirm flow.
+ * processRecurring() finds due templates and shows a modal.
+ * User clicks "บันทึก →" → form is pre-filled → user reviews and saves.
  *
  * Template schema:
- *   { id, type, cat_id, cat_name, desc, amt, person, split, status, note,
- *     vendor_id, item_id, day_of_month, billing_month_offset,
- *     last_run_yyyymm, account_id }
+ *   { id, type, cat_id, cat_name, desc, amt, status, note,
+ *     day_of_month, billing_month_offset, last_run_yyyymm, account_id }
  *
  * billing_month_offset: -1 = prev month, 0 = same month (default)
  */
@@ -40,32 +40,101 @@ function deleteRecurring(id) {
   saveRecurringList(getRecurringList().filter(function(t) { return t.id !== id; }));
 }
 
-// ─── PROCESS (generate entries) ───────────────────────────
+// ─── MARK RUN ─────────────────────────────────────────────
+function markRecurringRun(id) {
+  var today  = new Date();
+  var yyyymm = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+  updateRecurring(id, { last_run_yyyymm: yyyymm });
+}
+
+// ─── PROCESS (find due, show modal) ───────────────────────
 /**
  * Run on startup + every hour.
- * For each template not yet run this month:
- *   - Check if today >= day_of_month
- *   - Create a transaction with proper cycle_id + billing_month
+ * Finds templates due this month, shows notification modal.
+ * Does NOT auto-create transactions anymore.
  */
 function processRecurring() {
-  if (typeof db === 'undefined') return 0;
   var today    = new Date();
   var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
   var todayDay = today.getDate();
   var list     = getRecurringList();
-  var created  = 0;
-  var changed  = false;
+  var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
+  var dueList  = [];
 
   list.forEach(function(t) {
+    if (_myPerson && t.person && t.person !== _myPerson) return;
     if (t.last_run_yyyymm === yyyymm) return;
     var dueDay = t.day_of_month || 1;
     if (todayDay < dueDay) return;
+    dueList.push(t);
+  });
 
-    // Build transaction date
-    var entryDateStr = yyyymm + '-' + String(dueDay).padStart(2, '0');
+  if (dueList.length > 0) {
+    showRecurringDueModal(dueList);
+  }
 
-    // billing_month: offset from transaction month
-    var offset = t.billing_month_offset || 0; // -1 = prev month
+  return dueList.length;
+}
+
+// ─── DUE MODAL ────────────────────────────────────────────
+function showRecurringDueModal(dueList) {
+  var modal  = document.getElementById('recurringDueModal');
+  var listEl = document.getElementById('recurringDueList');
+  if (!modal || !listEl) return;
+
+  listEl.innerHTML = dueList.map(function(t) {
+    var typeLbl = t.type === 'income'
+      ? '<span class="badge badge-income">รายรับ</span>'
+      : '<span class="badge badge-expense">รายจ่าย</span>';
+    var label = (t.cat_name || '');
+    if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
+    var amtStr = (typeof fmtH === 'function') ? fmtH(t.amt) : ('฿' + (Number(t.amt)||0).toLocaleString());
+    var dayStr = 'วันที่ ' + (t.day_of_month || 1);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">'
+      + '<div style="flex:1;min-width:0;padding-right:10px">'
+        + '<div style="font-size:13px;font-weight:600;margin-bottom:3px">' + typeLbl + ' ' + label + '</div>'
+        + '<div style="font-size:12px;color:var(--ink3)">' + amtStr + ' · ' + dayStr + '</div>'
+      + '</div>'
+      + '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" '
+        + 'style="flex-shrink:0;padding:8px 14px;background:var(--blue);color:#fff;border:none;'
+        + 'border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;'
+        + 'font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">'
+        + 'บันทึก →</button>'
+    + '</div>';
+  }).join('');
+
+  modal.style.display = 'flex';
+}
+
+function closeRecurringDueModal() {
+  var modal = document.getElementById('recurringDueModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ─── FILL FORM FROM RECURRING ─────────────────────────────
+/**
+ * Navigate to add form and pre-fill from recurring template.
+ * Sets window._pending_recurring_id so addEntry() can mark it as run.
+ */
+function fillFormFromRecurring(templateId) {
+  var list = getRecurringList();
+  var t = list.find(function(x) { return x.id === templateId; });
+  if (!t) return;
+
+  closeRecurringDueModal();
+
+  // Navigate to add form (calls initForm which resets fields)
+  if (typeof nav === 'function') nav('add');
+
+  // Fill fields after initForm has run
+  setTimeout(function() {
+    var today  = new Date();
+    var yyyymm = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+    var dueDay = t.day_of_month || 1;
+    var entryDate = yyyymm + '-' + String(dueDay).padStart(2, '0');
+
+    // Compute billing_month from offset
+    var offset = t.billing_month_offset || 0;
     var bm;
     if (offset === -1) {
       var prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -74,50 +143,74 @@ function processRecurring() {
       bm = yyyymm;
     }
 
-    var newEntry = {
-      id:             'tx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-      date:           entryDateStr,
-      type:           t.type || 'expense',
-      cat_id:         t.cat_id || null,
-      cat_name:       t.cat_name || '',
-      desc:           t.desc || '',
-      amt:            Number(t.amt) || 0,
-      person:         t.person || (typeof getCurrentPerson==='function' ? getCurrentPerson() : null),
-      split:          !!t.split,
-      status:         t.status || (t.type === 'income' ? 'received' : 'paid'),
-      note:           (t.note || '') + ' [auto]',
-      vendor_id:      t.vendor_id || null,
-      item_id:        t.item_id || null,
-      account_id:     t.account_id || null,
-      cycle_id:       cycleIdFromDate(entryDateStr),
-      billing_month:  bm,
-      _recurring_id:  t.id,
-    };
+    // Type first — rebuilds category list
+    if (typeof setType === 'function') setType(t.type || 'expense');
 
-    db.push(newEntry);
-    if (typeof save === 'function') save();
-    if (typeof sbAdd === 'function') sbAdd(newEntry);
-    t.last_run_yyyymm = yyyymm;
-    changed = true;
-    created++;
-  });
+    // Category
+    var catSel = document.getElementById('fCat');
+    if (catSel && t.cat_id) {
+      catSel.value = t.cat_id;
+      if (typeof onCatChange === 'function') onCatChange();
+    }
 
-  if (changed) saveRecurringList(list);
-  return created;
+    // Description — may not be in dropdown, insert if needed
+    var descSel = document.getElementById('fDesc');
+    if (descSel && t.desc) {
+      var optVals = [].slice.call(descSel.options).map(function(o) { return o.value; });
+      if (optVals.indexOf(t.desc) === -1) {
+        var opt = document.createElement('option');
+        opt.value = t.desc; opt.textContent = t.desc;
+        descSel.insertBefore(opt, descSel.firstChild);
+      }
+      descSel.value = t.desc;
+    }
+
+    // Date
+    var dateEl = document.getElementById('fDate');
+    if (dateEl) {
+      dateEl.value = entryDate;
+      if (typeof updateThaiDate === 'function') updateThaiDate();
+    }
+
+    // Amount
+    var amtEl = document.getElementById('fAmt');
+    if (amtEl && t.amt) amtEl.value = t.amt;
+
+    // Billing month
+    var bmSel = document.getElementById('fBillingMonth');
+    if (bmSel) bmSel.value = bm;
+
+    // Account
+    var acctSel = document.getElementById('fAccount');
+    if (acctSel && t.account_id) acctSel.value = t.account_id;
+
+    // Status
+    var statusSel = document.getElementById('fStatus');
+    if (statusSel && t.status) statusSel.value = t.status;
+
+    // Note
+    var noteEl = document.getElementById('fNote');
+    if (noteEl) noteEl.value = t.note || '';
+
+    // Tag this save as recurring
+    window._pending_recurring_id = templateId;
+
+    if (typeof showCycleToast === 'function') {
+      showCycleToast('📋 กรอกแล้ว — ตรวจสอบและกดบันทึก');
+    }
+  }, 50);
 }
 
 // ─── UPCOMING PREVIEW ─────────────────────────────────────
 function getUpcomingRecurring(days) {
   days = days || 7;
-  var today    = new Date(); today.setHours(0, 0, 0, 0);
-  var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
-  var result   = [];
-  var list     = getRecurringList();
+  var today  = new Date(); today.setHours(0, 0, 0, 0);
+  var result = [];
+  var list   = getRecurringList();
   list.forEach(function(t) {
     var dueDay  = t.day_of_month || 1;
     var dueDate = new Date(today.getFullYear(), today.getMonth(), dueDay);
     if (dueDate < today) {
-      // Try next month
       dueDate = new Date(today.getFullYear(), today.getMonth() + 1, dueDay);
     }
     var diff = Math.round((dueDate - today) / 86400000);
@@ -133,7 +226,7 @@ function renderRecurringList() {
   if (!box) return;
   var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
   var list = getRecurringList().filter(function(t) {
-    return !_myPerson || t.person === _myPerson;
+    return !_myPerson || !t.person || t.person === _myPerson;
   });
   if (!list.length) {
     box.innerHTML = '<div class="empty">ยังไม่มีรายการประจำ</div>';
@@ -145,32 +238,33 @@ function renderRecurringList() {
       : '<span class="badge badge-expense">รายจ่าย</span>';
     var offsetLbl = t.billing_month_offset === -1 ? ' · บิลเดือนก่อน' : '';
     var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + (t.cat_name || '') + ' — ' + (t.desc || '(ไม่มีคำอธิบาย)') + '</div>' +
-        '<div style="font-size:11px;color:var(--ink3);margin-top:2px">' +
-          'วันที่ ' + (t.day_of_month || 1) + ' · ' + fmtH(t.amt) + ' · ' +
-          (typeof nm === 'function' ? nm(t.person) : t.person) + offsetLbl + ' ' + lastRun +
-        '</div>' +
-      '</div>' +
-      '<button onclick="onDeleteRecurring(\'' + t.id + '\')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;touch-action:manipulation">×</button>' +
-    '</div>';
+    var label = (t.cat_name || '');
+    if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">'
+      + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + '</div>'
+        + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
+          + 'วันที่ ' + (t.day_of_month || 1) + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt) + offsetLbl + ' ' + lastRun
+        + '</div>'
+      + '</div>'
+      + '<button onclick="onDeleteRecurring(\'' + t.id + '\')" '
+        + 'style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;touch-action:manipulation">×</button>'
+    + '</div>';
   }).join('');
 }
 
 function onDeleteRecurring(id) {
-  if(!checkOnlineForAction()) return;
+  if (typeof checkOnlineForAction === 'function' && !checkOnlineForAction()) return;
   if (!confirm('ลบรายการประจำนี้?')) return;
   deleteRecurring(id);
   renderRecurringList();
 }
 
-// ─── MODAL OPEN/CLOSE ─────────────────────────────────────
+// ─── TEMPLATE MODAL OPEN/CLOSE ────────────────────────────
 function openRecurringModal() {
   var modal = document.getElementById('recurringModal');
   if (!modal) return;
 
-  // Populate category dropdown
   var catSel = document.getElementById('recCat');
   if (catSel) {
     var curType = (document.getElementById('recType') || {}).value || 'expense';
@@ -178,14 +272,6 @@ function openRecurringModal() {
       .filter(function(c) { return c.type === curType; })
       .map(function(c) { return '<option value="' + c.id + '" data-name="' + c.name + '">' + c.name + '</option>'; })
       .join('');
-  }
-
-  // Auto-assign person จาก user ที่ login อยู่ (ซ่อน dropdown แล้ว)
-  var perSel = document.getElementById('recPerson');
-  if (perSel) {
-    var _myPerson = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
-    perSel.innerHTML = '<option value="' + _myPerson + '">' + _myPerson + '</option>';
-    perSel.value = _myPerson;
   }
 
   modal.style.display = 'flex';
@@ -204,13 +290,10 @@ function onRecurringTypeChange() {
     .filter(function(c) { return c.type === type; })
     .map(function(c) { return '<option value="' + c.id + '" data-name="' + c.name + '">' + c.name + '</option>'; })
     .join('');
-
-  var splitSection = document.getElementById('recSplitSection');
-  if (splitSection) splitSection.style.display = type === 'expense' ? 'flex' : 'none';
 }
 
 function onSaveRecurring() {
-  if(!checkOnlineForAction()) return;
+  if (typeof checkOnlineForAction === 'function' && !checkOnlineForAction()) return;
   var type    = (document.getElementById('recType')    || {}).value || 'expense';
   var catSel  = document.getElementById('recCat');
   var cat     = catSel ? catSel.options[catSel.selectedIndex] : null;
@@ -219,15 +302,15 @@ function onSaveRecurring() {
   var desc    = ((document.getElementById('recDesc')   || {}).value || '').trim();
   var amt     = parseFloat((document.getElementById('recAmt')    || {}).value) || 0;
   var day     = parseInt((document.getElementById('recDay')      || {}).value, 10) || 1;
-  var person  = (document.getElementById('recPerson')  || {}).value || null;
-  var split   = !!(document.getElementById('recSplit') || {}).checked;
   var offset  = parseInt((document.getElementById('recBillingOffset') || {}).value, 10) || 0;
   var note    = ((document.getElementById('recNote')   || {}).value || '').trim();
 
   if (!catId || !amt || day < 1 || day > 31) {
-    showCycleToast('⚠️ กรุณากรอกข้อมูลให้ครบ');
+    if (typeof showCycleToast === 'function') showCycleToast('⚠️ กรุณากรอกข้อมูลให้ครบ');
     return;
   }
+
+  var person = (typeof getCurrentPerson === 'function') ? getCurrentPerson() : null;
 
   addRecurring({
     type:                 type,
@@ -238,23 +321,18 @@ function onSaveRecurring() {
     day_of_month:         day,
     billing_month_offset: offset,
     person:               person,
-    split:                split,
     note:                 note,
     status:               type === 'income' ? 'received' : 'paid',
   });
 
   closeRecurringModal();
   renderRecurringList();
-  showCycleToast('เพิ่มรายการประจำ "' + (desc || catName) + '" แล้ว');
+  if (typeof showCycleToast === 'function') showCycleToast('เพิ่มรายการประจำ "' + (desc || catName) + '" แล้ว');
 }
 
 // ─── INIT ─────────────────────────────────────────────────
 function initRecurringEngine() {
-  var n = processRecurring();
-  if (n > 0 && typeof showCycleToast === 'function') {
-    showCycleToast('สร้างรายการประจำ ' + n + ' รายการ 🔄');
-  }
-  // Re-check every hour when app stays open
+  processRecurring();
   setInterval(function() {
     try { processRecurring(); } catch(_) {}
   }, 60 * 60 * 1000);

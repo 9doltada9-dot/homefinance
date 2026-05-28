@@ -228,6 +228,7 @@ async function addVendor() {
 async function deleteVendor(id) {
   var v = vendorsData.find(function(x) { return x.id === id; });
   if (!v) return;
+  if (!confirm('ลบ "' + v.name + '" ใช่หรือไม่?')) return;
   vendorsData = vendorsData.filter(function(x) { return x.id !== id; });
   saveVendorsLocal(); renderVendorList(); fillVendors();
   if (!String(id).startsWith('local-')) await sbDeleteVendor(id);

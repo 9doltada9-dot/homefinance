@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', function(){
 function startAppAfterAuth() {
   // ล้าง db ก่อนทุกครั้ง — ป้องกันข้อมูล user เก่าค้างอยู่ระหว่างรอ Supabase
   db = [];
+  if (typeof accountsData !== 'undefined') accountsData = [];
+  if (typeof budgets    !== 'undefined') budgets    = {};
   var startCreds = getSbCreds();
   if(startCreds.ok){
     // Admin ดึง transactions ทั้งหมด, User ดึงเฉพาะของตัวเอง

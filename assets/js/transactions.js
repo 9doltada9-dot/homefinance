@@ -373,9 +373,22 @@ function renderTx(){
   } else if(totalEl){ totalEl.style.display='none'; }
 
   var isMobile = window.innerWidth <= 900;
-  var revertBtn = function(e){ return '<button class="btn-revert" onclick="markPending(\''+e.id+'\')">'+
+
+  // ─── VENDOR AVATAR: วงกลมตัวอักษรแรก ─────────────────────
+  var _vendorAvatar = function(name) {
+    if (!name || name === '—') return '';
+    var ch   = (name.charAt(0) || '?');
+    var code = name.charCodeAt(0) || 0;
+    var palette = ['#1a4fa0','#16a34a','#d97706','#7c3aed','#db2777','#0891b2','#dc2626','#ca8a04'];
+    var bg   = palette[code % palette.length];
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;'
+         + 'width:22px;height:22px;border-radius:50%;background:'+bg+';color:#fff;'
+         + 'font-size:11px;font-weight:700;flex-shrink:0;font-family:Sarabun,sans-serif" '
+         + 'title="'+name+'">'+ch+'</span>';
+  };
+
+  var revertBtn = function(e){ return '<button class="btn-revert" title="คืนสถานะ" onclick="if(confirm(\'คืนรายการนี้เป็น รอดำเนินการ?\'))markPending(\''+e.id+'\')">'+
     '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7.25 4v4.31l2.97 1.71-.75 1.3L5.75 9.1V4h1.5z"/></svg>'+
-    ' คืนสถานะ'+
   '</button>'; };
 
   // จุดสีธนาคาร: คืน <span> สีตาม account หรือ '' ถ้าไม่ระบุ
@@ -406,9 +419,8 @@ function renderTx(){
               ' แก้ไข'+
             '</button>'+
             (isPaid(e)
-              ? '<button class="sa-btn sa-status-paid" onclick="closeAllSwipe();markPending(\''+e.id+'\')">'+
+              ? '<button class="sa-btn sa-status-paid" title="คืนสถานะ" onclick="if(confirm(\'คืนรายการนี้เป็น รอดำเนินการ?\')){ closeAllSwipe();markPending(\''+e.id+'\'); }">'+
                   '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 4v4.5l2.7 1.56-.75 1.3L9.25 11V6h1.5z"/></svg>'+
-                  ' คืนสถานะ'+
                 '</button>'
               : '<button class="sa-btn sa-status-pending" onclick="closeAllSwipe();markPaid(\''+e.id+'\')">'+
                   '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>'+
@@ -428,7 +440,7 @@ function renderTx(){
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
 
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
-                    (e.vendor_id ? '<span style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:1px 6px;border-radius:4px">'+(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—')+'</span>' : '')+
+                    (e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : ''; })() : '')+
                     (_txShowAllUsers && (e.user_id||e.person) ? personPill(e.user_id||e.person) : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
@@ -582,7 +594,7 @@ function renderTx(){
 
         '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
-        '<td style="font-size:12px;color:var(--ink3)">'+(e.vendor_id ? (((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||'—') : '—')+'</td>'+
+        '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : '—'; })() : '—')+'</td>'+
         (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+

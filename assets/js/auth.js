@@ -733,6 +733,8 @@ async function doLogout() {
   _authProfile = null;
 
   db = [];
+  if (typeof accountsData !== 'undefined') accountsData = [];
+  if (typeof budgets    !== 'undefined') budgets    = {};
   try { save(); } catch (_) {}
 
   _clearSession();

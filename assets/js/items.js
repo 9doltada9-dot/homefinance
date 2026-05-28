@@ -61,6 +61,8 @@ async function addItem(){
 
 async function deleteItem(itemId, catId){
   if(!checkOnlineForAction()) return;
+  var _item = (itemsData[catId]||[]).find(function(x){return x.id===itemId;});
+  if(!confirm('ลบ "' + (_item?_item.name:itemId) + '" ใช่หรือไม่?')) return;
   var list = itemsData[catId]||[];
   var item = list.find(function(x){return x.id===itemId;});
   if(!item) return;

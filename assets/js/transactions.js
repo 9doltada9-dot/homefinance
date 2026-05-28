@@ -233,11 +233,13 @@ function _splitBadge(e) {
         lines.push(m.label || (typeof nm === 'function' ? nm(m.user_id) : m.user_id));
       });
     }
-    var tipData = encodeURIComponent(JSON.stringify({ title: name, lines: lines }));
+    var _tipObj  = { title: name, lines: lines };
+    var _tipJson = JSON.stringify(_tipObj).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     return '<span class="badge badge-split" style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default"'
-      +' onmouseenter="_showSplitTip(this,\''+tipData+'\')"'
+      +' data-split-tip="'+_tipJson+'"'
+      +' onmouseenter="_showSplitTipAttr(this)"'
       +' onmouseleave="_hideSplitTip()"'
-      +' onclick="_toggleSplitTip(this,\''+tipData+'\')"'
+      +' onclick="event.stopPropagation();_toggleSplitTipAttr(this)"'
       +'>'+icon+' '+name+'</span>';
   }
   if (e.split) {
@@ -248,14 +250,17 @@ function _splitBadge(e) {
 
 /** Tooltip helpers สำหรับ split badge */
 var _splitTipVisible = false;
-function _showSplitTip(el, tipData) {
+function _showSplitTipAttr(el) {
   try {
-    var data = JSON.parse(decodeURIComponent(tipData));
+    var raw = el.getAttribute('data-split-tip');
+    if (!raw) return;
+    var jsonStr = raw.replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+    var data = JSON.parse(jsonStr);
     var tip = document.getElementById('splitMemberTip');
     if (!tip) return;
     tip.innerHTML =
       '<div style="font-weight:700;margin-bottom:6px;font-size:12px">'+_escTip(data.title)+'</div>'+
-      (data.lines.length
+      (data.lines && data.lines.length
         ? data.lines.map(function(l){ return '<div style="font-size:12px;padding:2px 0">👤 '+_escTip(l)+'</div>'; }).join('')
         : '<div style="font-size:11px;color:rgba(255,255,255,.6)">ไม่มีข้อมูลสมาชิก</div>');
     var rect = el.getBoundingClientRect();
@@ -265,15 +270,15 @@ function _showSplitTip(el, tipData) {
     tip.style.left = Math.max(8, left) + 'px';
     tip.style.top  = (rect.bottom + window.scrollY + 6) + 'px';
     _splitTipVisible = true;
-  } catch(_){}
+  } catch(err){ console.warn('splitTip err', err); }
 }
 function _hideSplitTip() {
   var tip = document.getElementById('splitMemberTip');
   if (tip) tip.style.display = 'none';
   _splitTipVisible = false;
 }
-function _toggleSplitTip(el, tipData) {
-  if (_splitTipVisible) { _hideSplitTip(); } else { _showSplitTip(el, tipData); }
+function _toggleSplitTipAttr(el) {
+  if (_splitTipVisible) { _hideSplitTip(); } else { _showSplitTipAttr(el); }
 }
 function _escTip(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -379,10 +384,12 @@ function renderTx(){
     if (!name || name === '—') return '';
     var ch   = (name.charAt(0) || '?');
     var code = name.charCodeAt(0) || 0;
-    var palette = ['#1a4fa0','#16a34a','#d97706','#7c3aed','#db2777','#0891b2','#dc2626','#ca8a04'];
+    var palette  = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
+    var textPal  = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
     var bg   = palette[code % palette.length];
+    var fg   = textPal[code % textPal.length];
     return '<span style="display:inline-flex;align-items:center;justify-content:center;'
-         + 'width:22px;height:22px;border-radius:50%;background:'+bg+';color:#fff;'
+         + 'width:24px;height:24px;border-radius:50%;background:'+bg+';color:'+fg+';'
          + 'font-size:11px;font-weight:700;flex-shrink:0;font-family:Sarabun,sans-serif" '
          + 'title="'+name+'">'+ch+'</span>';
   };
@@ -412,27 +419,7 @@ function renderTx(){
           });
           return _groups.map(function(g){
             return '<div style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
-              g.items.map(function(e){return '<div class="swipe-row" id="srow-'+e.id+'">'+
-          '<div class="swipe-actions">'+
-            '<button class="sa-btn sa-edit" onclick="closeAllSwipe();openEdit(\''+e.id+'\')">'+
-              '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>'+
-              ' แก้ไข'+
-            '</button>'+
-            (isPaid(e)
-              ? '<button class="sa-btn sa-status-paid" title="คืนสถานะ" onclick="if(confirm(\'คืนรายการนี้เป็น รอดำเนินการ?\')){ closeAllSwipe();markPending(\''+e.id+'\'); }">'+
-                  '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 4v4.5l2.7 1.56-.75 1.3L9.25 11V6h1.5z"/></svg>'+
-                '</button>'
-              : '<button class="sa-btn sa-status-pending" onclick="closeAllSwipe();markPaid(\''+e.id+'\')">'+
-                  '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>'+
-                  ' ยืนยัน'+
-                '</button>'
-            )+
-            '<button class="sa-btn sa-delete" onclick="closeAllSwipe();delConfirm(\''+e.id+'\')">'+
-              '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>'+
-              ' ลบ'+
-            '</button>'+
-          '</div>'+
-          '<div class="swipe-content" id="sc-'+e.id+'">'+
+              g.items.map(function(e){return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
             '<div style="padding:12px 12px 10px">'+
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
                 '<div style="flex:1;min-width:0">'+
@@ -474,113 +461,16 @@ function renderTx(){
                 '</div>'+
               '</div>'+
             '</div>'+
-          '</div>'+
         '</div>';}).join('');
           }).join('');
         })()
       : '<div class="empty">ไม่พบรายการ</div>';
 
-    // ── Swipe via event delegation on container ───────────────
-    // Bound ONCE on container — survives re-renders from pull/add/edit
-    var SWIPE_W = 200;
-    var container = document.getElementById('txContent');
-    if(!container) return;
-
-    // Remove old delegated handler if exists, then re-add
-    if(container._swipeHandler){
-      container.removeEventListener('touchstart', container._swipeHandler, {passive:true});
-      container.removeEventListener('touchmove',  container._swipeMoveHandler);
-      container.removeEventListener('touchend',   container._swipeEndHandler, {passive:true});
-      container.removeEventListener('touchcancel',container._swipeCancelHandler, {passive:true});
-    }
-
-    var _sc=null, _sx=0, _sy=0, _cx=0, _cy=0, _axis=null, _active=false;
-
-    function getSwipeContent(target){
-      return target.closest('.swipe-content');
-    }
-
-    container._swipeHandler = function(ev){
-      var sc = getSwipeContent(ev.target);
-      if(!sc) return;
-      // init _open every time — works for new renders and pulled data
-      if(sc._open === undefined) sc._open = false;
-      _sc=sc; _active=true;
-      _sx=_cx=ev.touches[0].clientX;
-      _sy=_cy=ev.touches[0].clientY;
-      _axis=null;
-    };
-
-    container._swipeMoveHandler = function(ev){
-      if(!_active||!_sc) return;
-      _cx=ev.touches[0].clientX;
-      _cy=ev.touches[0].clientY;
-      var dx=_cx-_sx, dy=_cy-_sy;
-      if(!_axis && (Math.abs(dx)>5||Math.abs(dy)>5)){
-        _axis=Math.abs(dx)>=Math.abs(dy)?'h':'v';
-      }
-      if(_axis==='h'){
-        ev.preventDefault();
-        var base=_sc._open?-SWIPE_W:0;
-        var clamped=Math.max(-SWIPE_W,Math.min(0,base+dx));
-        _sc.style.transition='none';
-        _sc.style.transform='translateX('+clamped+'px)';
-      } else if(_axis==='v'){
-        if(_sc._open){
-          _sc.style.transition='transform .2s cubic-bezier(.4,0,.2,1)';
-          _sc.style.transform='translateX(0)';
-          _sc._open=false;
-          if(_swipeOpenSc===_sc) _swipeOpenSc=null;
-        }
-        _active=false; _sc=null;
-      }
-    };
-
-    container._swipeEndHandler = function(){
-      if(!_active||!_sc){ _active=false; return; }
-      _active=false;
-      if(_axis!=='h'){ _axis=null; _sc=null; return; }
-      var dx=_cx-_sx;
-      var sc=_sc; _sc=null;
-      sc.style.transition='transform .25s cubic-bezier(.4,0,.2,1)';
-      if(!sc._open){
-        if(dx < -50){
-          if(_swipeOpenSc&&_swipeOpenSc!==sc){
-            _swipeOpenSc.style.transition='transform .25s cubic-bezier(.4,0,.2,1)';
-            _swipeOpenSc.style.transform='translateX(0)';
-            _swipeOpenSc._open=false;
-          }
-          sc.style.transform='translateX(-'+SWIPE_W+'px)';
-          sc._open=true; _swipeOpenSc=sc;
-        } else { sc.style.transform='translateX(0)'; }
-      } else {
-        if(dx>40){
-          sc.style.transform='translateX(0)';
-          sc._open=false; if(_swipeOpenSc===sc) _swipeOpenSc=null;
-        } else { sc.style.transform='translateX(-'+SWIPE_W+'px)'; }
-      }
-      _axis=null;
-    };
-
-    container._swipeCancelHandler = function(){
-      if(!_sc){ _active=false; return; }
-      var sc=_sc; _sc=null; _active=false; _axis=null;
-      sc.style.transition='transform .15s';
-      sc.style.transform=sc._open?('translateX(-'+SWIPE_W+'px)'):'translateX(0)';
-    };
-
-    container.addEventListener('touchstart', container._swipeHandler,      {passive:true});
-    container.addEventListener('touchmove',  container._swipeMoveHandler,  {passive:false});
-    container.addEventListener('touchend',   container._swipeEndHandler,   {passive:true});
-    container.addEventListener('touchcancel',container._swipeCancelHandler,{passive:true});
-
-    // bind .main scroll (removeEventListener safe — same named fn)
-    var mainEl = document.querySelector('.main');
-    if(mainEl){ mainEl.removeEventListener('scroll',_swipeScrollClose); mainEl.addEventListener('scroll',_swipeScrollClose,{passive:true}); }
+    // Mobile tap-to-detail (swipe removed v3.16.24)
 
   } else {
     document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th>'+(_txShowAllUsers?'<th>ผู้บันทึก</th>':'')+'<th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr>'+
+      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th>'+(_txShowAllUsers?'<th>ผู้บันทึก</th>':'')+'<th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th></tr>'+
       (function(){
         var _groups=[], _dmap={};
         list.forEach(function(e){
@@ -589,10 +479,10 @@ function renderTx(){
           _dmap[d].push(e);
         });
         return _groups.map(function(g){
-          return '<tr><td colspan="'+(_txShowAllUsers?'10':'9')+'" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
-            g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="openEdit(\''+e.id+'\')">'+
+          return '<tr><td colspan="'+(_txShowAllUsers?'9':'8')+'" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+            g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')">'+
 
-        '<td>'+e.desc+' <span class="edit-hint">✎ แก้ไข</span></td>'+
+        '<td>'+e.desc+'</td>'+
         '<td style="font-size:12px;color:var(--ink3)">'+(e.cat_name||'—')+'</td>'+
         '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : '—'; })() : '—')+'</td>'+
         (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
@@ -607,19 +497,134 @@ function renderTx(){
           : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
         )+'</td>'+
         '<td style="font-size:11px;color:var(--ink3);font-style:italic">'+(e.note||'—')+'</td>'+
-        '<td style="white-space:nowrap;display:flex;gap:4px;align-items:center" onclick="event.stopPropagation()">'+
-          (e.status==='pending'
-            ? '<button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\')">✓ ยืนยัน</button>'
-            : revertBtn(e)
-          )+
-          '<button class="btn btn-del" id="del-'+e.id+'" onclick="delStep1(\''+e.id+'\')"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>'+
-        '</td>'+
       '</tr>';}).join('');
         }).join('');
       })()+
       
     '</table>' : '<div class="empty">ไม่พบรายการ</div>';
   }
+}
+
+
+// ─── TRANSACTION DETAIL MODAL ────────────────────────────────────
+function txDetailModal(id) {
+  var sid = String(id);
+  var e   = db.find(function(x){ return String(x.id) === sid; });
+  if (!e) return;
+
+  var wrap = document.getElementById('txDetailModalWrap');
+  if (!wrap) { wrap = document.createElement('div'); wrap.id = 'txDetailModalWrap'; document.body.appendChild(wrap); }
+
+  var vendorName = '';
+  if (e.vendor_id) { var vobj = (vendorsData||[]).find(function(v){ return v.id===e.vendor_id; }); if(vobj) vendorName = vobj.name||''; }
+  var acctName = '', acctColor = '';
+  if (e.account_id) { var aobj = (typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }); if(aobj){acctName=aobj.name||'';acctColor=aobj.color||'#1a4fa0';} }
+  var typeLabel = e.type==='income'?'รายรับ':e.type==='expense'?'รายจ่าย':'โอน/ฝาก';
+  var typeColor = e.type==='income'?'var(--green)':e.type==='expense'?'var(--red)':'var(--blue)';
+  var amtSign   = e.type==='income'?'+':e.type==='transfer'?'↗':'−';
+  var statusLabel = e.type==='transfer'?'โอนแล้ว':(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'));
+  var statusBg    = e.type==='transfer'?'var(--blue-bg)':(isPaid(e)?'var(--green-bg,#dcfce7)':'var(--amber-bg,#fef3c7)');
+  var statusFg    = e.type==='transfer'?'var(--blue)':(isPaid(e)?'var(--green)':'var(--amber,#d97706)');
+
+  // split info
+  var splitHtml = '';
+  if (e.type==='expense') {
+    if (e.split_group_id) {
+      var grps = (typeof getSplitGroups==='function') ? getSplitGroups() : [];
+      var grp  = grps.find(function(g){ return g.id===e.split_group_id; });
+      var gName = grp ? grp.name : '(กลุ่ม)';
+      var mLines = [];
+      if (e.split_snapshot && typeof e.split_snapshot==='object') {
+        Object.keys(e.split_snapshot).forEach(function(uid){ var s=e.split_snapshot[uid]; var mN=s.label||(typeof nm==='function'?nm(uid):uid); var mA=(typeof fmtH==='function')?fmtH(s.amount||0):(s.amount||0); mLines.push(mN+' — '+mA+' บาท'+(s.pct?' ('+s.pct+'%)':'')); });
+      } else if (grp&&grp.members) { (grp.members||[]).filter(function(m){return m.active;}).forEach(function(m){mLines.push(m.label||(typeof nm==='function'?nm(m.user_id):m.user_id));}); }
+      splitHtml = '<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:0">'
+        +'<div style="font-size:11px;color:var(--ink3);margin-bottom:6px;font-weight:600">👥 รูปแบบหาร · '+gName+'</div>'
+        +mLines.map(function(l){ return '<div style="font-size:12px;color:var(--ink2);padding:2px 0">• '+l+'</div>'; }).join('')+'</div>';
+    } else if (e.split) {
+      splitHtml = '<div style="background:var(--surface2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink2)">÷ หาร (ส่วนตัว)</div>';
+    }
+  }
+
+  var bmStr = '';
+  if (e.billing_month) { var bmp=e.billing_month.split('-').map(Number); bmStr=SHORT_M[bmp[1]-1]+' '+(bmp[0]+543); }
+
+  // vendor avatar large
+  var bigAvatar = '';
+  if (vendorName) {
+    var c2=vendorName.charCodeAt(0)||0;
+    var p2=['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
+    var t2=['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
+    bigAvatar='<span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:'+p2[c2%p2.length]+';color:'+t2[c2%t2.length]+';font-size:20px;font-weight:700;flex-shrink:0;margin-right:8px">'+vendorName.charAt(0)+'</span>';
+  }
+
+  function row(icon, label, val, valStyle) {
+    if (!val) return '';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px">'
+      +'<span style="font-size:12px;color:var(--ink3)">'+icon+' '+label+'</span>'
+      +'<span style="font-size:13px;font-weight:500;color:var(--ink);'+(valStyle||'')+'">'+val+'</span>'
+    +'</div>';
+  }
+
+  wrap.innerHTML =
+    '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-end;justify-content:center">'
+    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,0)">'
+
+      // drag handle + header
+      +'<div style="display:flex;justify-content:center;padding:10px 0 0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px">'
+        +'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+typeColor+';color:#fff;letter-spacing:.3px">'+typeLabel+'</span>'
+        +'<button onclick="closeTxDetailModal()" style="background:none;border:none;padding:4px 8px;font-size:20px;color:var(--ink3);cursor:pointer;line-height:1">×</button>'
+      +'</div>'
+
+      // amount hero
+      +'<div style="text-align:center;padding:8px 16px 16px">'
+        +'<div style="font-size:38px;font-weight:800;font-family:monospace;color:'+typeColor+';letter-spacing:-1px">'+amtSign+' '+fmtH(e.amt)+'</div>'
+        +'<div style="font-size:15px;font-weight:600;color:var(--ink);margin-top:4px">'+e.desc+'</div>'
+        +(vendorName?'<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:8px">'+bigAvatar+'<span style="font-size:13px;color:var(--ink2)">'+vendorName+'</span></div>':'')
+      +'</div>'
+
+      // detail rows
+      +'<div style="padding:0 16px 16px;display:grid;gap:6px">'
+        +row('📅','วันที่', toThaiDateStr(e.date))
+        +row('📂','หมวด', e.cat_name||'—')
+        +(acctName?'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">💳 บัญชี</span><span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)"><span style="width:10px;height:10px;border-radius:50%;background:'+acctColor+';display:inline-block"></span>'+acctName+'</span></div>':'')
+        +(bmStr?row('📆','เดือนบิล', bmStr):'')
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">✅ สถานะ</span><span style="font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px;background:'+statusBg+';color:'+statusFg+'">'+statusLabel+'</span></div>'
+        +splitHtml
+        +(e.note?'<div style="padding:9px 14px;background:var(--surface2);border-radius:10px"><div style="font-size:12px;color:var(--ink3);margin-bottom:4px">📝 หมายเหตุ</div><div style="font-size:13px;color:var(--ink);font-style:italic">'+e.note+'</div></div>':'')
+      +'</div>'
+
+      // action buttons
+      +'<div style="padding:0 16px 20px;display:flex;gap:10px">'
+        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:13px;border-radius:12px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>ลบ</button>'
+        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:13px;border-radius:12px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>แก้ไข</button>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
+
+  var overlay = document.getElementById('txDetailOverlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    var sheet = overlay.querySelector('div');
+    if (sheet) sheet.style.transform = 'translateY(60px)';
+    requestAnimationFrame(function(){
+      overlay.style.transition = 'opacity .2s';
+      overlay.style.opacity = '1';
+      if (sheet) { sheet.style.transition = 'transform .25s cubic-bezier(.4,0,.2,1)'; sheet.style.transform = 'translateY(0)'; }
+    });
+  }
+}
+
+function closeTxDetailModal() {
+  var wrap = document.getElementById('txDetailModalWrap');
+  if (!wrap) return;
+  var overlay = document.getElementById('txDetailOverlay');
+  if (overlay) {
+    overlay.style.transition = 'opacity .18s'; overlay.style.opacity = '0';
+    var sheet = overlay.querySelector('div');
+    if (sheet) { sheet.style.transition = 'transform .2s cubic-bezier(.4,0,.2,1)'; sheet.style.transform = 'translateY(60px)'; }
+    setTimeout(function(){ wrap.innerHTML = ''; }, 200);
+  } else { wrap.innerHTML = ''; }
 }
 
 // ─── MARK / DELETE ────────────────────────────────────────

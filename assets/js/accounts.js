@@ -142,7 +142,7 @@ function getTotalBalance() {
 }
 
 // ─── TRANSFER ─────────────────────────────────────────────
-function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
+async function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
   if (!checkOnlineForAction()) return;
   var id = 'tx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
   var fromAcct = accountsData.find(function(a){ return a.id === fromAccountId; });
@@ -178,11 +178,13 @@ function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
     transfer_direction: 'in',
     transfer_pair_id: id + '-out',
   });
+  var _okOut = await sbAdd(outEntry);
+  if(!_okOut) return;
+  var _okIn = await sbAdd(inEntry);
+  if(!_okIn) return;
   db.push(outEntry);
   db.push(inEntry);
   save();
-  sbAdd(outEntry);
-  sbAdd(inEntry);
   showCycleToast('โอนเงิน ' + fmtH(amount) + ' บาท เรียบร้อย');
 }
 
@@ -328,7 +330,7 @@ function openDepositModal(accountId) {
 function closeDepositModal() {
   document.getElementById('depositModal').style.display = 'none';
 }
-function doDeposit() {
+async function doDeposit() {
   var accountId = document.getElementById('depositAccountId').value;
   var amt  = parseFloat(document.getElementById('depositAmt').value);
   var date = document.getElementById('depositDate').value;
@@ -346,9 +348,10 @@ function doDeposit() {
     cycle_id: (typeof cycleIdFromDate==='function' ? cycleIdFromDate(date) : null),
     billing_month: (typeof defaultBillingMonth==='function' ? defaultBillingMonth(date) : date.slice(0,7)),
   };
+  var _okDep = await sbAdd(entry);
+  if(!_okDep) return;
   db.push(entry);
   save();
-  sbAdd(entry);
   closeDepositModal();
   renderAccountCards();
   renderAccountList();
@@ -423,7 +426,7 @@ function updateAdjustDiff() {
     diffLabel.style.color = 'var(--red)';
   }
 }
-function doAdjustBalance() {
+async function doAdjustBalance() {
   var accountId = document.getElementById('adjustAcctId').value;
   var targetVal = parseFloat(document.getElementById('adjustTargetAmt').value);
   var date      = document.getElementById('adjustDate').value;
@@ -452,9 +455,10 @@ function doAdjustBalance() {
     cycle_id: (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(date) : null),
     billing_month: (typeof defaultBillingMonth === 'function' ? defaultBillingMonth(date) : date.slice(0, 7)),
   };
+  var _okAdj = await sbAdd(entry);
+  if(!_okAdj) return;
   db.push(entry);
   save();
-  sbAdd(entry);
   closeAdjustModal();
   renderAccountCards();
   renderAccountList();

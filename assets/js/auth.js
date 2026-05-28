@@ -706,15 +706,7 @@ async function doChangePassword() {
 
 // ─── LOGOUT ───────────────────────────────────────────────
 async function doLogout() {
-  var _pendingCount = (typeof getPendingCount === 'function') ? getPendingCount() : 0;
-  if (_pendingCount > 0) {
-    var _confirmMsg = 'มีรายการค้าง sync ' + _pendingCount + ' รายการที่ยังไม่ได้บันทึกขึ้น cloud\n\n' +
-      'รายการเหล่านี้จะ sync อัตโนมัติเมื่อเชื่อมต่ออินเทอร์เน็ตครั้งถัดไป\n\n' +
-      'ต้องการออกจากระบบหรือไม่?';
-    if (!confirm(_confirmMsg)) return;
-  } else {
-    if (!confirm('ออกจากระบบ?')) return;
-  }
+  if (!confirm('ออกจากระบบ?')) return;
   // reset admin unlock state
   if (typeof _txShowAllUsers !== 'undefined') window._txShowAllUsers = false;
 

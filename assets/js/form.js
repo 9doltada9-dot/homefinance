@@ -410,7 +410,7 @@ function autoSplit() {
   }
 }
 
-function addEntry(){
+async function addEntry(){
   if(!checkOnlineForAction()) return;
   var date   = document.getElementById('fDate').value;
   var person = document.getElementById('fPerson').value;
@@ -463,7 +463,7 @@ function addEntry(){
 
   // ระบบใหม่: user_id = UUID; person = backward compat (อาจเป็น UUID หรือ A/B)
   var _currentUserId = (typeof getAuthUserId==='function') ? getAuthUserId() : null;
-  db.unshift({id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt,
+  var _entry = {id:Date.now(), date:date, type:cType, cat_id:cat_id, cat_name:cat_name, desc:desc, amt:amt,
     person:person, user_id:_currentUserId||person,
     split:cType==='expense'?splitOn:false,
     split_type:cType==='expense'?splitType:'personal',
@@ -473,10 +473,13 @@ function addEntry(){
     split_snapshot:Object.keys(_split_snapshot).length ? _split_snapshot : null,
     status:status, note:note, item_id:item_id, vendor_id:vendor_id,
     _salary_cycle:_salary_cycle,
-    cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null});
+    cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null};
+
+  var _ok = await sbAdd(_entry);
+  if(!_ok) return;
+  db.unshift(_entry);
   save();
   addNoteHistory(note);
-  sbAdd(db[0]);
   showMsg('formMsg','บันทึกเรียบร้อย!','success');
   setTimeout(function(){ document.getElementById('formMsg').className='msg'; clearForm(); }, 1500);
 }

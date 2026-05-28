@@ -325,14 +325,6 @@ async function silentPull(){
   try {
     var merged = await _fetchAndMerge(creds, 8000);
     if(!merged){ _pullInProgress=false; return; }
-    // merge pending (offline queue) into result — ป้องกัน pending หาย
-    var _spq = _getPendingQueue();
-    if(_spq.length){
-      var _spqIds = {};
-      merged.forEach(function(e){ _spqIds[String(e.id)] = true; });
-      _spq.forEach(function(e){ if(!_spqIds[String(e.id)]) merged.push(e); });
-      merged.sort(function(a,b){ return a.date>b.date?-1:a.date<b.date?1:0; });
-    }
     // checksum — ไม่ render ถ้าข้อมูลเหมือนเดิม
     var hash = merged.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
     var old  = db.map(function(e){return String(e.id)+String(e.status)+String(e.amt);}).join('|');
@@ -387,7 +379,6 @@ function startSilentPullInterval(){
 // ─── CONNECTION MONITOR ───────────────────────────────────
 var _isOnline = true; // assume online until proven otherwise
 var _checkTimer = null;
-var _syncInProgress = false; // ป้องกัน sync ซ้อนกัน
 
 function sbStatus(state, msg){
   msg = msg || '';
@@ -463,31 +454,16 @@ function setOnlineState(online){
   var wasOffline = !_isOnline;
   _isOnline = online;
   updateConnectionUI(online);
-  if(online){
-    if(wasOffline) hideOfflineBanner();
-    if(!_syncInProgress && (wasOffline || _getPendingQueue().length > 0)){
-      syncOnReconnect();
-    }
-  }
+  if(online && wasOffline) hideOfflineBanner();
   if(!online) showOfflineBanner();
 }
 
 function updateConnectionUI(online){
   var color = online ? '#1a7a4a' : '#c0392b';
-  // Sidebar online dot + label
   var sidebarDot = document.getElementById('sidebarOnlineDot');
   var sidebarTxt = document.getElementById('sidebarOnlineTxt');
-  var _pCountForDot = (typeof _getPendingQueue === 'function') ? _getPendingQueue().length : 0;
-  var dotColor = (online && _pCountForDot > 0) ? '#e67e22' : color;
-  if(sidebarDot) sidebarDot.style.background = dotColor;
-  if(sidebarTxt){
-    var _pCount = (typeof _getPendingQueue === 'function') ? _getPendingQueue().length : 0;
-    sidebarTxt.textContent = online
-      ? (_pCount > 0 ? 'Online · รอ sync '+_pCount : 'Online')
-      : 'Offline';
-    sidebarTxt.style.color = (_pCount > 0 && online) ? '#e67e22' : color;
-  }
-  // Legacy elements (Supabase page — kept for backward compat)
+  if(sidebarDot) sidebarDot.style.background = color;
+  if(sidebarTxt){ sidebarTxt.textContent = online ? 'Online' : 'Offline'; sidebarTxt.style.color = color; }
   var dot = document.getElementById('sbDot');
   var txt = document.getElementById('sbStatusText');
   var rtDot = document.getElementById('rtDot');
@@ -579,75 +555,6 @@ function checkOnlineForAction(){
     return false;
   }
   return true;
-}
-
-// ─── OFFLINE PENDING QUEUE ────────────────────────────────
-function _getPendingQueue(){
-  try { return JSON.parse(localStorage.getItem('hf2_pending_sync')||'[]'); }
-  catch(_){ return []; }
-}
-function _addPending(e){
-  var q = _getPendingQueue();
-  q = q.filter(function(x){ return String(x.id) !== String(e.id); });
-  q.push(e);
-  localStorage.setItem('hf2_pending_sync', JSON.stringify(q));
-}
-function _removePending(id){
-  var q = _getPendingQueue();
-  q = q.filter(function(x){ return String(x.id) !== String(id); });
-  localStorage.setItem('hf2_pending_sync', JSON.stringify(q));
-}
-function getPendingCount(){ return _getPendingQueue().length; }
-
-async function syncOnReconnect(){
-  var creds = getSbCreds();
-  if(!creds.ok) return;
-  if(_syncInProgress) return;
-  _syncInProgress = true;
-  try {
-    // 1. Push pending offline entries ก่อน (เน็ตตัดกลางคัน)
-    var pending = _getPendingQueue();
-    if(pending.length > 0){
-      await Promise.all(pending.map(function(e){ return sbAdd(e); }));
-    }
-    // 2. Load categories + settings (รวม split_groups)
-    var catsData = await sbLoadCategories();
-    if(catsData && Array.isArray(catsData)){
-      categories = catsData; buildCategoryMap();
-    }
-    var settingsOnReconnect = await sbLoadSettings();
-    if(settingsOnReconnect && typeof applySettingsFromMap === 'function'){
-      applySettingsFromMap(settingsOnReconnect);
-    }
-    // 3. Pull fresh — Supabase เป็น source of truth
-    var merged = await _fetchAndMerge(creds, 8000);
-    if(merged){ db = merged; save(); }
-    renderDash(); renderTx();
-    // ล้าง queue entries ที่ยืนยันว่ามีใน DB แล้ว
-    if(merged){
-      var mergedIds = {};
-      merged.forEach(function(r){ mergedIds[String(r.id)] = true; });
-      var stillPending = _getPendingQueue().filter(function(p){ return !mergedIds[String(p.id)]; });
-      localStorage.setItem('hf2_pending_sync', JSON.stringify(stillPending));
-    }
-    var pendLeft = _getPendingQueue().length;
-    // อัปเดต badge sidebar ให้ตรงกับ queue จริงหลัง sync
-    updateConnectionUI(true);
-    showConnectToast(pendLeft > 0
-      ? '⚠️ เชื่อมต่อแล้ว แต่ sync ไม่ครบ '+pendLeft+' รายการ'
-      : 'เชื่อมต่อแล้ว — อัปเดตข้อมูลล่าสุดเรียบร้อย');
-  } catch(_){}
-  _syncInProgress = false;
-  // merge pending items ที่ยังไม่ sync ได้ กลับเข้า db เพื่อให้ user เห็น
-  var _srpq = _getPendingQueue();
-  if(_srpq.length){
-    var _srpqIds = {};
-    db.forEach(function(e){ _srpqIds[String(e.id)] = true; });
-    _srpq.forEach(function(e){ if(!_srpqIds[String(e.id)]) db.push(e); });
-    db.sort(function(a,b){ return a.date>b.date?-1:a.date<b.date?1:0; });
-    save();
-  }
-  updateConnectionUI(true);
 }
 
 var _toastTimer = null;
@@ -753,8 +660,9 @@ async function sbPull(){
 
 // ─── TRANSACTION SYNC (single row) ────────────────────────
 async function sbAdd(e){
+  if(!_isOnline){ showCycleToast('❌ ไม่มีการเชื่อมต่อ กรุณาตรวจสอบอินเทอร์เน็ต'); return false; }
   var creds = getSbCreds();
-  if(!creds.ok) return;
+  if(!creds.ok) return false;
   try {
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
     var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'resolution=merge-duplicates,return=minimal'});
@@ -785,9 +693,11 @@ async function sbAdd(e){
         user_id: (typeof getAuthUserId==='function' ? getAuthUserId() : null) || e.user_id || null,
       }])
     });
-    if(r.ok){ _removePending(String(e.id)); }
-    else { _addPending(e); }
-  } catch(_){ _addPending(e); }
+    if(r.ok) return true;
+    if(r.status === 401){ showCycleToast('❌ Session หมดอายุ กรุณา Login ใหม่'); return false; }
+    showCycleToast('❌ บันทึกไม่สำเร็จ ('+r.status+') กรุณาลองใหม่');
+    return false;
+  } catch(_){ showCycleToast('❌ บันทึกไม่สำเร็จ กรุณาลองใหม่'); return false; }
 }
 
 async function sbUpdate(e){
@@ -917,9 +827,6 @@ async function refreshSyncStatus(){
       } else {
         msgEl.style.color = 'var(--green)';
         msgEl.textContent = '✅ ข้อมูลตรงกัน — อัปเดตล่าสุดแล้ว (' + db.length + ' รายการ)';
-        // ล้าง pending queue เมื่อยืนยันว่าข้อมูลตรงกับ DB แล้ว
-        localStorage.removeItem('hf2_pending_sync');
-        if(typeof updateConnectionUI==='function') updateConnectionUI(true);
       }
     }
   } catch(e){
@@ -966,7 +873,6 @@ async function sbPushAllLocal(){
       if(!r.ok){ var t=await r.text(); throw new Error('HTTP '+r.status+': '+t.slice(0,120)); }
       total += chunk.length;
     }
-    localStorage.removeItem('hf2_pending_sync');
     if(typeof updateConnectionUI==='function') updateConnectionUI(true);
     if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ อัปโหลด '+total+' รายการสำเร็จ'; }
     showCycleToast('✅ อัปโหลด '+total+' รายการขึ้น Database สำเร็จ');
@@ -1003,7 +909,6 @@ async function sbPullAllFull(){
     renderDash(); renderTx();
     if(typeof renderAccountCards==='function') renderAccountCards();
     if(msgEl){ msgEl.style.color='var(--green)'; msgEl.textContent='✅ ดาวน์โหลด '+rows.length+' รายการสำเร็จ (รวมเครื่อง '+db.length+' รายการ)'; }
-    localStorage.removeItem('hf2_pending_sync');
     if(typeof updateConnectionUI==='function') updateConnectionUI(true);
     showCycleToast('✅ ดาวน์โหลด '+rows.length+' รายการจาก Database');
     setTimeout(refreshSyncStatus, 500);

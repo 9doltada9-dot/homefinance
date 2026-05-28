@@ -136,20 +136,6 @@ function startAppAfterAuth() {
         db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
         save();
       }
-      // merge รายการค้าง offline (hf2_pending_sync) เข้า db เสมอ
-      // เพื่อให้ user เห็นรายการที่คีย์ไว้ขณะ offline แม้ยังไม่ถึง Supabase
-      (function(){
-        try {
-          var _pq = JSON.parse(localStorage.getItem('hf2_pending_sync') || '[]');
-          if (!_pq.length) return;
-          var _dbIds = {};
-          db.forEach(function(e){ _dbIds[String(e.id)] = true; });
-          _pq.forEach(function(e){
-            if (!_dbIds[String(e.id)]) { db.push(e); }
-          });
-          db.sort(function(a,b){ return a.date > b.date ? -1 : a.date < b.date ? 1 : 0; });
-        } catch(_) {}
-      })();
       // v3: merge Supabase accounts into local store
       if(sbAccounts && sbAccounts.length && typeof saveAccountsLocal === 'function'){
         accountsData = sbAccounts;

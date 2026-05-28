@@ -116,8 +116,11 @@ function getAccountBalance(accountId) {
   var acct = accountsData.find(function(a) { return a.id === accountId; });
   if (!acct) return 0;
   var base = acct.initial_balance || 0;
+  // กรองเฉพาะ user ปัจจุบัน
+  var _gaUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _gaDb  = _gaUid ? db.filter(function(e){ return (e.user_id||e.person) === _gaUid; }) : db;
   // income adds, expense deducts
-  var txBalance = db.filter(function(e) {
+  var txBalance = _gaDb.filter(function(e) {
     return (e.account_id === accountId) && e.status !== 'cancelled';
   }).reduce(function(s, e) {
     if (e.type === 'income' && e.status !== 'pending') return s + e.amt;
@@ -259,9 +262,12 @@ function fillAccountSelectors() {
 function renderAccountCards() {
   var el = document.getElementById('accountCards');
   if (!el) return;
-  if (!accountsData.length) { el.style.display = 'none'; return; }
+  // กรองเฉพาะ user ปัจจุบัน (defensive)
+  var _rcUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _rcAccts = _rcUid ? accountsData.filter(function(a){ return a.user_id === _rcUid; }) : accountsData;
+  if (!_rcAccts.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
-  var total = getTotalBalance();
+  var total = _rcAccts.reduce(function(s,a){ return s + getAccountBalance(a.id); }, 0);
   el.innerHTML =
     '<div class="card" style="border-left:4px solid #1a4fa0">' +
       '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">' +
@@ -270,7 +276,7 @@ function renderAccountCards() {
       '</div>' +
       '<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">ยอดรวมทุกบัญชี: <strong style="font-size:15px;color:var(--green);font-family:monospace">' + fmtH(total) + '</strong> บาท</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">' +
-        accountsData.filter(function(a) { return a.is_active; }).map(function(a) {
+        _rcAccts.filter(function(a) { return a.is_active; }).map(function(a) {
           var bal = getAccountBalance(a.id);
           return '<div style="background:var(--surface2);border-radius:10px;padding:10px;border-left:3px solid ' + a.color + '">' +
             '<div style="font-size:11px;font-weight:600;color:var(--ink2)">' + a.name + '</div>' +
@@ -462,7 +468,9 @@ function renderAccountList() {
   if (!el) return;
   el.innerHTML = accountsData.map(function(a) {
     var bal = getAccountBalance(a.id);
-    var hasUsage = db.some(function(e) { return e.account_id === a.id; });
+    var _ralUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+    var _ralDb  = _ralUid ? db.filter(function(e){ return (e.user_id||e.person) === _ralUid; }) : db;
+    var hasUsage = _ralDb.some(function(e) { return e.account_id === a.id; });
     return '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)">' +
       '<div style="width:12px;height:12px;border-radius:50%;background:' + a.color + ';flex-shrink:0"></div>' +
       '<div style="flex:1;min-width:0">' +
@@ -500,8 +508,10 @@ function openAccountLedger(accountId) {
   // populate month dropdown from transactions of this account
   var sel = document.getElementById('ledgerMonthFilter');
   if (sel) {
+    var _oalUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+    var _oalDb  = _oalUid ? db.filter(function(e){ return (e.user_id||e.person) === _oalUid; }) : db;
     var months = Array.from(new Set(
-      db.filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
+      _oalDb.filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
         .map(function(e){ return e.date.slice(0, 7); })
     )).sort().reverse();
     var now = new Date();
@@ -531,7 +541,9 @@ function renderLedger() {
   var selMonth = (document.getElementById('ledgerMonthFilter') || {}).value || '';
 
   // เรียง ASC ทั้งหมด (ใช้คำนวณ running balance)
-  var allEntries = db
+  var _rlUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _rlDb  = _rlUid ? db.filter(function(e){ return (e.user_id||e.person) === _rlUid; }) : db;
+  var allEntries = _rlDb
     .filter(function(e){ return e.account_id === accountId && e.status !== 'cancelled'; })
     .slice()
     .sort(function(a, b){

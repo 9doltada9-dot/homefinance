@@ -26,19 +26,11 @@ function loadAccountsLocal() {
       db.forEach(function(e){ if (e.account_id) _usedIds[e.account_id] = true; });
       var _idList = Object.keys(_usedIds);
       if (_idList.length) {
-        // ดึง legacy null-user_id accounts จาก localStorage เป็น template
-        var _legacyMap = {};
-        try {
-          JSON.parse(localStorage.getItem('hf2_accounts') || '[]')
-            .filter(function(a){ return !a.user_id; })
-            .forEach(function(a){ _legacyMap[a.id] = a; });
-        } catch(_){}
+        // v3.16.21: ไม่ใช้ null-user_id legacy accounts อีกต่อไป
+        // เพื่อป้องกัน cross-user claim — Supabase คือ source of truth
         accountsData = _idList.map(function(aid){
-          var lg = _legacyMap[aid];
-          return lg
-            ? Object.assign({}, lg, { user_id: _uid })
-            : { id: aid, name: 'บัญชีหลัก', type: 'bank', color: '#1a4fa0',
-                initial_balance: 0, is_active: true, user_id: _uid };
+          return { id: aid, name: 'บัญชีหลัก', type: 'bank', color: '#1a4fa0',
+                   initial_balance: 0, is_active: true, user_id: _uid };
         });
         _restored = true;
         // Claim in Supabase ด้วย ignore-duplicates (ถ้า user อื่น claim ก่อนแล้วก็ไม่ overwrite)

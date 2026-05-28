@@ -22,7 +22,10 @@ function isPending(e) {
 function txInCycle(cycleId) {
   var cy = getCycleById(cycleId);
   if (!cy) return [];
-  return db.filter(function(e) {
+  // กรองเฉพาะ user ที่ login อยู่ — ป้องกัน cross-user data leak
+  var _uid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _db  = _uid ? db.filter(function(e){ return (e.user_id||e.person) === _uid; }) : db;
+  return _db.filter(function(e) {
     // Prefer explicit cycle_id; fall back to date range
     if (e.cycle_id) return e.cycle_id === cycleId;
     return e.date >= cy.start && e.date <= cy.end;

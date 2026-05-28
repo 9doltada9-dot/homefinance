@@ -770,7 +770,8 @@ function exportSettlePDF(month, groupId) {
     }).join('');
   })();
   var detailTotalRow = '<tr style="font-weight:700;background:#f0f0f0">'
-    +'<td colspan="3">รวม</td><td></td><td></td>'
+    +'<td colspan="3">รวม</td>'
+    +'<td></td>'
     +'<td style="text-align:right">'+fmtH(totalExp)+'</td>'
     +pdfUids.map(function(uid){
         var c = pdfUidColorMap[uid] || {};
@@ -793,9 +794,14 @@ function exportSettlePDF(month, groupId) {
     +'h1{font-size:14px;font-weight:700;margin-bottom:3px}\n'
     +'h2{font-size:11px;font-weight:700;margin:10px 0 5px;color:#333;border-bottom:1px solid #e0e0e0;padding-bottom:2px;text-transform:uppercase;letter-spacing:.3px}\n'
     +'.sub{font-size:10px;color:#888;margin-bottom:10px}\n'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:8px}\n'
-    +'th{background:#f0f0f0;padding:4px 6px;text-align:left;font-size:10px;font-weight:700;border-bottom:1.5px solid #ccc}\n'
-    +'td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top;font-size:11px}\n'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:8px;table-layout:fixed}\n'
+    +'th{background:#f0f0f0;padding:4px 6px;text-align:left;font-size:10px;font-weight:700;border-bottom:1.5px solid #ccc;word-break:break-word}\n'
+    +'td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top;font-size:11px;word-break:break-word}\n'
+    +'td:first-child,th:first-child{width:30%}\n'
+    +'td:nth-child(2),th:nth-child(2){width:13%}\n'
+    +'td:nth-child(3),th:nth-child(3){width:14%}\n'
+    +'td:nth-child(4),th:nth-child(4){width:13%}\n'
+    +'td:nth-child(5),th:nth-child(5){width:12%;text-align:right}\n'
     +'.footer{margin-top:12px;font-size:9px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:6px}\n'
     +'@media print{body{padding:6px}@page{margin:6mm}}\n'
     +'</style>\n</head>\n<body>\n'

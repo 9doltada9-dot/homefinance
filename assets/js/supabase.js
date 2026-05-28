@@ -215,6 +215,19 @@ async function sbDeleteItem(itemId){
       { method:'DELETE', headers:sbHeadersFrom(creds.key) }, 8000
     );
   } catch(_){}
+
+async function sbUpdateItem(itemId, newName){
+  var creds = getSbCreds();
+  if(!creds.ok) return false;
+  try {
+    var r = await fetchWithTimeout(
+      creds.url+'/rest/v1/items?id=eq.'+encodeURIComponent(itemId),
+      { method:'PATCH', headers:sbHeadersFrom(creds.key),
+        body: JSON.stringify({name:newName}) }, 8000
+    );
+    return r.ok;
+  } catch(_){ return false; }
+}
 }
 
 // ─── VENDORS SYNC ─────────────────────────────────────────

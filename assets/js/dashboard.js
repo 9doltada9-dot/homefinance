@@ -142,6 +142,9 @@ function renderSalaryCycleCard(){
   if (cycleId && typeof renderForecastCard === 'function') {
     forecastHtml = renderForecastCard(cycleId);
   }
+  if (typeof renderForecastBudgetPanel === 'function') {
+    forecastHtml += renderForecastBudgetPanel(cycleId);
+  }
 
   // Pending salary entries
   var _myUid3 = typeof getAuthUserId === 'function' ? getAuthUserId() : null;

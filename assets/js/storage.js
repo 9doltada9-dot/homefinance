@@ -102,6 +102,12 @@ function saveVendorsLocal(){
 // ─── BUDGETS ──────────────────────────────────────────────
 function saveBudgets() {
   var _bUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  // v3.2: primary store is budgetItems array
+  var _biKey = _bUid ? 'hf2_budget_items_' + _bUid : 'hf2_budget_items';
+  if (typeof budgetItems !== 'undefined' && Array.isArray(budgetItems)) {
+    localStorage.setItem(_biKey, JSON.stringify(budgetItems));
+  }
+  // keep legacy budgets dict in sync (for any legacy callers)
   var _bKey = _bUid ? 'hf2_budgets_' + _bUid : 'hf2_budgets';
   localStorage.setItem(_bKey, JSON.stringify(budgets));
 }

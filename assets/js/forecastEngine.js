@@ -143,3 +143,71 @@ function renderForecastCard(cycleId) {
     runOutLine +
   '</div>';
 }
+
+// ─── BUDGET PLAN PANEL ────────────────────────────────────
+/**
+ * แสดงรายการแผนรายจ่ายจาก budgetItems vs actual
+ * เรียกจาก renderForecastCard() หรือแยกแสดงใน dashboard
+ */
+function renderForecastBudgetPanel(cycleId) {
+  if (typeof budgetItems === 'undefined' || !budgetItems.length) return '';
+  if (typeof getBudgetSpending !== 'function') return '';
+
+  var actual  = getBudgetSpending();
+  var expCats = (typeof categories !== 'undefined' ? categories : []).filter(function(c){ return c.type === 'expense'; });
+
+  // Aggregate per catId
+  var catActual  = {};
+  var catPlanned = {};
+  budgetItems.forEach(function(bi) {
+    catPlanned[bi.catId] = (catPlanned[bi.catId] || 0) + bi.amount;
+    var cat    = expCats.find(function(c){ return c.id === bi.catId; });
+    var spent  = actual[bi.catId] || (cat ? actual[cat.name] : 0) || 0;
+    catActual[bi.catId]  = spent;
+  });
+
+  var totalPlanned = budgetItems.reduce(function(s,bi){ return s + bi.amount; }, 0);
+  var totalActual  = (function(){
+    var seen = {};
+    return budgetItems.reduce(function(s,bi){
+      if (!seen[bi.catId]) { seen[bi.catId]=true; return s + (catActual[bi.catId]||0); }
+      return s;
+    }, 0);
+  })();
+  var remaining = Math.max(0, totalPlanned - totalActual);
+  var pct = totalPlanned > 0 ? Math.min(100, Math.round(totalActual / totalPlanned * 100)) : 0;
+  var over = totalActual > totalPlanned;
+  var barCol = over ? '#ef4444' : pct > 80 ? '#f59e0b' : '#22c55e';
+
+  var rows = budgetItems.map(function(bi) {
+    var spent  = catActual[bi.catId] || 0;
+    var p      = bi.amount > 0 ? Math.min(100, Math.round(spent / bi.amount * 100)) : 0;
+    var ov     = spent > bi.amount;
+    var bCol   = ov ? '#ef4444' : p > 80 ? '#f59e0b' : '#22c55e';
+    var label  = bi.catName + (bi.itemName ? ' › ' + bi.itemName : '');
+    return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06)">' +
+      '<span style="flex:1;font-size:11px;color:var(--ink)">' + label + '</span>' +
+      '<div style="width:60px;height:5px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden">' +
+        '<div style="height:100%;width:'+p+'%;background:'+bCol+';border-radius:3px"></div>' +
+      '</div>' +
+      '<span style="font-size:11px;font-family:monospace;color:' + (ov?'#ef4444':'var(--ink2)') + ';width:56px;text-align:right">' + fmtH(spent) + '</span>' +
+      '<span style="font-size:10px;color:var(--ink3);width:4px">/</span>' +
+      '<span style="font-size:11px;font-family:monospace;color:var(--ink3);width:56px;text-align:right">' + fmtH(bi.amount) + '</span>' +
+    '</div>';
+  }).join('');
+
+  return '<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-top:10px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+      '<span style="font-size:12px;font-weight:700;color:var(--ink)">📋 แผนรายจ่าย</span>' +
+      '<span style="font-size:11px;font-family:monospace;color:' + (over ? '#ef4444' : 'var(--ink2)') + '">' +
+        fmtH(totalActual) + ' / ' + fmtH(totalPlanned) + '</span>' +
+    '</div>' +
+    '<div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:8px">' +
+      '<div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;transition:width .4s"></div>' +
+    '</div>' +
+    rows +
+    (remaining > 0
+      ? '<div style="font-size:11px;color:var(--ink3);text-align:right;margin-top:5px">คงเหลือตามแผน ' + fmtH(remaining) + ' บาท</div>'
+      : '<div style="font-size:11px;color:#ef4444;text-align:right;margin-top:5px">⚠ ใช้เกินแผน ' + fmtH(totalActual - totalPlanned) + ' บาท</div>') +
+  '</div>';
+}

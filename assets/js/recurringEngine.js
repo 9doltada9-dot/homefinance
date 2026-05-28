@@ -206,6 +206,10 @@ function fillFormFromRecurring(templateId) {
     var acctSel = document.getElementById('fAccount');
     if (acctSel && t.account_id) acctSel.value = t.account_id;
 
+    // Vendor (fillVendors already ran inside onCatChange above)
+    var vendorSel = document.getElementById('fVendor');
+    if (vendorSel && t.vendor_id) vendorSel.value = t.vendor_id;
+
     var statusSel = document.getElementById('fStatus');
     if (statusSel && t.status) statusSel.value = t.status;
 
@@ -302,6 +306,33 @@ function _fillRecurringDescByCat(catId) {
     : '<option value="">-- ยังไม่มีรายการ --</option>';
 }
 
+function _fillRecurringAccounts() {
+  var sel = document.getElementById('recAccount');
+  if (!sel) return;
+  var list = (typeof accountsData !== 'undefined') ? accountsData : [];
+  sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'
+    + list.map(function(a) {
+        return '<option value="' + a.id + '">' + a.name + '</option>';
+      }).join('');
+}
+
+function _fillRecurringVendors(type) {
+  var sel = document.getElementById('recVendor');
+  var lbl = document.getElementById('recVendorLabel');
+  if (!sel) return;
+  var t   = type || 'expense';
+  var all = (typeof vendorsData !== 'undefined') ? vendorsData : [];
+  var list = all.filter(function(v) {
+    var vt = v.vendor_type || 'both';
+    return vt === 'both' || vt === t;
+  });
+  sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'
+    + list.map(function(v) {
+        return '<option value="' + v.id + '">' + v.name + '</option>';
+      }).join('');
+  if (lbl) lbl.textContent = (t === 'income' ? 'แหล่งรายรับ' : 'ร้านค้า');
+}
+
 function onRecurringCatChange() {
   var catSel = document.getElementById('recCat');
   if (catSel) _fillRecurringDescByCat(catSel.value);
@@ -316,11 +347,13 @@ function openRecurringModal() {
   if (!modal) return;
 
   // Reset fields
-  var typeEl = document.getElementById('recType'); if (typeEl) typeEl.value = 'expense';
-  var amtEl  = document.getElementById('recAmt');  if (amtEl)  amtEl.value = '';
-  var dayEl  = document.getElementById('recDay');  if (dayEl)  dayEl.value = '';
+  var typeEl = document.getElementById('recType');    if (typeEl) typeEl.value = 'expense';
+  var amtEl  = document.getElementById('recAmt');     if (amtEl)  amtEl.value = '';
+  var dayEl  = document.getElementById('recDay');     if (dayEl)  dayEl.value = '';
   var offEl  = document.getElementById('recBillingOffset'); if (offEl) offEl.value = '0';
-  var noteEl = document.getElementById('recNote'); if (noteEl) noteEl.value = '';
+  var noteEl = document.getElementById('recNote');    if (noteEl) noteEl.value = '';
+  var accEl  = document.getElementById('recAccount'); if (accEl)  accEl.value = '';
+  var venEl  = document.getElementById('recVendor');  if (venEl)  venEl.value = '';
 
   _buildRecurringCatOptions('expense');
   modal.style.display = 'flex';
@@ -360,7 +393,11 @@ function openEditRecurringModal(id) {
   var amtEl = document.getElementById('recAmt'); if (amtEl) amtEl.value = t.amt || '';
   var dayEl = document.getElementById('recDay'); if (dayEl) dayEl.value = t.day_of_month || '';
   var offEl = document.getElementById('recBillingOffset'); if (offEl) offEl.value = String(t.billing_month_offset || 0);
-  var noteEl = document.getElementById('recNote'); if (noteEl) noteEl.value = t.note || '';
+  var noteEl    = document.getElementById('recNote');    if (noteEl)    noteEl.value = t.note || '';
+  var acctEl    = document.getElementById('recAccount');
+  if (acctEl) { _fillRecurringAccounts(); acctEl.value = t.account_id || ''; }
+  var vendorEl  = document.getElementById('recVendor');
+  if (vendorEl) { _fillRecurringVendors(t.type || 'expense'); vendorEl.value = t.vendor_id || ''; }
 
   modal.style.display = 'flex';
 }
@@ -378,8 +415,9 @@ function _buildRecurringCatOptions(type) {
     .filter(function(c) { return c.type === type; })
     .map(function(c) { return '<option value="' + c.id + '" data-name="' + c.name + '">' + c.name + '</option>'; })
     .join('');
-  // Also refresh desc
   if (catSel.value) _fillRecurringDescByCat(catSel.value);
+  _fillRecurringVendors(type);
+  _fillRecurringAccounts();
 }
 
 function onRecurringTypeChange() {
@@ -399,7 +437,9 @@ function onSaveRecurring() {
   var amt     = parseFloat((document.getElementById('recAmt')    || {}).value) || 0;
   var day     = parseInt((document.getElementById('recDay')      || {}).value, 10) || 1;
   var offset  = parseInt((document.getElementById('recBillingOffset') || {}).value, 10) || 0;
-  var note    = ((document.getElementById('recNote')   || {}).value || '').trim();
+  var note      = ((document.getElementById('recNote')    || {}).value || '').trim();
+  var account_id = (document.getElementById('recAccount') || {}).value || null;
+  var vendor_id  = (document.getElementById('recVendor')  || {}).value || null;
 
   if (!catId || !amt || day < 1 || day > 31) {
     if (typeof showCycleToast === 'function') showCycleToast('\u26a0\ufe0f กรุณากรอกข้อมูลให้ครบ');
@@ -417,6 +457,8 @@ function onSaveRecurring() {
     billing_month_offset: offset,
     person:               person,
     note:                 note,
+    account_id:           account_id,
+    vendor_id:            vendor_id,
     status:               type === 'income' ? 'received' : 'paid',
   };
 

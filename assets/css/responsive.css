@@ -11,7 +11,7 @@
 /* RESPONSIVE - Desktop */
 @media(min-width:901px){
   .sidebar{transform:none !important}
-  .main{margin-left:220px;padding:32px}
+  .main{flex:1;margin-left:220px;padding:32px;min-width:0}
 }
 
 @media(max-width:900px){

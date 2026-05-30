@@ -9,16 +9,29 @@ function nav(page){
   var targetEl = document.getElementById('page-' + page);
   if (!targetEl) return; // guard — unknown page name
 
-  // Step 1: ซ่อนทุก page — class + inline style (fallback กรณี CSS cache เก่าไม่มี !important)
+  // Step 1: ซ่อนทุก page — class + inline style
   document.querySelectorAll('.page').forEach(function(p){
     p.classList.remove('active');
-    p.style.display = 'none'; // belt-and-suspenders: ป้องกัน CSS !important ไม่โหลด
+    p.style.display = 'none';
   });
 
-  // Step 2: แสดง target page — set display:block อย่างชัดเจน (ไม่พึ่ง CSS cascade)
+  // Step 2: แสดง target page — set display:block อย่างชัดเจน
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
   targetEl.classList.add('active');
-  targetEl.style.display = 'block'; // explicit — ไม่ขึ้นกับ CSS !important cascade
+  targetEl.style.display = 'block';
+
+  // ─── DIAGNOSTIC — ลบออกหลัง debug ───────────────────
+  console.log('[nav] page=' + page,
+    'bodyH=' + document.body.scrollHeight,
+    'targetDisplay=' + getComputedStyle(targetEl).display,
+    'targetH=' + targetEl.offsetHeight,
+    'targetW=' + targetEl.offsetWidth
+  );
+  document.querySelectorAll('.page').forEach(function(p){
+    var d = getComputedStyle(p).display;
+    if(d !== 'none') console.warn('[nav] still visible:', p.id, 'display=' + d, 'inline=' + p.style.display);
+  });
+  // ─── END DIAGNOSTIC ──────────────────────────────────
 
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));

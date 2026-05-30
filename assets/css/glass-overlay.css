@@ -277,7 +277,7 @@ body.view-mobile .layout{
 #editOverlay, #catOverlay, #splitGroupModal, #transferModal,
 #recurringModal, #recurringDueModal, #depositModal,
 #editAccountModal, #deleteConfirmModal, #accountLedgerModal,
-#adjustModal {
+#adjustModal, #txDetailOverlay {
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   backdrop-filter: blur(28px) saturate(160%);
   background: rgba(14,16,48,.38) !important;
@@ -287,7 +287,8 @@ body.view-mobile .layout{
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,
-#accountLedgerModal > div, #adjustModal > div {
+#accountLedgerModal > div, #adjustModal > div,
+#txDetailOverlay > div {
   background: var(--g-strong) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   backdrop-filter: blur(40px) saturate(180%);

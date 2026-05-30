@@ -16,12 +16,22 @@ const CATEGORY_ICONS = {
   'ค่าของใช้ครัวเรือน': 'icon-cat-household',
   'ค่าของใช้ส่วนตัว': 'icon-cat-personal',
   'อื่นๆ': 'icon-cat-other',
+  // Aliases/variants
+  'ของกินลูก': 'icon-cat-food',
+  'ซื้อของใช้บ้าน': 'icon-cat-household',
+  'ผ่อนบ้าน': 'icon-cat-house',
+  'ค่าน้ำประปา': 'icon-cat-water',
+  'ค่าไฟบ้าน': 'icon-cat-electricity',
+  'ค่าเน็ต AIS Fiber': 'icon-cat-internet',
+  'ส่งเงินแม่': 'icon-cat-family',
   // Income
   'เงินเดือน': 'icon-cat-salary',
   'ผ่อน/ผลตอบแทน': 'icon-cat-return',
   'ผลพิเศษ': 'icon-cat-bonus',
   'โบนัส': 'icon-cat-bonus',
   'รายได้อื่นๆ': 'icon-cat-otherincome',
+  // Income aliases
+  'โบนัสครึ่งปี': 'icon-cat-bonus',
 };
 
 // ─── VENDOR ICON MAPPING ──────────────────────────────────

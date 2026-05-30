@@ -48,6 +48,13 @@ sed -i 's/hf-v3\.16\.OLD/hf-v3.16.NEW/' sw.js
 sed -i 's/Service Worker · v3\.16\.OLD/Service Worker · v3.16.NEW/' sw.js
 ```
 
+> ⚠️ **ข้อควรระวัง**: ต้องแทน OLD ด้วยเลข version ปัจจุบันของ index.html เสมอ
+> ตรวจก่อนด้วย: `grep -n "v3\.16\." index.html | head -3`
+> ถ้า index.html ค้างเลขเก่า → ใช้ regex กว้างกว่า:
+> ```bash
+> sed -i 's/v3\.16\.[0-9]*/v3.16.NEW/g' index.html
+> ```
+
 ## Stack
 - Static PWA (HTML/CSS/JS) — ไม่มี build step
 - Backend: Supabase (project: ceudxjghmetbyejhjcxg)

@@ -481,13 +481,13 @@ function renderTx(){
       g.items.forEach(function(e){ if(e.type==='income') dayIn+=e.amt; else if(e.type==='expense') dayOut+=e.amt; });
 
       return '<div style="margin-bottom:18px">'
-        // date header
-        +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 4px 6px;margin-bottom:6px">'
+        // date header — เหมือน Settlement
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
         +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
-        +  '<span style="font-size:11px;color:var(--ink3)">'
-        +    (dayIn?'<span style="color:var(--green)">+'+fmtH(dayIn)+'</span>':'')+
-             (dayIn&&dayOut?' · ':'')+
-             (dayOut?'<span style="color:var(--red)">−'+fmtH(dayOut)+'</span>':'')
+        +  '<span style="font-size:11px;font-family:monospace">'
+        +    (dayIn?'<span style="color:var(--green);font-weight:600">+'+fmtH(dayIn)+'</span>':'')+
+             (dayIn&&dayOut?' <span style="color:var(--ink3)">·</span> ':'')+
+             (dayOut?'<span style="color:var(--red);font-weight:600">−'+fmtH(dayOut)+'</span>':'')
         +  '</span>'
         +'</div>'
         // cards
@@ -497,7 +497,7 @@ function renderTx(){
             var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
             var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
             var iconHtml = iconId
-              ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block;flex-shrink:0"><use href="#'+iconId+'"></use></svg>'
+              ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
               : '<span style="font-size:18px;line-height:1">💳</span>';
             var vendorName = e.vendor_id ? (((vendorsData||[]).find(function(v){return v.id===e.vendor_id;})||{}).name||'') : '';
             var statusBadge = e.type==='transfer'
@@ -505,18 +505,21 @@ function renderTx(){
               : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>';
 
             return '<div class="tx-card-row" id="row-'+e.id+'" onclick="(typeof gfCardTap===\'function\'?gfCardTap(this,function(){txDetailModal(\''+e.id+'\')}):txDetailModal(\''+e.id+'\'))" '
-              +'style="display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;'
-              +'background:var(--surface);border-radius:14px;cursor:pointer;'
-              +'border:1px solid var(--line);transition:background .15s">'
+              // glass card — เหมือน Settlement
+              +'style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;margin-bottom:6px;cursor:pointer;'
+              +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
+              +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+              +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+              +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
 
               // icon circle
               +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);'
-              +'display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
+              +'display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
 
               // center: desc + meta
               +'<div style="flex:1;min-width:0">'
               +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
-              +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center">'
+              +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
               +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
               +    (e.cat_name&&(vendorName||_splitBadge(e))?' <span style="color:var(--line2)">·</span> ':'')
               +    (vendorName?_vendorAvatar(vendorName):'')
@@ -524,16 +527,16 @@ function renderTx(){
               +    _splitBadge(e)
               +    (_txShowAllUsers?' '+personPill(e.user_id||e.person):'')
               +  '</div>'
+              +  (e.note?'<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+e.note+'</div>':'')
               +'</div>'
 
               // right: amount + status + account
               +'<div style="text-align:right;flex-shrink:0">'
               +  '<div style="font-size:15px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtSign+fmtH(e.amt)+'</div>'
-              +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px">'
+              +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
               +    statusBadge
               +    (acct?'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>':'')
               +  '</div>'
-              +  (e.note?'<div style="font-size:10px;color:var(--ink3);margin-top:2px;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.note+'</div>':'')
               +'</div>'
 
             +'</div>';

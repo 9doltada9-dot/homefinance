@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.70</title>
+<title>HomeFinance v3.16.71</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -166,7 +166,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.16.70 · THB</div>
+    <div class="brand-sub">v3.16.71 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -227,7 +227,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.70 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.71 © 2025</div>
   </div>
 </nav>
 
@@ -424,83 +424,79 @@ body.app-ready #page-login { display: none !important; }
   <div class="page-header">
     <div class="page-title">รายการทั้งหมด</div>
   </div>
-  <div class="card">
-    <div class="filter-row" style="align-items:flex-start;gap:8px;flex-wrap:wrap">
+  <div class="card" style="padding:14px 16px">
 
-      <!-- Month -->
+    <!-- Row 1: Month + Billing + Admin + Reset -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
       <select id="fltMonth" onchange="renderTx()" style="min-width:100px">
         <option value="">ทุกเดือน</option>
       </select>
-
-      <!-- Type multi -->
-      <div class="multi-filter" id="mfType">
-        <div class="mf-label" onclick="toggleMF('mfType')">ประเภท ▾</div>
-        <div class="mf-dropdown">
-          <label><input type="checkbox" value="income"   onchange="updateMFLabel('mfType','ประเภท');renderTx()"> รายรับ</label>
-          <label><input type="checkbox" value="expense"  onchange="updateMFLabel('mfType','ประเภท');renderTx()"> รายจ่าย</label>
-          <label><input type="checkbox" value="transfer" onchange="updateMFLabel('mfType','ประเภท');renderTx()"> โอน/ฝาก</label>
-        </div>
-      </div>
-
-      <!-- Category multi -->
-      <div class="multi-filter" id="mfCat">
-        <div class="mf-label" onclick="toggleMF('mfCat')">หมวด ▾</div>
-        <div class="mf-dropdown" id="mfCatList"></div>
-      </div>
-
-      <!-- Status multi -->
-      <div class="multi-filter" id="mfStatus">
-        <div class="mf-label" onclick="toggleMF('mfStatus')">สถานะ ▾</div>
-        <div class="mf-dropdown">
-          <label><input type="checkbox" value="paid"    onchange="updateMFLabel('mfStatus','สถานะ');renderTx()"> จ่ายแล้ว</label>
-          <label><input type="checkbox" value="received" onchange="updateMFLabel('mfStatus','สถานะ');renderTx()"> รับแล้ว</label>
-          <label><input type="checkbox" value="pending" onchange="updateMFLabel('mfStatus','สถานะ');renderTx()"> รอดำเนินการ</label>
-        </div>
-      </div>
-
-      <!-- Vendor multi -->
-      <div class="multi-filter" id="mfVendor">
-        <div class="mf-label" onclick="toggleMF('mfVendor')">ร้านค้า ▾</div>
-        <div class="mf-dropdown" id="mfVendorList" style="max-height:220px;overflow-y:auto"></div>
-      </div>
-
-      <!-- Item multi -->
-      <div class="multi-filter" id="mfItem">
-        <div class="mf-label" onclick="toggleMF('mfItem')">รายการ ▾</div>
-        <div class="mf-dropdown" id="mfItemList" style="max-height:220px;overflow-y:auto"></div>
-      </div>
-
-      <!-- Billing Month filter (v3) -->
       <select id="fltBillingMonth" onchange="renderTx()" style="min-width:130px;font-size:13px !important">
         <option value="">เดือนบิล (billing)</option>
       </select>
+      <button id="txAdminUnlockBtn" onclick="txAdminUnlockAll()" style="display:none;background:#fff5e6;border:1.5px solid var(--amber);border-radius:20px;padding:5px 14px;font-size:12px;font-family:Sarabun,sans-serif;cursor:pointer;color:#92600a;white-space:nowrap;font-weight:600">👥 ดูทุก User</button>
+      <button id="txAdminLockBtn" onclick="txAdminLockAll()" style="display:none;background:#fff0f0;border:1.5px solid var(--red);border-radius:20px;padding:5px 14px;font-size:12px;font-family:Sarabun,sans-serif;cursor:pointer;color:var(--red);white-space:nowrap;font-weight:600">✕ กลับมาดูของฉัน</button>
+      <button onclick="resetFilters()" style="margin-left:auto;background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12px;font-family:Sarabun,sans-serif;cursor:pointer;color:var(--ink3)">× รีเซ็ต</button>
+    </div>
 
-      <!-- Admin: filter ผู้บันทึก (แสดงเฉพาะ admin mode) -->
-      <div class="multi-filter" id="mfUser" style="display:none">
-        <div class="mf-label" onclick="toggleMF('mfUser')">ผู้บันทึก ▾</div>
-        <div class="mf-dropdown" id="mfUserList" style="max-height:200px;overflow-y:auto"></div>
+    <!-- Row 2: ประเภท pills (hidden checkboxes + visible pills) -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">ประเภท</span>
+      <div id="mfType" style="display:flex;gap:6px;flex-wrap:wrap">
+        <input type="checkbox" value="income"   style="display:none" onchange="renderTx()">
+        <input type="checkbox" value="expense"  style="display:none" onchange="renderTx()">
+        <input type="checkbox" value="transfer" style="display:none" onchange="renderTx()">
+        <button class="tx-pill" data-val="income"   onclick="togglePill('mfType','income',this)"   style="--pc:var(--green);--pb:var(--green-bg)">+ รายรับ</button>
+        <button class="tx-pill" data-val="expense"  onclick="togglePill('mfType','expense',this)"  style="--pc:var(--red);--pb:var(--red-bg)">− รายจ่าย</button>
+        <button class="tx-pill" data-val="transfer" onclick="togglePill('mfType','transfer',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">↗ โอน</button>
       </div>
+    </div>
 
-      <!-- Reset button -->
-      <button onclick="resetFilters()" style="
-        background:var(--surface2);border:1px solid var(--line);
-        border-radius:8px;padding:6px 12px;font-size:12px;
-        font-family:Sarabun,sans-serif;cursor:pointer;
-        color:var(--ink2);white-space:nowrap;min-height:34px;
-        touch-action:manipulation
-      ">× รีเซ็ต</button>
+    <!-- Row 3: สถานะ pills -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">สถานะ</span>
+      <div id="mfStatus" style="display:flex;gap:6px;flex-wrap:wrap">
+        <input type="checkbox" value="paid"     style="display:none" onchange="renderTx()">
+        <input type="checkbox" value="received" style="display:none" onchange="renderTx()">
+        <input type="checkbox" value="pending"  style="display:none" onchange="renderTx()">
+        <button class="tx-pill" data-val="paid"     onclick="togglePill('mfStatus','paid',this)"     style="--pc:var(--green);--pb:var(--green-bg)">จ่ายแล้ว</button>
+        <button class="tx-pill" data-val="received" onclick="togglePill('mfStatus','received',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">รับแล้ว</button>
+        <button class="tx-pill" data-val="pending"  onclick="togglePill('mfStatus','pending',this)"  style="--pc:var(--amber,#d97706);--pb:var(--amber-bg,#fef3c7)">รอดำเนินการ</button>
+      </div>
+    </div>
 
-      <!-- Admin: unlock all users (hidden for non-admin) -->
-      <button id="txAdminUnlockBtn" onclick="txAdminUnlockAll()" style="display:none;
-        background:#fff5e6;border:1.5px solid var(--amber);border-radius:8px;
-        padding:6px 14px;font-size:12px;font-family:Sarabun,sans-serif;
-        cursor:pointer;color:#92600a;white-space:nowrap;min-height:34px;
-        font-weight:600;touch-action:manipulation">👥 ดูทุก User</button>
-      <button id="txAdminLockBtn" onclick="txAdminLockAll()" style="display:none;
-        background:#fff0f0;border:1.5px solid var(--red);border-radius:8px;
-        padding:6px 14px;font-size:12px;font-family:Sarabun,sans-serif;
-        cursor:pointer;color:var(--red);white-space:nowrap;min-height:34px;
-        font-weight:600;touch-action:manipulation">✕ กลับมาดูของฉัน</button>
+    <!-- Row 4: หมวด pills (dynamic) -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">หมวด</span>
+      <div id="mfCat" style="display:flex;gap:6px;flex-wrap:wrap;overflow-x:auto;padding-bottom:2px">
+        <div id="mfCatList" style="display:contents"></div>
+      </div>
+    </div>
+
+    <!-- Row 5: ร้านค้า pills (dynamic) -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">ร้านค้า</span>
+      <div id="mfVendor" style="display:flex;gap:6px;flex-wrap:wrap;overflow-x:auto;padding-bottom:2px">
+        <div id="mfVendorList" style="display:contents"></div>
+      </div>
+    </div>
+
+    <!-- Row 6: รายการ pills (dynamic) -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">รายการ</span>
+      <div id="mfItem" style="display:flex;gap:6px;flex-wrap:wrap;overflow-x:auto;padding-bottom:2px">
+        <div id="mfItemList" style="display:contents"></div>
+      </div>
+    </div>
+
+    <!-- Admin: ผู้บันทึก pills (dynamic) -->
+    <div id="mfUserRow" style="display:none;align-items:center;gap:6px;margin-bottom:4px">
+      <span style="font-size:11px;font-weight:700;color:var(--ink3);min-width:36px">คน</span>
+      <div id="mfUser" style="display:flex;gap:6px;flex-wrap:wrap">
+        <div id="mfUserList" style="display:contents"></div>
+      </div>
+    </div>
+    <div style="display:none" id="mfUserCompat"></div>
     </div>
     <!-- Admin mode banner -->
     <div id="txAdminBanner" style="display:none;background:#e1f5ee;border:1px solid #a7d7c5;
@@ -1584,7 +1580,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.70</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.71</div>
   </div>
 </div>
 

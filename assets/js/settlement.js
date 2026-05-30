@@ -836,6 +836,65 @@ function exportSettlePDF(month, groupId) {
     return '<th style="text-align:right;background:'+c.bg+';color:'+c.cl+'">'+(nameMap[uid]||uid)+'</th>';
   }).join('');
 
+  // ── Person summary cards (PDF) ────────────────────────────
+  var pdfPersonCards = allUids.map(function(uid){
+    var name = nameMap[uid]||uid;
+    var c = pdfUidColorMap[uid]||{bg:'#eef7f2',cl:'#1a7a4a'};
+    var p=paid[uid]||0, o=owed[uid]||0, bal=p-o;
+    var balColor = bal>0.5?'#166534':(bal<-0.5?'#dc2626':'#64748b');
+    var balLabel = bal>0.5?'↑ ได้รับคืน':(bal<-0.5?'↓ ต้องโอน':'✓ เรียบร้อย');
+    return '<div style="flex:1;min-width:130px;border:1.5px solid '+c.bg+';border-radius:12px;padding:12px;background:#fff">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<div style="width:28px;height:28px;border-radius:50%;background:'+c.bg+';color:'+c.cl+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">'+name.charAt(0)+'</div>'
+        +'<span style="font-size:12px;font-weight:700">'+name+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#64748b;display:flex;justify-content:space-between;margin-bottom:2px"><span>จ่ายจริง</span><span style="font-family:monospace;font-weight:600;color:#1a1a1a">'+fmtH(p)+'</span></div>'
+      +'<div style="font-size:11px;color:#64748b;display:flex;justify-content:space-between;margin-bottom:8px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:#1a1a1a">'+fmtH(o)+'</span></div>'
+      +'<div style="border-top:1px solid #e2e8f0;padding-top:6px;display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-size:10px;font-weight:700;color:'+balColor+'">'+balLabel+'</span>'
+        +'<span style="font-family:monospace;font-weight:800;font-size:13px;color:'+balColor+'">'+(bal>=0?'+':'')+fmtH(Math.abs(bal))+'</span>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+
+  // ── Detail cards (PDF) ─────────────────────────────────────
+  var pdfDetailCards = _pdfGrp.map(function(g){
+    var dayTotal = g.items.reduce(function(s,e){ return s+e.amt; },0);
+    return '<div style="margin-bottom:16px">'
+      +'<div style="display:flex;justify-content:space-between;padding:4px 0 6px;border-bottom:2px solid #e2e8f0;margin-bottom:6px">'
+        +'<span style="font-size:11px;font-weight:700;color:#475569">'+toThaiDateStr(g.date)+'</span>'
+        +'<span style="font-size:11px;font-family:monospace;font-weight:700;color:#dc2626">−'+fmtH(dayTotal)+'</span>'
+      +'</div>'
+      + g.items.map(function(e){
+          var pu = e.user_id||_pidToUid(e.person)||e.person;
+          var payerName = nameMap[pu]||e.person;
+          var payerColor = pdfUidColorMap[pu]||{bg:'#eef7f2',cl:'#1a7a4a'};
+          var snap = e.split_snapshot;
+          if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') snap = buildSplitSnapshot(e.split_group_id, e.amt);
+          var chips = snap ? Object.keys(snap).filter(function(uid){ return _pdfActiveUidSet[uid]; }).map(function(uid){
+            var isPayer = uid===pu;
+            var uc = pdfUidColorMap[uid]||{bg:'#f0f0f0',cl:'#333'};
+            var amt = snap[uid].amount||0;
+            return '<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:'+uc.bg+';color:'+uc.cl+'">'
+              +(nameMap[uid]||uid)+' '+fmtH(amt)+(isPayer?' ✓':'')+'</span>';
+          }).join(' ') : '';
+          var vname = _vendorName(e.vendor_id);
+          var note = (e.note||'').trim();
+          return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;margin-bottom:5px;border:1px solid #e2e8f0;border-radius:10px;background:#fafafa">'
+            +'<div style="flex:1;min-width:0">'
+              +'<div style="font-size:12px;font-weight:600;color:#1a1a1a">'+e.desc+'</div>'
+              +(vname||note?'<div style="font-size:10px;color:#94a3b8;margin-top:2px">'+(vname?'🏪 '+vname:'')+(vname&&note?' · ':'')+note+'</div>':'')
+              +(chips?'<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">'+chips+'</div>':'')
+            +'</div>'
+            +'<div style="text-align:right;flex-shrink:0">'
+              +'<div style="font-size:13px;font-weight:700;font-family:monospace;color:#dc2626">−'+fmtH(e.amt)+'</div>'
+              +'<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+'">'+payerName+'</span>'
+            +'</div>'
+          +'</div>';
+        }).join('')
+    +'</div>';
+  }).join('');
+
   // ── HTML ──────────────────────────────────────────────────
   var todayStr = toThaiDateStr(new Date().toISOString().split('T')[0]);
   var html = '<!DOCTYPE html>\n<html lang="th">\n<head>\n<meta charset="UTF-8">\n'
@@ -843,40 +902,27 @@ function exportSettlePDF(month, groupId) {
     +'<style>\n'
     +'@import url(\'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap\');\n'
     +'*{box-sizing:border-box;margin:0;padding:0}\n'
-    +'body{font-family:\'Sarabun\',sans-serif;font-size:11px;color:#1a1a1a;padding:14px}\n'
-    +'h1{font-size:14px;font-weight:700;margin-bottom:3px}\n'
-    +'h2{font-size:11px;font-weight:700;margin:10px 0 5px;color:#333;border-bottom:1px solid #e0e0e0;padding-bottom:2px;text-transform:uppercase;letter-spacing:.3px}\n'
-    +'.sub{font-size:10px;color:#888;margin-bottom:10px}\n'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:8px;table-layout:fixed}\n'
-    +'th{background:#f0f0f0;padding:6px 8px;text-align:left;font-size:11px;font-weight:700;border-bottom:1.5px solid #ccc;word-break:break-word;line-height:1.4}\n'
-    +'td{padding:7px 8px;border-bottom:1px solid #eee;vertical-align:middle;font-size:12px;word-break:break-word;line-height:1.5}\n'
-    +'td:first-child,th:first-child{width:30%}\n'
-    +'td:nth-child(2),th:nth-child(2){width:13%}\n'
-    +'td:nth-child(3),th:nth-child(3){width:14%}\n'
-    +'td:nth-child(4),th:nth-child(4){width:13%}\n'
-    +'td:nth-child(5),th:nth-child(5){width:12%;text-align:right}\n'
-    +'.footer{margin-top:12px;font-size:9px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:6px}\n'
-    +'@media print{body{padding:6px}@page{margin:6mm}}\n'
-    +'</style>\n</head>\n<body>\n'
-    +'<h1>HomeFinance — Settlement Report</h1>\n'
-    +'<div class="sub">กลุ่ม: <strong>'+groupTitle+'</strong> · เดือน '+monthThai+' · ออกเมื่อ '+todayStr+'</div>\n'
-    +'<h2>สรุปการโอนเงิน</h2>\n'
+    +'body{font-family:\'Sarabun\',sans-serif;font-size:12px;color:#1a1a1a;padding:20px;background:#f8fafc}\n'
+    +'.page{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,.08)}\n'
+    +'.section-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px}\n'
+    +'.footer{margin-top:16px;font-size:9px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:8px}\n'
+    +'@media print{body{padding:0;background:#fff}.page{box-shadow:none;border-radius:0;padding:12px}@page{margin:8mm}}\n'
+    +'</style>\n</head>\n<body>\n<div class="page">\n'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+      +'<h1 style="font-size:16px;font-weight:700">Settlement Report</h1>'
+      +'<span style="font-size:10px;color:#94a3b8">'+todayStr+'</span>'
+    +'</div>\n'
+    +'<div style="font-size:11px;color:#64748b;margin-bottom:16px;padding:6px 10px;background:#f1f5f9;border-radius:8px">'
+      +'กลุ่ม: <strong>'+groupTitle+'</strong> · เดือน '+monthThai+' · '+splitExp.length+' รายการ · รวม <strong>'+fmtH(totalExp)+'</strong>'
+    +'</div>\n'
+    +'<div class="section-label">💸 สรุปการโอนเงิน</div>\n'
     +'<div style="margin-bottom:8px">'+settleBox+'</div>\n'
-    +'<h2>สรุปรายบุคคล</h2>\n'
-    +'<table>\n'
-    +'<tr><th>ชื่อ</th><th style="text-align:right">จ่ายจริง</th><th style="text-align:right">ควรจ่าย</th><th style="text-align:right">ส่วนต่าง</th></tr>\n'
-    +summaryRows
-    +'<tr style="font-weight:700;background:#f0f0f0"><td colspan="3">รวมทั้งหมด</td>'
-    +'<td style="text-align:right">'+fmtH(totalExp)+'</td></tr>\n'
-    +'</table>\n'
-    +'<h2>รายการทั้งหมด</h2>\n'
-    +'<table>\n'
-    +'<tr><th>รายการ</th><th>ร้านค้า</th><th>หมายเหตุ</th><th>ผู้จ่าย</th><th style="text-align:right">รวม</th>'+pdfThCols+'</tr>\n'
-    +detailRows
-    +detailTotalRow+'\n'
-    +'</table>\n'
-    +'<div class="footer">HomeFinance v3.12.8 · Settlement Report</div>\n'
-    +'</body>\n</html>';
+    +'<div class="section-label">👤 สรุปรายบุคคล</div>\n'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">'+pdfPersonCards+'</div>\n'
+    +'<div class="section-label">📋 รายการทั้งหมด</div>\n'
+    +pdfDetailCards
+    +'<div class="footer">HomeFinance · Settlement Report · '+monthThai+'</div>\n'
+    +'</div>\n</body>\n</html>';
 
   var win = window.open('','_blank','width=960,height=720');
   if (!win) { alert('กรุณาอนุญาต popup เพื่อพิมพ์ PDF'); return; }

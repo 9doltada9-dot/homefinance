@@ -24,7 +24,7 @@
 
 /* MAIN CONTENT */
 .main{margin-left:220px;min-height:100vh;padding:32px}
-.page{display:none !important}.page.active{display:block !important}
+.page{display:none}.page.active{display:block}
 .page-header{margin-bottom:28px}
 .page-title{font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-.3px}
 .page-sub{font-size:13px;color:var(--ink3);margin-top:3px}

@@ -15,10 +15,10 @@ function nav(page){
     p.style.display = 'none'; // belt-and-suspenders: ป้องกัน CSS !important ไม่โหลด
   });
 
-  // Step 2: แสดง target page — เอา inline override ออก แล้วปล่อย CSS .page.active{display:block!} ทำงาน
+  // Step 2: แสดง target page — set display:block อย่างชัดเจน (ไม่พึ่ง CSS cascade)
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
   targetEl.classList.add('active');
-  targetEl.style.display = ''; // remove inline, CSS .page.active{display:block !important} wins
+  targetEl.style.display = 'block'; // explicit — ไม่ขึ้นกับ CSS !important cascade
 
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));

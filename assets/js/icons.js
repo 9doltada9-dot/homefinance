@@ -3,7 +3,14 @@
 
 // ─── CATEGORY ICON MAPPING ────────────────────────────────
 const CATEGORY_ICONS = {
-  // Expense
+  // ── ชื่อจริงใน DB (categories table) ──
+  'บ้านและที่ดิน': 'icon-cat-house',
+  'ลูก':           'icon-cat-food',
+  'ส่วนตัว':       'icon-cat-personal',
+  'หนี้':          'icon-cat-return',
+  'บริษัทหัก':     'icon-cat-other',
+  'เงินเดือน':     'icon-cat-salary',
+  // ── ชื่อ default (config.js) ──
   'ค่าบ้าน': 'icon-cat-house',
   'ค่าน้ำ': 'icon-cat-water',
   'ค่าไฟ': 'icon-cat-electricity',
@@ -16,7 +23,11 @@ const CATEGORY_ICONS = {
   'ค่าของใช้ครัวเรือน': 'icon-cat-household',
   'ค่าของใช้ส่วนตัว': 'icon-cat-personal',
   'อื่นๆ': 'icon-cat-other',
-  // Aliases/variants
+  'ผ่อน/ผลตอบแทน': 'icon-cat-return',
+  'ผลพิเศษ': 'icon-cat-bonus',
+  'โบนัส': 'icon-cat-bonus',
+  'รายได้อื่นๆ': 'icon-cat-otherincome',
+  // ── aliases ──
   'ของกินลูก': 'icon-cat-food',
   'ซื้อของใช้บ้าน': 'icon-cat-household',
   'ผ่อนบ้าน': 'icon-cat-house',
@@ -24,13 +35,6 @@ const CATEGORY_ICONS = {
   'ค่าไฟบ้าน': 'icon-cat-electricity',
   'ค่าเน็ต AIS Fiber': 'icon-cat-internet',
   'ส่งเงินแม่': 'icon-cat-family',
-  // Income
-  'เงินเดือน': 'icon-cat-salary',
-  'ผ่อน/ผลตอบแทน': 'icon-cat-return',
-  'ผลพิเศษ': 'icon-cat-bonus',
-  'โบนัส': 'icon-cat-bonus',
-  'รายได้อื่นๆ': 'icon-cat-otherincome',
-  // Income aliases
   'โบนัสครึ่งปี': 'icon-cat-bonus',
 };
 

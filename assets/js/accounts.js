@@ -507,7 +507,7 @@ function openAccountLedger(accountId) {
   var nameEl = document.getElementById('ledgerAcctName');
   var subEl  = document.getElementById('ledgerAcctSub');
   if (nameEl) nameEl.textContent = acct.name;
-  if (subEl)  subEl.textContent  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmtH(acct.initial_balance || 0) + ' บาท';
+  if (subEl)  subEl.innerHTML  = (ACCOUNT_TYPES[acct.type] || acct.type) + ' · ยอดเปิดบัญชี: ' + fmtH(acct.initial_balance || 0) + ' บาท';
 
   // populate month dropdown from transactions of this account
   var sel = document.getElementById('ledgerMonthFilter');
@@ -636,6 +636,10 @@ function renderLedger() {
     '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmtH(openBal) + '</td>' +
   '</tr>';
 
+  // map entry.id → HTML row string (เพื่อใช้ใน group render)
+  var _rowHtmlMap = {};
+  entries.forEach(function(e, i){ _rowHtmlMap[String(e.id)] = rows[i]; });
+
   var wrap = document.getElementById('ledgerTableWrap');
   if (wrap) {
     wrap.innerHTML = rows.length
@@ -647,11 +651,10 @@ function renderLedger() {
             '<th style="text-align:right;padding:6px 6px;font-weight:600">ยอดคงเหลือ</th>' +
           '</tr></thead>' +
           '<tbody>' + (function(){
-            // Display groups DESC (latest first), rows within each group also reversed
             var reversed = _rowGroups.slice().reverse();
             return reversed.map(function(g){
               return '<tr style="background:var(--surface2)"><td colspan="4" style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
-                g.rows.slice().reverse().join('');
+                g.rows.slice().reverse().map(function(e){ return _rowHtmlMap[String(e.id)]||''; }).join('');
             }).join('');
           })() + openRow + '</tbody>' +
         '</table>'
@@ -663,9 +666,9 @@ function renderLedger() {
   var balEl     = document.getElementById('ledgerBalance');
   var totalInEl = document.getElementById('ledgerTotalIn');
   var totalOutEl= document.getElementById('ledgerTotalOut');
-  if (balEl)     { balEl.textContent = fmtH(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
-  if (totalInEl) totalInEl.textContent  = '+' + fmtH(totalIn)  + ' บาท';
-  if (totalOutEl)totalOutEl.textContent = '−' + fmtH(totalOut) + ' บาท';
+  if (balEl)     { balEl.innerHTML = fmtH(finalBal) + ' บาท'; balEl.style.color = finalBal >= 0 ? 'var(--green)' : 'var(--red)'; }
+  if (totalInEl) totalInEl.innerHTML  = '+' + fmtH(totalIn)  + ' บาท';
+  if (totalOutEl)totalOutEl.innerHTML = '−' + fmtH(totalOut) + ' บาท';
 }
 
 function closeAccountLedger() {

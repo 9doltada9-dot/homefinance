@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.79</title>
+<title>HomeFinance v3.16.80</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -166,7 +166,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.16.79 · THB</div>
+    <div class="brand-sub">v3.16.80 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -227,7 +227,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.79 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.80 © 2025</div>
   </div>
 </nav>
 
@@ -529,8 +529,8 @@ body.app-ready #page-login { display: none !important; }
   <div class="page-header">
     <div class="page-title">สรุปรายเดือน</div>
   </div>
-  <div class="filter-row">
-    <select id="monthSel" onchange="renderMonthly()"><option value="">เลือกเดือน</option></select>
+  <div style="padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);margin-bottom:14px;position:relative;z-index:10;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <select id="monthSel" onchange="renderMonthly()" style="min-width:140px"><option value="">เลือกเดือน</option></select>
   </div>
   <div id="monthlyContent"></div>
 </div>
@@ -637,7 +637,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── ปรับแต่ง Glass ──────────────────────── -->
   <div class="stg-group-label">🪟 ปรับแต่ง Glass Effect</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="settings-header" style="padding:14px 16px 12px">
       <div class="settings-icon" style="background:linear-gradient(135deg,#ede9fe,#dbeafe)">🎨</div>
       <div>
@@ -650,7 +650,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── การแสดงผล ──────────────────────────── -->
   <div class="stg-group-label">🖥 การแสดงผล</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="view-mode-cards">
       <div class="vm-card" id="btnViewDesktop" onclick="setViewMode('desktop')">
         <div class="vm-card-icon">🖥</div>
@@ -666,7 +666,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
   <div class="stg-group-label">👤 ผู้ใช้งาน</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="stg-sect-head" style="flex-wrap:wrap;gap:10px">
       <span class="stg-icon" style="background:var(--blue-bg)">👤</span>
       <div style="flex:1;min-width:0">
@@ -708,7 +708,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── หมวดหมู่ ───────────────────────────── -->
   <div class="stg-group-label">🗂 หมวดหมู่</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
 
     <!-- รายรับ -->
     <div class="stg-sect-head">
@@ -760,7 +760,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── ข้อมูลอ้างอิง ──────────────────────── -->
   <div class="stg-group-label">📦 ข้อมูลอ้างอิง</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="stg-sect-head">
       <span class="stg-icon" style="background:#fff3e8">🏪</span>
       <div>
@@ -785,7 +785,7 @@ body.app-ready #page-login { display: none !important; }
 
   <!-- ─── ระบบอัตโนมัติ ──────────────────────── -->
   <div class="stg-group-label">🤖 ระบบอัตโนมัติ</div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
 
     <!-- รายการประจำ -->
     <div class="stg-sect-head">
@@ -828,7 +828,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="stg-group-label">☁️ ระบบ</div>
 
   <!-- Sync Panel -->
-  <div class="card" style="max-width:700px;padding:0">
+  <div class="card" style="padding:0">
     <div class="stg-sect-head" style="cursor:default">
       <span class="stg-icon" style="background:var(--blue-bg)">🔄</span>
       <div style="flex:1">
@@ -859,7 +859,7 @@ body.app-ready #page-login { display: none !important; }
   </div>
 
   <!-- ─── Version History ──────────────────────── -->
-  <div class="card" style="max-width:700px">
+  <div class="card" style="">
     <div class="card-title">📜 Version History</div>
     <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">
       <strong>major</strong> = โครงสร้าง/schema &nbsp;·&nbsp; <strong>minor</strong> = feature ใหม่ &nbsp;·&nbsp; <strong>patch</strong> = แก้ bug
@@ -930,7 +930,7 @@ body.app-ready #page-login { display: none !important; }
   </div>
 
   <!-- CONNECTION CARD -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="settings-header" style="padding:14px 16px 12px">
       <div class="settings-icon" style="background:#e8f5e9">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4zm-1 3v4l3 2-1 1.5-3.5-2.5V7h1.5z"/></svg>
@@ -978,7 +978,7 @@ body.app-ready #page-login { display: none !important; }
   </div>
 
   <!-- EXPORT CSV -->
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div class="settings-header" style="padding:14px 16px 12px">
       <div class="settings-icon" style="background:#eef7f2">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 13l-5-5h3V3h4v5h3l-5 5zM3 16h14v2H3v-2z"/></svg>
@@ -995,7 +995,7 @@ body.app-ready #page-login { display: none !important; }
   </div>
 
   <!-- SETUP GUIDE -->
-  <div class="card" style="max-width:700px">
+  <div class="card" style="">
     <div class="card-title">วิธีตั้งค่า Supabase (3 ขั้นตอน)</div>
     <div style="font-size:13px;color:var(--ink2);line-height:1.9">
       <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
@@ -1054,7 +1054,7 @@ create policy "public write" on transactions for all using (true);</div>
   <div id="pageAccountCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
 
   <!-- Add Account -->
-  <div class="card" style="max-width:600px">
+  <div class="card">
     <div class="card-title">+ เพิ่มบัญชีใหม่</div>
     <div class="form-row">
       <div class="field">
@@ -1094,7 +1094,7 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 
   <!-- Account List (edit/delete) -->
-  <div class="card" style="max-width:600px">
+  <div class="card" style="">
     <div class="card-title">รายการบัญชีทั้งหมด</div>
     <div id="accountList"></div>
   </div>
@@ -1111,7 +1111,7 @@ create policy "public write" on transactions for all using (true);</div>
   <div id="savingsGoalsList" style="margin-bottom:16px"></div>
 
   <!-- Add Goal form -->
-  <div class="card" style="max-width:600px">
+  <div class="card">
     <div class="card-title">+ เพิ่มเป้าหมายใหม่</div>
     <div class="form-row">
       <div class="field">
@@ -1441,11 +1441,11 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 
   <!-- ผู้ใช้งานทั้งหมด -->
-  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between;max-width:700px">
+  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between">
     <span>👥 ผู้ใช้งานทั้งหมด</span>
     <button onclick="renderAdminUserList()" style="background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink3)">🔄 รีเฟรช</button>
   </div>
-  <div class="settings-section card" style="max-width:700px;padding:0">
+  <div class="settings-section card" style="padding:0">
     <div style="padding:12px 16px">
       <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">กดปุ่ม → Admin / → User เพื่อเปลี่ยนสิทธิ์ผู้ใช้</div>
       <div id="adminUserList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">กำลังโหลด...</div></div>
@@ -1453,19 +1453,19 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 
   <!-- Settlement Groups (Admin) -->
-  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between;max-width:700px;flex-wrap:wrap;gap:6px">
+  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
     <span>🏠 Settlement Groups</span>
     <div style="display:flex;gap:6px">
       <button onclick="adminPushSplitGroups()" style="background:var(--surface2);color:var(--ink2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif">💾 Push ขึ้น Supabase</button>
       <button onclick="openSplitGroupModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">+ สร้างกลุ่ม</button>
     </div>
   </div>
-  <div class="settings-section card" style="max-width:700px;padding:0;overflow:hidden">
+  <div class="settings-section card" style="padding:0;overflow:hidden">
     <div id="splitGroupsList">
       <div style="color:var(--ink3);font-size:13px;text-align:center;padding:20px">กำลังโหลด...</div>
     </div>
   </div>
-  <div id="adminMsg" class="msg" style="max-width:700px;text-align:center;margin:4px 0"></div>
+  <div id="adminMsg" class="msg" style="text-align:center;margin:4px 0"></div>
 
 </div>
 
@@ -1576,7 +1576,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.79</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.80</div>
   </div>
 </div>
 

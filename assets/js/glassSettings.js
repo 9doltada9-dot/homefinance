@@ -90,45 +90,81 @@ function glassOnColor(key, val) {
   glassApply(s);
 }
 
-// ── Render panel ──────────────────────────────────────────
-function renderGlassSettings() {
-  var wrap = document.getElementById('glassSettingsPanel');
-  if (!wrap) return;
-  var s = glassLoad();
+// ── Floating panel toggle ─────────────────────────────────
+function glassTogglePanel() {
+  var panel = document.getElementById('glassFP');
+  if (panel) { panel.remove(); return; }
+  _glassCreatePanel();
+}
 
-  wrap.innerHTML =
+function _glassCreatePanel() {
+  var s = glassLoad();
+  var fp = document.createElement('div');
+  fp.id = 'glassFP';
+  fp.style.cssText = [
+    'position:fixed;top:60px;right:12px;z-index:9999',
+    'width:300px;max-height:calc(100vh - 80px);overflow-y:auto',
+    'background:rgba(255,255,255,.92)',
+    'backdrop-filter:blur(24px) saturate(160%)',
+    '-webkit-backdrop-filter:blur(24px) saturate(160%)',
+    'border:1px solid rgba(200,206,255,.7)',
+    'border-radius:18px',
+    'box-shadow:0 20px 60px -16px rgba(40,46,96,.30),0 4px 16px -6px rgba(40,46,96,.18)',
+    'font-family:Sarabun,sans-serif'
+  ].join(';');
+
+  fp.innerHTML =
+    // header + close
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;border-bottom:1px solid rgba(92,104,158,.12);position:sticky;top:0;background:rgba(255,255,255,.95);border-radius:18px 18px 0 0;z-index:1">'
+    + '<span style="font-size:14px;font-weight:700;color:#3730a3">🎨 Glass Settings</span>'
+    + '<button onclick="glassTogglePanel()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;padding:0 4px;line-height:1">×</button>'
+    + '</div>'
+
     // ── พื้นหลัง
-    '<div style="padding:14px 16px 4px;border-bottom:1px solid var(--line)">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.5px;margin-bottom:10px">🌈 พื้นหลัง</div>'
+    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
+    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🌈 พื้นหลัง</div>'
     + _color('bgBase','สีพื้นหลัง','bgBase',s)
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">'
-    +   _color('orb1','Orb 1','orb1',s)
-    +   _color('orb2','Orb 2','orb2',s)
-    +   _color('orb3','Orb 3','orb3',s)
-    +   _color('orb4','Orb 4','orb4',s)
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px">'
+    +   _color('orb1','Orb 1','orb1',s) + _color('orb2','Orb 2','orb2',s)
+    +   _color('orb3','Orb 3','orb3',s) + _color('orb4','Orb 4','orb4',s)
     + '</div>'
     + _slider('orbOpacity','ความเข้ม Orb','orbOpacity',0,100,'%',s)
-    + _slider('orbBlur','Blur Orb','orbBlur',0,80,'px',s,'(เบลอสี)')
+    + _slider('orbBlur','Blur Orb','orbBlur',0,80,'px',s,'')
     + '</div>'
 
     // ── กระจก
-    + '<div style="padding:14px 16px 4px;border-bottom:1px solid var(--line)">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.5px;margin-bottom:10px">🪟 กระจก (Glass)</div>'
-    + _slider('gBlur','Blur กระจก','gBlur',0,200,'px',s,'(ฝ้า)')
-    + _slider('gCardOpacity','ความโปร่งใส Card','gCardOpacity',10,100,'%',s)
-    + _slider('gSat','Saturation','gSat',100,250,'%',s,'(ความอิ่มสี)')
+    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
+    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🪟 กระจก</div>'
+    + _slider('gBlur','Blur กระจก','gBlur',0,200,'px',s,'')
+    + _slider('gCardOpacity','ความโปร่งใส','gCardOpacity',10,100,'%',s,'')
+    + _slider('gSat','Saturation','gSat',100,250,'%',s,'')
     + '</div>'
 
     // ── Modal
-    + '<div style="padding:14px 16px 4px;border-bottom:1px solid var(--line)">'
-    + '<div style="font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.5px;margin-bottom:10px">🗔 Modal</div>'
-    + _slider('modalDark','ความมืด Backdrop','modalDark',0,100,'%',s)
-    + _slider('modalBlur','Blur Modal box','modalBlur',0,80,'px',s)
+    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
+    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🗔 Modal</div>'
+    + _slider('modalDark','ความมืด backdrop','modalDark',0,100,'%',s,'')
+    + _slider('modalBlur','Blur Modal','modalBlur',0,80,'px',s,'')
     + '</div>'
 
-    // ── Actions
-    + '<div style="padding:12px 16px;display:flex;gap:8px">'
-    + '<button class="btn btn-ghost" onclick="glassReset()" style="flex:1;min-height:40px;font-size:13px">↺ รีเซ็ต</button>'
-    + '<div id="glassMsg" class="msg" style="flex:2;display:flex;align-items:center;justify-content:center;font-size:12px"></div>'
+    // ── actions
+    + '<div style="padding:10px 16px;display:flex;gap:8px">'
+    + '<button onclick="glassReset()" style="flex:1;padding:8px;border-radius:10px;border:1px solid rgba(92,104,158,.2);background:rgba(255,255,255,.6);font-size:12px;cursor:pointer;color:#475569">↺ รีเซ็ต</button>'
+    + '<div id="glassMsg" style="flex:2;font-size:11px;color:#22c55e;display:flex;align-items:center;justify-content:center"></div>'
+    + '</div>';
+
+  document.body.appendChild(fp);
+}
+
+// ── Settings page embed (ปุ่มเปิด floating panel) ─────────
+function renderGlassSettings() {
+  var wrap = document.getElementById('glassSettingsPanel');
+  if (!wrap) return;
+  wrap.innerHTML =
+    '<div style="padding:14px 16px">'
+    + '<button onclick="glassTogglePanel()" class="btn btn-primary" style="width:100%;min-height:44px;font-size:14px">'
+    + '🎨 เปิดหน้าต่างปรับแต่ง Glass (แบบ live preview)'
+    + '</button>'
+    + '<p style="font-size:12px;color:var(--ink3);margin:8px 0 0;text-align:center">panel จะลอยอยู่มุมขวาบน — เห็นผลจริงขณะปรับ</p>'
     + '</div>';
 }

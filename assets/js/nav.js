@@ -26,10 +26,6 @@ function nav(page){
   if(refreshBtn) refreshBtn.style.display = dataPages.indexOf(page) > -1 ? '' : 'none';
 
   closeSidebar();
-  // scroll กลับ top ทุกครั้งที่เปลี่ยนหน้า
-  var mainEl = document.querySelector('.main');
-  if (mainEl) mainEl.scrollTop = 0;
-  window.scrollTo(0, 0);
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions'){
     if(typeof _txUpdateAdminBar === 'function') _txUpdateAdminBar();
@@ -68,6 +64,13 @@ function nav(page){
   if(dataPages.indexOf(page) > -1 && typeof silentPull === 'function'){
     silentPull();
   }
+
+  // scroll กลับ top หลัง render เสร็จ
+  requestAnimationFrame(function(){
+    window.scrollTo(0, 0);
+    var mainEl = document.querySelector('.main');
+    if (mainEl) mainEl.scrollTop = 0;
+  });
 }
 
 function toggleSidebar(){

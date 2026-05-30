@@ -22,15 +22,15 @@
   --accent-2:#8b5cf6;
   --accent-soft:rgba(99,102,241,.16);
 
-  /* กระจก */
-  --g-blur:32px;
-  --g-sat:160%;
-  --g-card:rgba(255,255,255,.68);
-  --g-strong:rgba(255,255,255,.84);
-  --g-brd:rgba(220,224,255,.60);
-  --g-sheen:rgba(255,255,255,.75);
-  --g-shadow:0 20px 60px -16px rgba(40,46,96,.28), 0 6px 20px -6px rgba(40,46,96,.18), 0 1px 4px rgba(40,46,96,.08);
-  --g-ring:inset 0 1.5px 0 rgba(255,255,255,.85);
+  /* กระจกฝ้า — เบลอจนมองไม่ทะลุ */
+  --g-blur:72px;
+  --g-sat:180%;
+  --g-card:rgba(255,255,255,.76);
+  --g-strong:rgba(255,255,255,.90);
+  --g-brd:rgba(230,232,255,.65);
+  --g-sheen:rgba(255,255,255,.80);
+  --g-shadow:0 24px 64px -16px rgba(40,46,96,.30), 0 8px 24px -6px rgba(40,46,96,.20), 0 1px 4px rgba(40,46,96,.10);
+  --g-ring:inset 0 1.5px 0 rgba(255,255,255,.90);
 
   /* พื้นหลัง mesh — เบาลง */
   --bg-base:#f0f1fa;
@@ -100,7 +100,7 @@ body::before{
     radial-gradient(34vw 34vw at 88% 10%, var(--orb-2) 0%, transparent 60%),
     radial-gradient(40vw 40vw at 24% 96%, var(--orb-3) 0%, transparent 62%),
     radial-gradient(30vw 30vw at 92% 90%, var(--orb-4) 0%, transparent 60%);
-  filter:blur(40px); opacity:.45;
+  filter:blur(60px); opacity:.60;
   animation:gMesh 26s ease-in-out infinite alternate;
 }
 body::after{

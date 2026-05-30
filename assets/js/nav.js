@@ -26,6 +26,13 @@ function nav(page){
   if(refreshBtn) refreshBtn.style.display = dataPages.indexOf(page) > -1 ? '' : 'none';
 
   closeSidebar();
+
+  // scroll to top BEFORE rendering new content — prevents Chrome scroll-anchoring
+  // from readjusting position after new DOM is inserted
+  window.scrollTo(0, 0);
+  var _mainEl = document.querySelector('.main');
+  if (_mainEl) _mainEl.scrollTop = 0;
+
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions'){
     if(typeof _txUpdateAdminBar === 'function') _txUpdateAdminBar();

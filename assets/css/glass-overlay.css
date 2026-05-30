@@ -274,7 +274,15 @@ body.view-mobile .layout{
 /* ─────────────────────────────────────────────
    9) Modal overlays — blur content ข้างหลัง
    ───────────────────────────────────────────── */
-/* modal box — glass card เท่านั้น (ไม่แตะ overlay backdrop) */
+/* overlay backdrop — มืดขึ้น ข้อความข้างหลังอ่านยาก */
+#editOverlay, #catOverlay, #splitGroupModal, #transferModal,
+#recurringModal, #recurringDueModal, #depositModal,
+#editAccountModal, #deleteConfirmModal, #accountLedgerModal,
+#adjustModal, #txDetailOverlay {
+  background: rgba(8,10,32,.72) !important;
+}
+
+/* modal box — glass card เท่านั้น */
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,

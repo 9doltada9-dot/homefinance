@@ -657,11 +657,18 @@ function closeTxDetailModal() {
   var wrap = document.getElementById('txDetailModalWrap');
   if (!wrap) return;
   var overlay = document.getElementById('txDetailOverlay');
-  if (overlay && typeof gfShatter === 'function') {
-    gfShatter(overlay, function(){ wrap.innerHTML = ''; });
-  } else if (overlay) {
-    overlay.style.transition = 'opacity .18s'; overlay.style.opacity = '0';
-    setTimeout(function(){ wrap.innerHTML = ''; }, 200);
+  var sheet = overlay ? overlay.querySelector('div') : null;
+  if (sheet) {
+    sheet.style.transition = 'transform .32s cubic-bezier(.4,0,.8,1), opacity .28s ease';
+    sheet.style.transform  = 'translateY(4px) scale(1.02)';
+    sheet.style.opacity    = '1';
+    setTimeout(function(){
+      sheet.style.transition = 'transform .34s cubic-bezier(.4,0,1,1), opacity .28s ease';
+      sheet.style.transform  = 'translateY(110%)';
+      sheet.style.opacity    = '0';
+      if (overlay) { overlay.style.transition = 'opacity .3s'; overlay.style.opacity = '0'; }
+      setTimeout(function(){ wrap.innerHTML = ''; }, 340);
+    }, 80);
   } else { wrap.innerHTML = ''; }
 }
 

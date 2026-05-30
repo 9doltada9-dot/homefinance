@@ -7,17 +7,25 @@
 
 ## Version Sync
 
-**รูปแบบ:** `v[major].[minor].[patch]` เช่น `v3.16.57`
+**รูปแบบ:** `v[major].[minor].[patch]` เช่น `v3.16.59`
 
-### เมื่อไหร่ต้อง bump version
-| การเปลี่ยนแปลง | bump |
+### แต่ละตำแหน่ง bump เมื่อไหร่
+
+| ตำแหน่ง | เมื่อไหร่ | ตัวอย่าง |
+|---|---|---|
+| **major** `X`.xx.xx | redesign ใหม่ทั้งหมด / breaking change / เปลี่ยน stack | v2→v3 |
+| **minor** x.`XX`.xx | เพิ่ม module/หน้า/feature ใหม่ที่ใหญ่ | เพิ่มหน้า Settlement, Recurring |
+| **patch** x.xx.`XX` | แก้ bug, แก้ CSS/design, แก้ logic, แก้ HTML, เพิ่มฟีเจอร์เล็ก | ทุก commit ปกติ |
+
+### กฎ patch
+| การเปลี่ยนแปลง | bump? |
 |---|---|
-| แก้ JS logic / bug fix | patch +1 |
-| แก้ CSS / design / layout | patch +1 |
-| เพิ่ม feature ใหม่ | patch +1 (หรือ minor +1 ถ้าใหญ่) |
-| แก้ HTML โครงสร้าง | patch +1 |
-| แก้หลายไฟล์ใน commit เดียว | patch +1 ครั้งเดียว |
-| แค่แก้ CLAUDE.md / docs | ไม่ต้อง bump |
+| แก้ JS logic / bug fix | ✅ +1 |
+| แก้ CSS / design / glass effect | ✅ +1 |
+| แก้ HTML โครงสร้าง | ✅ +1 |
+| เพิ่ม icon / mapping | ✅ +1 |
+| แก้หลายไฟล์ใน commit เดียว | ✅ +1 ครั้งเดียว |
+| แก้เฉพาะ CLAUDE.md / docs | ❌ ไม่ bump |
 
 **กฎ:** ทุก commit ที่กระทบ UI หรือ behavior → bump patch +1 เสมอ
 

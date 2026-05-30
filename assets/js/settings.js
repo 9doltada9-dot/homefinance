@@ -3,6 +3,7 @@
 // ─── SETTINGS ─────────────────────────────────────────────
 function renderSettings(){
   applyViewMode();
+  if (typeof renderGlassSettings === 'function') renderGlassSettings();
   renderPersonList();
   renderCatList('income');
   renderCatList('expense');

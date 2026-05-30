@@ -643,6 +643,19 @@ body.app-ready #page-login { display: none !important; }
     <div class="page-sub">จัดการหมวดหมู่ · ผู้บันทึก · ระบบ</div>
   </div>
 
+  <!-- ─── ปรับแต่ง Glass ──────────────────────── -->
+  <div class="stg-group-label">🪟 ปรับแต่ง Glass Effect</div>
+  <div class="settings-section card" style="max-width:700px;padding:0">
+    <div class="settings-header" style="padding:14px 16px 12px">
+      <div class="settings-icon" style="background:linear-gradient(135deg,#ede9fe,#dbeafe)">🎨</div>
+      <div>
+        <div class="settings-header-text">Glass &amp; Background</div>
+        <div class="settings-header-sub">ปรับความเบลอ โปร่งใส สี พื้นหลัง แบบ real-time</div>
+      </div>
+    </div>
+    <div id="glassSettingsPanel" style="padding:0 16px 4px"></div>
+  </div>
+
   <!-- ─── การแสดงผล ──────────────────────────── -->
   <div class="stg-group-label">🖥 การแสดงผล</div>
   <div class="settings-section card" style="max-width:700px;padding:0">
@@ -1605,6 +1618,7 @@ create policy "public write" on transactions for all using (true);</div>
 <script src="assets/js/recurringEngine.js"></script>
 <script src="assets/js/splitGroups.js"></script>
 <script src="assets/js/features.js"></script>
+<script src="assets/js/glassSettings.js"></script>
 <script src="assets/js/settings.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/report.js"></script>

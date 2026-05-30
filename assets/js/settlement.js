@@ -300,7 +300,7 @@ function renderSettle(){
     var balColor = bal > 0.5 ? 'var(--green)' : (bal < -0.5 ? 'var(--red,#dc2626)' : 'var(--ink3)');
     var balLabel = bal > 0.5 ? '↑ ได้รับคืน' : (bal < -0.5 ? '↓ ต้องโอน' : '✓ เรียบร้อย');
     var initials = name.charAt(0).toUpperCase();
-    return '<div style="flex:1;min-width:150px;background:var(--surface);backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));border:1px solid var(--g-brd);border-radius:16px;padding:14px 16px;box-shadow:var(--g-shadow)">'
+    return '<div style="flex:1;min-width:150px;background:var(--surface);backdrop-filter:blur(16px) saturate(150%);border:1px solid var(--g-brd);border-radius:16px;padding:14px 16px;box-shadow:var(--g-shadow)">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
         +'<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">'+initials+'</div>'
         +'<span style="font-size:14px;font-weight:700;color:var(--ink)">'+name+'</span>'
@@ -485,7 +485,7 @@ function renderSettle(){
             : '<span style="font-size:16px">💳</span>';
           return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-bottom:6px;'
             +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
-            +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat))">'
+            +'backdrop-filter:blur(16px) saturate(150%)">'
             // icon
             +'<div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
             // center

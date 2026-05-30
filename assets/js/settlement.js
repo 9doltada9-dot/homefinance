@@ -298,14 +298,18 @@ function renderSettle(){
     var o    = owed[uid]||0;
     var bal  = p - o;
     var balColor = bal > 0.5 ? 'var(--green)' : (bal < -0.5 ? 'var(--red,#dc2626)' : 'var(--ink3)');
-    var balLabel = bal > 0.5 ? 'ได้รับคืน' : (bal < -0.5 ? 'ต้องโอน' : 'เรียบร้อย');
-    return '<div style="flex:1;min-width:140px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px">'
-      +'<div style="font-size:13px;font-weight:700;margin-bottom:8px">'+name+'</div>'
+    var balLabel = bal > 0.5 ? '↑ ได้รับคืน' : (bal < -0.5 ? '↓ ต้องโอน' : '✓ เรียบร้อย');
+    var initials = name.charAt(0).toUpperCase();
+    return '<div style="flex:1;min-width:150px;background:var(--surface);backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));border:1px solid var(--g-brd);border-radius:16px;padding:14px 16px;box-shadow:var(--g-shadow)">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+        +'<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">'+initials+'</div>'
+        +'<span style="font-size:14px;font-weight:700;color:var(--ink)">'+name+'</span>'
+      +'</div>'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:3px"><span>จ่ายจริง</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(p)+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:6px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(o)+'</span></div>'
-      +'<div style="border-top:1px solid var(--line);padding-top:6px;display:flex;justify-content:space-between;align-items:center">'
-        +'<span style="font-size:11px;color:'+balColor+';font-weight:600">'+balLabel+'</span>'
-        +'<span style="font-family:monospace;font-weight:700;font-size:14px;color:'+balColor+'">'+(bal>=0?'+':'')+fmtH(Math.abs(bal))+'</span>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:8px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(o)+'</span></div>'
+      +'<div style="border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-size:11px;color:'+balColor+';font-weight:700">'+balLabel+'</span>'
+        +'<span style="font-family:monospace;font-weight:800;font-size:15px;color:'+balColor+'">'+(bal>=0?'+':'')+fmtH(Math.abs(bal))+'</span>'
       +'</div>'
     +'</div>';
   }).join('');
@@ -451,7 +455,59 @@ function renderSettle(){
   var detailDesktop = '<div class="table-scroll"><table>'
     +'<tr>'+thCells+'</tr>'+trRows+totalRow+'</table></div>';
 
-  var detailRows = isMobile ? detailMobile : detailDesktop;
+  // ── Card layout (ทั้ง mobile + desktop) ────────────────────
+  var detailCards = _sGrp.map(function(g){
+    var dayTotal = g.items.reduce(function(s,e){ return s+e.amt; },0);
+    return '<div style="margin-bottom:18px">'
+      // date header
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 6px;margin-bottom:6px">'
+      +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
+      +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace">−'+fmtH(dayTotal)+'</span>'
+      +'</div>'
+      + g.items.map(function(e){
+          var payerU = e.user_id || _pidToUid(e.person) || e.person;
+          var payerName = nameMap[payerU] || e.person;
+          var payerColor = _uidColorMap[payerU] || {bg:'#eef7f2',cl:'#1a7a4a'};
+          var vendor = _vendorName(e.vendor_id);
+          var snap = e.split_snapshot;
+          if (!snap && e.split_group_id && typeof buildSplitSnapshot==='function') snap = buildSplitSnapshot(e.split_group_id, e.amt);
+          var memberChips = snap ? Object.keys(snap).map(function(uid){
+            var isPayer = uid === payerU;
+            var c = _uidColorMap[uid] || {bg:'var(--surface2)',cl:'var(--ink2)'};
+            var amt = snap[uid].amount||0;
+            return '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:'+c.bg+';color:'+c.cl+';white-space:nowrap">'
+              +(nameMap[uid]||uid)+' '+fmtH(amt)+(isPayer?' ✓':'')
+            +'</span>';
+          }).join('') : '';
+          var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
+          var iconHtml = iconId
+            ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+            : '<span style="font-size:16px">💳</span>';
+          return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-bottom:6px;'
+            +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
+            +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat))">'
+            // icon
+            +'<div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
+            // center
+            +'<div style="flex:1;min-width:0">'
+              +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+e.desc+'</div>'
+              +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
+                +(vendor?'<span style="font-size:11px;color:var(--ink3)">🏪 '+vendor+'</span>':'')
+                +(e.note?'<span style="font-size:11px;color:var(--ink3)">· '+e.note+'</span>':'')
+              +'</div>'
+              +(memberChips?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">'+memberChips+'</div>':'')
+            +'</div>'
+            // right: amount + payer
+            +'<div style="text-align:right;flex-shrink:0">'
+              +'<div style="font-size:15px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
+              +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';margin-top:4px;display:inline-block">'+payerName+'</span>'
+            +'</div>'
+          +'</div>';
+        }).join('')
+      +'</div>';
+  }).join('');
+
+  var detailRows = detailCards;
 
   // ── Personal section — ใช้รูปแบบเดียวกับตาราง detail หลัก ──
   var personalHtml = '';
@@ -469,27 +525,38 @@ function renderSettle(){
       _persColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
     });
 
-    if (isMobile) {
-      // Mobile: cards เหมือน splitExp
-      var persMobile = personalExp.map(function(e){
-        var pu = e.user_id || _pidToUid(e.person) || e.person;
-        var payerName = nameMap[pu] || e.person;
-        var vendor = _vendorName(e.vendor_id);
-        var noteText = (e.note || '').trim();
-        return '<div style="padding:10px 12px;border-bottom:1px solid var(--line)">'
-          +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
-            +'<span style="font-size:13px;font-weight:600">'+e.desc+'</span>'
-            +'<span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--red,#dc2626)">'+fmtH(e.amt)+'</span>'
-          +'</div>'
-          +'<div style="font-size:11px;color:var(--ink3)">📅 '+toThaiDateShort(e.date)+(vendor?' · 🏪 '+vendor:'')+' · 👤 '+payerName+(noteText?' · 📝 '+noteText:'')+'</div>'
+    if (true) {  // unified card layout
+      var _pGrp2=[], _pDm2={};
+      personalExp.forEach(function(e){ var d=e.date; if(!_pDm2[d]){_pDm2[d]=[];_pGrp2.push({date:d,items:_pDm2[d]});} _pDm2[d].push(e); });
+      var persCards = _pGrp2.map(function(g){
+        return '<div style="margin-bottom:14px">'
+          +'<div style="font-size:12px;font-weight:700;color:var(--ink2);padding:2px 0 6px">'+toThaiDateStr(g.date)+'</div>'
+          + g.items.map(function(e){
+              var pu = e.user_id || _pidToUid(e.person) || e.person;
+              var payerName = nameMap[pu] || e.person;
+              var payerColor = _persColorMap[pu] || {bg:'#eef7f2',cl:'#1a7a4a'};
+              var vendor = _vendorName(e.vendor_id);
+              var noteText = (e.note||'').trim();
+              return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:5px;background:var(--surface);border-radius:14px;border:1px solid var(--line)">'
+                +'<div style="width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">💳</div>'
+                +'<div style="flex:1;min-width:0">'
+                  +'<div style="font-size:13px;font-weight:600;color:var(--ink)">'+e.desc+'</div>'
+                  +'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+(vendor?'🏪 '+vendor+' · ':'')+(noteText?noteText:'')+'</div>'
+                +'</div>'
+                +'<div style="text-align:right">'
+                  +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
+                  +'<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+'">'+payerName+'</span>'
+                +'</div>'
+              +'</div>';
+            }).join('')
         +'</div>';
       }).join('');
-      personalHtml = '<div class="card" style="width:100%;margin-top:8px">'
-        +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
-        +persMobile
-        +'<div style="display:flex;justify-content:space-between;padding:8px 12px;font-weight:700;font-size:13px">'
+      personalHtml = '<div style="margin-top:16px">'
+        +'<div style="font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.4px;margin-bottom:8px">💼 รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
+        +persCards
+        +'<div style="display:flex;justify-content:space-between;padding:8px 4px;font-weight:700;font-size:13px;border-top:1px solid var(--line);margin-top:4px">'
           +'<span>รวมส่วนตัว</span>'
-          +'<span style="font-family:monospace">'+fmtH(persTotal)+'</span>'
+          +'<span style="font-family:monospace;color:var(--red,#dc2626)">'+fmtH(persTotal)+'</span>'
         +'</div>'
       +'</div>';
     } else {
@@ -515,42 +582,28 @@ function renderSettle(){
           }).join('');
         }).join('');
       })();
-      var persTotalRow = '<tr style="font-weight:700;background:var(--surface2)">'
-        +'<td colspan="2">รวมส่วนตัว</td>'
-        +'<td></td><td></td>'
-        +'<td style="text-align:right;font-family:monospace">'+fmtH(persTotal)+'</td>'
-      +'</tr>';
-      personalHtml = '<div class="card" style="width:100%;margin-top:8px">'
-        +'<div class="card-title" style="color:var(--ink3)">รายจ่ายส่วนตัว (ไม่นำมาคำนวณ)</div>'
-        +'<div class="table-scroll"><table>'
-          +'<tr style="font-size:11px;color:var(--ink3)">'
-            +'<th>รายการ</th>'
-            +'<th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">หมายเหตุ</th>'
-            +'<th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
-          +'</tr>'
-          +persRows+persTotalRow
-        +'</table></div>'
-      +'</div>';
     }
   }
 
   // ── Render ─────────────────────────────────────────────────
   out.innerHTML =
-    '<div style="font-size:12px;color:var(--ink3);margin-bottom:12px;font-weight:500">'
-      +'📅 '+m+grpTitle+' · '+splitExp.length+' รายการ · รวม '+fmtH(totalSplit)
+    // summary bar
+    '<div style="font-size:12px;color:var(--ink3);margin-bottom:14px;font-weight:500;padding:8px 12px;background:var(--surface2);border-radius:10px">'
+      +'📅 '+m+grpTitle+' · '+splitExp.length+' รายการ · รวม <span style="font-family:monospace;color:var(--red,#dc2626);font-weight:700">'+fmtH(totalSplit)+'</span>'
     +'</div>'
-    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+personCards+'</div>'
-    +'<div style="margin-bottom:14px">'
-      +'<div style="font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">สรุปการโอนเงิน</div>'
-      +'<div style="display:flex;flex-direction:column;gap:6px">'+transferHtml+'</div>'
+    // person cards
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">'+personCards+'</div>'
+    // transfer section
+    +'<div style="margin-bottom:16px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💸 สรุปการโอนเงิน</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'+transferHtml+'</div>'
     +'</div>'
-    +'<div class="card" style="width:100%">'
-      +'<div class="card-title" style="display:flex;align-items:center;justify-content:space-between">'
-        +'<span>รายละเอียด</span>'
-        +'<button onclick="exportSettlePDF(\'' + m + '\',\'' + groupId + '\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;min-height:36px">📄 PDF</button>'
-      +'</div>'
-      +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
+    // detail section
+    +'<div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">'
+      +'<span style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">📋 รายละเอียด</span>'
+      +'<button onclick="exportSettlePDF(\'' + m + '\',\'' + groupId + '\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📄 PDF</button>'
     +'</div>'
+    +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
     +personalHtml;
   } catch(err) {
     console.error('[Settlement] renderSettle error:', err);

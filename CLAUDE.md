@@ -7,8 +7,19 @@
 
 ## Version Sync
 
-**รูปแบบ:** `v[major].[minor].[patch]` เช่น `v3.16.57`  
-**กฎ:** increment patch +1 ทุก commit — ห้ามข้าม
+**รูปแบบ:** `v[major].[minor].[patch]` เช่น `v3.16.57`
+
+### เมื่อไหร่ต้อง bump version
+| การเปลี่ยนแปลง | bump |
+|---|---|
+| แก้ JS logic / bug fix | patch +1 |
+| แก้ CSS / design / layout | patch +1 |
+| เพิ่ม feature ใหม่ | patch +1 (หรือ minor +1 ถ้าใหญ่) |
+| แก้ HTML โครงสร้าง | patch +1 |
+| แก้หลายไฟล์ใน commit เดียว | patch +1 ครั้งเดียว |
+| แค่แก้ CLAUDE.md / docs | ไม่ต้อง bump |
+
+**กฎ:** ทุก commit ที่กระทบ UI หรือ behavior → bump patch +1 เสมอ
 
 ### ตำแหน่งที่ต้องอัปเดตทุกครั้ง
 

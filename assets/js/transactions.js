@@ -47,17 +47,17 @@ function _txUpdateAdminBar() {
 function populateMFUser() {
   var el = document.getElementById('mfUserList');
   if (!el) return;
-  var row = document.getElementById('mfUserRow');
   var cur = getMFValues('mfUser');
   var profiles = window._allProfiles || [];
-  if (row) row.style.display = profiles.length ? 'flex' : 'none';
   el.innerHTML = profiles.length
-    ? profiles.map(function(p){
-        var safeId = p.id;
-        var safeName = (p.name||p.id.slice(0,8)).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return _pillHtml('mfUser', safeId, safeName, cur.indexOf(safeId)>-1, '');
+    ? profiles.map(function(p) {
+        var safeId   = p.id;
+        var safeName = (p.name || p.id.slice(0, 8)).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return '<label><input type="checkbox" value="' + safeId + '" ' +
+          (cur.indexOf(safeId) > -1 ? 'checked' : '') +
+          ' onchange="updateMFLabel(\'mfUser\',\'ผู้บันทึก\');renderTx()"> ' + safeName + '</label>';
       }).join('')
-    : '';
+    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ไม่มีข้อมูลผู้ใช้</div>';
 }
 
 // ─── MULTI FILTER ─────────────────────────────────────────
@@ -108,13 +108,6 @@ function updateMFLabel(id, def){
   }
 }
 
-function _pillHtml(mfId, val, label, active, onchangeExtra) {
-  var chkChange = 'renderTx()' + (onchangeExtra ? ';'+onchangeExtra : '');
-  return '<input type="checkbox" value="'+val+'" style="display:none" '+(active?'checked':'')+' onchange="'+chkChange+'">'
-    + '<button class="tx-pill" data-val="'+val+'" data-active="'+(active?'1':'0')+'" '
-    + 'onclick="togglePill(\''+mfId+'\',\''+val+'\',this)">'+label+'</button>';
-}
-
 function populateMFItem(){
   var el = document.getElementById('mfItemList');
   if(!el) return;
@@ -128,8 +121,10 @@ function populateMFItem(){
   }
   items = Array.from(new Set(items)).sort();
   el.innerHTML = items.length
-    ? items.map(function(name){ return _pillHtml('mfItem', name, name, cur.indexOf(name)>-1, 'populateMFItem()'); }).join('')
-    : '<span style="font-size:12px;color:var(--ink3)">ไม่มีรายการ</span>';
+    ? items.map(function(name){return '<label>'+
+        '<input type="checkbox" value="'+name+'" '+(cur.indexOf(name)>-1?'checked':'')+' onchange="updateMFLabel(\'mfItem\',\'รายการ\');renderTx()">'+
+        ' '+name+'</label>';}).join('')
+    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ไม่มีรายการ</div>';
 }
 
 function populateMFVendor(){
@@ -137,17 +132,19 @@ function populateMFVendor(){
   if(!el) return;
   var cur = getMFValues('mfVendor');
   el.innerHTML = vendorsData.length
-    ? vendorsData.map(function(v){ return _pillHtml('mfVendor', v.id, v.name, cur.indexOf(v.id)>-1, ''); }).join('')
-    : '<span style="font-size:12px;color:var(--ink3)">ยังไม่มีร้านค้า</span>';
+    ? vendorsData.map(function(v){return '<label>'+
+        '<input type="checkbox" value="'+v.id+'" '+(cur.indexOf(v.id)>-1?'checked':'')+' onchange="updateMFLabel(\'mfVendor\',\'ร้านค้า\');renderTx()">'+
+        ' '+v.name+'</label>';}).join('')
+    : '<div style="padding:8px 14px;font-size:12px;color:var(--ink3)">ยังไม่มีร้านค้า</div>';
 }
 
 function populateMFCat(){
   var el = document.getElementById('mfCatList');
   if(!el) return;
   var cur = getMFValues('mfCat');
-  el.innerHTML = categories.map(function(c){
-    return _pillHtml('mfCat', c.id, c.name, cur.indexOf(c.id)>-1, 'populateMFItem()');
-  }).join('');
+  el.innerHTML = categories.map(function(c){return '<label>'+
+    '<input type="checkbox" value="'+c.id+'" '+(cur.indexOf(c.id)>-1?'checked':'')+' onchange="updateMFLabel(\'mfCat\',\'หมวด\');populateMFItem();renderTx()">'+
+    ' '+c.name+'</label>';}).join('');
 }
 
 
@@ -155,10 +152,11 @@ function resetFilters(){
   document.getElementById('fltMonth').value='';
   var fltBM = document.getElementById('fltBillingMonth');
   if (fltBM) { fltBM.value = ''; populateFltBillingMonth(fltBM); }
-  // reset checkboxes (hidden + dropdown)
-  document.querySelectorAll('#mfType input,#mfStatus input,#mfCat input,#mfVendor input,#mfItem input,#mfUser input').forEach(function(cb){ cb.checked=false; });
-  // reset pill active states
-  document.querySelectorAll('.tx-pill').forEach(function(p){ p.setAttribute('data-active','0'); });
+  document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
+  [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ'],['mfUser','ผู้บันทึก']].forEach(function(pair){
+    var label=document.querySelector('#'+pair[0]+' .mf-label');
+    if(label){ label.textContent=pair[1]+' ▾'; label.classList.remove('active'); }
+  });
   renderTx();
 }
 

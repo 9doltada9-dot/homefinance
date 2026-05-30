@@ -32,9 +32,9 @@
   --g-shadow:0 24px 64px -16px rgba(40,46,96,.30), 0 8px 24px -6px rgba(40,46,96,.20), 0 1px 4px rgba(40,46,96,.10);
   --g-ring:inset 0 1.5px 0 rgba(255,255,255,.90);
 
-  /* พื้นหลัง mesh — เบาลง */
-  --bg-base:#f0f1fa;
-  --orb-1:#d8d0ff; --orb-2:#ffdcef; --orb-3:#d4eeff; --orb-4:#e0f5ec;
+  /* พื้นหลัง mesh — สว่างและเห็นชัด */
+  --bg-base:#e8eaf6;
+  --orb-1:#c4b5fd; --orb-2:#fbcfe8; --orb-3:#bae6fd; --orb-4:#bbf7d0;
 
   /* สีตัวอักษรบน sidebar/topbar กระจกเข้ม */
   --on-dark:#f3f4ff;
@@ -100,7 +100,7 @@ body::before{
     radial-gradient(34vw 34vw at 88% 10%, var(--orb-2) 0%, transparent 60%),
     radial-gradient(40vw 40vw at 24% 96%, var(--orb-3) 0%, transparent 62%),
     radial-gradient(30vw 30vw at 92% 90%, var(--orb-4) 0%, transparent 60%);
-  filter:blur(60px); opacity:.60;
+  filter:blur(36px); opacity:.85;
   animation:gMesh 26s ease-in-out infinite alternate;
 }
 body::after{
@@ -284,15 +284,15 @@ body.view-mobile .layout{
   backdrop-filter: blur(12px);
 }
 
-/* modal box — glass card เท่านั้น */
+/* modal box — โปร่งใสมากขึ้น */
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,
 #accountLedgerModal > div, #adjustModal > div,
 #txDetailOverlay > div {
-  background: var(--g-strong) !important;
+  background: rgba(255,255,255,.45) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid var(--g-brd) !important;
+  border: 1px solid rgba(255,255,255,.60) !important;
   box-shadow: var(--g-shadow), var(--g-ring);
 }

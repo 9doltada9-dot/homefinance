@@ -38,6 +38,68 @@ const CATEGORY_ICONS = {
   'โบนัสครึ่งปี': 'icon-cat-bonus',
 };
 
+// ─── DESCRIPTION ICON MAPPING (จากชื่อรายการจริงใน DB) ───
+const DESCRIPTION_ICONS = {
+  // รายรับ
+  'เงินเดือน':           'icon-cat-salary',
+  'OT':                  'icon-cat-salary',
+  'Adjust OT':           'icon-cat-salary',
+  'Incentive':           'icon-cat-bonus',
+  'เบี้ยขยัน':           'icon-cat-bonus',
+  // อาหาร
+  'กิน':                 'icon-cat-food',
+  'ของกินลูก':           'icon-cat-food',
+  // บ้าน
+  'ค่าบ้าน':             'icon-cat-house',
+  'ตบแต่งบ้าน':          'icon-cat-house',
+  'ซ่อมบำรุง':           'icon-cat-house',
+  'ค่าส่วนกลางเดอะลากูล':'icon-cat-commonarea',
+  'ค่าส่วนกลางภัทรีดา':  'icon-cat-commonarea',
+  // สาธารณูปโภค
+  'ค่าน้ำ':              'icon-cat-water',
+  'ค่าไฟ':               'icon-cat-electricity',
+  'อินเตอร์เน็ต':        'icon-cat-internet',
+  // ของใช้
+  'ของใช้':              'icon-cat-household',
+  'ของใช้ลูก':           'icon-cat-household',
+  'ของเล่น':             'icon-cat-household',
+  // การศึกษา
+  'การศึกษา':            'icon-school',
+  'ค่าเรียนพิเศษ':       'icon-school',
+  'ค่าหนังสือ':          'icon-school',
+  'สนับสนุนการศึกษา':    'icon-school',
+  // สุขภาพ
+  'สุขภาพ':              'icon-pharmacy',
+  // ครอบครัว
+  'พ่อแม่':              'icon-cat-family',
+  'แอน':                 'icon-cat-family',
+  // หนี้/ออม
+  'กองทุนสำรองเลี้ยงชีพ':'icon-cat-return',
+  'ธกส':                 'icon-cat-return',
+  // หักบริษัท
+  'ประกันสังคม':         'icon-cat-other',
+  'ภาษี':                'icon-cat-other',
+  'ค่าครองชีพและอื่นๆ':  'icon-cat-other',
+  // โอน/Wallet
+  'ฝากเงิน – TrueMoney': 'icon-status-transfer',
+  // ที่พัก
+  'ค่าที่พัก':           'icon-hotel',
+  // อื่นๆ
+  'อื่นๆ':               'icon-cat-other',
+};
+
+function getDescriptionIconId(desc) {
+  if (!desc) return null;
+  if (DESCRIPTION_ICONS[desc]) return DESCRIPTION_ICONS[desc];
+  if (desc.charAt(0) === '↔') return 'icon-status-transfer';
+  // keyword fallback
+  var keys = Object.keys(DESCRIPTION_ICONS);
+  for (var i = 0; i < keys.length; i++) {
+    if (desc.indexOf(keys[i]) !== -1) return DESCRIPTION_ICONS[keys[i]];
+  }
+  return null;
+}
+
 // ─── VENDOR ICON MAPPING ──────────────────────────────────
 const VENDOR_ICONS = {
   'Makro': 'icon-makro',

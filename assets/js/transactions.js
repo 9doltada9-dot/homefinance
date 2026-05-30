@@ -481,7 +481,7 @@ function renderTx(){
             g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')">'+
 
         '<td>'+(function(){
-          var iconId=(e.cat_name && typeof getCategoryIconId==='function')?getCategoryIconId(e.cat_name):null;
+          var iconId=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
           if(!iconId) return e.desc;
           return '<svg width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;min-width:18px"><use href="#'+iconId+'"></use></svg>'+e.desc;
         })()+'</td>'+

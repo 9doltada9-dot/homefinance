@@ -487,7 +487,7 @@ function renderTx(){
           if(!iconId) return e.cat_name;
           return '<svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0"><use href="#'+iconId+'"></use></svg>'+e.cat_name;
         })()+'</td>'+
-        '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); if(!_vn) return '—'; var iconId=getVendorIconId(_vn); return iconId ? '<svg width="18" height="18" viewBox="0 0 24 24" title="'+_vn.replace(/"/g,'&quot;')+'"><use href="#'+iconId+'"></use></svg>' : _vendorAvatar(_vn); })() : '—')+'</td>'+
+        '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : '—'; })() : '—')+'</td>'+
         (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
         '<td>'+_splitBadge(e)+'</td>'+
         '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+

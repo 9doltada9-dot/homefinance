@@ -1,9 +1,9 @@
 /* HomeFinance · glassSettings.js — Live glass customization panel */
 
 var GLASS_DEFAULTS = {
-  gBlur:       160,
-  gCardOpacity: 68,
-  gSat:        200,
+  gBlur:        24,
+  gCardOpacity: 72,
+  gSat:        140,
   orbOpacity:   85,
   orbBlur:      36,
   bgBase:      '#e8eaf6',
@@ -18,7 +18,12 @@ var GLASS_DEFAULTS = {
 var GLASS_KEY = 'hf_glass_settings';
 
 function glassLoad() {
-  try { return Object.assign({}, GLASS_DEFAULTS, JSON.parse(localStorage.getItem(GLASS_KEY) || '{}')); }
+  try {
+    var saved = JSON.parse(localStorage.getItem(GLASS_KEY) || '{}');
+    // migrate: ถ้า gBlur เก่าเกิน 80px ให้ reset เป็น default ใหม่
+    if (saved.gBlur && saved.gBlur > 80) { saved.gBlur = GLASS_DEFAULTS.gBlur; }
+    return Object.assign({}, GLASS_DEFAULTS, saved);
+  }
   catch(e) { return Object.assign({}, GLASS_DEFAULTS); }
 }
 

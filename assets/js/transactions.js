@@ -504,7 +504,7 @@ function renderTx(){
               ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
               : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>';
 
-            return '<div class="tx-card-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')" '
+            return '<div class="tx-card-row" id="row-'+e.id+'" onclick="(typeof gfCardTap===\'function\'?gfCardTap(this,function(){txDetailModal(\''+e.id+'\')}):txDetailModal(\''+e.id+'\'))" '
               +'style="display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;'
               +'background:var(--surface);border-radius:14px;cursor:pointer;'
               +'border:1px solid var(--line);transition:background .15s">'
@@ -657,10 +657,10 @@ function closeTxDetailModal() {
   var wrap = document.getElementById('txDetailModalWrap');
   if (!wrap) return;
   var overlay = document.getElementById('txDetailOverlay');
-  if (overlay) {
+  if (overlay && typeof gfShatter === 'function') {
+    gfShatter(overlay, function(){ wrap.innerHTML = ''; });
+  } else if (overlay) {
     overlay.style.transition = 'opacity .18s'; overlay.style.opacity = '0';
-    var sheet = overlay.querySelector('div');
-    if (sheet) { sheet.style.transition = 'transform .2s cubic-bezier(.4,0,.2,1)'; sheet.style.transform = 'translateY(60px)'; }
     setTimeout(function(){ wrap.innerHTML = ''; }, 200);
   } else { wrap.innerHTML = ''; }
 }

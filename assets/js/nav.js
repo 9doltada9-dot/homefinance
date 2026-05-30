@@ -27,11 +27,15 @@ function nav(page){
 
   closeSidebar();
 
-  // scroll to top BEFORE rendering new content — prevents Chrome scroll-anchoring
-  // from readjusting position after new DOM is inserted
-  window.scrollTo(0, 0);
-  var _mainEl = document.querySelector('.main');
-  if (_mainEl) _mainEl.scrollTop = 0;
+  // reset scroll on all three containers Chrome might use
+  function _resetScroll(){
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    var el = document.querySelector('.main');
+    if (el) el.scrollTop = 0;
+  }
+  _resetScroll(); // before render (prevents scroll-anchor from calculating old position)
 
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions'){
@@ -72,11 +76,10 @@ function nav(page){
     silentPull();
   }
 
-  // scroll กลับ top หลัง render เสร็จ
+  // double-rAF scroll reset after render — catches late layout shifts
   requestAnimationFrame(function(){
-    window.scrollTo(0, 0);
-    var mainEl = document.querySelector('.main');
-    if (mainEl) mainEl.scrollTop = 0;
+    _resetScroll();
+    requestAnimationFrame(_resetScroll);
   });
 }
 

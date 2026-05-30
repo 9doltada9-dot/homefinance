@@ -69,6 +69,8 @@ function toggleMF(id){
   if(!wasOpen) dd.classList.add('open');
 }
 
+var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };
+
 function togglePill(mfId, val, btn) {
   var el = document.getElementById(mfId);
   if (!el) return;
@@ -76,6 +78,7 @@ function togglePill(mfId, val, btn) {
   if (chk) chk.checked = !chk.checked;
   var active = chk ? chk.checked : (btn.getAttribute('data-active') !== '1');
   btn.setAttribute('data-active', active ? '1' : '0');
+  updateMFLabel(mfId, _MF_NAMES[mfId] || mfId);
   renderTx();
 }
 

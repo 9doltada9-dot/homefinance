@@ -467,43 +467,79 @@ function renderTx(){
     // Mobile tap-to-detail (swipe removed v3.16.24)
 
   } else {
-    document.getElementById('txContent').innerHTML = list.length ? '<table>'+
-      '<tr><th>รายการ</th><th>หมวด</th><th>ร้านค้า</th>'+(_txShowAllUsers?'<th>ผู้บันทึก</th>':'')+'<th>รูปแบบหาร</th><th style="text-align:right">จำนวน (บาท)</th><th style="text-align:center">บัญชี</th><th>สถานะ</th><th>หมายเหตุ</th></tr>'+
-      (function(){
-        var _groups=[], _dmap={};
-        list.forEach(function(e){
-          var d=e.date;
-          if(!_dmap[d]){_dmap[d]=[];_groups.push({date:d,items:_dmap[d]});}
-          _dmap[d].push(e);
-        });
-        return _groups.map(function(g){
-          return '<tr><td colspan="'+(_txShowAllUsers?'9':'8')+'" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
-            g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')">'+
+    // ── group by date ──
+    var _groups=[], _dmap={};
+    list.forEach(function(e){
+      var d=e.date;
+      if(!_dmap[d]){_dmap[d]=[];_groups.push({date:d,items:_dmap[d]});}
+      _dmap[d].push(e);
+    });
 
-        '<td>'+(function(){
-          var iconId=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
-          if(!iconId) return e.desc;
-          return '<svg width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;min-width:18px"><use href="#'+iconId+'"></use></svg>'+e.desc;
-        })()+'</td>'+
-        '<td style="font-size:12px;color:var(--ink);font-weight:500">'+(e.cat_name||'—')+'</td>'+
-        '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : '—'; })() : '—')+'</td>'+
-        (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
-        '<td>'+_splitBadge(e)+'</td>'+
-        '<td style="text-align:right;font-family:monospace;font-weight:500;color:'+(e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)')+'">'+
-          (e.type==='transfer'?'↗ ':e.type==='income'?'+':'−')+fmtH(e.amt)+
-        '</td>'+
-        '<td style="text-align:center;vertical-align:middle">'+(function(){ var a=(typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;}); return a ? '<span title="'+(a.name||'').replace(/"/g,'&quot;')+'" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(a.color||'#1a4fa0')+'"></span>' : ''; })()+
-        '</td>'+
-        '<td>'+(e.type==='transfer'
-          ? '<span class="badge badge-paid" style="background:var(--blue-bg);color:var(--blue)">โอนแล้ว</span>'
-          : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>'
-        )+'</td>'+
-        '<td style="font-size:11px;color:var(--ink3);font-style:italic">'+(e.note||'—')+'</td>'+
-      '</tr>';}).join('');
-        }).join('');
-      })()+
-      
-    '</table>' : '<div class="empty">ไม่พบรายการ</div>';
+    document.getElementById('txContent').innerHTML = list.length ? _groups.map(function(g){
+      // ── day total ──
+      var dayIn=0, dayOut=0;
+      g.items.forEach(function(e){ if(e.type==='income') dayIn+=e.amt; else if(e.type==='expense') dayOut+=e.amt; });
+
+      return '<div style="margin-bottom:18px">'
+        // date header
+        +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 4px 6px;margin-bottom:6px">'
+        +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
+        +  '<span style="font-size:11px;color:var(--ink3)">'
+        +    (dayIn?'<span style="color:var(--green)">+'+fmtH(dayIn)+'</span>':'')+
+             (dayIn&&dayOut?' · ':'')+
+             (dayOut?'<span style="color:var(--red)">−'+fmtH(dayOut)+'</span>':'')
+        +  '</span>'
+        +'</div>'
+        // cards
+        + g.items.map(function(e){
+            var amtColor = e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)';
+            var amtSign  = e.type==='transfer'?'↗ ':e.type==='income'?'+':'−';
+            var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
+            var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
+            var iconHtml = iconId
+              ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block;flex-shrink:0"><use href="#'+iconId+'"></use></svg>'
+              : '<span style="font-size:18px;line-height:1">💳</span>';
+            var vendorName = e.vendor_id ? (((vendorsData||[]).find(function(v){return v.id===e.vendor_id;})||{}).name||'') : '';
+            var statusBadge = e.type==='transfer'
+              ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
+              : '<span class="badge '+(isPaid(e)?(e.type==='income'?'badge-received':'badge-paid'):'badge-pending')+'">'+(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'))+'</span>';
+
+            return '<div class="tx-card-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')" '
+              +'style="display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;'
+              +'background:var(--surface);border-radius:14px;cursor:pointer;'
+              +'border:1px solid var(--line);transition:background .15s">'
+
+              // icon circle
+              +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);'
+              +'display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
+
+              // center: desc + meta
+              +'<div style="flex:1;min-width:0">'
+              +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
+              +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center">'
+              +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
+              +    (e.cat_name&&(vendorName||_splitBadge(e))?' <span style="color:var(--line2)">·</span> ':'')
+              +    (vendorName?_vendorAvatar(vendorName):'')
+              +    (vendorName&&_splitBadge(e)?' ':'')
+              +    _splitBadge(e)
+              +    (_txShowAllUsers?' '+personPill(e.user_id||e.person):'')
+              +  '</div>'
+              +'</div>'
+
+              // right: amount + status + account
+              +'<div style="text-align:right;flex-shrink:0">'
+              +  '<div style="font-size:15px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtSign+fmtH(e.amt)+'</div>'
+              +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px">'
+              +    statusBadge
+              +    (acct?'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>':'')
+              +  '</div>'
+              +  (e.note?'<div style="font-size:10px;color:var(--ink3);margin-top:2px;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.note+'</div>':'')
+              +'</div>'
+
+            +'</div>';
+          }).join('')
+      +'</div>';
+    }).join('') : '<div class="empty">ไม่พบรายการ</div>';
   }
 }
 

@@ -13,24 +13,24 @@
    ───────────────────────────────────────────── */
 :root{
   --paper:transparent;
-  --surface:rgba(255,255,255,.88);
-  --surface2:rgba(255,255,255,.72);
-  --line:rgba(92,104,158,.16);
-  --line2:rgba(92,104,158,.30);
+  --surface:rgba(255,255,255,.72);
+  --surface2:rgba(255,255,255,.55);
+  --line:rgba(92,104,158,.14);
+  --line2:rgba(92,104,158,.26);
 
   --accent:#6366f1;
   --accent-2:#8b5cf6;
   --accent-soft:rgba(99,102,241,.16);
 
   /* กระจก */
-  --g-blur:16px;
-  --g-sat:140%;
-  --g-card:rgba(255,255,255,.86);
-  --g-strong:rgba(255,255,255,.94);
-  --g-brd:rgba(200,206,240,.55);
-  --g-sheen:rgba(255,255,255,.7);
-  --g-shadow:0 8px 28px -10px rgba(40,46,96,.18), 0 2px 8px -4px rgba(40,46,96,.12);
-  --g-ring:inset 0 1px 0 rgba(255,255,255,.8);
+  --g-blur:32px;
+  --g-sat:160%;
+  --g-card:rgba(255,255,255,.68);
+  --g-strong:rgba(255,255,255,.84);
+  --g-brd:rgba(220,224,255,.60);
+  --g-sheen:rgba(255,255,255,.75);
+  --g-shadow:0 20px 60px -16px rgba(40,46,96,.28), 0 6px 20px -6px rgba(40,46,96,.18), 0 1px 4px rgba(40,46,96,.08);
+  --g-ring:inset 0 1.5px 0 rgba(255,255,255,.85);
 
   /* พื้นหลัง mesh — เบาลง */
   --bg-base:#f0f1fa;

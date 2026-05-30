@@ -20,19 +20,6 @@ function nav(page){
   targetEl.classList.add('active');
   targetEl.style.display = 'block';
 
-  // ─── DIAGNOSTIC — ลบออกหลัง debug ───────────────────
-  console.log('[nav] page=' + page,
-    'bodyH=' + document.body.scrollHeight,
-    'targetDisplay=' + getComputedStyle(targetEl).display,
-    'targetH=' + targetEl.offsetHeight,
-    'targetW=' + targetEl.offsetWidth
-  );
-  document.querySelectorAll('.page').forEach(function(p){
-    var d = getComputedStyle(p).display;
-    if(d !== 'none') console.warn('[nav] still visible:', p.id, 'display=' + d, 'inline=' + p.style.display);
-  });
-  // ─── END DIAGNOSTIC ──────────────────────────────────
-
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));
   navItems.forEach(function(i){

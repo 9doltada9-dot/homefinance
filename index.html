@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.89</title>
+<title>HomeFinance v3.16.90</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -167,7 +167,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.16.89 · THB</div>
+    <div class="brand-sub">v3.16.90 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -228,7 +228,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.89 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.90 © 2025</div>
   </div>
 </nav>
 
@@ -291,7 +291,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- ADD ENTRY -->
-<div id="page-add" class="page">
+<div id="page-add" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">บันทึกรายการ</div>
     <div class="page-sub">เพิ่มรายรับหรือรายจ่ายใหม่</div>
@@ -421,7 +421,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- TRANSACTIONS -->
-<div id="page-transactions" class="page">
+<div id="page-transactions" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">รายการทั้งหมด</div>
   </div>
@@ -507,7 +507,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- SETTLEMENT -->
-<div id="page-settlement" class="page">
+<div id="page-settlement" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">Settlement</div>
     <div class="page-sub">สรุปค่าใช้จ่ายร่วม · คำนวณจาก split_snapshot</div>
@@ -526,7 +526,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- MONTHLY -->
-<div id="page-monthly" class="page">
+<div id="page-monthly" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">สรุปรายเดือน</div>
   </div>
@@ -620,7 +620,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- BUDGET PAGE -->
-<div id="page-budget" class="page">
+<div id="page-budget" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">งบประมาณ</div>
     <div class="page-sub">กำหนดและติดตามงบรายจ่ายแต่ละหมวด</div>
@@ -630,7 +630,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- SETTINGS PAGE -->
-<div id="page-settings" class="page">
+<div id="page-settings" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">ตั้งค่า</div>
     <div class="page-sub">จัดการหมวดหมู่ · ผู้บันทึก · ระบบ</div>
@@ -924,7 +924,7 @@ body.app-ready #page-login { display: none !important; }
 </div>
 
 <!-- SUPABASE PAGE -->
-<div id="page-supabase" class="page">
+<div id="page-supabase" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">Supabase</div>
     <div class="page-sub">เชื่อมต่อฐานข้อมูล Real-time · ไม่มี CORS · ใช้ได้จากทุกที่</div>
@@ -1042,7 +1042,7 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- ACCOUNTS PAGE (v3) -->
-<div id="page-accounts" class="page">
+<div id="page-accounts" class="page" style="display:none">
   <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
     <div>
       <div class="page-title">บัญชีธนาคาร</div>
@@ -1102,7 +1102,7 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- SAVINGS GOALS PAGE (v3) -->
-<div id="page-savings" class="page">
+<div id="page-savings" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">เป้าหมายการออม</div>
     <div class="page-sub">ติดตามเป้าหมายและคำนวณเงินออมรายเดือน</div>
@@ -1435,7 +1435,7 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- ADMIN PAGE -->
-<div id="page-admin" class="page">
+<div id="page-admin" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">🛡 Admin</div>
     <div class="page-sub">จัดการผู้ใช้ · รายงาน Settlement</div>
@@ -1577,7 +1577,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.89</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.90</div>
   </div>
 </div>
 

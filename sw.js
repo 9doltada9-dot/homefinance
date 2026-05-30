@@ -1,11 +1,11 @@
-/* HomeFinance · Service Worker · v3.16.7
+/* HomeFinance · Service Worker · v3.16.42
  * กลยุทธ์:
  *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first → ใช้งาน offline ได้
  *   - Supabase API call: network-first → ดึงข้อมูลล่าสุดเสมอ ถ้าไม่มี net ใช้ของเก่า
  *
  * NOTE: เปลี่ยน CACHE_VERSION ทุกครั้งที่ deploy ใหม่ เพื่อให้ user ได้ของใหม่
  */
-const CACHE_VERSION = 'hf-v3.16.33';
+const CACHE_VERSION = 'hf-v3.16.42';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [
@@ -16,6 +16,7 @@ const PRECACHE_URLS = [
   './assets/css/layout.css',
   './assets/css/components.css',
   './assets/css/responsive.css',
+  './assets/css/glass-overlay.css',
   './assets/js/config.js',
   './assets/js/storage.js',
   './assets/js/utils.js',
@@ -37,6 +38,7 @@ const PRECACHE_URLS = [
   './assets/js/settings.js',
   './assets/js/supabase.js',
   './assets/js/autocomplete.js',
+  './assets/js/icons.js',
   // v3 modules
   './assets/js/cycleEngine.js',
   './assets/js/balanceEngine.js',

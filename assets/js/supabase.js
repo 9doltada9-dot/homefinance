@@ -314,15 +314,17 @@ async function _fetchAndMerge(creds, timeoutMs) {
 
 /** อัปเดต UI ทุกหน้าที่เกี่ยวข้องกับข้อมูล */
 function _renderAllDataPages() {
-  renderDash();
   var activePage = (document.querySelector('.page.active')||{}).id;
-  if(activePage==='page-transactions') renderTx();
+  // only render dashboard when it's active — re-rendering a hidden page disrupts scroll
+  if(activePage==='page-dashboard')    { renderDash(); return; }
+  if(activePage==='page-transactions') { renderTx(); return; }
   if(activePage==='page-accounts'){
     if(typeof renderAccountCards==='function') renderAccountCards();
     if(typeof renderAccountList ==='function') renderAccountList();
+    return;
   }
-  if(activePage==='page-settlement'){ if(typeof renderSettle==='function') renderSettle(); }
-  if(activePage==='page-budget')    { if(typeof renderBudget==='function')  renderBudget(); }
+  if(activePage==='page-settlement'){ if(typeof renderSettle==='function') renderSettle(); return; }
+  if(activePage==='page-budget')    { if(typeof renderBudget==='function')  renderBudget(); return; }
   if(activePage==='page-savings')   { if(typeof renderSavingsGoals==='function') renderSavingsGoals(); }
 }
 

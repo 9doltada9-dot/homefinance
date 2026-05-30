@@ -1,10 +1,25 @@
-/* HomeFinance · module: nav.js · v3.2.0 */
+/* HomeFinance · module: nav.js · v3.2.1 */
+
+// ─── disable browser scroll-restoration ──────────────────
+// ป้องกัน SW client.navigate() reload แล้ว browser คืน Y เดิม ทับ scroll reset ของเรา
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 // ─── NAV ────────────────────────────────────────────────
 function nav(page){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var targetEl = document.getElementById('page-' + page);
+  if (!targetEl) return; // guard — unknown page name
+
+  // Step 1: ซ่อนทุก page — class + inline style (fallback กรณี CSS cache เก่าไม่มี !important)
+  document.querySelectorAll('.page').forEach(function(p){
+    p.classList.remove('active');
+    p.style.display = 'none'; // belt-and-suspenders: ป้องกัน CSS !important ไม่โหลด
+  });
+
+  // Step 2: แสดง target page — เอา inline override ออก แล้วปล่อย CSS .page.active{display:block!} ทำงาน
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
-  document.getElementById('page-'+page).classList.add('active');
+  targetEl.classList.add('active');
+  targetEl.style.display = ''; // remove inline, CSS .page.active{display:block !important} wins
+
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));
   navItems.forEach(function(i){
@@ -27,7 +42,7 @@ function nav(page){
 
   closeSidebar();
 
-  // reset scroll on all three containers Chrome might use
+  // reset scroll — ทำหลายรูปแบบ ครอบทุก container ที่ Chrome อาจใช้
   function _resetScroll(){
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
@@ -35,7 +50,7 @@ function nav(page){
     var el = document.querySelector('.main');
     if (el) el.scrollTop = 0;
   }
-  _resetScroll(); // before render (prevents scroll-anchor from calculating old position)
+  _resetScroll(); // before render
 
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions'){
@@ -79,7 +94,11 @@ function nav(page){
   // double-rAF scroll reset after render — catches late layout shifts
   requestAnimationFrame(function(){
     _resetScroll();
-    requestAnimationFrame(_resetScroll);
+    requestAnimationFrame(function(){
+      _resetScroll();
+      // setTimeout 300ms: ครอบ browser scroll-restoration ที่อาจ override หลัง rAF
+      setTimeout(_resetScroll, 300);
+    });
   });
 }
 

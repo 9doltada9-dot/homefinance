@@ -13,8 +13,8 @@
    ───────────────────────────────────────────── */
 :root{
   --paper:transparent;
-  --surface:rgba(255,255,255,.60);
-  --surface2:rgba(255,255,255,.40);
+  --surface:rgba(255,255,255,.88);
+  --surface2:rgba(255,255,255,.72);
   --line:rgba(92,104,158,.16);
   --line2:rgba(92,104,158,.30);
 
@@ -23,18 +23,18 @@
   --accent-soft:rgba(99,102,241,.16);
 
   /* กระจก */
-  --g-blur:22px;
-  --g-sat:170%;
-  --g-card:rgba(255,255,255,.58);
-  --g-strong:rgba(255,255,255,.74);
-  --g-brd:rgba(255,255,255,.65);
-  --g-sheen:rgba(255,255,255,.6);
-  --g-shadow:0 22px 50px -24px rgba(40,46,96,.42), 0 4px 14px -8px rgba(40,46,96,.26);
-  --g-ring:inset 0 1px 0 rgba(255,255,255,.7);
+  --g-blur:16px;
+  --g-sat:140%;
+  --g-card:rgba(255,255,255,.86);
+  --g-strong:rgba(255,255,255,.94);
+  --g-brd:rgba(200,206,240,.55);
+  --g-sheen:rgba(255,255,255,.7);
+  --g-shadow:0 8px 28px -10px rgba(40,46,96,.18), 0 2px 8px -4px rgba(40,46,96,.12);
+  --g-ring:inset 0 1px 0 rgba(255,255,255,.8);
 
-  /* พื้นหลัง mesh */
-  --bg-base:#eceefb;
-  --orb-1:#c7b9ff; --orb-2:#ffc6e6; --orb-3:#bfe3ff; --orb-4:#d6f3e2;
+  /* พื้นหลัง mesh — เบาลง */
+  --bg-base:#f0f1fa;
+  --orb-1:#d8d0ff; --orb-2:#ffdcef; --orb-3:#d4eeff; --orb-4:#e0f5ec;
 
   /* สีตัวอักษรบน sidebar/topbar กระจกเข้ม */
   --on-dark:#f3f4ff;
@@ -100,16 +100,16 @@ body::before{
     radial-gradient(34vw 34vw at 88% 10%, var(--orb-2) 0%, transparent 60%),
     radial-gradient(40vw 40vw at 24% 96%, var(--orb-3) 0%, transparent 62%),
     radial-gradient(30vw 30vw at 92% 90%, var(--orb-4) 0%, transparent 60%);
-  filter:blur(28px); opacity:.9;
+  filter:blur(40px); opacity:.45;
   animation:gMesh 26s ease-in-out infinite alternate;
 }
 body::after{
   content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
-  background-image:radial-gradient(rgba(255,255,255,.5) .5px, transparent .5px);
-  background-size:4px 4px; mix-blend-mode:overlay; opacity:.45;
+  background-image:radial-gradient(rgba(255,255,255,.4) .5px, transparent .5px);
+  background-size:4px 4px; mix-blend-mode:overlay; opacity:.12;
 }
-html[data-theme="dark"] body::before{ opacity:.6; }
-html[data-theme="dark"] body::after{ opacity:.2; }
+html[data-theme="dark"] body::before{ opacity:.35; }
+html[data-theme="dark"] body::after{ opacity:.08; }
 @keyframes gMesh{ 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(2vw,-2vh) scale(1.08)} }
 @media (prefers-reduced-motion:reduce){ body::before{ animation:none } }
 

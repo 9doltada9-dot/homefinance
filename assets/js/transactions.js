@@ -480,13 +480,12 @@ function renderTx(){
           return '<tr><td colspan="'+(_txShowAllUsers?'9':'8')+'" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--ink2);background:var(--surface2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
             g.items.map(function(e){return '<tr class="tx-row" id="row-'+e.id+'" onclick="txDetailModal(\''+e.id+'\')">'+
 
-        '<td>'+e.desc+'</td>'+
-        '<td style="font-size:12px;color:var(--ink);font-weight:500">'+(function(){
-          if(!e.cat_name) return '—';
-          var iconId=(typeof getCategoryIconId==='function'?getCategoryIconId(e.cat_name):null);
-          if(!iconId) return e.cat_name;
-          return '<svg width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;min-width:18px"><use href="#'+iconId+'"></use></svg>'+e.cat_name;
+        '<td>'+(function(){
+          var iconId=(e.cat_name && typeof getCategoryIconId==='function')?getCategoryIconId(e.cat_name):null;
+          if(!iconId) return e.desc;
+          return '<svg width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;min-width:18px"><use href="#'+iconId+'"></use></svg>'+e.desc;
         })()+'</td>'+
+        '<td style="font-size:12px;color:var(--ink);font-weight:500">'+(e.cat_name||'—')+'</td>'+
         '<td style="text-align:center">'+(e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : '—'; })() : '—')+'</td>'+
         (_txShowAllUsers?'<td>'+personPill(e.user_id||e.person)+'</td>':'')+
         '<td>'+_splitBadge(e)+'</td>'+

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeFinance · Desktop (Bento · Liquid Glass)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="glass.css">
+<style>
+  html,body{margin:0;padding:0;height:100%;font-family:'Sarabun',sans-serif;background:#0a0d1f;}
+  #app{height:100vh;}
+  .hf-page{display:none;}
+  .hf-page.active{display:flex;flex:1;min-width:0;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ══════════ HomeFinance Desktop — vanilla (no build step) ══════════ */
+const ICONS = {
+  dash:'<path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"/>',
+  add:'<path d="M8 2a1 1 0 011 1v4h4a1 1 0 010 2H9v4a1 1 0 01-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/>',
+  list:'<path d="M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h10v2H1v-2z"/>',
+  settle:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/>',
+  month:'<path d="M4 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-2V1h-1v1H5V1H4zm10 4v8H2V5h12z"/>',
+  budget:'<path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3zm0 3h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V6zm2 2v2h4V8H4z"/>',
+  bank:'<path d="M8 1L1 5h14L8 1zM2 6v6H1v2h14v-2h-1V6h-2v6h-1V6H9v6H7V6H6v6H5V6H2z"/>',
+  goal:'<path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a4 4 0 110 8 4 4 0 010-8zm0 2.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>',
+  gear:'<path d="M8 5a3 3 0 100 6 3 3 0 000-6zm6.4 3a6.4 6.4 0 01-.1 1.1l1.3 1-1.3 2.2-1.5-.5a5 5 0 01-1.9 1.1l-.2 1.6H7.3l-.2-1.6a5 5 0 01-1.9-1.1l-1.5.5-1.3-2.2 1.3-1A6.4 6.4 0 011.6 8c0-.4 0-.7.1-1.1l-1.3-1 1.3-2.2 1.5.5a5 5 0 011.9-1.1l.2-1.6h2.6l.2 1.6a5 5 0 011.9 1.1l1.5-.5 1.3 2.2-1.3 1c.1.4.1.7.1 1.1z"/>',
+};
+const NAV = [['dash','Dashboard'],['add','บันทึกรายการ'],['list','รายการทั้งหมด'],['settle','Settlement'],['month','สรุปรายเดือน'],['budget','งบประมาณ'],['bank','บัญชีธนาคาร'],['goal','เป้าหมายออม'],['gear','ตั้งค่า']];
+
+const TX = [
+  ['🍜','ข้าวเย็น','ค่าอาหาร · ภูมิ','split','หาร','−฿420','r'],
+  ['🛍️','เสื้อผ้า','ช้อปปิ้ง · ส่วนตัว','personal','ใบเฟิร์น','−฿1,290','r'],
+  ['💻','งานออกแบบ','รายรับเสริม · ภูมิ','received','รับแล้ว','+฿15,000','g'],
+  ['💡','ค่าไฟฟ้า','ค่าน้ำค่าไฟ · ร่วม','split','หาร','−฿1,840','r'],
+  ['🛒','ซูเปอร์มาร์เก็ต','ค่าอาหาร · ร่วม','split','หาร','−฿2,340','r'],
+];
+const ACCT = [['#10b981','กสิกรไทย','ออมทรัพย์','฿128,450'],['#8b5cf6','ไทยพาณิชย์','เงินเดือน','฿54,200'],['#2563d6','กรุงไทย','ค่าใช้จ่ายร่วม','฿18,750'],['#c47d11','เงินสด','กระเป๋าตังค์','฿3,400']];
+const BUDGET = [['ค่าอาหาร',8400,12000],['ค่าเดินทาง',3200,4000],['ช้อปปิ้ง',5600,5000],['ค่าน้ำค่าไฟ',3800,4500]];
+const GOALS = [['กองทุนฉุกเฉิน',180000,200000,'#10b981'],['ทริปญี่ปุ่น',78000,120000,'#8b5cf6'],['ดาวน์บ้าน',62500,500000,'#2563d6']];
+const MONTHS = [['ธ.ค.',62,45],['ม.ค.',58,51],['ก.พ.',64,43],['มี.ค.',60,56],['เม.ย.',55,48],['พ.ค.',20,48]];
+const fmt = n => n.toLocaleString();
+const badge = (t,l) => `<span class="hf-badge hf-b-${t}">${l}</span>`;
+
+/* ── page renderers (return HTML for the <main>) ── */
+function head(title, sub, right){
+  return `<div class="hf-head"><div><div class="hf-title">${title}</div>${sub?`<div class="hf-sub">${sub}</div>`:''}</div>${right?`<div class="hf-period-pills">${right}</div>`:''}</div>`;
+}
+function bars(h){
+  return `<div class="hf-bars"${h?` style="height:${h}px"`:''}>`+MONTHS.map(m=>`<div class="hf-bar-col"><div style="display:flex;gap:4px;align-items:flex-end;width:100%;height:100%"><div class="hf-bar hf-bar-in" style="height:${m[1]}%"></div><div class="hf-bar hf-bar-out" style="height:${m[2]}%"></div></div><div class="hf-bar-lbl">${m[0]}</div></div>`).join('')+`</div>`;
+}
+
+function pageDash(){
+  const cycle = `<div class="hf-cycle" style="grid-column:span 12"><div style="flex:1;min-width:200px"><div style="font-size:12px;color:var(--hf-ink3);font-weight:600">รอบเงินเดือนปัจจุบัน</div><div style="font-size:18px;font-weight:700;margin-top:2px">25 เม.ย. – 24 พ.ค. 2569</div></div><div style="display:flex;align-items:center;gap:14px"><span class="hf-badge hf-b-pending">⏳ รอเงินเดือนเข้า ฿110,000 · วันที่ 25</span><div style="width:200px"><div class="hf-prog"><div class="hf-prog-fill" style="width:72%"></div></div><div style="font-size:11px;color:var(--hf-ink3);margin-top:5px">เหลืออีก 6 วัน</div></div></div></div>`;
+  const networth = `<div class="hf-card" style="grid-column:span 4;grid-row:span 2;display:flex;flex-direction:column"><div class="hf-card-title">มูลค่าสุทธิรวม</div><div class="hf-mono" style="font-size:38px;font-weight:700;letter-spacing:-1.5px">฿204,800</div><div style="font-size:12.5px;color:var(--hf-green);font-weight:600;margin-top:4px">▲ ฿12,300 จากเดือนก่อน</div><hr class="hf-divider"><div style="font-size:11.5px;color:var(--hf-ink3);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">บัญชีทั้งหมด</div><div style="flex:1">`+ACCT.map(a=>`<div class="hf-row" style="padding:9px 0"><div style="width:9px;height:9px;border-radius:50%;background:${a[0]};flex-shrink:0"></div><div class="hf-row-main"><div class="hf-row-name" style="font-size:13px">${a[1]}</div><div class="hf-row-meta">${a[2]}</div></div><div class="hf-row-amt hf-mono" style="font-size:13px">${a[3]}</div></div>`).join('')+`</div></div>`;
+  const metrics = [['รายรับเดือนนี้','฿19,800','g','+฿15,000 รับแล้ว · ฿110,000 รอเข้า'],['รายจ่ายเดือนนี้','฿48,300','r','64% ของงบ ฿75,000'],['คงเหลือสุทธิ','−฿28,500','b','ก่อนเงินเดือนเข้า'],['รอดำเนินการ','3 รายการ','a','รวม ฿111,500']].map(m=>`<div class="hf-card" style="grid-column:span 4"><div class="hf-metric-label">${m[0]}</div><div class="hf-metric-val ${m[2]}">${m[1]}</div><div class="hf-metric-sub">${m[3]}</div></div>`).join('');
+  const recent = `<div class="hf-card" style="grid-column:span 7"><div class="hf-card-title">รายการล่าสุด <span class="hf-link" data-nav="list">ดูทั้งหมด →</span></div>`+TX.map(t=>`<div class="hf-row"><div class="hf-row-ic">${t[0]}</div><div class="hf-row-main"><div class="hf-row-name">${t[1]} ${badge(t[3],t[4])}</div><div class="hf-row-meta">${t[2]}</div></div><div class="hf-row-amt ${t[6]}">${t[5]}</div></div>`).join('')+`</div>`;
+  const trend = `<div class="hf-card" style="grid-column:span 5"><div class="hf-card-title">แนวโน้ม 6 เดือน</div>${bars()}<div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--hf-ink2)"><span style="display:flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:3px;background:#10b981"></i>รายรับ</span><span style="display:flex;align-items:center;gap:5px"><i style="width:10px;height:10px;border-radius:3px;background:#8b5cf6"></i>รายจ่าย</span></div></div>`;
+  const budget = `<div class="hf-card" style="grid-column:span 5"><div class="hf-card-title">งบประมาณเดือนนี้ <span class="hf-link" data-nav="budget">จัดการ →</span></div>`+BUDGET.map(b=>{const p=Math.round(b[1]/b[2]*100),c=p>100?'over':p>85?'warn':'';return `<div style="margin-bottom:13px"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="font-weight:600">${b[0]}</span><span class="hf-mono" style="color:${c==='over'?'var(--hf-red)':'var(--hf-ink2)'}">฿${fmt(b[1])} / ${fmt(b[2])}</span></div><div class="hf-prog"><div class="hf-prog-fill ${c}" style="width:${Math.min(p,100)}%"></div></div></div>`;}).join('')+`</div>`;
+  const settle = `<div class="hf-card" style="grid-column:span 3;background:linear-gradient(135deg, rgba(245,158,11,.16), var(--hf-g-card))"><div class="hf-card-title">ยอดหารร่วม</div><div style="font-size:12.5px;color:var(--hf-ink2)">ภูมิ ต้องโอนให้ ใบเฟิร์น</div><div class="hf-mono a" style="font-size:28px;font-weight:700;letter-spacing:-1px;margin:6px 0 12px">฿2,180</div><button class="hf-btn hf-btn-primary" style="width:100%;justify-content:center" data-nav="settle">ชำระแล้ว</button></div>`;
+  const savings = `<div class="hf-card" style="grid-column:span 4"><div class="hf-card-title">เป้าหมายออม · ฿320,500 <span class="hf-link" data-nav="goal">ดู →</span></div>`+GOALS.map(g=>{const p=Math.round(g[1]/g[2]*100);return `<div class="hf-row" style="padding:10px 0"><div class="hf-donut" style="width:42px;height:42px;flex-shrink:0;background:conic-gradient(${g[3]} ${p*3.6}deg, rgba(92,104,158,.16) 0);display:flex;align-items:center;justify-content:center"><div style="width:30px;height:30px;border-radius:50%;background:var(--hf-g-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px" class="hf-mono">${p}%</div></div><div class="hf-row-main"><div class="hf-row-name" style="font-size:13px">${g[0]}</div><div class="hf-row-meta hf-mono">฿${fmt(g[1])} / ${fmt(g[2])}</div></div></div>`;}).join('')+`</div>`;
+  return `<main class="hf-main scroll">${head('ภาพรวม','สวัสดีตอนเย็น, ภูมิ · รอบ 25 เม.ย. – 24 พ.ค. 2569','<div class="hf-pill-select">2569 ▾</div><div class="hf-pill-select">พฤษภาคม ▾</div><button class="hf-btn hf-btn-primary" data-nav="add">+ บันทึกรายการ</button>')}<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;grid-auto-rows:minmax(0,auto)">${cycle}${networth}${metrics}${recent}${trend}${budget}${settle}${savings}</div></main>`;
+}
+
+function pageAdd(){
+  const fav = ['🍜 ค่าอาหาร','💡 ค่าน้ำค่าไฟ','🛒 ซูเปอร์','⛽ น้ำมัน','☕ กาแฟ','🏠 ค่าเช่า'].map(c=>`<span style="padding:7px 13px;border-radius:20px;background:var(--hf-g-card);border:1px solid var(--hf-g-brd);font-size:12.5px;font-weight:600;cursor:pointer">${c}</span>`).join('');
+  return `<main class="hf-main scroll">${head('บันทึกรายการ','เพิ่มรายรับ รายจ่าย หรือการโอนเงิน')}<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start">
+  <div class="hf-card" style="grid-column:span 8">
+    <div class="hf-type-toggle" style="margin-bottom:18px" id="typeToggle">
+      <button class="hf-type-btn" data-type="income">รายรับ</button>
+      <button class="hf-type-btn on-expense" data-type="expense">รายจ่าย</button>
+      <button class="hf-type-btn" data-type="transfer">โอน / ฝาก</button>
+    </div>
+    <div class="hf-field" style="margin-bottom:18px"><label>จำนวนเงิน (฿)</label><input class="hf-input hf-mono" value="1,840" style="font-size:34px;font-weight:700;text-align:right;padding:14px 18px"></div>
+    <div class="hf-form-grid" style="margin-bottom:14px"><div class="hf-field"><label>วันที่</label><input class="hf-input" value="24 พ.ค. 2569"></div><div class="hf-field"><label>สถานะ</label><select class="hf-select"><option>จ่ายแล้ว</option><option>รอดำเนินการ</option></select></div></div>
+    <div class="hf-form-grid" style="margin-bottom:14px"><div class="hf-field"><label>หมวด</label><select class="hf-select"><option>ค่าน้ำค่าไฟ</option><option>ค่าอาหาร</option><option>ช้อปปิ้ง</option></select></div><div class="hf-field"><label>รายการ</label><select class="hf-select"><option>ค่าไฟฟ้า</option><option>ค่าน้ำ</option></select></div></div>
+    <div class="hf-form-grid" style="margin-bottom:14px"><div class="hf-field"><label>ร้านค้า / แหล่ง</label><select class="hf-select"><option>การไฟฟ้านครหลวง</option><option>⭐ 7-Eleven</option></select></div><div class="hf-field"><label>ผู้จ่าย</label><select class="hf-select"><option>ร่วมกัน</option><option>ภูมิ</option><option>ใบเฟิร์น</option></select></div></div>
+    <div id="splitRow" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:13px;background:var(--hf-g-card);border:1px solid var(--hf-g-brd);margin-bottom:14px"><div style="flex:1;font-size:13.5px;font-weight:600">หารกับคู่ <span style="color:var(--hf-ink3);font-weight:400">· แบ่งครึ่งอัตโนมัติ</span></div><div class="hf-switch on" id="splitSwitch"></div></div>
+    <div class="hf-field" style="margin-bottom:18px"><label>โน้ต</label><textarea class="hf-textarea" rows="2" placeholder="รายละเอียดเพิ่มเติม…"></textarea></div>
+    <div style="display:flex;gap:10px"><button class="hf-btn hf-btn-primary" style="flex:1;justify-content:center">บันทึกรายการ</button><button class="hf-btn">ล้างข้อมูล</button></div>
+  </div>
+  <div style="grid-column:span 4;display:flex;flex-direction:column;gap:16px">
+    <div class="hf-card"><div class="hf-card-title">พรีวิว</div><div class="hf-mono r" style="font-size:30px;font-weight:700;letter-spacing:-1px">−฿1,840</div><div style="font-size:12.5px;color:var(--hf-ink2);margin-top:2px">ค่าไฟฟ้า · ค่าน้ำค่าไฟ</div><hr class="hf-divider"><div style="font-size:11.5px;color:var(--hf-ink3);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">แบ่งหาร</div><div class="hf-row" style="padding:8px 0"><span class="hf-pill-a">ภูมิ</span><div class="hf-row-main"></div><span class="hf-row-amt hf-mono">฿920</span></div><div class="hf-row" style="padding:8px 0"><span class="hf-pill-b">ใบเฟิร์น</span><div class="hf-row-main"></div><span class="hf-row-amt hf-mono">฿920</span></div></div>
+    <div class="hf-card"><div class="hf-card-title">⭐ ใช้บ่อย</div><div style="display:flex;flex-wrap:wrap;gap:8px">${fav}</div></div>
+  </div></div></main>`;
+}
+
+function pageTx(){
+  const T = [
+    ['24 พ.ค.','🍜 ข้าวเย็น','ค่าอาหาร','ร้านลาบ','split','หาร','−฿420','r'],
+    ['24 พ.ค.','🛍️ เสื้อผ้า','ช้อปปิ้ง','Uniqlo','personal','ใบเฟิร์น','−฿1,290','r'],
+    ['23 พ.ค.','💻 งานออกแบบ','รายรับเสริม','—','received','รับแล้ว','+฿15,000','g'],
+    ['23 พ.ค.','💡 ค่าไฟฟ้า','ค่าน้ำค่าไฟ','กฟน.','split','หาร','−฿1,840','r'],
+    ['22 พ.ค.','🛒 ซูเปอร์มาร์เก็ต','ค่าอาหาร','Lotus’s','split','หาร','−฿2,340','r'],
+    ['22 พ.ค.','⛽ น้ำมันรถ','ค่าเดินทาง','ปตท.','split','หาร','−฿1,100','r'],
+    ['21 พ.ค.','🏠 ค่าเช่าบ้าน','ที่พัก','—','split','หาร','−฿15,000','r'],
+    ['20 พ.ค.','📱 ค่าโทรศัพท์','ค่าน้ำค่าไฟ','AIS','personal','ภูมิ','−฿599','r'],
+    ['20 พ.ค.','☕ กาแฟ','ค่าอาหาร','Starbucks','personal','ใบเฟิร์น','−฿180','r'],
+  ];
+  const chips = ['ประเภท','หมวด','รายการ','ร้านค้า','สถานะ','คน'].map(k=>`<div class="hf-chip" data-chip="${k}">${k} ▾</div>`).join('');
+  const groups=[]; T.forEach(r=>{let g=groups.find(x=>x.d===r[0]); if(!g){g={d:r[0],items:[]};groups.push(g);} g.items.push(r);});
+  const dayNet=items=>items.reduce((n,r)=>n+(r[7]==='g'?1:-1)*(parseInt(r[6].replace(/[^0-9]/g,''),10)||0),0);
+  const fmtNet=n=>(n<0?'−':'+')+'฿'+Math.abs(n).toLocaleString();
+  const cards = groups.map(g=>`<div class="hf-card" style="padding:12px 20px 6px;margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--hf-line)"><div style="font-size:13px;font-weight:700;color:var(--hf-accent);white-space:nowrap">${g.d} 2569 <span style="color:var(--hf-ink3);font-weight:500">· ${g.items.length} รายการ</span></div><div class="hf-mono ${dayNet(g.items)<0?'r':'g'}" style="font-size:14px;font-weight:700;white-space:nowrap">${fmtNet(dayNet(g.items))}</div></div><table class="hf-table"><tbody>`+g.items.map(r=>`<tr><td style="font-weight:600">${r[1]}</td><td style="color:var(--hf-ink2)">${r[2]}</td><td style="color:var(--hf-ink2)">${r[3]}</td><td>${badge(r[4],r[5])}</td><td class="hf-mono ${r[7]}" style="text-align:right;font-weight:700;white-space:nowrap">${r[6]}</td></tr>`).join('')+`</tbody></table></div>`).join('');
+  const summary = `<div class="hf-card" style="display:flex;gap:32px;padding:16px 22px;margin-bottom:16px"><div><div class="hf-metric-label">รับ</div><div class="hf-mono g" style="font-size:18px;font-weight:700;margin-top:3px">+฿15,000</div></div><div><div class="hf-metric-label">จ่าย</div><div class="hf-mono r" style="font-size:18px;font-weight:700;margin-top:3px">−฿22,769</div></div><div><div class="hf-metric-label">รอดำเนินการ</div><div class="hf-mono a" style="font-size:18px;font-weight:700;margin-top:3px">฿110,000</div></div><div style="margin-left:auto;text-align:right"><div class="hf-metric-label">สุทธิ</div><div class="hf-mono b" style="font-size:18px;font-weight:700;margin-top:3px">−฿7,769</div></div></div>`;
+  return `<main class="hf-main scroll">${head('รายการทั้งหมด','พฤษภาคม 2569 · 42 รายการ','<div class="hf-pill-select">พฤษภาคม ▾</div><button class="hf-btn">ส่งออก CSV</button>')}
+  <div class="hf-filter-row" style="margin-bottom:16px">${chips}<div class="hf-chip" style="margin-left:auto" id="resetFilters">↺ ล้างตัวกรอง</div></div>
+  ${summary}
+  ${cards}</main>`;
+}
+
+function pageSettle(){
+  const D = [['24 พ.ค.','🍜 ข้าวเย็น','฿420','฿210','฿210'],['23 พ.ค.','💡 ค่าไฟฟ้า','฿1,840','฿920','฿920'],['22 พ.ค.','🛒 ซูเปอร์มาร์เก็ต','฿2,340','฿1,170','฿1,170'],['22 พ.ค.','⛽ น้ำมันรถ','฿1,100','฿550','฿550'],['21 พ.ค.','🏠 ค่าเช่าบ้าน','฿15,000','฿7,500','฿7,500']];
+  const rows = D.map(r=>`<tr><td class="hf-mono" style="color:var(--hf-ink3);font-size:12px">${r[0]}</td><td style="font-weight:600">${r[1]}</td><td class="hf-mono" style="text-align:right;font-weight:700">${r[2]}</td><td class="hf-mono b" style="text-align:right">${r[3]}</td><td class="hf-mono a" style="text-align:right">${r[4]}</td></tr>`).join('');
+  return `<main class="hf-main scroll">${head('Settlement','สรุปยอดหารร่วม · พฤษภาคม 2569','<div class="hf-chip">☐ แสดงรายการส่วนตัว</div><button class="hf-btn">พิมพ์ PDF</button>')}
+  <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start">
+  <div class="hf-card" style="grid-column:span 12;background:linear-gradient(120deg, rgba(245,158,11,.18), var(--hf-g-card));display:flex;align-items:center;gap:28px"><div style="flex:1"><div style="font-size:13px;color:var(--hf-ink3);font-weight:600">ยอดที่ต้องชำระ</div><div style="font-size:17px;font-weight:700;margin-top:4px"><span class="hf-pill-a">ภูมิ</span> ต้องโอนให้ <span class="hf-pill-b">ใบเฟิร์น</span></div><div class="hf-mono a" style="font-size:46px;font-weight:700;letter-spacing:-2px;margin-top:6px">฿2,180</div></div><button class="hf-btn hf-btn-primary" style="padding:14px 26px;font-size:14px">✓ ทำเครื่องหมายชำระแล้ว</button></div>
+  <div class="hf-card" style="grid-column:span 6"><div class="hf-card-title"><span class="hf-pill-a">ภูมิ</span> จ่ายไปทั้งหมด</div><div class="hf-mono" style="font-size:26px;font-weight:700">฿12,540</div><div style="font-size:12.5px;color:var(--hf-ink2);margin-top:4px">ส่วนแบ่งที่ต้องจ่ายจริง ฿10,360</div></div>
+  <div class="hf-card" style="grid-column:span 6"><div class="hf-card-title"><span class="hf-pill-b">ใบเฟิร์น</span> จ่ายไปทั้งหมด</div><div class="hf-mono" style="font-size:26px;font-weight:700">฿8,180</div><div style="font-size:12.5px;color:var(--hf-ink2);margin-top:4px">ส่วนแบ่งที่ต้องจ่ายจริง ฿10,360</div></div>
+  <div class="hf-card" style="grid-column:span 12;padding:8px 18px 18px"><table class="hf-table"><thead><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">ยอดรวม</th><th style="text-align:right">ภูมิ</th><th style="text-align:right">ใบเฟิร์น</th></tr></thead><tbody>${rows}</tbody></table></div></div></main>`;
+}
+
+function pageMonthly(){
+  const C = [['🏠 ที่พัก',15000,'#8b5cf6'],['🍜 ค่าอาหาร',8400,'#10b981'],['💡 ค่าน้ำค่าไฟ',4239,'#f59e0b'],['🛍️ ช้อปปิ้ง',5600,'#2563d6'],['⛽ ค่าเดินทาง',4300,'#e05246'],['☕ อื่น ๆ',1980,'#838ab0']];
+  const max = Math.max(...C.map(c=>c[1]));
+  const catRows = C.map(c=>`<div style="margin-bottom:13px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:600">${c[0]}</span><span class="hf-mono" style="color:var(--hf-ink2)">฿${fmt(c[1])}</span></div><div class="hf-prog"><div class="hf-prog-fill" style="width:${c[1]/max*100}%;background:${c[2]}"></div></div></div>`).join('');
+  const metrics = [['รายรับรวม','฿19,800','g','+฿110,000 รอเข้า'],['รายจ่ายรวม','฿48,300','r','6 หมวดหมู่'],['คงเหลือสุทธิ','−฿28,500','b','ก่อนเงินเดือนเข้า']].map(m=>`<div class="hf-card" style="grid-column:span 4"><div class="hf-metric-label">${m[0]}</div><div class="hf-metric-val ${m[2]}">${m[1]}</div><div class="hf-metric-sub">${m[3]}</div></div>`).join('');
+  return `<main class="hf-main scroll">${head('สรุปรายเดือน','ภาพรวมรายรับ-รายจ่าย','<div class="hf-pill-select">พฤษภาคม 2569 ▾</div>')}
+  <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start">${metrics}
+  <div class="hf-card" style="grid-column:span 7"><div class="hf-card-title">รายจ่ายตามหมวด</div>${catRows}</div>
+  <div class="hf-card" style="grid-column:span 5"><div class="hf-card-title">แบ่งตามคน</div><div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap"><div class="hf-donut" style="width:130px;height:130px;flex-shrink:0;background:conic-gradient(#2563d6 0deg 198deg, #c47d11 198deg 360deg);display:flex;align-items:center;justify-content:center"><div style="width:84px;height:84px;border-radius:50%;background:var(--hf-g-strong);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:10px;color:var(--hf-ink3)">รวม</div><div class="hf-mono" style="font-size:15px;font-weight:700">฿48.3k</div></div></div><div style="flex:1 1 150px;min-width:0"><div class="hf-row" style="padding:8px 0"><span style="width:11px;height:11px;border-radius:3px;background:#2563d6;display:inline-block;flex-shrink:0"></span><div class="hf-row-main"><span style="font-weight:600;font-size:13px">ภูมิ</span></div><span class="hf-mono hf-row-amt">฿26,600</span></div><div class="hf-row" style="padding:8px 0"><span style="width:11px;height:11px;border-radius:3px;background:#c47d11;display:inline-block;flex-shrink:0"></span><div class="hf-row-main"><span style="font-weight:600;font-size:13px">ใบเฟิร์น</span></div><span class="hf-mono hf-row-amt">฿21,700</span></div></div></div></div>
+  <div class="hf-card" style="grid-column:span 12"><div class="hf-card-title">แนวโน้ม 6 เดือน</div>${bars(150)}</div></div></main>`;
+}
+
+function pageBudget(){
+  const I = [['🏠 ที่พัก',15000,15000],['🍜 ค่าอาหาร',8400,12000],['💡 ค่าน้ำค่าไฟ',4239,4500],['🛍️ ช้อปปิ้ง',5600,5000],['⛽ ค่าเดินทาง',4300,4000],['☕ ทานเล่น / กาแฟ',1980,2500],['✈️ ท่องเที่ยว',0,6000],['💊 สุขภาพ',1200,3000]];
+  const tb = I.reduce((s,i)=>s+i[2],0), ts = I.reduce((s,i)=>s+i[1],0);
+  const cards = I.map(it=>{const p=it[2]?Math.round(it[1]/it[2]*100):0,c=p>100?'over':p>85?'warn':'';return `<div class="hf-card" style="grid-column:span 6"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14.5px">${it[0]}</span><span class="hf-badge ${c==='over'||c==='warn'?'hf-b-pending':'hf-b-received'}">${p}%</span></div><div class="hf-prog" style="height:9px"><div class="hf-prog-fill ${c}" style="width:${Math.min(p,100)}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:9px;font-size:12.5px"><span class="hf-mono" style="color:var(--hf-ink2)">ใช้ ฿${fmt(it[1])}</span><span class="hf-mono" style="color:var(--hf-ink3)">งบ ฿${fmt(it[2])}</span></div></div>`;}).join('');
+  return `<main class="hf-main scroll">${head('งบประมาณ','พฤษภาคม 2569','<button class="hf-btn hf-btn-primary">+ เพิ่มงบหมวดใหม่</button>')}
+  <div class="hf-card" style="display:flex;gap:40px;margin-bottom:16px;padding:20px 26px"><div><div class="hf-metric-label">งบทั้งหมด</div><div class="hf-mono" style="font-size:24px;font-weight:700;margin-top:4px">฿${fmt(tb)}</div></div><div><div class="hf-metric-label">ใช้ไปแล้ว</div><div class="hf-mono r" style="font-size:24px;font-weight:700;margin-top:4px">฿${fmt(ts)}</div></div><div><div class="hf-metric-label">คงเหลือ</div><div class="hf-mono g" style="font-size:24px;font-weight:700;margin-top:4px">฿${fmt(tb-ts)}</div></div><div style="flex:1;align-self:center"><div class="hf-prog" style="height:12px"><div class="hf-prog-fill" style="width:${ts/tb*100}%"></div></div><div style="font-size:12px;color:var(--hf-ink3);margin-top:6px">ใช้ไป ${Math.round(ts/tb*100)}% ของงบเดือนนี้</div></div></div>
+  <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px">${cards}</div></main>`;
+}
+
+function pageAccounts(){
+  const A = [['#10b981','กสิกรไทย','ออมทรัพย์ · xxx-4521','฿128,450',[40,52,48,60,55,72]],['#8b5cf6','ไทยพาณิชย์','เงินเดือน · xxx-8830','฿54,200',[30,35,32,48,40,54]],['#2563d6','กรุงไทย','ค่าใช้จ่ายร่วม · xxx-1192','฿18,750',[60,40,55,38,44,30]],['#c47d11','เงินสด','กระเป๋าตังค์','฿3,400',[20,30,18,25,15,12]]];
+  const cards = A.map(a=>`<div class="hf-card" style="grid-column:span 6"><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:38px;height:38px;border-radius:11px;background:${a[0]};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0">${a[1][0]}</div><div style="flex:1"><div style="font-weight:700;font-size:15px">${a[1]}</div><div style="font-size:11.5px;color:var(--hf-ink3)">${a[2]}</div></div><div class="hf-mono" style="font-size:20px;font-weight:700">${a[3]}</div></div><div style="display:flex;align-items:flex-end;gap:6px;height:46px">${a[4].map(h=>`<div style="flex:1;height:${h}%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,${a[0]}aa,${a[0]}44)"></div>`).join('')}</div><div style="font-size:11.5px;color:var(--hf-ink3);margin-top:10px">เคลื่อนไหวล่าสุด 2 ชม.ที่แล้ว</div></div>`).join('');
+  return `<main class="hf-main scroll">${head('บัญชีธนาคาร','ยอดคงเหลือทุกบัญชี','<button class="hf-btn hf-btn-primary">+ เพิ่มบัญชี</button>')}
+  <div class="hf-card" style="margin-bottom:16px;padding:24px 28px;background:linear-gradient(120deg, rgba(99,102,241,.16), var(--hf-g-card))"><div class="hf-metric-label">มูลค่าสุทธิรวม</div><div class="hf-mono" style="font-size:42px;font-weight:700;letter-spacing:-1.5px;margin-top:4px">฿204,800</div><div style="font-size:13px;color:var(--hf-green);font-weight:600;margin-top:4px">▲ ฿12,300 (+6.4%) จากเดือนก่อน</div></div>
+  <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px">${cards}</div></main>`;
+}
+
+function pageSavings(){
+  const G = [['กองทุนฉุกเฉิน',180000,200000,'#10b981','🛟',5000,'4 เดือน'],['ทริปญี่ปุ่น',78000,120000,'#8b5cf6','✈️',7000,'6 เดือน'],['ดาวน์บ้าน',62500,500000,'#2563d6','🏡',10000,'44 เดือน']];
+  const cards = G.map(g=>{const p=Math.round(g[1]/g[2]*100);return `<div class="hf-card" style="grid-column:span 4;display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px 24px"><div class="hf-donut" style="width:150px;height:150px;background:conic-gradient(${g[3]} ${p*3.6}deg, rgba(92,104,158,.16) 0);display:flex;align-items:center;justify-content:center;margin-bottom:18px"><div style="width:112px;height:112px;border-radius:50%;background:var(--hf-g-strong);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:26px">${g[4]}</div><div class="hf-mono" style="font-size:22px;font-weight:700;margin-top:2px">${p}%</div></div></div><div style="font-size:16px;font-weight:700">${g[0]}</div><div class="hf-mono" style="font-size:13px;color:var(--hf-ink2);margin-top:5px">฿${fmt(g[1])} / ${fmt(g[2])}</div><hr class="hf-divider" style="width:100%"><div style="display:flex;justify-content:space-between;width:100%;font-size:12px"><span style="color:var(--hf-ink3)">ออมเดือนละ</span><span class="hf-mono" style="font-weight:600">฿${fmt(g[5])}</span></div><div style="display:flex;justify-content:space-between;width:100%;font-size:12px;margin-top:6px"><span style="color:var(--hf-ink3)">คาดถึงเป้าใน</span><span style="font-weight:600">${g[6]}</span></div><button class="hf-btn" style="margin-top:16px;width:100%;justify-content:center">+ เพิ่มเงินออม</button></div>`;}).join('');
+  return `<main class="hf-main scroll">${head('เป้าหมายออม','ออมรวมทั้งหมด ฿320,500','<button class="hf-btn hf-btn-primary">+ ตั้งเป้าหมายใหม่</button>')}<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px">${cards}</div></main>`;
+}
+
+function pageSettings(){
+  const sect = (ic,t,body)=>`<div class="hf-card" style="grid-column:span 6"><div class="hf-card-title" style="display:flex;align-items:center;gap:10px"><span class="hf-stg-ic" style="width:30px;height:30px;font-size:14px">${ic}</span>${t}</div>${body}</div>`;
+  const cats = ['ค่าอาหาร','ที่พัก','ค่าน้ำค่าไฟ','ช้อปปิ้ง','ค่าเดินทาง','สุขภาพ','ท่องเที่ยว'].map(c=>`<span style="padding:6px 12px;border-radius:20px;background:var(--hf-g-card);border:1px solid var(--hf-g-brd);font-size:12px;font-weight:600">${c} ✕</span>`).join('');
+  return `<main class="hf-main scroll">${head('ตั้งค่า','จัดการบัญชี หมวดหมู่ และการซิงก์')}<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start">
+  ${sect('👥','สมาชิก',`<div class="hf-stg-row"><span class="hf-pill-a">ภูมิ</span><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">ภูมิ</span></div><span style="font-size:12px;color:var(--hf-ink3)">เจ้าของ</span></div><div class="hf-stg-row"><span class="hf-pill-b">ใบเฟิร์น</span><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">ใบเฟิร์น</span></div><span style="font-size:12px;color:var(--hf-ink3)">สมาชิก</span></div><button class="hf-btn" style="margin-top:12px">+ เพิ่มสมาชิก</button>`)}
+  ${sect('🏷️','หมวดหมู่',`<div style="font-size:11px;color:var(--hf-ink3);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">รายจ่าย</div><div style="display:flex;flex-wrap:wrap;gap:7px">${cats}<span style="padding:6px 12px;border-radius:20px;border:1px dashed var(--hf-line2);font-size:12px;color:var(--hf-accent);font-weight:600">+ เพิ่ม</span></div>`)}
+  ${sect('🔄','การซิงก์ (Supabase)',`<div class="hf-stg-row"><div class="hf-sync-dot" style="background:#34d399;box-shadow:0 0 8px #34d399"></div><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">เชื่อมต่อแล้ว</span><div style="font-size:11.5px;color:var(--hf-ink3)">ซิงก์อัตโนมัติทุก 10 นาที</div></div></div><div class="hf-stg-row"><div class="hf-row-main"><span style="font-size:13px;color:var(--hf-ink2)">ซิงก์ล่าสุด</span></div><span class="hf-mono" style="font-size:12px">2 นาทีที่แล้ว</span></div><button class="hf-btn" style="margin-top:12px">↻ ซิงก์ตอนนี้</button>`)}
+  ${sect('🎨','การแสดงผล',`<div class="hf-stg-row"><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">วันเริ่มรอบเงินเดือน</span></div><span class="hf-mono" style="font-weight:600">วันที่ 25</span></div><div class="hf-stg-row"><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">สกุลเงิน</span></div><span style="font-weight:600">฿ THB</span></div><div class="hf-stg-row"><div class="hf-row-main"><span style="font-size:13.5px;font-weight:600">เวอร์ชัน</span></div><span class="hf-mono" style="font-size:12px;color:var(--hf-ink3)">v3.16.33</span></div>`)}
+  </div></main>`;
+}
+
+const PAGES = { dash:pageDash, add:pageAdd, list:pageTx, settle:pageSettle, month:pageMonthly, budget:pageBudget, bank:pageAccounts, goal:pageSavings, gear:pageSettings };
+
+/* ── shell ── */
+function sidebar(active){
+  const items = NAV.map(([ic,l])=>`<div class="hf-nav-item${ic===active?' active':''}" data-nav="${ic}"><svg class="hf-ic" viewBox="0 0 16 16" fill="currentColor">${ICONS[ic]}</svg>${l}</div>`).join('');
+  const dark = document.documentElement.dataset.hfTheme === 'dark';
+  return `<nav class="hf-side">
+    <div class="hf-brand"><div class="hf-brand-title">HomeFinance</div></div>
+    <div class="hf-user"><div class="hf-avatar">ภ</div><div style="flex:1;min-width:0"><div class="hf-user-name">ภูมิ &amp; ใบเฟิร์น</div><div class="hf-user-mail">pumi@email.com</div><div class="hf-sync"><div class="hf-sync-dot"></div><span>ซิงก์แล้ว · 2 นาทีที่แล้ว</span></div></div></div>
+    <div class="hf-nav">${items}</div>
+    <div class="hf-theme-toggle"><button data-theme="light" class="${dark?'':'on'}">☀︎ สว่าง</button><button data-theme="dark" class="${dark?'on':''}">☾ มืด</button></div>
+    <div class="hf-side-foot" style="margin-top:10px">HomeFinance v3.16.33 © 2025</div>
+  </nav>`;
+}
+
+let current = localStorage.getItem('hf_page') || 'dash';
+function render(){
+  const dark = localStorage.getItem('hf_theme') === 'dark';
+  document.documentElement.dataset.hfTheme = dark ? 'dark' : 'light';
+  document.getElementById('app').innerHTML =
+    `<div class="hf-frame${dark?' hf-dark':''}">${sidebar(current)}<div class="hf-page active">${PAGES[current]()}</div></div>`;
+}
+function go(p){ current = p; localStorage.setItem('hf_page',p); render(); }
+
+document.addEventListener('click', e=>{
+  const nav = e.target.closest('[data-nav]'); if(nav){ go(nav.dataset.nav); return; }
+  const th = e.target.closest('[data-theme]'); if(th){ localStorage.setItem('hf_theme', th.dataset.theme); render(); return; }
+  const tb = e.target.closest('[data-type]'); if(tb){ document.querySelectorAll('#typeToggle .hf-type-btn').forEach(b=>b.className='hf-type-btn'); tb.className='hf-type-btn on-'+tb.dataset.type; const sr=document.getElementById('splitRow'); if(sr) sr.style.display=tb.dataset.type==='expense'?'flex':'none'; return; }
+  if(e.target.id==='splitSwitch'){ e.target.classList.toggle('on'); return; }
+  const chip = e.target.closest('[data-chip]'); if(chip){ chip.classList.toggle('on'); return; }
+  if(e.target.id==='resetFilters'){ document.querySelectorAll('[data-chip]').forEach(c=>c.classList.remove('on')); return; }
+});
+render();
+</script>
+</body>
+</html>

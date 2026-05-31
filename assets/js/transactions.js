@@ -383,13 +383,16 @@ function renderTx(){
     var pendIn  = list.filter(function(e){return e.status==='pending'&&e.type==='income';}).reduce(function(s,e){return s+e.amt;},0);
     var pendOut = list.filter(function(e){return e.status==='pending'&&e.type==='expense';}).reduce(function(s,e){return s+e.amt;},0);
     var pend = pendIn - pendOut; // net: รอรับ − รอจ่าย
-    totalEl.style.display='flex';
+    totalEl.classList.add('shown');
+    var incCnt=list.filter(function(e){return e.type==='income'&&isPaid(e);}).length;
+    var expCnt=list.filter(function(e){return e.type==='expense'&&isPaid(e);}).length;
+    var pendCnt=list.filter(function(e){return e.status==='pending';}).length;
     totalEl.innerHTML=
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายรับ ('+list.filter(function(e){return e.type==='income'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmtH(inc)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รายจ่าย ('+list.filter(function(e){return e.type==='expense'&&isPaid(e);}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmtH(exp)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">รอดำเนินการ ('+list.filter(function(e){return e.status==='pending';}).length+')</div><div style="font-size:15px;font-weight:700;color:var(--amber);font-family:monospace">'+fmtH(pend)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div style="font-size:11px;color:var(--ink3)">สุทธิ ('+list.length+' รายการ)</div><div style="font-size:15px;font-weight:700;font-family:monospace;color:'+(inc-exp>=0?'var(--green)':'var(--red)')+'">'+fmtH(inc-exp)+'</div></div>';
-  } else if(totalEl){ totalEl.style.display='none'; }
+      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายรับ ('+incCnt+')</div><div class="hf-metric-val g">'+fmtH(inc)+'</div></div>'+
+      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายจ่าย ('+expCnt+')</div><div class="hf-metric-val r">'+fmtH(exp)+'</div></div>'+
+      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รอดำเนินการ ('+pendCnt+')</div><div class="hf-metric-val a">'+fmtH(pend)+'</div></div>'+
+      '<div style="flex:1;min-width:110px;margin-left:auto;text-align:right"><div class="hf-metric-label">สุทธิ ('+list.length+' รายการ)</div><div class="hf-metric-val '+(inc-exp>=0?'g':'r')+'">'+fmtH(inc-exp)+'</div></div>';
+  } else if(totalEl){ totalEl.classList.remove('shown'); }
 
   var isMobile = window.innerWidth <= 900;
 
@@ -494,14 +497,14 @@ function renderTx(){
       var dayIn=0, dayOut=0;
       g.items.forEach(function(e){ if(e.type==='income') dayIn+=e.amt; else if(e.type==='expense') dayOut+=e.amt; });
 
-      return '<div style="margin-bottom:18px">'
-        // date header — เหมือน Settlement
-        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
-        +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
-        +  '<span style="font-size:11px;font-family:monospace">'
-        +    (dayIn?'<span style="color:var(--green);font-weight:600">+'+fmtH(dayIn)+'</span>':'')+
-             (dayIn&&dayOut?' <span style="color:var(--ink3)">·</span> ':'')+
-             (dayOut?'<span style="color:var(--red);font-weight:600">−'+fmtH(dayOut)+'</span>':'')
+      return '<div class="hf-card" style="margin-bottom:14px;padding:12px 20px 8px">'
+        // date header
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--hf-line);margin-bottom:8px">'
+        +  '<div style="font-size:13px;font-weight:700;color:var(--hf-accent)">'+toThaiDateStr(g.date)+' <span style="color:var(--hf-ink3);font-weight:500">· '+g.items.length+' รายการ</span></div>'
+        +  '<span style="font-size:12px;font-family:monospace">'
+        +    (dayIn?'<span style="color:var(--hf-green);font-weight:600">+'+fmtH(dayIn)+'</span>':'')+
+             (dayIn&&dayOut?' <span style="color:var(--hf-ink3)">·</span> ':'')+
+             (dayOut?'<span style="color:var(--hf-red);font-weight:600">−'+fmtH(dayOut)+'</span>':'')
         +  '</span>'
         +'</div>'
         // cards

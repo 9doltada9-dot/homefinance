@@ -69,11 +69,11 @@ function renderDash(){
   var pOut = me.filter(function(e){return e.type==='expense'&&e.status==='pending';}).reduce(function(s,e){return s+e.amt;},0);
   var bal = inc-exp;
   document.getElementById('metrics').innerHTML=
-    '<div class="metric"><div class="metric-label">รายรับ</div><div class="metric-val g mono">'+fmtH(inc)+'</div><div class="metric-sub">บาท · รับแล้ว</div></div>'+
-    '<div class="metric"><div class="metric-label">รายจ่าย</div><div class="metric-val r mono">'+fmtH(exp)+'</div><div class="metric-sub">บาท · จ่ายแล้ว</div></div>'+
-    '<div class="metric"><div class="metric-label">คงเหลือ</div><div class="metric-val '+(bal>=0?'g':'r')+' mono">'+fmtH(bal)+'</div><div class="metric-sub">บาท</div></div>'+
-    '<div class="metric"><div class="metric-label">รอรับ</div><div class="metric-val a mono">'+fmtH(pIn)+'</div><div class="metric-sub">บาท</div></div>'+
-    '<div class="metric"><div class="metric-label">รอจ่าย</div><div class="metric-val r mono">'+fmtH(pOut)+'</div><div class="metric-sub">บาท</div></div>';
+    '<div class="hf-card"><div class="hf-metric-label">รายรับ</div><div class="hf-metric-val g">'+fmtH(inc)+'</div><div class="hf-metric-sub">บาท · รับแล้ว</div></div>'+
+    '<div class="hf-card"><div class="hf-metric-label">รายจ่าย</div><div class="hf-metric-val r">'+fmtH(exp)+'</div><div class="hf-metric-sub">บาท · จ่ายแล้ว</div></div>'+
+    '<div class="hf-card"><div class="hf-metric-label">คงเหลือ</div><div class="hf-metric-val '+(bal>=0?'g':'r')+'">'+fmtH(bal)+'</div><div class="hf-metric-sub">บาท</div></div>'+
+    '<div class="hf-card"><div class="hf-metric-label">รอรับ</div><div class="hf-metric-val a">'+fmtH(pIn)+'</div><div class="hf-metric-sub">บาท</div></div>'+
+    '<div class="hf-card"><div class="hf-metric-label">รอจ่าย</div><div class="hf-metric-val r">'+fmtH(pOut)+'</div><div class="hf-metric-sub">บาท</div></div>';
   // Charts — pass curM
   var activeChart = localStorage.getItem('hf2_chart')||'bar';
   switchChart(activeChart, curM);
@@ -85,7 +85,7 @@ function renderDash(){
     return Number(b.id) - Number(a.id);
   });
   var recent = curM === thisM ? _dbFiltered.slice(0,6) : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
-  document.getElementById('recentTx').innerHTML=recent.length?'<table><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
+  document.getElementById('recentTx').innerHTML=recent.length?'<table class="hf-table"><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
     '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
     '</td>'+
@@ -93,7 +93,7 @@ function renderDash(){
     '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
   var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
-  document.getElementById('pendingTx').innerHTML=pend.length?'<table><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
+  document.getElementById('pendingTx').innerHTML=pend.length?'<table class="hf-table"><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
     '<td>'+e.desc+'<br><span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+(e.note?'<br><span style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</span>':'')+
     '</td>'+
     '<td style="text-align:right;font-family:monospace">'+fmtH(e.amt)+'</td>'+
@@ -158,7 +158,7 @@ function renderSalaryCycleCard(){
   var progressPct = Math.min(100, Math.round(elapsed / totalDays * 100));
   var spendPct    = received > 0 ? Math.min(100, Math.round(totalExp / received * 100)) : 0;
 
-  card.style.display='block';
+  card.style.display='flex';
   content.innerHTML=
     // Header
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">'+

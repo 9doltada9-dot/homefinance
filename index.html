@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.98</title>
+<title>HomeFinance v3.16.99</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -120,6 +120,17 @@ body.app-ready #page-login { display: none !important; }
 /* ── Phase 1: Sidebar shell overrides ── */
 nav.sidebar.hf-side{position:fixed;height:100vh;z-index:100;width:240px;}
 .main{margin-left:240px;}
+
+/* ── Phase 2: Dashboard bento grid ── */
+.hf-dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:16px;}
+.hf-dash-grid .chart-tab{padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--hf-ink3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;transition:color .15s,border-color .15s;}
+.hf-dash-grid .chart-tab.active{color:var(--hf-accent);border-bottom-color:var(--hf-accent);}
+select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-radius:11px;background:var(--hf-g-card);border:1px solid var(--hf-g-brd);font-size:13px;font-weight:600;color:var(--hf-ink2);font-family:'Sarabun',sans-serif;}
+@media(max-width:768px){
+  .hf-dash-grid{grid-template-columns:1fr !important;}
+  .hf-dash-grid>*{grid-column:1/-1 !important;}
+  #metrics{grid-template-columns:repeat(2,1fr) !important;}
+}
 </style>
 <script>
 (function(){
@@ -253,7 +264,7 @@ function hfInitThemeBtns(){
   <div class="hf-side-foot">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:rgba(255,255,255,.7);margin-bottom:8px">🚪 ออกจากระบบ</button>
-    HomeFinance v3.16.98 © 2025
+    HomeFinance v3.16.99 © 2025
   </div>
 </nav>
 
@@ -262,55 +273,48 @@ function hfInitThemeBtns(){
 
 <!-- DASHBOARD -->
 <div id="page-dashboard" class="page active">
-  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <div class="hf-head">
     <div>
-      <div class="page-title">Dashboard</div>
-      <div class="page-sub" id="dashSub">ภาพรวมการเงิน</div>
+      <div class="hf-title">ภาพรวม</div>
+      <div class="hf-sub" id="dashSub">ภาพรวมการเงิน</div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
-      <select id="dashYear" onchange="onDashYearChange()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
-        <option value="">ปี</option>
-      </select>
-      <select id="dashMonth" onchange="renderDash()" style="font-size:13px !important;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:36px">
-        <option value="">เดือน</option>
-      </select>
-
+    <div class="hf-period-pills">
+      <select id="dashYear" onchange="onDashYearChange()" class="hf-pill-select"><option value="">ปี</option></select>
+      <select id="dashMonth" onchange="renderDash()" class="hf-pill-select"><option value="">เดือน</option></select>
     </div>
   </div>
-  <!-- ACCOUNT BALANCE ROW (v3) — แถวยอดเงินแต่ละบัญชี -->
-  <div id="accountCards" style="display:none"></div>
-
-  <div class="metrics" id="metrics"></div>
-  <!-- SALARY CYCLE CARD -->
-  <div id="salaryCycleCard" class="card" style="border-left:4px solid #1a4fa0;padding:12px 16px;display:none">
-    <div id="salaryCycleContent"></div>
-  </div>
-
-  <!-- CHART SECTION -->
-  <div class="card" style="padding:0;overflow:hidden">
-    <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;scrollbar-width:none" id="chartTabs">
-      <button id="ct-bar"    onclick="switchChart('bar')"    class="chart-tab">รายรับ vs รายจ่าย</button>
-      <button id="ct-donut"  onclick="switchChart('donut')"  class="chart-tab">สัดส่วนรายจ่าย</button>
-      <button id="ct-trend"  onclick="switchChart('trend')"  class="chart-tab">แนวโน้ม 6 เดือน</button>
-      <button id="ct-person" onclick="switchChart('person')" class="chart-tab">แยกตามคน</button>
-      <button id="ct-status" onclick="switchChart('status')" class="chart-tab">สถานะรายการ</button>
+  <div class="hf-dash-grid">
+    <!-- Account Balance Row (v3) -->
+    <div id="accountCards" style="grid-column:span 12;display:none"></div>
+    <!-- Metrics: each card rendered by dashboard.js -->
+    <div id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(5,1fr);gap:16px"></div>
+    <!-- Salary Cycle Banner -->
+    <div id="salaryCycleCard" class="hf-cycle" style="display:none;grid-column:span 12">
+      <div id="salaryCycleContent" style="flex:1"></div>
     </div>
-    <div style="padding:12px 12px 8px">
-      <div style="position:relative;height:230px">
-        <canvas id="chartMain" role="img"></canvas>
-      </div>
-      <div id="chartLegend" style="font-size:11px;color:var(--ink3);text-align:center;padding:4px 0"></div>
-    </div>
-  </div>
-
-  <div class="grid2">
-    <div class="card">
-      <div class="card-title">รายการล่าสุด</div>
+    <!-- Recent Transactions -->
+    <div class="hf-card" style="grid-column:span 7">
+      <div class="hf-card-title">รายการล่าสุด</div>
       <div id="recentTx"></div>
     </div>
-    <div class="card">
-      <div class="card-title">รอดำเนินการ</div>
+    <!-- Pending -->
+    <div class="hf-card" style="grid-column:span 5">
+      <div class="hf-card-title">รอดำเนินการ</div>
       <div id="pendingTx"></div>
+    </div>
+    <!-- Chart -->
+    <div class="hf-card" style="grid-column:span 12;padding:0;overflow:hidden">
+      <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--hf-line);-webkit-overflow-scrolling:touch;scrollbar-width:none" id="chartTabs">
+        <button id="ct-bar"    onclick="switchChart('bar')"    class="chart-tab">รายรับ vs รายจ่าย</button>
+        <button id="ct-donut"  onclick="switchChart('donut')"  class="chart-tab">สัดส่วนรายจ่าย</button>
+        <button id="ct-trend"  onclick="switchChart('trend')"  class="chart-tab">แนวโน้ม 6 เดือน</button>
+        <button id="ct-person" onclick="switchChart('person')" class="chart-tab">แยกตามคน</button>
+        <button id="ct-status" onclick="switchChart('status')" class="chart-tab">สถานะรายการ</button>
+      </div>
+      <div style="padding:16px 20px 12px">
+        <div style="position:relative;height:230px"><canvas id="chartMain" role="img"></canvas></div>
+        <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1608,7 +1612,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.98</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.99</div>
   </div>
 </div>
 

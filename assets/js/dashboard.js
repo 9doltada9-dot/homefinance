@@ -72,11 +72,8 @@ function renderDash(){
     '<div class="hf-card"><div class="hf-metric-label">รายรับ</div><div class="hf-metric-val g">'+fmtH(inc)+'</div><div class="hf-metric-sub">บาท · รับแล้ว</div></div>'+
     '<div class="hf-card"><div class="hf-metric-label">รายจ่าย</div><div class="hf-metric-val r">'+fmtH(exp)+'</div><div class="hf-metric-sub">บาท · จ่ายแล้ว</div></div>'+
     '<div class="hf-card"><div class="hf-metric-label">คงเหลือ</div><div class="hf-metric-val '+(bal>=0?'g':'r')+'">'+fmtH(bal)+'</div><div class="hf-metric-sub">บาท</div></div>'+
-    '<div class="hf-card"><div class="hf-metric-label">รอรับ</div><div class="hf-metric-val a">'+fmtH(pIn)+'</div><div class="hf-metric-sub">บาท</div></div>'+
-    '<div class="hf-card"><div class="hf-metric-label">รอจ่าย</div><div class="hf-metric-val r">'+fmtH(pOut)+'</div><div class="hf-metric-sub">บาท</div></div>';
-  // Charts — pass curM
-  var activeChart = localStorage.getItem('hf2_chart')||'bar';
-  switchChart(activeChart, curM);
+    '<div class="hf-card"><div class="hf-metric-label">รอดำเนินการ</div><div class="hf-metric-val a">'+fmtH(pIn+pOut)+'</div><div class="hf-metric-sub">'+(pIn>0?'รับ '+fmtH(pIn)+' ':'')+( pOut>0?'จ่าย '+fmtH(pOut):'ไม่มี')+'</div></div>';
+  switchChart('trend', curM);
   // Recent & Pending for selected month
   // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกันเรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
   var _dbFiltered = _dashDb.slice().sort(function(a, b){
@@ -93,16 +90,11 @@ function renderDash(){
     '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
   var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
-  document.getElementById('pendingTx').innerHTML=pend.length?'<table class="hf-table"><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th>สถานะ</th><th></th></tr>'+pend.map(function(e){return '<tr>'+
-    '<td>'+e.desc+'<br><span style="font-size:11px;color:var(--ink3)">'+toThaiDateShort(e.date)+'</span>'+(e.note?'<br><span style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</span>':'')+
-    '</td>'+
-    '<td style="text-align:right;font-family:monospace">'+fmtH(e.amt)+'</td>'+
-    '<td><span class="badge badge-pending" style="font-size:10px">'+(e.type==='income'?'รอรับ':e.type==='transfer'?'รอโอน':'รอจ่าย')+'</span></td>'+
-    '<td><button class="btn btn-confirm" onclick="markPaid(\''+e.id+'\');renderDash()">✓</button></td>'+
-    '</tr>';}).join('')+'</table>':'<div class="empty">ไม่มีรายการรอดำเนินการ</div>';
   renderSalaryCycleCard();
-  // v3: render account summary cards on dashboard
-  if (typeof renderAccountCards === 'function') renderAccountCards();
+  renderDashNetworthCard();
+  renderDashBudgetMini();
+  renderDashSettleMini(pend);
+  renderDashSavingsMini();
 }
 
 function renderSalaryCycleCard(){
@@ -365,5 +357,142 @@ function switchChart(type, passedMonth){
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},scales:Object.assign({}, opts.scales, {x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:Object.assign({stacked:false}, opts.scales.y)})})
     });
   }
+}
+
+// ─── DASHBOARD BENTO MINI WIDGETS ────────────────────────
+
+function renderDashNetworthCard() {
+  var el = document.getElementById('networthCard');
+  if (!el) return;
+  var _uid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var active = (typeof accountsData !== 'undefined' ? accountsData : [])
+    .filter(function(a){ return a.is_active !== false && (!_uid || !a.user_id || a.user_id === _uid); });
+  var total = active.reduce(function(s, a){ return s + (typeof getAccountBalance === 'function' ? getAccountBalance(a.id) : 0); }, 0);
+  var TYPE_ICON = { bank:'🏦', cash:'💵', ewallet:'📱' };
+  var ACCT_TYPES = typeof ACCOUNT_TYPES !== 'undefined' ? ACCOUNT_TYPES : {};
+  if (!active.length) {
+    el.innerHTML = '<div class="hf-card-title">มูลค่าสุทธิรวม</div>'
+      +'<div style="flex:1;display:flex;align-items:center;justify-content:center">'
+      +'<div class="empty" onclick="nav(\'accounts\')" style="cursor:pointer;text-align:center">ยังไม่มีบัญชี<br><span style="font-size:11px;color:var(--hf-accent)">+ เพิ่มบัญชี</span></div></div>';
+    return;
+  }
+  el.innerHTML =
+    '<div class="hf-card-title">มูลค่าสุทธิรวม</div>'
+    +'<div class="hf-mono" style="font-size:32px;font-weight:700;letter-spacing:-1.5px;color:'+(total>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(total)+'</div>'
+    +'<hr class="hf-divider">'
+    +'<div style="font-size:11px;color:var(--hf-ink3);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">บัญชีทั้งหมด</div>'
+    +'<div style="flex:1;overflow-y:auto">'
+    +active.map(function(a){
+      var bal = typeof getAccountBalance === 'function' ? getAccountBalance(a.id) : 0;
+      var icon = TYPE_ICON[a.type] || '💳';
+      return '<div class="hf-row" onclick="nav(\'accounts\')" style="padding:9px 0;cursor:pointer">'
+        +'<div style="width:9px;height:9px;border-radius:50%;background:'+a.color+';flex-shrink:0;margin-top:2px"></div>'
+        +'<div class="hf-row-main"><div class="hf-row-name" style="font-size:13px">'+icon+' '+a.name+'</div>'
+        +'<div class="hf-row-meta">'+(ACCT_TYPES[a.type]||a.type||'')+'</div></div>'
+        +'<div class="hf-row-amt" style="font-size:13px;color:'+(bal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(bal)+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<button class="hf-btn" onclick="nav(\'accounts\')" style="margin-top:12px;width:100%;justify-content:center;font-size:12px">บัญชีทั้งหมด →</button>';
+}
+
+function renderDashBudgetMini() {
+  var el = document.getElementById('dashBudgetMini');
+  if (!el) return;
+  var items = typeof budgetItems !== 'undefined' ? budgetItems : [];
+  var title = '<div class="hf-card-title">งบประมาณเดือนนี้ <span class="hf-link" onclick="nav(\'budget\')">จัดการ →</span></div>';
+  if (!items.length) {
+    el.innerHTML = title+'<div class="empty" onclick="nav(\'budget\')" style="cursor:pointer">ยังไม่ได้ตั้งงบประมาณ</div>';
+    return;
+  }
+  var actual = typeof getBudgetSpending === 'function' ? getBudgetSpending() : {};
+  var rows = items.slice(0, 4).map(function(bi){
+    var spent = actual[bi.catId] || actual[bi.catName] || 0;
+    var pct = bi.amount ? Math.min(100, Math.round(spent / bi.amount * 100)) : 0;
+    var cls = pct > 100 ? 'over' : pct > 85 ? 'warn' : '';
+    return '<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">'
+        +'<span style="font-weight:600">'+(bi.catName||bi.catId||'—')+'</span>'
+        +'<span class="hf-mono" style="font-size:11.5px;color:'+(cls==='over'?'var(--hf-red)':'var(--hf-ink2)')+'">'+fmtH(spent)+' / '+fmtH(bi.amount)+'</span>'
+      +'</div>'
+      +'<div class="hf-prog"><div class="hf-prog-fill '+cls+'" style="width:'+pct+'%"></div></div>'
+    +'</div>';
+  }).join('');
+  el.innerHTML = title + rows + (items.length > 4 ? '<div style="font-size:11px;color:var(--hf-ink3);text-align:right">+' + (items.length-4) + ' หมวดอื่น</div>' : '');
+}
+
+function renderDashSettleMini(pendList) {
+  var el = document.getElementById('dashSettleMini');
+  if (!el) return;
+  var pend = pendList || [];
+  var pendAmt = pend.reduce(function(s,e){ return s+(e.amt||0); }, 0);
+  var now = new Date();
+  var curM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var splitExp = db.filter(function(e){
+    return e.date.startsWith(curM) && e.type==='expense' && isPaid(e) && e.split;
+  });
+  var title = '<div class="hf-card-title">ยอดหารร่วม <span class="hf-link" onclick="nav(\'settlement\')">ดู →</span></div>';
+  if (!splitExp.length && !pend.length) {
+    el.innerHTML = title+'<div style="text-align:center;padding:16px 0"><div style="font-size:20px;margin-bottom:4px">✓</div><div style="font-size:13px;color:var(--hf-green);font-weight:600">ไม่มียอดหาร</div></div>'
+      +'<button class="hf-btn" onclick="nav(\'settlement\')" style="width:100%;justify-content:center;font-size:12px;margin-top:8px">Settlement →</button>';
+    return;
+  }
+  var totalSplit = splitExp.reduce(function(s,e){ return s+e.amt; }, 0);
+  var body = '';
+  if (splitExp.length) {
+    body += '<div style="margin-bottom:10px">'
+      +'<div style="font-size:11px;color:var(--hf-ink3)">ค่าใช้จ่ายร่วมเดือนนี้</div>'
+      +'<div class="hf-mono" style="font-size:24px;font-weight:700;letter-spacing:-1px;color:var(--hf-amber)">'+fmtH(totalSplit)+'</div>'
+      +'<div style="font-size:11px;color:var(--hf-ink3);margin-top:2px">'+splitExp.length+' รายการ · หารคนละ ~'+fmtH(Math.round(totalSplit/2))+'</div>'
+    +'</div>';
+  }
+  if (pend.length) {
+    body += '<div style="font-size:11px;color:var(--hf-amber);font-weight:600;margin-bottom:6px">⏳ รอดำเนินการ '+pend.length+' รายการ · '+fmtH(pendAmt)+'</div>';
+  }
+  body += '<button class="hf-btn hf-btn-primary" onclick="nav(\'settlement\')" style="width:100%;justify-content:center;font-size:12px">Settlement →</button>';
+  el.innerHTML = title + body;
+}
+
+function renderDashSavingsMini() {
+  var el = document.getElementById('dashSavingsMini');
+  if (!el) return;
+  var goals = typeof savingsGoals !== 'undefined' ? savingsGoals : [];
+  var title = '<div class="hf-card-title">เป้าหมายออม <span class="hf-link" onclick="nav(\'savings\')">ดู →</span></div>';
+  if (!goals.length) {
+    el.innerHTML = title+'<div class="empty" onclick="nav(\'savings\')" style="cursor:pointer">ยังไม่มีเป้าหมายออม<br><span style="font-size:11px;color:var(--hf-accent)">+ ตั้งเป้าหมาย</span></div>';
+    return;
+  }
+  var totalSaved = goals.reduce(function(s,g){ return s+(g.current_amount||0); }, 0);
+  var rows = goals.slice(0,3).map(function(g){
+    var pct = g.target_amount ? Math.min(100,Math.round((g.current_amount||0)/g.target_amount*100)) : 0;
+    return '<div class="hf-row" style="padding:8px 0">'
+      +'<div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;'
+        +'background:conic-gradient(var(--hf-accent) '+( pct*3.6)+'deg, rgba(92,104,158,.16) 0);'
+        +'display:flex;align-items:center;justify-content:center">'
+        +'<div style="width:26px;height:26px;border-radius:50%;background:var(--hf-g-card,#fff);'
+          +'display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px" class="hf-mono">'+pct+'%</div>'
+      +'</div>'
+      +'<div class="hf-row-main">'
+        +'<div class="hf-row-name" style="font-size:13px">'+g.name+'</div>'
+        +'<div class="hf-row-meta hf-mono">'+fmtH(g.current_amount||0)+' / '+fmtH(g.target_amount||0)+'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+  el.innerHTML = title
+    +'<div style="font-size:11px;color:var(--hf-ink3);margin-bottom:6px">ออมรวม <span class="hf-mono" style="font-weight:700;color:var(--hf-ink)">'+fmtH(totalSaved)+'</span></div>'
+    +rows
+    +(goals.length>3 ? '<div style="font-size:11px;color:var(--hf-ink3);text-align:center;margin-top:4px">+' + (goals.length-3) + ' เป้าหมายอื่น</div>' : '');
+}
+
+function renderAddFavCats() {
+  var el = document.getElementById('addFavCats');
+  if (!el) return;
+  var cats = typeof categories !== 'undefined' ? categories.filter(function(c){ return c.type==='expense'; }).slice(0,8) : [];
+  if (!cats.length) { el.innerHTML = '<div style="font-size:12px;color:var(--hf-ink3)">—</div>'; return; }
+  el.innerHTML = cats.map(function(c){
+    return '<span onclick="(function(){var s=document.getElementById(\'fCat\');if(s){s.value=\''+c.id+'\';onCatChange();}})()" '
+      +'style="padding:6px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;display:inline-block">'
+      +c.name+'</span>';
+  }).join('');
 }
 

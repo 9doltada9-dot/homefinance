@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.17.0</title>
+<title>HomeFinance v3.17.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -270,7 +270,7 @@ function hfInitThemeBtns(){
   <div class="hf-side-foot">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:rgba(255,255,255,.7);margin-bottom:8px">🚪 ออกจากระบบ</button>
-    HomeFinance v3.17.0 © 2025
+    HomeFinance v3.17.1 © 2025
   </div>
 </nav>
 
@@ -290,168 +290,179 @@ function hfInitThemeBtns(){
     </div>
   </div>
   <div class="hf-dash-grid">
-    <!-- Account Balance Row (v3) -->
-    <div id="accountCards" style="grid-column:span 12;display:none"></div>
-    <!-- Metrics: each card rendered by dashboard.js -->
-    <div id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(5,1fr);gap:16px"></div>
-    <!-- Salary Cycle Banner -->
+    <!-- Salary Cycle — span 12, row 1 -->
     <div id="salaryCycleCard" class="hf-cycle" style="display:none;grid-column:span 12">
       <div id="salaryCycleContent" style="flex:1"></div>
     </div>
-    <!-- Recent Transactions -->
+    <!-- Net Worth — span 4, row-span 2 -->
+    <div id="networthCard" class="hf-card" style="grid-column:span 4;grid-row:span 2;display:flex;flex-direction:column"></div>
+    <!-- Metrics 2×2 — span 8, row-span 2 -->
+    <div id="metrics" style="grid-column:span 8;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;grid-row:span 2;align-content:start"></div>
+    <!-- Recent TX — span 7 -->
     <div class="hf-card" style="grid-column:span 7">
-      <div class="hf-card-title">รายการล่าสุด</div>
+      <div class="hf-card-title">รายการล่าสุด <span class="hf-link" onclick="nav('transactions')">ดูทั้งหมด →</span></div>
       <div id="recentTx"></div>
     </div>
-    <!-- Pending -->
+    <!-- Trend Chart — span 5 -->
     <div class="hf-card" style="grid-column:span 5">
-      <div class="hf-card-title">รอดำเนินการ</div>
-      <div id="pendingTx"></div>
+      <div class="hf-card-title">แนวโน้ม 6 เดือน <span class="hf-link" onclick="nav('monthly')">รายงาน →</span></div>
+      <div style="position:relative;height:200px"><canvas id="chartMain" role="img"></canvas></div>
+      <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
     </div>
-    <!-- Chart -->
-    <div class="hf-card" style="grid-column:span 12;padding:0;overflow:hidden">
-      <div style="display:flex;overflow-x:auto;border-bottom:1px solid var(--hf-line);-webkit-overflow-scrolling:touch;scrollbar-width:none" id="chartTabs">
-        <button id="ct-bar"    onclick="switchChart('bar')"    class="chart-tab">รายรับ vs รายจ่าย</button>
-        <button id="ct-donut"  onclick="switchChart('donut')"  class="chart-tab">สัดส่วนรายจ่าย</button>
-        <button id="ct-trend"  onclick="switchChart('trend')"  class="chart-tab">แนวโน้ม 6 เดือน</button>
-        <button id="ct-person" onclick="switchChart('person')" class="chart-tab">แยกตามคน</button>
-        <button id="ct-status" onclick="switchChart('status')" class="chart-tab">สถานะรายการ</button>
-      </div>
-      <div style="padding:16px 20px 12px">
-        <div style="position:relative;height:230px"><canvas id="chartMain" role="img"></canvas></div>
-        <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
-      </div>
-    </div>
+    <!-- Budget Mini — span 5 -->
+    <div id="dashBudgetMini" class="hf-card" style="grid-column:span 5"></div>
+    <!-- Settlement Mini — span 3 -->
+    <div id="dashSettleMini" class="hf-card" style="grid-column:span 3"></div>
+    <!-- Savings Goals Mini — span 4 -->
+    <div id="dashSavingsMini" class="hf-card" style="grid-column:span 4"></div>
+    <!-- Hidden elements -->
+    <div id="pendingTx" style="display:none"></div>
+    <div id="accountCards" style="display:none"></div>
   </div>
 </div>
 
 <!-- ADD ENTRY -->
 <div id="page-add" class="page" style="display:none">
-  <div class="page-header">
-    <div class="page-title">บันทึกรายการ</div>
-    <div class="page-sub">เพิ่มรายรับหรือรายจ่ายใหม่</div>
+  <div class="hf-head">
+    <div>
+      <div class="hf-title">บันทึกรายการ</div>
+      <div class="hf-sub">เพิ่มรายรับหรือรายจ่ายใหม่</div>
+    </div>
   </div>
-  <div class="card" style="max-width:620px">
-    <div class="type-toggle">
-      <button class="type-btn active-income" id="btnIncome" onclick="setType('income')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>
-        รายรับ
-      </button>
-      <button class="type-btn" id="btnExpense" onclick="setType('expense')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
-        รายจ่าย
-      </button>
-      <button class="type-btn" id="btnTransfer" onclick="setType('transfer')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>
-        โอน/ฝาก
-      </button>
-    </div>
-    <input type="hidden" id="fPerson" value="A">
-    <div class="form-row full">
-      <div class="field">
-        <label>วันที่</label>
-        <input type="date" id="fDate" onchange="updateThaiDate()">
-        <div id="fDateThai" style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500"></div>
-        <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
+  <div class="hf-dash-grid" style="align-items:start">
+    <!-- Form — span 8 -->
+    <div class="hf-card" style="grid-column:span 8">
+      <div class="type-toggle">
+        <button class="type-btn active-income" id="btnIncome" onclick="setType('income')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>
+          รายรับ
+        </button>
+        <button class="type-btn" id="btnExpense" onclick="setType('expense')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
+          รายจ่าย
+        </button>
+        <button class="type-btn" id="btnTransfer" onclick="setType('transfer')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>
+          โอน/ฝาก
+        </button>
       </div>
-    </div>
-    <div class="form-row full" id="fCatRow">
-      <div class="field">
-        <label>หมวดหมู่</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <select id="fCat" onchange="onCatChange()" style="flex:1"></select>
-          <button id="fCatStar" onclick="toggleFavCat(document.getElementById('fCat').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+      <input type="hidden" id="fPerson" value="A">
+      <div class="form-row full">
+        <div class="field">
+          <label>วันที่</label>
+          <input type="date" id="fDate" onchange="updateThaiDate()">
+          <div id="fDateThai" style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500"></div>
+          <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
         </div>
       </div>
-    </div>
-    <div class="form-row full">
-      <div class="field">
-        <label>รายการ</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <select id="fDesc" style="flex:1" onchange="updateDescStar()"></select>
-          <button id="fDescStar" onclick="toggleFavItem(document.getElementById('fDesc').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+      <div class="form-row full" id="fCatRow">
+        <div class="field">
+          <label>หมวดหมู่</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="fCat" onchange="onCatChange()" style="flex:1"></select>
+            <button id="fCatStar" onclick="toggleFavCat(document.getElementById('fCat').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+          </div>
         </div>
       </div>
-    </div>
-    <!-- VENDOR FIELD -->
-    <div class="form-row full" style="margin-bottom:8px">
-      <div class="field">
-        <label><span id="fVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
-        <div style="display:flex;align-items:center;gap:6px">
-          <select id="fVendor" style="flex:1;font-size:15px !important">
-            <option value="">-- ไม่ระบุ --</option>
+      <div class="form-row full">
+        <div class="field">
+          <label>รายการ</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="fDesc" style="flex:1" onchange="updateDescStar()"></select>
+            <button id="fDescStar" onclick="toggleFavItem(document.getElementById('fDesc').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-row full" style="margin-bottom:8px">
+        <div class="field">
+          <label><span id="fVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <select id="fVendor" style="flex:1;font-size:15px !important">
+              <option value="">-- ไม่ระบุ --</option>
+            </select>
+            <button id="fVendorStar" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+            <button onclick="toggleFVendorPanel()" id="fVendorPanelBtn" title="เพิ่ม/แก้ไข/ลบร้านค้า" style="background:none;border:1px solid var(--line);border-radius:6px;font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;touch-action:manipulation;color:var(--ink2)">⚙</button>
+          </div>
+          <div id="fVendorPanel" style="display:none;margin-top:8px;background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--line)">
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <input type="text" id="fVendorNewName" placeholder="ชื่อร้านค้าใหม่" style="flex:1;font-size:14px !important" onkeydown="if(event.key==='Enter') fVendorAdd()">
+              <button class="btn btn-primary" onclick="fVendorAdd()" style="padding:6px 12px;font-size:13px;min-height:36px;white-space:nowrap">+ เพิ่ม</button>
+            </div>
+            <div id="fVendorPanelList" style="max-height:200px;overflow-y:auto"></div>
+            <div id="fVendorPanelMsg" class="msg" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="field">
+          <label style="font-weight:600">จำนวนเงิน (฿)</label>
+          <input type="number" id="fAmt" placeholder="0" min="0" style="font-size:28px;font-weight:700;text-align:right;letter-spacing:0.5px">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>สถานะ</label>
+          <select id="fStatus">
+            <option value="pending">รอรับ</option>
+            <option value="paid">รับแล้ว</option>
           </select>
-          <button id="fVendorStar" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
-          <button onclick="toggleFVendorPanel()" id="fVendorPanelBtn" title="เพิ่ม/แก้ไข/ลบร้านค้า" style="background:none;border:1px solid var(--line);border-radius:6px;font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;touch-action:manipulation;color:var(--ink2)">⚙</button>
-        </div>
-        <!-- inline vendor management panel -->
-        <div id="fVendorPanel" style="display:none;margin-top:8px;background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--line)">
-          <div style="display:flex;gap:6px;margin-bottom:8px">
-            <input type="text" id="fVendorNewName" placeholder="ชื่อร้านค้าใหม่" style="flex:1;font-size:14px !important" onkeydown="if(event.key==='Enter') fVendorAdd()">
-            <button class="btn btn-primary" onclick="fVendorAdd()" style="padding:6px 12px;font-size:13px;min-height:36px;white-space:nowrap">+ เพิ่ม</button>
-          </div>
-          <div id="fVendorPanelList" style="max-height:200px;overflow-y:auto"></div>
-          <div id="fVendorPanelMsg" class="msg" style="margin-top:6px"></div>
         </div>
       </div>
-    </div>
-    <div class="form-row full">
-      <div class="field">
-        <label style="font-weight:600">จำนวนเงิน (฿)</label>
-        <input type="number" id="fAmt" placeholder="0" min="0" style="font-size:28px;font-weight:700;text-align:right;letter-spacing:0.5px">
+      <div class="form-row">
+        <div class="field">
+          <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
+          <input type="month" id="fBillingMonth" style="font-size:15px !important">
+          <div style="font-size:11px;color:var(--ink3);margin-top:3px">สำหรับค่าไฟ/น้ำ ที่จ่ายเดือนนี้แต่ใช้เดือนที่แล้ว</div>
+        </div>
+        <div class="field">
+          <label>บัญชี</label>
+          <select id="fAccount" style="font-size:15px !important">
+            <option value="">-- เลือกบัญชี --</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
-        <label>สถานะ</label>
-        <select id="fStatus">
-          <option value="pending">รอรับ</option>
-          <option value="paid">รับแล้ว</option>
-        </select>
-      </div>
-    </div>
-    <!-- v3: billing_month + account -->
-    <div class="form-row">
-      <div class="field">
-        <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
-        <input type="month" id="fBillingMonth" style="font-size:15px !important">
-        <div style="font-size:11px;color:var(--ink3);margin-top:3px">สำหรับค่าไฟ/น้ำ ที่จ่ายเดือนนี้แต่ใช้เดือนที่แล้ว</div>
-      </div>
-      <div class="field">
-        <label>บัญชี</label>
-        <select id="fAccount" style="font-size:15px !important">
-          <option value="">-- เลือกบัญชี --</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
-        <label>หมายเหตุ</label>
-        <div id="noteWrap" style="position:relative">
-          <div style="display:flex;gap:6px">
-            <input type="text" id="fNote" placeholder="(ไม่บังคับ)" style="flex:1">
-            <button onclick="toggleNoteHistory()" title="ประวัติหมายเหตุ" style="background:none;border:1px solid var(--line);border-radius:var(--r);padding:4px 8px;cursor:pointer;font-size:14px;min-width:36px;min-height:44px;touch-action:manipulation">🕐</button>
-          </div>
-          <div id="noteHistoryDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:200;max-height:200px;overflow-y:auto">
-            <div id="noteHistoryList"></div>
+      <div class="form-row">
+        <div class="field">
+          <label>หมายเหตุ</label>
+          <div id="noteWrap" style="position:relative">
+            <div style="display:flex;gap:6px">
+              <input type="text" id="fNote" placeholder="(ไม่บังคับ)" style="flex:1">
+              <button onclick="toggleNoteHistory()" title="ประวัติหมายเหตุ" style="background:none;border:1px solid var(--line);border-radius:var(--r);padding:4px 8px;cursor:pointer;font-size:14px;min-width:36px;min-height:44px;touch-action:manipulation">🕐</button>
+            </div>
+            <div id="noteHistoryDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:200;max-height:200px;overflow-y:auto">
+              <div id="noteHistoryList"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div id="splitSection" style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">รูปแบบการหาร</div>
-      <div id="splitBtnContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
-      <div id="splitPreviewRow" style="display:none;background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:6px">
-        <div style="font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Preview การหาร</div>
-        <div id="splitPreviewContent"></div>
+      <div id="splitSection" style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">รูปแบบการหาร</div>
+        <div id="splitBtnContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+        <div id="splitDesc" style="font-size:12px;color:var(--ink3)">ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร</div>
       </div>
-      <div id="splitDesc" style="font-size:12px;color:var(--ink3)">ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addEntry()">บันทึก</button>
+        <button class="btn btn-ghost" onclick="clearForm()">ล้างข้อมูล</button>
+      </div>
+      <div id="formMsg" class="msg"></div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="addEntry()">บันทึก</button>
-      <button class="btn btn-ghost" onclick="clearForm()">ล้างข้อมูล</button>
+    <!-- Sidebar — span 4 -->
+    <div style="grid-column:span 4;display:flex;flex-direction:column;gap:16px;position:sticky;top:16px">
+      <!-- Split Preview -->
+      <div class="hf-card">
+        <div class="hf-card-title">การหาร</div>
+        <div id="splitPreviewRow" style="display:none">
+          <div style="font-size:11px;font-weight:600;color:var(--hf-ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Preview การหาร</div>
+          <div id="splitPreviewContent"></div>
+        </div>
+        <div id="splitPreviewEmpty" style="font-size:13px;color:var(--hf-ink3);padding:8px 0">เลือกรูปแบบการหารด้านซ้าย</div>
+      </div>
+      <!-- Favorite categories -->
+      <div class="hf-card">
+        <div class="hf-card-title">⭐ ใช้บ่อย</div>
+        <div id="addFavCats" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
     </div>
-    <div id="formMsg" class="msg"></div>
   </div>
 </div>
 
@@ -1160,43 +1171,49 @@ create policy "public write" on transactions for all using (true);</div>
       <div class="hf-sub">ติดตามเป้าหมายและคำนวณเงินออมรายเดือน</div>
     </div>
   </div>
-
-  <div id="savingsGoalsList" style="margin-bottom:16px"></div>
-
-  <div class="hf-card">
-    <div class="hf-card-title">+ เพิ่มเป้าหมายใหม่</div>
-    <div class="form-row">
-      <div class="field">
-        <label>ชื่อเป้าหมาย</label>
-        <input type="text" id="goalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
+  <div class="hf-dash-grid" style="align-items:start">
+    <!-- Goals list — span 8 -->
+    <div style="grid-column:span 8">
+      <div id="savingsGoalsList"></div>
+    </div>
+    <!-- Add form — span 4 -->
+    <div style="grid-column:span 4;position:sticky;top:16px">
+      <div class="hf-card">
+        <div class="hf-card-title">+ เพิ่มเป้าหมายใหม่</div>
+        <div class="form-row">
+          <div class="field">
+            <label>ชื่อเป้าหมาย</label>
+            <input type="text" id="goalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>เป้าหมาย (฿)</label>
+            <input type="number" id="goalTarget" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
+          </div>
+          <div class="field">
+            <label>มีอยู่แล้ว (฿)</label>
+            <input type="number" id="goalCurrent" placeholder="0" min="0" style="font-size:18px !important;text-align:right;font-family:monospace">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>วันกำหนด</label>
+            <input type="date" id="goalDate" style="font-size:15px !important">
+          </div>
+          <div class="field">
+            <label>บัญชีที่ใช้ออม</label>
+            <select id="newGoalAccount" style="font-size:15px !important">
+              <option value="">-- เลือกบัญชี --</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="onAddSavingsGoal()" style="min-height:44px">+ เพิ่มเป้าหมาย</button>
+        </div>
+        <div id="goalMsg" class="msg"></div>
       </div>
     </div>
-    <div class="form-row">
-      <div class="field">
-        <label>เป้าหมาย (฿)</label>
-        <input type="number" id="goalTarget" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
-      </div>
-      <div class="field">
-        <label>มีอยู่แล้ว (฿)</label>
-        <input type="number" id="goalCurrent" placeholder="0" min="0" style="font-size:18px !important;text-align:right;font-family:monospace">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
-        <label>วันกำหนด</label>
-        <input type="date" id="goalDate" style="font-size:15px !important">
-      </div>
-      <div class="field">
-        <label>บัญชีที่ใช้ออม</label>
-        <select id="newGoalAccount" style="font-size:15px !important">
-          <option value="">-- เลือกบัญชี --</option>
-        </select>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="onAddSavingsGoal()" style="min-height:44px">+ เพิ่มเป้าหมาย</button>
-    </div>
-    <div id="goalMsg" class="msg"></div>
   </div>
 </div>
 
@@ -1628,7 +1645,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.17.0</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.17.1</div>
   </div>
 </div>
 

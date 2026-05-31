@@ -390,6 +390,9 @@ function _updateGroupPreview() {
   }).join('');
 
   if (desc) desc.textContent = '';
+  var _spe2 = document.getElementById('splitPreviewEmpty');
+  var _spr2 = document.getElementById('splitPreviewRow');
+  if (_spe2 && _spr2) _spe2.style.display = (_spr2.style.display === 'none' || !_spr2.style.display) ? '' : 'none';
 }
 
 function autoSplit() {

@@ -57,11 +57,21 @@ function toggleSettlePersonal() {
 }
 
 // ─── SETTLEMENT ──────────────────────────────────────────
+function _fmtMthLabel(m) {
+  if (!m) return m;
+  var parts = m.split('-');
+  var year = (parseInt(parts[0]) || 0) + 543;
+  var idx  = (parseInt(parts[1]) || 1) - 1;
+  var FM = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+            'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return (FM[idx] || FM[0]) + ' ' + year;
+}
+
 function populateMths(selId){
   var months=Array.from(new Set(db.map(function(e){return e.date.substring(0,7);}))).sort().reverse();
   var sel=document.getElementById(selId);
   var cur=sel.value||months[0];
-  sel.innerHTML='<option value="">เลือกเดือน</option>'+months.map(function(m){return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+m+'</option>';}).join('');
+  sel.innerHTML='<option value="">เลือกเดือน</option>'+months.map(function(m){return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+_fmtMthLabel(m)+'</option>';}).join('');
   if(!sel.value && months[0]) sel.value=months[0];
   // populate group select
   var grpSel=document.getElementById('settleGroup');
@@ -455,16 +465,18 @@ function renderSettle(){
   var detailDesktop = '<div class="table-scroll"><table>'
     +'<tr>'+thCells+'</tr>'+trRows+totalRow+'</table></div>';
 
-  // ── Card layout (ทั้ง mobile + desktop) ────────────────────
+  // ── Card layout: date-grouped + 2-line items + clickable ──
   var detailCards = _sGrp.map(function(g){
     var dayTotal = g.items.reduce(function(s,e){ return s+e.amt; },0);
-    return '<div style="margin-bottom:18px">'
-      // date header — เหมือน Transactions
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
+    return '<div style="background:var(--surface);border-radius:14px;border:1px solid var(--line);'
+      +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+      +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+      +'box-shadow:var(--g-shadow);margin-bottom:12px;overflow:hidden">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--surface2)">'
       +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
       +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(dayTotal)+'</span>'
       +'</div>'
-      + g.items.map(function(e){
+      + g.items.map(function(e, idx){
           var payerU = e.user_id || _pidToUid(e.person) || e.person;
           var payerName = nameMap[payerU] || e.person;
           var payerColor = _uidColorMap[payerU] || {bg:'#eef7f2',cl:'#1a7a4a'};
@@ -475,41 +487,34 @@ function renderSettle(){
             var isPayer = uid === payerU;
             var c = _uidColorMap[uid] || {bg:'var(--surface2)',cl:'var(--ink2)'};
             var amt = snap[uid].amount||0;
-            return '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:'+c.bg+';color:'+c.cl+';white-space:nowrap">'
-              +(nameMap[uid]||uid)+' '+fmtH(amt)+(isPayer?' ✓':'')
-            +'</span>';
+            return '<span style="font-size:10px;padding:1px 6px;border-radius:20px;background:'+c.bg+';color:'+c.cl+';white-space:nowrap">'
+              +(nameMap[uid]||uid)+' '+fmtH(amt)+(isPayer?' ✓':'')+'</span>';
           }).join('') : '';
           var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
           var iconHtml = iconId
-            ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-            : '<span style="font-size:16px">💳</span>';
-          // card row — format เหมือน tx-card-row ใน Transactions
-          return '<div class="tx-card-row" style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;margin-bottom:6px;cursor:default;'
-            +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
-            +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
-            +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
-            +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
-            // icon (40×40 เหมือน Transactions)
-            +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
-            // center
+            ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+            : '<span style="font-size:14px">💳</span>';
+          var noteText = (e.note||'').trim();
+          return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
+            +'style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;'
+            +(idx>0?'border-top:1px solid var(--line);':'')
+            +'">'
+            +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
             +'<div style="flex:1;min-width:0">'
               +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
-              +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
-                +(vendor?'<span style="font-size:11px;color:var(--ink3)">🏪 '+vendor+'</span>':'')
-                +(e.note?'<span style="font-size:11px;color:var(--ink3)">'+(vendor?'· ':'')+e.note+'</span>':'')
+              +'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;align-items:center">'
+                +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
+                +(vendor?'<span style="font-size:11px;color:var(--ink3)"> · 🏪 '+vendor+'</span>':'')
+                +(noteText?'<span style="font-size:11px;color:var(--ink3)"> '+noteText+'</span>':'')
+                +(memberChips?memberChips:'')
               +'</div>'
-              +(memberChips?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">'+memberChips+'</div>':'')
             +'</div>'
-            // right: amount + payer badge (เหมือน statusBadge ใน Transactions)
-            +'<div style="text-align:right;flex-shrink:0">'
-              +'<div style="font-size:15px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
-              +'<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
-                +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
-              +'</div>'
+            +'<div style="flex-shrink:0;text-align:right">'
+              +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
             +'</div>'
           +'</div>';
         }).join('')
-      +'</div>';
+    +'</div>';
   }).join('');
 
   var detailRows = detailCards;
@@ -535,13 +540,15 @@ function renderSettle(){
       personalExp.forEach(function(e){ var d=e.date; if(!_pDm2[d]){_pDm2[d]=[];_pGrp2.push({date:d,items:_pDm2[d]});} _pDm2[d].push(e); });
       var persCards = _pGrp2.map(function(g){
         var persDay = g.items.reduce(function(s,e){ return s+e.amt; },0);
-        return '<div style="margin-bottom:14px">'
-          // date header — เหมือน Transactions
-          +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
+        return '<div style="background:var(--surface);border-radius:14px;border:1px solid var(--line);'
+          +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+          +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+          +'box-shadow:var(--g-shadow);margin-bottom:10px;overflow:hidden">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--surface2)">'
           +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
           +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(persDay)+'</span>'
           +'</div>'
-          + g.items.map(function(e){
+          + g.items.map(function(e, idx){
               var pu = e.user_id || _pidToUid(e.person) || e.person;
               var payerName = nameMap[pu] || e.person;
               var payerColor = _persColorMap[pu] || {bg:'#eef7f2',cl:'#1a7a4a'};
@@ -549,23 +556,23 @@ function renderSettle(){
               var noteText = (e.note||'').trim();
               var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
               var iconHtml = iconId
-                ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-                : '<span style="font-size:16px">💳</span>';
-              return '<div class="tx-card-row" style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;margin-bottom:6px;cursor:default;'
-                +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
-                +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
-                +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
-                +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
-                +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+                : '<span style="font-size:14px">💳</span>';
+              return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
+                +'style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;'
+                +(idx>0?'border-top:1px solid var(--line);':'')
+                +'">'
+                +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
                 +'<div style="flex:1;min-width:0">'
                   +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
-                  +'<div style="font-size:11px;color:var(--ink3);margin-top:4px">'+(vendor?'🏪 '+vendor+(noteText?' · ':''):'')+(noteText?noteText:'')+'</div>'
-                +'</div>'
-                +'<div style="text-align:right;flex-shrink:0">'
-                  +'<div style="font-size:15px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
-                  +'<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
-                    +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
+                  +'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;align-items:center">'
+                    +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
+                    +(vendor?'<span style="font-size:11px;color:var(--ink3)"> · 🏪 '+vendor+'</span>':'')
+                    +(noteText?'<span style="font-size:11px;color:var(--ink3)"> '+noteText+'</span>':'')
                   +'</div>'
+                +'</div>'
+                +'<div style="flex-shrink:0;text-align:right">'
+                  +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
                 +'</div>'
               +'</div>';
             }).join('')
@@ -621,7 +628,7 @@ function renderSettle(){
     // detail section
     +'<div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">'
       +'<span style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">📋 รายละเอียด</span>'
-      +'<button onclick="exportSettlePDF(\'' + m + '\',\'' + groupId + '\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📄 PDF</button>'
+      +'<button onclick="exportSettleHTML(\'' + m + '\',\'' + groupId + '\')" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📋 HTML</button>'
     +'</div>'
     +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
     +personalHtml;
@@ -636,7 +643,7 @@ function renderSettle(){
 }
 
 
-function exportSettlePDF(month, groupId) {
+function exportSettleHTML(month, groupId) {
   try {
   var nameMap = _buildNameMap();
   var allExp  = db.filter(function(e){ return e.date.startsWith(month) && e.type==='expense' && isPaid(e); });
@@ -948,7 +955,7 @@ function exportSettlePDF(month, groupId) {
   if (!win) { alert('กรุณาอนุญาต popup เพื่อพิมพ์ PDF'); return; }
   win.document.write(html);
   win.document.close();
-  win.onload = function(){ win.focus(); win.print(); };
+  win.focus();
   } catch(err) {
     console.error('[Settlement] exportSettlePDF error:', err);
     alert('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)));

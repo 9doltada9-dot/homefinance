@@ -470,29 +470,86 @@ async function doAdjustBalance() {
 function renderAccountList() {
   var el = document.getElementById('accountList');
   if (!el) return;
-  el.innerHTML = accountsData.map(function(a) {
-    var bal = getAccountBalance(a.id);
-    var _ralUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
-    var _ralDb  = _ralUid ? db.filter(function(e){ return (e.user_id||e.person) === _ralUid; }) : db;
-    var hasUsage = _ralDb.some(function(e) { return e.account_id === a.id; });
-    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)">' +
-      '<div style="width:12px;height:12px;border-radius:50%;background:' + a.color + ';flex-shrink:0"></div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13px;font-weight:600">' + a.name + '</div>' +
-        '<div style="font-size:11px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
-        '<div style="font-size:13px;font-family:monospace;color:' + (bal>=0?'var(--green)':'var(--red)') + ';margin-top:2px;font-weight:700">' + fmtH(bal) + ' บาท</div>' +
-      '</div>' +
-      '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">' +
-        '<button onclick="openAccountLedger(\'' + a.id + '\')" title="ดูรายการ" style="background:var(--surface2);border:none;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">📋 รายการ</button>' +
-        '<button onclick="openDepositModal(\'' + a.id + '\')" title="ฝากเงิน" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>' +
-        '<button onclick="openAdjustModal(\'' + a.id + '\')" title="ปรับยอด" style="background:var(--amber-bg,#fffbeb);border:none;color:var(--amber,#d97706);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">⚖️ ปรับ</button>' +
-        '<button onclick="openEditAccountModal(\'' + a.id + '\')" title="แก้ไข" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>' +
-        '<button onclick="deleteAccount(\'' + a.id + '\');renderAccountList();renderAccountCards()" title="ลบ" ' +
-          (hasUsage ? 'disabled style="opacity:.35;cursor:not-allowed;' : 'style="') +
-          'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
-      '</div>' +
-    '</div>';
+  if (!accountsData.length) { el.innerHTML = '<div class="empty">ยังไม่มีบัญชี</div>'; return; }
+
+  var _uid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _db  = _uid ? db.filter(function(e){ return (e.user_id||e.person) === _uid; }) : db;
+
+  // แบ่ง group ตามประเภท
+  var GROUPS = [
+    { key:'bank',    label:'🏦 ธนาคาร',  icon:'🏦' },
+    { key:'ewallet', label:'📱 E-Wallet', icon:'📱' },
+    { key:'cash',    label:'💵 เงินสด',   icon:'💵' },
+  ];
+  var buckets = {};
+  GROUPS.forEach(function(g){ buckets[g.key] = []; });
+  accountsData.forEach(function(a){
+    if (buckets[a.type]) buckets[a.type].push(a);
+    else buckets['bank'].push(a); // fallback
+  });
+
+  el.innerHTML = GROUPS.filter(function(g){ return buckets[g.key].length; }).map(function(g){
+    var list = buckets[g.key];
+    var groupTotal = list.reduce(function(s,a){ return s + getAccountBalance(a.id); }, 0);
+
+    return '<div class="card" style="margin-bottom:12px">'
+      // group header
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:2px;border-bottom:2px solid var(--line)">'
+        +'<span style="font-size:13px;font-weight:700;color:var(--ink2)">'+g.label+'</span>'
+        +'<span style="font-size:14px;font-weight:700;font-family:monospace;color:'+(groupTotal>=0?'var(--green)':'var(--red)')+'">'+fmtH(groupTotal)+' ฿</span>'
+      +'</div>'
+      // account rows
+      + list.map(function(a, i){
+          var bal = getAccountBalance(a.id);
+          var hasUsage = _db.some(function(e){ return e.account_id === a.id; });
+          var isLast = i === list.length - 1;
+          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;'+(isLast?'':'border-bottom:1px solid var(--line)')+'">'
+            // icon circle
+            +'<div style="width:42px;height:42px;border-radius:50%;background:'+a.color+'22;border:2px solid '+a.color+';'
+              +'display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+g.icon+'</div>'
+            // name + balance
+            +'<div style="flex:1;min-width:0">'
+              +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
+              +'<div style="font-size:15px;font-family:monospace;font-weight:700;color:'+(bal>=0?'var(--green)':'var(--red)')+';margin-top:2px">'+fmtH(bal)+' ฿</div>'
+            +'</div>'
+            // action buttons
+            +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'
+              +'<button onclick="openAccountLedger(\''+a.id+'\')" style="background:var(--surface2);border:none;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">📋 รายการ</button>'
+              +'<button onclick="openDepositModal(\''+a.id+'\')" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>'
+              +'<button onclick="openAdjustModal(\''+a.id+'\')" style="background:var(--amber-bg,#fffbeb);border:none;color:var(--amber,#d97706);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">⚖️ ปรับ</button>'
+              +'<button onclick="openEditAccountModal(\''+a.id+'\')" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>'
+              +'<button onclick="deleteAccount(\''+a.id+'\');renderAccountList();renderAccountCards()" '
+                +(hasUsage?'disabled style="opacity:.35;cursor:not-allowed;':'style="')
+                +'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer">'
+                +'<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>'
+              +'</button>'
+            +'</div>'
+          +'</div>';
+        }).join('')
+    +'</div>';
   }).join('') || '<div class="empty">ยังไม่มีบัญชี</div>';
+}
+
+// ─── ADD ACCOUNT MODAL ────────────────────────────────────
+function openAddAccountModal() {
+  var m = document.getElementById('addAccountModal');
+  if (!m) return;
+  var nEl = document.getElementById('newAcctName');
+  var bEl = document.getElementById('newAcctBalance');
+  var tEl = document.getElementById('newAcctType');
+  var cEl = document.getElementById('newAcctColor');
+  if (nEl) nEl.value = '';
+  if (bEl) bEl.value = '';
+  if (tEl) tEl.value = 'bank';
+  if (cEl) cEl.value = '#1a4fa0';
+  var msg = document.getElementById('acctMsg');
+  if (msg) msg.textContent = '';
+  m.style.display = 'flex';
+  setTimeout(function(){ if (nEl) nEl.focus(); }, 100);
+}
+function closeAddAccountModal() {
+  var m = document.getElementById('addAccountModal');
+  if (m) m.style.display = 'none';
 }
 
 // ─── ACCOUNT LEDGER (สมุดรายวัน ต่อบัญชี) ────────────────
@@ -683,8 +740,7 @@ function onAddAccount() {
   name = name.trim();
   if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
   addAccount(name, type, null, bal);
-  if (document.getElementById('newAcctName')) document.getElementById('newAcctName').value = '';
-  if (document.getElementById('newAcctBalance')) document.getElementById('newAcctBalance').value = '';
+  closeAddAccountModal();
   renderAccountList();
   fillAccountSelectors();
   showCycleToast('เพิ่มบัญชี "' + name + '" แล้ว');

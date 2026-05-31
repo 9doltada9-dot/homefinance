@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.16.94</title>
+<title>HomeFinance v3.16.95</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -167,7 +167,7 @@ body.app-ready #page-login { display: none !important; }
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-title">HomeFinance</div>
-    <div class="brand-sub">v3.16.94 · THB</div>
+    <div class="brand-sub">v3.16.95 · THB</div>
   </div>
   <div class="sidebar-names">
     <div id="sidebarAuthInfo" style="display:flex;align-items:center;gap:10px;padding:4px 0">
@@ -228,7 +228,7 @@ body.app-ready #page-login { display: none !important; }
   <div class="sidebar-footer">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink2)">🚪 ออกจากระบบ</button>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.94 © 2025</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink3)">HomeFinance v3.16.95 © 2025</div>
   </div>
 </nav>
 
@@ -1051,15 +1051,23 @@ create policy "public write" on transactions for all using (true);</div>
       <div class="page-title">บัญชีธนาคาร</div>
       <div class="page-sub">จัดการหลายบัญชีและโอนเงินระหว่างบัญชี</div>
     </div>
-    <button class="btn btn-primary" onclick="openTransferModal()" style="min-height:44px;white-space:nowrap">⇄ โอนเงิน</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-primary" onclick="openAddAccountModal()" style="min-height:44px;white-space:nowrap">+ เพิ่มบัญชีใหม่</button>
+      <button class="btn btn-ghost" onclick="openTransferModal()" style="min-height:44px;white-space:nowrap">⇄ โอนเงิน</button>
+    </div>
   </div>
 
-  <!-- Account Cards -->
-  <div id="pageAccountCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
+  <!-- Account List grouped by type -->
+  <div id="accountList"></div>
+</div>
 
-  <!-- Add Account -->
-  <div class="card">
-    <div class="card-title">+ เพิ่มบัญชีใหม่</div>
+<!-- ADD ACCOUNT MODAL -->
+<div id="addAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);border:1px solid var(--line);width:100%;max-width:400px;padding:24px 26px;position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:600;color:var(--ink)">+ เพิ่มบัญชีใหม่</div>
+      <button onclick="closeAddAccountModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);line-height:1;padding:4px">×</button>
+    </div>
     <div class="form-row">
       <div class="field">
         <label>ชื่อบัญชี</label>
@@ -1082,25 +1090,20 @@ create policy "public write" on transactions for all using (true);</div>
       <div class="field">
         <label>สี</label>
         <select id="newAcctColor" style="font-size:15px !important">
-          <option value="#1a4fa0">น้ำเงิน</option>
-          <option value="#1a7a4a">เขียว</option>
-          <option value="#b5600a">ส้ม</option>
-          <option value="#7c3aed">ม่วง</option>
-          <option value="#dc2626">แดง</option>
-          <option value="#0369a1">ฟ้า</option>
+          <option value="#1a4fa0">🔵 น้ำเงิน</option>
+          <option value="#1a7a4a">🟢 เขียว</option>
+          <option value="#b5600a">🟠 ส้ม</option>
+          <option value="#7c3aed">🟣 ม่วง</option>
+          <option value="#dc2626">🔴 แดง</option>
+          <option value="#0369a1">🩵 ฟ้า</option>
         </select>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="onAddAccount()" style="min-height:44px">+ เพิ่มบัญชี</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeAddAccountModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="onAddAccount()" style="flex:1;min-height:44px">+ เพิ่มบัญชี</button>
     </div>
     <div id="acctMsg" class="msg"></div>
-  </div>
-
-  <!-- Account List (edit/delete) -->
-  <div class="card" style="">
-    <div class="card-title">รายการบัญชีทั้งหมด</div>
-    <div id="accountList"></div>
   </div>
 </div>
 
@@ -1580,7 +1583,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.94</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.16.95</div>
   </div>
 </div>
 

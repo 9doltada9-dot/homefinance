@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeFinance · Liquid Glass preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- CSS เดิมของแอป (เรียงเหมือนจริง) -->
+<link rel="stylesheet" href="orig/base.css">
+<link rel="stylesheet" href="orig/layout.css">
+<link rel="stylesheet" href="orig/components.css">
+<link rel="stylesheet" href="orig/responsive.css">
+<!-- 👇 overlay ใหม่ วางต่อท้าย -->
+<link rel="stylesheet" href="glass-overlay.css">
+<style>
+  /* harness: บังคับแสดง layout (ปกติถูกซ่อนจนกว่าจะ login) */
+  body{display:block}
+  .demo-toggle{position:fixed;right:18px;bottom:18px;z-index:999;display:flex;gap:6px;
+    background:var(--g-strong);backdrop-filter:blur(20px);border:1px solid var(--g-brd);
+    border-radius:999px;padding:5px;box-shadow:var(--g-shadow)}
+  .demo-toggle button{border:none;background:transparent;cursor:pointer;font-family:Sarabun,sans-serif;
+    font-size:13px;font-weight:600;color:var(--ink2);padding:7px 14px;border-radius:999px}
+  .demo-toggle button.on{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+</style>
+</head>
+<body>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-title">HomeFinance</div>
+    <div class="brand-sub">v3.16.33 · THB</div>
+  </div>
+  <div class="sidebar-names">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 0">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">ภ</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:#fff">ภูมิ &amp; ใบเฟิร์น</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6)">pumi@email.com</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+          <div style="width:7px;height:7px;border-radius:50%;background:#34d399"></div>
+          <span style="font-size:10px;color:rgba(255,255,255,.55)">ซิงก์แล้ว</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-item active"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"/></svg>Dashboard</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 010 2H9v4a1 1 0 01-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>บันทึกรายการ</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h10v2H1v-2z"/></svg>รายการทั้งหมด</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5z"/></svg>Settlement</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-2V1z"/></svg>สรุปรายเดือน</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3z"/></svg>งบประมาณ</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/></svg>บัญชีธนาคาร</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 014.9 6H14a1 1 0 010 2h-1a1 1 0 01-1-1 4 4 0 10-4 4 1 1 0 010 2 6 6 0 110-12z"/></svg>เป้าหมายออม</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5z"/></svg>ตั้งค่า</div>
+  </div>
+  <div class="sidebar-footer">HomeFinance v3.16.33 © 2025</div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page active">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">ภาพรวมการเงิน · รอบ 25 เม.ย. – 24 พ.ค. 2569</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <select style="padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)"><option>2569</option></select>
+        <select style="padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)"><option>พฤษภาคม</option></select>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">รายรับ</div><div class="metric-val g">฿19,800</div><div class="metric-sub">เดือนนี้</div></div>
+      <div class="metric"><div class="metric-label">รายจ่าย</div><div class="metric-val r">฿48,300</div><div class="metric-sub">64% ของงบ</div></div>
+      <div class="metric"><div class="metric-label">คงเหลือสุทธิ</div><div class="metric-val b">฿-28,500</div><div class="metric-sub">ก่อนเงินเดือนเข้า</div></div>
+      <div class="metric"><div class="metric-label">รอดำเนินการ</div><div class="metric-val a">3 รายการ</div><div class="metric-sub">฿111,500</div></div>
+      <div class="metric"><div class="metric-label">เงินออมรวม</div><div class="metric-val v">฿320,500</div><div class="metric-sub">3 เป้าหมาย</div></div>
+    </div>
+
+    <div class="card" id="salaryCycleCard" style="border-left:4px solid #1a4fa0;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div style="font-size:12px;color:var(--ink3);font-weight:600">รอบเงินเดือนปัจจุบัน</div>
+        <div style="font-size:16px;font-weight:700;margin-top:2px">25 เม.ย. – 24 พ.ค. 2569</div>
+      </div>
+      <span class="badge badge-pending">⏳ รอเงินเดือนเข้า ฿110,000 · วันที่ 25</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">บัญชี</div>
+        <table>
+          <tr><td>🟢 กสิกรไทย <span style="color:var(--ink3);font-size:11px">ออมทรัพย์</span></td><td class="mono" style="text-align:right;font-weight:600">฿128,450</td></tr>
+          <tr><td>🟣 ไทยพาณิชย์ <span style="color:var(--ink3);font-size:11px">เงินเดือน</span></td><td class="mono" style="text-align:right;font-weight:600">฿54,200</td></tr>
+          <tr><td>🔵 กรุงไทย <span style="color:var(--ink3);font-size:11px">ค่าใช้จ่ายร่วม</span></td><td class="mono" style="text-align:right;font-weight:600">฿18,750</td></tr>
+          <tr><td>💵 เงินสด</td><td class="mono" style="text-align:right;font-weight:600">฿3,400</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">รายการล่าสุด</div>
+        <table>
+          <tr class="tx-row"><td>🍜 ข้าวเย็น <span class="badge badge-split">หาร</span></td><td style="text-align:right" class="mono r">−฿420</td></tr>
+          <tr class="tx-row"><td>🛍️ เสื้อผ้า <span class="pill-b">ใบเฟิร์น</span></td><td style="text-align:right" class="mono r">−฿1,290</td></tr>
+          <tr class="tx-row"><td>💻 งานออกแบบ <span class="badge badge-received">รับแล้ว</span></td><td style="text-align:right" class="mono g">+฿15,000</td></tr>
+          <tr class="tx-row"><td>💡 ค่าไฟ <span class="badge badge-split">หาร</span></td><td style="text-align:right" class="mono r">−฿1,840</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADD form sample -->
+    <div class="card" style="max-width:620px">
+      <div class="card-title">บันทึกรายการ</div>
+      <div class="type-toggle">
+        <button class="type-btn active-income">รายรับ</button>
+        <button class="type-btn">รายจ่าย</button>
+        <button class="type-btn">โอน/ฝาก</button>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>วันที่</label><input type="date" value="2026-05-24"></div>
+        <div class="field"><label>สถานะ</label><select><option>รับแล้ว</option></select></div>
+      </div>
+      <div class="form-row full"><div class="field"><label>จำนวนเงิน (฿)</label><input type="number" placeholder="0" style="font-size:28px;font-weight:700;text-align:right"></div></div>
+      <div class="btn-row">
+        <button class="btn btn-primary">บันทึก</button>
+        <button class="btn btn-ghost">ล้างข้อมูล</button>
+      </div>
+    </div>
+
+    <!-- settlement sample -->
+    <div class="settle-card settle-owe">
+      <div style="font-size:12px;color:var(--ink3);font-weight:600">ภูมิ ต้องโอนให้ ใบเฟิร์น</div>
+      <div class="settle-amount">฿2,180</div>
+      <button class="btn btn-primary">ทำเครื่องหมายชำระแล้ว</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="demo-toggle">
+  <button class="on" onclick="setTheme('light',this)">☀︎ สว่าง</button>
+  <button onclick="setTheme('dark',this)">☾ มืด</button>
+</div>
+<script>
+  function setTheme(t,btn){
+    document.documentElement.setAttribute('data-theme',t);
+    document.querySelectorAll('.demo-toggle button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  document.documentElement.setAttribute('data-theme','light');
+</script>
+</body>
+</html>

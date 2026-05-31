@@ -1,0 +1,30 @@
+/* HomeFinance · module: base.css · v2.5.0 */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f0f0f;--ink2:#555;--ink3:#999;
+  --paper:#fafaf8;--surface:#fff;--surface2:#f4f3ef;
+  --line:#e8e6e0;--line2:#d4d1c8;
+  --green:#1a7a4a;--green-bg:#eef7f2;
+  --red:#c0392b;--red-bg:#fdf0ee;
+  --amber:#b5600a;--amber-bg:#fdf4e7;
+  --blue:#1a4fa0;--blue-bg:#edf2fc;
+  --violet:#4a3a9a;--violet-bg:#f0eef9;
+  --accent:#1a4fa0;
+  --r:8px;--r2:12px;--r3:16px;
+}
+body{font-family:'Sarabun',sans-serif;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6;min-height:100vh}
+
+/* ═══════════════════════════════════════════
+   CORE LAYOUT — overflow guard
+═══════════════════════════════════════════ */
+html,body{max-width:100%;overflow-x:hidden}
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* MONO */
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* EMPTY */
+.empty{text-align:center;padding:32px;color:var(--ink3);font-size:13px}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--line);margin:16px 0}

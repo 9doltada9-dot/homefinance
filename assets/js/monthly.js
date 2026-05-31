@@ -23,24 +23,24 @@ function renderMonthly(){
   })();
 
   document.getElementById('monthlyContent').innerHTML=
-    '<div class="metrics" style="margin-bottom:16px">'+
-      '<div class="metric"><div class="metric-label">รายรับรวม</div><div class="metric-val g mono">'+fmtH(incPaid)+'</div><div class="metric-sub">บาท</div></div>'+
-      '<div class="metric"><div class="metric-label">รายจ่ายรวม</div><div class="metric-val r mono">'+fmtH(expPaid)+'</div><div class="metric-sub">บาท</div></div>'+
-      '<div class="metric"><div class="metric-label">คงเหลือ</div><div class="metric-val '+(incPaid-expPaid>=0?'g':'r')+' mono">'+fmtH(incPaid-expPaid)+'</div><div class="metric-sub">บาท</div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px">'+
+      '<div class="hf-card"><div class="hf-metric-label">รายรับรวม</div><div class="hf-metric-val g">'+fmtH(incPaid)+'</div><div class="hf-metric-sub">บาท</div></div>'+
+      '<div class="hf-card"><div class="hf-metric-label">รายจ่ายรวม</div><div class="hf-metric-val r">'+fmtH(expPaid)+'</div><div class="hf-metric-sub">บาท</div></div>'+
+      '<div class="hf-card"><div class="hf-metric-label">คงเหลือ</div><div class="hf-metric-val '+(incPaid-expPaid>=0?'g':'r')+'">'+fmtH(incPaid-expPaid)+'</div><div class="hf-metric-sub">บาท</div></div>'+
     '</div>'+
     '<div class="grid2">'+
-      '<div class="card">'+
-        '<div class="card-title">รายจ่ายแยกหมวด</div>'+
-        (catEntries.length?'<table><tr><th>หมวดหมู่</th><th style="text-align:right">จำนวน</th><th style="text-align:right">%</th></tr>'+
+      '<div class="hf-card">'+
+        '<div class="hf-card-title">รายจ่ายแยกหมวด</div>'+
+        (catEntries.length?'<table class="hf-table"><tr><th>หมวดหมู่</th><th style="text-align:right">จำนวน</th><th style="text-align:right">%</th></tr>'+
         catEntries.map(function(pair){var cat=pair[0],amt=pair[1];return '<tr><td>'+cat+'</td><td style="text-align:right;font-family:monospace">'+fmtH(amt)+'</td>'+
           '<td style="text-align:right"><div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">'+
-            '<div style="height:4px;width:'+Math.round((amt/expPaid)*60)+'px;background:var(--blue);border-radius:2px;min-width:4px"></div>'+
-            '<span style="font-size:12px;color:var(--ink3)">'+(expPaid?((amt/expPaid)*100).toFixed(1):0)+'%</span>'+
+            '<div style="height:4px;width:'+Math.round((amt/expPaid)*60)+'px;background:var(--hf-accent);border-radius:2px;min-width:4px"></div>'+
+            '<span style="font-size:12px;color:var(--hf-ink3)">'+(expPaid?((amt/expPaid)*100).toFixed(1):0)+'%</span>'+
           '</div></td></tr>';}).join('')+
         '</table>':'<div class="empty">ไม่มีรายจ่าย</div>')+
       '</div>'+
-      '<div class="card">'+
-        '<div class="card-title">รายรับแยกประเภท</div>'+
+      '<div class="hf-card">'+
+        '<div class="hf-card-title">รายรับแยกประเภท</div>'+
         incomeBlock+
       '</div>'+
     '</div>';

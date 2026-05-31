@@ -156,18 +156,15 @@ function renderBudget() {
     }).join('') + '</div>';
 
   // Overall bar
+  var _barColor = totalSpent > totalBudget ? 'over' : overallPct > 80 ? 'warn' : '';
   var summaryBar = totalBudget > 0
-    ? '<div style="padding:10px;background:var(--surface2);border-radius:var(--r);margin-bottom:14px">' +
-        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">' +
-          '<span style="font-weight:600">ภาพรวมทั้งหมด</span>' +
-          '<span style="font-family:monospace;font-weight:600">' + fmtH(totalSpent) + ' / ' + fmtH(totalBudget) + ' บาท</span>' +
+    ? '<div style="margin-bottom:14px">' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">' +
+          '<span style="font-weight:600;color:var(--hf-ink2)">ภาพรวมทั้งหมด</span>' +
+          '<span style="font-family:\'IBM Plex Mono\',monospace;font-weight:600;color:var(--hf-ink2)">' + fmtH(totalSpent) + ' / ' + fmtH(totalBudget) + ' บาท</span>' +
         '</div>' +
-        '<div style="height:8px;background:var(--line);border-radius:4px;overflow:hidden">' +
-          '<div style="height:100%;width:' + overallPct + '%;background:' +
-            (totalSpent > totalBudget ? 'var(--red)' : overallPct > 80 ? 'var(--amber)' : 'var(--green)') +
-            ';border-radius:4px;transition:width .4s"></div>' +
-        '</div>' +
-        '<div style="font-size:11px;color:var(--ink3);text-align:right;margin-top:3px">' + overallPct + '% ใช้แล้ว</div>' +
+        '<div class="hf-prog"><div class="hf-prog-fill ' + _barColor + '" style="width:' + Math.min(overallPct,100) + '%"></div></div>' +
+        '<div style="font-size:11px;color:var(--hf-ink3);text-align:right;margin-top:4px">' + overallPct + '% ใช้แล้ว</div>' +
       '</div>'
     : '';
 
@@ -189,10 +186,10 @@ function renderBudget() {
   var addForm = _renderBudgetAddForm(expCats);
 
   el.innerHTML =
-    '<div class="card">' +
-      '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">' +
+    '<div class="hf-card">' +
+      '<div class="hf-card-title">' +
         '<span>แผนรายจ่าย → Forecast</span>' +
-        '<span style="font-size:11px;font-weight:400;color:var(--ink3)">' + modeLabel + '</span>' +
+        '<span style="font-size:11px;font-weight:400;color:var(--hf-ink3)">' + modeLabel + '</span>' +
       '</div>' +
       modeTabs +
       summaryBar +
@@ -235,24 +232,22 @@ function _renderBudgetAddForm(expCats) {
 function budgetRow(bi, spent) {
   var pct  = bi.amount > 0 ? Math.min(100, Math.round(spent / bi.amount * 100)) : 0;
   var over = spent > bi.amount;
-  var bar  = over ? 'var(--red)' : pct > 80 ? 'var(--amber)' : 'var(--green)';
-  var label = bi.catName + (bi.itemName ? '<span style="color:var(--ink3)"> › ' + bi.itemName + '</span>' : '');
+  var barCls = over ? 'over' : pct > 80 ? 'warn' : '';
+  var label = bi.catName + (bi.itemName ? '<span style="color:var(--hf-ink3)"> › ' + bi.itemName + '</span>' : '');
 
-  return '<div style="padding:11px 0;border-bottom:1px solid var(--line)">' +
+  return '<div style="padding:11px 0;border-bottom:1px solid var(--hf-line)">' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
-      '<span style="flex:1;font-size:13px;font-weight:600">' + label + '</span>' +
-      '<span style="font-size:12px;font-family:monospace;color:' + (over ? 'var(--red)' : 'var(--ink2)') + '">' + fmtH(spent) + '</span>' +
-      '<span style="font-size:11px;color:var(--ink3)">/</span>' +
+      '<span style="flex:1;font-size:13px;font-weight:600;color:var(--hf-ink)">' + label + '</span>' +
+      '<span style="font-size:12px;font-family:\'IBM Plex Mono\',monospace;color:' + (over ? 'var(--hf-red)' : 'var(--hf-ink2)') + '">' + fmtH(spent) + '</span>' +
+      '<span style="font-size:11px;color:var(--hf-ink3)">/</span>' +
       '<input type="number" value="' + bi.amount + '" min="0"' +
         ' onchange="(function(){ var idx=budgetItems.findIndex(function(x){return x.id===\''+bi.id+'\';});if(idx>=0){budgetItems[idx].amount=parseFloat(this.value)||0;_saveBudgetItems();renderBudget();}}).call(this)"' +
-        ' style="width:86px;font-size:13px !important;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:monospace;text-align:right;background:var(--surface2)">' +
+        ' style="width:86px;font-size:13px !important;padding:4px 6px;border:1px solid var(--hf-line2);border-radius:8px;font-family:monospace;text-align:right;background:var(--hf-g-card);color:var(--hf-ink)">' +
       '<button onclick="deleteBudgetItem(\'' + bi.id + '\')"' +
-        ' style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:2px 8px;line-height:1;touch-action:manipulation" title="ลบ">×</button>' +
+        ' style="background:none;border:none;color:var(--hf-red);font-size:18px;cursor:pointer;padding:2px 8px;line-height:1;touch-action:manipulation" title="ลบ">×</button>' +
     '</div>' +
-    '<div style="height:7px;background:var(--surface2);border-radius:4px;overflow:hidden">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + bar + ';border-radius:4px;transition:width .5s"></div>' +
-    '</div>' +
-    '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:3px">' +
+    '<div class="hf-prog"><div class="hf-prog-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--hf-ink3);margin-top:4px">' +
       '<span>' + (over ? '⚠ เกิน ' + fmtH(spent - bi.amount) + ' บาท' : pct + '% ใช้แล้ว') + '</span>' +
       '<span>' + (over ? '' : fmtH(Math.max(0, bi.amount - spent)) + ' เหลือ') + '</span>' +
     '</div>' +

@@ -507,35 +507,32 @@ function renderAccountList() {
     var list = buckets[g.key];
     var groupTotal = list.reduce(function(s,a){ return s + getAccountBalance(a.id); }, 0);
 
-    return '<div class="card" style="margin-bottom:12px">'
+    return '<div class="hf-card" style="margin-bottom:14px">'
       // group header
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:2px;border-bottom:2px solid var(--line)">'
-        +'<span style="font-size:13px;font-weight:700;color:var(--ink2)">'+g.label+'</span>'
-        +'<span style="font-size:14px;font-weight:700;font-family:monospace;color:'+(groupTotal>=0?'var(--green)':'var(--red)')+'">'+fmtH(groupTotal)+' ฿</span>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--hf-line)">'
+        +'<span style="font-size:13px;font-weight:700;color:var(--hf-ink2)">'+g.label+'</span>'
+        +'<span style="font-size:14px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+(groupTotal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(groupTotal)+' ฿</span>'
       +'</div>'
       // account rows
       + list.map(function(a, i){
           var bal = getAccountBalance(a.id);
           var hasUsage = _db.some(function(e){ return e.account_id === a.id; });
           var isLast = i === list.length - 1;
-          return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;'+(isLast?'':'border-bottom:1px solid var(--line)')+'">'
-            // icon circle
+          return '<div class="hf-row" style="padding:12px 0;'+(isLast?'border-bottom:none':'')+'">'
             +'<div style="width:42px;height:42px;border-radius:50%;background:'+a.color+'22;border:2px solid '+a.color+';'
               +'display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+g.icon+'</div>'
-            // name + balance
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
-              +'<div style="font-size:15px;font-family:monospace;font-weight:700;color:'+(bal>=0?'var(--green)':'var(--red)')+';margin-top:2px">'+fmtH(bal)+' ฿</div>'
+              +'<div style="font-size:14px;font-weight:600;color:var(--hf-ink)">'+a.name+'</div>'
+              +'<div style="font-size:15px;font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:'+(bal>=0?'var(--hf-green)':'var(--hf-red)')+';margin-top:2px">'+fmtH(bal)+' ฿</div>'
             +'</div>'
-            // action buttons
             +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'
-              +'<button onclick="openAccountLedger(\''+a.id+'\')" style="background:var(--surface2);border:none;color:var(--ink2);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">📋 รายการ</button>'
-              +'<button onclick="openDepositModal(\''+a.id+'\')" style="background:var(--green-bg);border:none;color:var(--green);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">+ ฝาก</button>'
-              +'<button onclick="openAdjustModal(\''+a.id+'\')" style="background:var(--amber-bg,#fffbeb);border:none;color:var(--amber,#d97706);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">⚖️ ปรับ</button>'
-              +'<button onclick="openEditAccountModal(\''+a.id+'\')" style="background:var(--blue-bg);border:none;color:var(--blue);font-size:14px;padding:5px 8px;border-radius:6px;cursor:pointer">✏️</button>'
+              +'<button onclick="openAccountLedger(\''+a.id+'\')" class="hf-btn" style="font-size:11px;padding:4px 8px;white-space:nowrap">📋 รายการ</button>'
+              +'<button onclick="openDepositModal(\''+a.id+'\')" class="hf-btn" style="font-size:11px;padding:4px 8px;color:var(--hf-green);border-color:var(--hf-green);white-space:nowrap">+ ฝาก</button>'
+              +'<button onclick="openAdjustModal(\''+a.id+'\')" class="hf-btn" style="font-size:11px;padding:4px 8px;color:var(--hf-amber);border-color:var(--hf-amber);white-space:nowrap">⚖️ ปรับ</button>'
+              +'<button onclick="openEditAccountModal(\''+a.id+'\')" class="hf-btn" style="font-size:11px;padding:4px 8px">✏️</button>'
               +'<button onclick="deleteAccount(\''+a.id+'\');renderAccountList();renderAccountCards()" '
                 +(hasUsage?'disabled style="opacity:.35;cursor:not-allowed;':'style="')
-                +'background:none;border:none;color:var(--red);font-size:16px;padding:5px 8px;cursor:pointer">'
+                +'background:none;border:none;color:var(--hf-red);font-size:16px;padding:5px 8px;cursor:pointer">'
                 +'<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>'
               +'</button>'
             +'</div>'

@@ -89,32 +89,31 @@ function renderSavingsGoals() {
     var pct      = calcGoalProgress(g);
     var monthly  = calcGoalMonthlyRequired(g);
     var remaining = Math.max(0, (g.target_amount || 0) - (g.current_amount || 0));
-    var barColor  = pct >= 100 ? 'var(--green)' : pct >= 60 ? '#1a4fa0' : 'var(--amber)';
+    var barCls    = pct >= 100 ? '' : pct >= 60 ? '' : 'warn';
+    var accentCol = pct >= 100 ? 'var(--hf-green)' : pct >= 60 ? 'var(--hf-accent)' : 'var(--hf-amber)';
     var dateStr   = g.target_date ? toThaiDateShort(g.target_date) : '—';
     var isDone    = pct >= 100;
 
-    return '<div class="card" style="border-left:4px solid ' + barColor + ';padding:12px 14px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+    return '<div class="hf-card" style="margin-bottom:12px;border-left:3px solid ' + accentCol + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
         '<div>' +
-          '<div style="font-size:14px;font-weight:700">' + (isDone ? '🎉 ' : '🎯 ') + g.name + '</div>' +
-          '<div style="font-size:11px;color:var(--ink3);margin-top:2px">ครบกำหนด: ' + dateStr + '</div>' +
+          '<div style="font-size:14px;font-weight:700;color:var(--hf-ink)">' + (isDone ? '🎉 ' : '🎯 ') + g.name + '</div>' +
+          '<div style="font-size:11px;color:var(--hf-ink3);margin-top:2px">ครบกำหนด: ' + dateStr + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px">' +
-          '<button onclick="depositToGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;background:#1a4fa0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif">+ ฝาก</button>' +
-          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
+          '<button onclick="depositToGoal(\'' + g.id + '\')" class="hf-btn hf-btn-primary" style="font-size:11px;padding:4px 10px">+ ฝาก</button>' +
+          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" class="hf-btn" style="font-size:11px;padding:4px 10px;color:var(--hf-red);border-color:var(--hf-red)"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
         '</div>' +
       '</div>' +
-      '<div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:6px">' +
-        '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;transition:width .4s"></div>' +
-      '</div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2)">' +
-        '<span style="font-family:monospace;font-weight:600">' + fmtH(g.current_amount) + ' / ' + fmtH(g.target_amount) + '</span>' +
+      '<div class="hf-prog" style="margin-bottom:8px"><div class="hf-prog-fill ' + barCls + '" style="width:' + pct + '%' + (isDone?';background:var(--hf-green)':'') + '"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--hf-ink2)">' +
+        '<span style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + fmtH(g.current_amount) + ' / ' + fmtH(g.target_amount) + '</span>' +
         '<span>' + pct + '%</span>' +
       '</div>' +
-      (isDone ? '<div style="font-size:12px;color:var(--green);font-weight:600;margin-top:6px">✅ ถึงเป้าหมายแล้ว!</div>' :
-        '<div style="font-size:11px;color:var(--ink3);margin-top:4px">' +
+      (isDone ? '<div style="font-size:12px;color:var(--hf-green);font-weight:600;margin-top:6px">✅ ถึงเป้าหมายแล้ว!</div>' :
+        '<div style="font-size:11px;color:var(--hf-ink3);margin-top:4px">' +
           'ยังขาด: <strong>' + fmtH(remaining) + '</strong>' +
-          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:#1a4fa0">' + fmtH(monthly) + '</strong>' : '') +
+          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:var(--hf-accent)">' + fmtH(monthly) + '</strong>' : '') +
         '</div>') +
     '</div>';
   }).join('');

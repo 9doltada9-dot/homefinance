@@ -313,11 +313,10 @@ function openTransferModal() {
   document.getElementById('transferAmt').value = '';
   document.getElementById('transferNote').value = '';
   document.getElementById('transferDate').value = new Date().toISOString().slice(0, 10);
-  modal.style.display = 'flex';
+  _openModal('transferModal');
 }
 function closeTransferModal() {
-  var modal = document.getElementById('transferModal');
-  if (modal) modal.style.display = 'none';
+  _closeModal('transferModal');
 }
 function doTransfer() {
   var from = document.getElementById('transferFrom').value;
@@ -340,10 +339,10 @@ function openDepositModal(accountId) {
   document.getElementById('depositAmt').value = '';
   document.getElementById('depositDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('depositNote').value = '';
-  document.getElementById('depositModal').style.display = 'flex';
+  _openModal('depositModal');
 }
 function closeDepositModal() {
-  document.getElementById('depositModal').style.display = 'none';
+  _closeModal('depositModal');
 }
 async function doDeposit() {
   var accountId = document.getElementById('depositAccountId').value;
@@ -380,10 +379,10 @@ function openEditAccountModal(id) {
   document.getElementById('editAcctId').value = id;
   document.getElementById('editAcctName').value = acct.name;
   document.getElementById('editAcctType').value = acct.type || 'bank';
-  document.getElementById('editAccountModal').style.display = 'flex';
+  _openModal('editAccountModal');
 }
 function closeEditAccountModal() {
-  document.getElementById('editAccountModal').style.display = 'none';
+  _closeModal('editAccountModal');
 }
 function doEditAccount() {
   var id   = document.getElementById('editAcctId').value;
@@ -409,10 +408,10 @@ function openAdjustModal(accountId) {
   document.getElementById('adjustDate').value = new Date().toISOString().slice(0, 10);
   document.getElementById('adjustNote').value = '';
   document.getElementById('adjustDiffBox').style.display = 'none';
-  document.getElementById('adjustModal').style.display = 'flex';
+  _openModal('adjustModal');
 }
 function closeAdjustModal() {
-  document.getElementById('adjustModal').style.display = 'none';
+  _closeModal('adjustModal');
 }
 function updateAdjustDiff() {
   var accountId = document.getElementById('adjustAcctId').value;
@@ -579,13 +578,12 @@ function openAccountDetailModal(id) {
     delBtn.style.cursor = cantDel ? 'not-allowed' : 'pointer';
   }
 
-  document.getElementById('accountDetailModal').style.display = 'flex';
+  _openModal('accountDetailModal');
 }
 
 function closeAccountDetailModal(e) {
   if (e && e.target !== document.getElementById('accountDetailModal')) return;
-  document.getElementById('accountDetailModal').style.display = 'none';
-  _currentDetailAcctId = null;
+  _closeModal('accountDetailModal', function() { _currentDetailAcctId = null; });
 }
 
 function deleteAccountFromDetail(id) {
@@ -594,23 +592,24 @@ function deleteAccountFromDetail(id) {
   if (hasUsage) { showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้'); return; }
   if (accountsData.length <= 1) { showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี'); return; }
   var acct = accountsData.find(function(a){ return a.id === id; });
-  document.getElementById('accountDetailModal').style.display = 'none';
-  _currentDetailAcctId = null;
-  document.getElementById('delConfirmDesc').textContent = 'ลบบัญชี "' + (acct ? acct.name : '') + '" ออกจากระบบ?';
-  document.getElementById('delConfirmNote').textContent = 'การลบนี้ไม่สามารถกู้คืนได้';
-  var btn = document.getElementById('delConfirmBtn');
-  btn.onclick = function(){
-    var a = accountsData.find(function(x){ return x.id === id; });
-    accountsData = accountsData.filter(function(x){ return x.id !== id; });
-    saveAccountsLocal();
-    if (a) sbSyncAccount(a, 'delete');
-    closeDeleteConfirmModal();
-    renderAccountList();
-    renderAccountCards();
-    showCycleToast('ลบบัญชีแล้ว');
-    btn.onclick = execDeleteConfirmed;
-  };
-  document.getElementById('deleteConfirmModal').style.display = 'flex';
+  _closeModal('accountDetailModal', function() {
+    _currentDetailAcctId = null;
+    document.getElementById('delConfirmDesc').textContent = 'ลบบัญชี "' + (acct ? acct.name : '') + '" ออกจากระบบ?';
+    document.getElementById('delConfirmNote').textContent = 'การลบนี้ไม่สามารถกู้คืนได้';
+    var btn = document.getElementById('delConfirmBtn');
+    btn.onclick = function(){
+      var a = accountsData.find(function(x){ return x.id === id; });
+      accountsData = accountsData.filter(function(x){ return x.id !== id; });
+      saveAccountsLocal();
+      if (a) sbSyncAccount(a, 'delete');
+      closeDeleteConfirmModal();
+      renderAccountList();
+      renderAccountCards();
+      showCycleToast('ลบบัญชีแล้ว');
+      btn.onclick = execDeleteConfirmed;
+    };
+    _openModal('deleteConfirmModal');
+  });
 }
 
 // ─── ADD ACCOUNT MODAL ────────────────────────────────────
@@ -627,12 +626,11 @@ function openAddAccountModal() {
   if (cEl) cEl.value = '#1a4fa0';
   var msg = document.getElementById('acctMsg');
   if (msg) msg.textContent = '';
-  m.style.display = 'flex';
+  _openModal('addAccountModal');
   setTimeout(function(){ if (nEl) nEl.focus(); }, 100);
 }
 function closeAddAccountModal() {
-  var m = document.getElementById('addAccountModal');
-  if (m) m.style.display = 'none';
+  _closeModal('addAccountModal');
 }
 
 // ─── ACCOUNT LEDGER (สมุดรายวัน ต่อบัญชี) ────────────────
@@ -671,7 +669,7 @@ function openAccountLedger(accountId) {
       }).join('');
   }
 
-  document.getElementById('accountLedgerModal').style.display = 'flex';
+  _openModal('accountLedgerModal');
   renderLedger();
 }
 
@@ -812,8 +810,7 @@ function renderLedger() {
 }
 
 function closeAccountLedger() {
-  document.getElementById('accountLedgerModal').style.display = 'none';
-  _ledgerAccountId = null;
+  _closeModal('accountLedgerModal', function() { _ledgerAccountId = null; });
 }
 
 function onAddAccount() {

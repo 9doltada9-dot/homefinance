@@ -79,7 +79,7 @@ function openEdit(id){
   if(!e) return;
   editId = id;
   eType = e.type;
-  document.getElementById('editOverlay').style.display='flex';
+  _openModal('editOverlay');
   document.getElementById('editIdLabel').textContent='รายการ: '+e.desc;
   document.getElementById('eDate').value = e.date;
   // person คงค่าเดิม (hidden input — ไม่ให้ user เปลี่ยน)
@@ -119,8 +119,7 @@ function openEdit(id){
 }
 
 function closeEdit(){
-  document.getElementById('editOverlay').style.display='none';
-  editId=null;
+  _closeModal('editOverlay', function() { editId=null; });
 }
 
 function eUpdateDescByCat(catId){

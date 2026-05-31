@@ -744,13 +744,11 @@ function delConfirm(id) {
       ? '⚠️ การโอนเงินจะลบทั้ง 2 รายการ (ต้นทางและปลายทาง) พร้อมกัน'
       : 'รายการที่ลบแล้วไม่สามารถกู้คืนได้';
   }
-  if (modal) modal.style.display = 'flex';
+  if (modal) _openModal('deleteConfirmModal');
 }
 
 function closeDeleteConfirmModal() {
-  var modal = document.getElementById('deleteConfirmModal');
-  if (modal) modal.style.display = 'none';
-  _pendingDeleteId = null;
+  _closeModal('deleteConfirmModal', function() { _pendingDeleteId = null; });
 }
 
 function execDeleteConfirmed() {

@@ -80,7 +80,7 @@ function openSplitGroupModal(groupId) {
   // แสดง loading ก่อน แล้วดึง profiles จาก Supabase
   var el = document.getElementById('sgMemberList');
   if (el) el.innerHTML = '<div style="text-align:center;padding:12px;font-size:12px;color:var(--ink3)">⏳ กำลังโหลดสมาชิก...</div>';
-  modal.style.display = 'flex';
+  _openModal('splitGroupModal');
 
   _sgLoadProfilesAndRender(g, type);
   _updateSgValidation(type);
@@ -93,8 +93,7 @@ function openSplitGroupModal(groupId) {
 }
 
 function closeSplitGroupModal() {
-  var modal = document.getElementById('splitGroupModal');
-  if (modal) modal.style.display = 'none';
+  _closeModal('splitGroupModal');
 }
 
 // ── โหลด profiles จาก Supabase แล้ว render สมาชิก ─────────────────────────────

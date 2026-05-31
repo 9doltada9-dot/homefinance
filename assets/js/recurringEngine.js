@@ -170,12 +170,11 @@ function showRecurringDueModal(dueList, upcomingList) {
   }
 
   listEl.innerHTML = html;
-  modal.style.display = 'flex';
+  _openModal('recurringDueModal');
 }
 
 function closeRecurringDueModal() {
-  var modal = document.getElementById('recurringDueModal');
-  if (modal) modal.style.display = 'none';
+  _closeModal('recurringDueModal');
 }
 
 // ─── FILL FORM FROM RECURRING ─────────────────────────────
@@ -383,7 +382,7 @@ function openRecurringModal() {
   var venEl  = document.getElementById('recVendor');  if (venEl)  venEl.value = '';
 
   _buildRecurringCatOptions('expense');
-  modal.style.display = 'flex';
+  _openModal('recurringModal');
 }
 
 function openEditRecurringModal(id) {
@@ -426,13 +425,11 @@ function openEditRecurringModal(id) {
   var vendorEl  = document.getElementById('recVendor');
   if (vendorEl) { _fillRecurringVendors(t.type || 'expense'); vendorEl.value = t.vendor_id || ''; }
 
-  modal.style.display = 'flex';
+  _openModal('recurringModal');
 }
 
 function closeRecurringModal() {
-  var modal = document.getElementById('recurringModal');
-  if (modal) modal.style.display = 'none';
-  _editingRecurringId = null;
+  _closeModal('recurringModal', function() { _editingRecurringId = null; });
 }
 
 function _buildRecurringCatOptions(type) {

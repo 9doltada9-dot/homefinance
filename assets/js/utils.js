@@ -160,6 +160,27 @@ function doneStatus(type){
 // ─── SWIPE STATE (global, persists across renderTx calls) ─
 var _swipeOpenSc = null;
 
+// ─── MODAL ANIMATION HELPERS ─────────────────────────────
+function _openModal(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('hf-mo-out');
+  el.style.display = 'flex';
+  void el.offsetWidth;
+  el.classList.add('hf-mo-in');
+}
+function _closeModal(id, cb) {
+  var el = document.getElementById(id);
+  if (!el || el.style.display === 'none') { if (typeof cb === 'function') cb(); return; }
+  el.classList.remove('hf-mo-in');
+  el.classList.add('hf-mo-out');
+  setTimeout(function() {
+    el.style.display = 'none';
+    el.classList.remove('hf-mo-out');
+    if (typeof cb === 'function') cb();
+  }, 180);
+}
+
 window.closeAllSwipe = function(except){
   var target = _swipeOpenSc;
   if(target && target !== except){

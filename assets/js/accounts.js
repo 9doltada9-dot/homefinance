@@ -264,30 +264,45 @@ function fillAccountSelectors() {
 function renderAccountCards() {
   var el = document.getElementById('accountCards');
   if (!el) return;
-  // กรองเฉพาะ user ปัจจุบัน (defensive)
   var _rcUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var _rcAccts = _rcUid ? accountsData.filter(function(a){ return a.user_id === _rcUid; }) : accountsData;
-  if (!_rcAccts.length) { el.style.display = 'none'; return; }
+  var active = _rcAccts.filter(function(a){ return a.is_active !== false; });
+  if (!active.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
-  var total = _rcAccts.reduce(function(s,a){ return s + getAccountBalance(a.id); }, 0);
+
+  var total = active.reduce(function(s,a){ return s + getAccountBalance(a.id); }, 0);
+  var TYPE_ICON = { bank:'🏦', cash:'💵', ewallet:'📱' };
+
+  // แถวบัตรบัญชี — horizontal scroll เหมือน metric row
   el.innerHTML =
-    '<div class="card" style="border-left:4px solid #1a4fa0">' +
-      '<div class="card-title" style="display:flex;justify-content:space-between;align-items:center">' +
-        '<span>💳 บัญชีการเงิน</span>' +
-        '<button onclick="openTransferModal()" style="font-size:11px;padding:4px 10px;background:#1a4fa0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sarabun,sans-serif">↔ โอน</button>' +
-      '</div>' +
-      '<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">ยอดรวมทุกบัญชี: <strong style="font-size:15px;color:var(--green);font-family:monospace">' + fmtH(total) + '</strong> บาท</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">' +
-        _rcAccts.filter(function(a) { return a.is_active; }).map(function(a) {
+    '<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;'
+      +'scrollbar-width:none;-webkit-overflow-scrolling:touch">'
+
+      // card รวม (สีฟ้า)
+      +'<div onclick="nav(\'accounts\')" style="flex-shrink:0;min-width:130px;cursor:pointer;'
+        +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'
+        +'padding:14px 16px;border-top:3px solid #1a4fa0">'
+        +'<div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">ยอดรวม</div>'
+        +'<div style="font-size:19px;font-weight:700;font-family:monospace;letter-spacing:-.5px;color:'+(total>=0?'var(--green)':'var(--red)')+'">'+fmtH(total)+'</div>'
+        +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+active.length+' บัญชี</div>'
+      +'</div>'
+
+      // card แต่ละบัญชี
+      + active.map(function(a){
           var bal = getAccountBalance(a.id);
-          return '<div style="background:var(--surface2);border-radius:10px;padding:10px;border-left:3px solid ' + a.color + '">' +
-            '<div style="font-size:11px;font-weight:600;color:var(--ink2)">' + a.name + '</div>' +
-            '<div style="font-size:10px;color:var(--ink3)">' + (ACCOUNT_TYPES[a.type] || a.type) + '</div>' +
-            '<div style="font-size:16px;font-weight:700;font-family:monospace;color:' + (bal >= 0 ? 'var(--green)' : 'var(--red)') + ';margin-top:4px">' + fmtH(bal) + '</div>' +
-          '</div>';
-        }).join('') +
-      '</div>' +
-    '</div>';
+          var icon = TYPE_ICON[a.type] || '💳';
+          return '<div onclick="nav(\'accounts\')" style="flex-shrink:0;min-width:130px;cursor:pointer;'
+            +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'
+            +'padding:14px 16px;border-top:3px solid '+a.color+'">'
+            +'<div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">'
+              +icon+' '+a.name
+            +'</div>'
+            +'<div style="font-size:19px;font-weight:700;font-family:monospace;letter-spacing:-.5px;color:'+(bal>=0?'var(--green)':'var(--red)')+'">'+fmtH(bal)+'</div>'
+            +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
+          +'</div>';
+        }).join('')
+
+    +'</div>';
 }
 
 // ─── TRANSFER MODAL ───────────────────────────────────────

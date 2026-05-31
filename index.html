@@ -1116,8 +1116,8 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- ADD ACCOUNT MODAL -->
-<div id="addAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
-  <div style="background:var(--surface);border-radius:var(--r3);border:1px solid var(--line);width:100%;max-width:400px;padding:24px 26px;position:relative">
+<div id="addAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:400px;padding:24px;margin:auto;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="font-size:16px;font-weight:600;color:var(--ink)">+ เพิ่มบัญชีใหม่</div>
       <button onclick="closeAddAccountModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);line-height:1;padding:4px">×</button>
@@ -1268,8 +1268,8 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 </div>
 
-<div id="transferModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:440px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+<div id="transferModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:440px;padding:24px;margin:auto;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div style="font-size:16px;font-weight:600">⇄ โอนเงินระหว่างบัญชี</div>
       <button onclick="closeTransferModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
@@ -1383,8 +1383,8 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- DEPOSIT MODAL -->
-<div id="depositModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px">
+<div id="depositModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px">💰 ฝากเงิน</div>
     <input type="hidden" id="depositAccountId">
     <div class="field" style="margin-bottom:12px">
@@ -1407,8 +1407,8 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- EDIT ACCOUNT MODAL -->
-<div id="editAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px">
+<div id="editAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px">✏️ แก้ไขบัญชี</div>
     <input type="hidden" id="editAcctId">
     <div class="field" style="margin-bottom:12px">
@@ -1431,8 +1431,8 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- ACCOUNT DETAIL MODAL -->
-<div id="accountDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:510;align-items:center;justify-content:center;padding:20px" onclick="closeAccountDetailModal(event)">
-  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px" onclick="event.stopPropagation()">
+<div id="accountDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto" onclick="closeAccountDetailModal(event)">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
       <div style="font-size:14px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายละเอียดบัญชี</div>
       <button onclick="document.getElementById('accountDetailModal').style.display='none'" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">×</button>
@@ -1462,8 +1462,8 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- ACCOUNT LEDGER MODAL -->
-<div id="accountLedgerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
-  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:680px;padding:0;margin:auto">
+<div id="accountLedgerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:680px;padding:0;margin:auto;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)">
       <div>
         <div id="ledgerAcctName" style="font-size:16px;font-weight:700"></div>

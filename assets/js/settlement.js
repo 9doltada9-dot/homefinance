@@ -459,10 +459,10 @@ function renderSettle(){
   var detailCards = _sGrp.map(function(g){
     var dayTotal = g.items.reduce(function(s,e){ return s+e.amt; },0);
     return '<div style="margin-bottom:18px">'
-      // date header
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 6px;margin-bottom:6px">'
+      // date header — เหมือน Transactions
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
       +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
-      +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace">−'+fmtH(dayTotal)+'</span>'
+      +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(dayTotal)+'</span>'
       +'</div>'
       + g.items.map(function(e){
           var payerU = e.user_id || _pidToUid(e.person) || e.person;
@@ -483,24 +483,29 @@ function renderSettle(){
           var iconHtml = iconId
             ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
             : '<span style="font-size:16px">💳</span>';
-          return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-bottom:6px;'
+          // card row — format เหมือน tx-card-row ใน Transactions
+          return '<div class="tx-card-row" style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;margin-bottom:6px;cursor:default;'
             +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
-            +'backdrop-filter:blur(16px) saturate(150%)">'
-            // icon
-            +'<div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
+            +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+            +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+            +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
+            // icon (40×40 เหมือน Transactions)
+            +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
             // center
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+e.desc+'</div>'
+              +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
               +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
                 +(vendor?'<span style="font-size:11px;color:var(--ink3)">🏪 '+vendor+'</span>':'')
-                +(e.note?'<span style="font-size:11px;color:var(--ink3)">· '+e.note+'</span>':'')
+                +(e.note?'<span style="font-size:11px;color:var(--ink3)">'+(vendor?'· ':'')+e.note+'</span>':'')
               +'</div>'
               +(memberChips?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">'+memberChips+'</div>':'')
             +'</div>'
-            // right: amount + payer
+            // right: amount + payer badge (เหมือน statusBadge ใน Transactions)
             +'<div style="text-align:right;flex-shrink:0">'
               +'<div style="font-size:15px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
-              +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';margin-top:4px;display:inline-block">'+payerName+'</span>'
+              +'<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
+                +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
+              +'</div>'
             +'</div>'
           +'</div>';
         }).join('')
@@ -529,23 +534,38 @@ function renderSettle(){
       var _pGrp2=[], _pDm2={};
       personalExp.forEach(function(e){ var d=e.date; if(!_pDm2[d]){_pDm2[d]=[];_pGrp2.push({date:d,items:_pDm2[d]});} _pDm2[d].push(e); });
       var persCards = _pGrp2.map(function(g){
+        var persDay = g.items.reduce(function(s,e){ return s+e.amt; },0);
         return '<div style="margin-bottom:14px">'
-          +'<div style="font-size:12px;font-weight:700;color:var(--ink2);padding:2px 0 6px">'+toThaiDateStr(g.date)+'</div>'
+          // date header — เหมือน Transactions
+          +'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid var(--line);margin-bottom:8px">'
+          +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
+          +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(persDay)+'</span>'
+          +'</div>'
           + g.items.map(function(e){
               var pu = e.user_id || _pidToUid(e.person) || e.person;
               var payerName = nameMap[pu] || e.person;
               var payerColor = _persColorMap[pu] || {bg:'#eef7f2',cl:'#1a7a4a'};
               var vendor = _vendorName(e.vendor_id);
               var noteText = (e.note||'').trim();
-              return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:5px;background:var(--surface);border-radius:14px;border:1px solid var(--line)">'
-                +'<div style="width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">💳</div>'
+              var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
+              var iconHtml = iconId
+                ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+                : '<span style="font-size:16px">💳</span>';
+              return '<div class="tx-card-row" style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;margin-bottom:6px;cursor:default;'
+                +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
+                +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+                +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
+                +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
+                +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
                 +'<div style="flex:1;min-width:0">'
-                  +'<div style="font-size:13px;font-weight:600;color:var(--ink)">'+e.desc+'</div>'
-                  +'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+(vendor?'🏪 '+vendor+' · ':'')+(noteText?noteText:'')+'</div>'
+                  +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
+                  +'<div style="font-size:11px;color:var(--ink3);margin-top:4px">'+(vendor?'🏪 '+vendor+(noteText?' · ':''):'')+(noteText?noteText:'')+'</div>'
                 +'</div>'
-                +'<div style="text-align:right">'
-                  +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
-                  +'<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+'">'+payerName+'</span>'
+                +'<div style="text-align:right;flex-shrink:0">'
+                  +'<div style="font-size:15px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
+                  +'<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
+                    +'<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
+                  +'</div>'
                 +'</div>'
               +'</div>';
             }).join('')

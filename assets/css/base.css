@@ -32,8 +32,8 @@ html,body{max-width:100%;overflow-x:hidden;overflow-anchor:none}
 /* ─── Modal Animations ─────────────────────────────── */
 @keyframes hfBdIn  {from{opacity:0}to{opacity:1}}
 @keyframes hfBdOut {from{opacity:1}to{opacity:0}}
-@keyframes hfCardIn  {from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes hfCardOut {from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(20px) scale(.97)}}
+@keyframes hfCardIn  {from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes hfCardOut {from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.96) translateY(6px)}}
 .hf-mo-in {animation:hfBdIn .22s ease both}
 .hf-mo-in > *:first-child {animation:hfCardIn .28s cubic-bezier(.34,1.12,.64,1) both}
 .hf-mo-out {animation:hfBdOut .18s ease both;pointer-events:none}

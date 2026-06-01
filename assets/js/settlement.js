@@ -951,16 +951,17 @@ function exportSettleHTML(month, groupId) {
     +'<div class="footer">HomeFinance · Settlement Report · '+monthThai+' · ส่งออกเมื่อ '+todayStr+'</div>\n'
     +'</div>\n</body>\n</html>';
 
-  var fname = 'settlement-' + month + (groupId ? '-' + groupTitle.replace(/[^a-zA-Zก-๙0-9]/g,'_') : '') + '.html';
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href   = url;
-  a.download = fname;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  var win  = window.open(url, '_blank');
+  if (!win) {
+    // fallback: ถ้า popup ถูกบล็อก → ดาวน์โหลดแทน
+    var fname = 'settlement-' + month + '.html';
+    var a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
   } catch(err) {
     console.error('[Settlement] exportSettlePDF error:', err);
     alert('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)));

@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.4</title>
+<title>HomeFinance v3.18.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -141,14 +141,33 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
 /* salary cycle 4-metric row (responsive) */
 .salary-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
 @media(max-width:768px){.salary-metrics-grid{grid-template-columns:repeat(2,1fr);}}
-/* tx row highlight glow (from ledger nav) */
-@keyframes tx-pulse{
-  0%   {box-shadow:0 0 0 0 rgba(92,141,255,0);background:transparent}
-  25%  {box-shadow:0 0 0 5px rgba(92,141,255,.45);background:rgba(92,141,255,.14)}
-  70%  {box-shadow:0 0 0 2px rgba(92,141,255,.18);background:rgba(92,141,255,.06)}
-  100% {box-shadow:0 0 0 0 rgba(92,141,255,0);background:transparent}
+/* tx row highlight blink — 5 ครั้ง ครั้งละ 2 วิ (รวม 10 วิ) */
+@keyframes tx-blink-dark{
+  0%,  9.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
+  10%,19.9%{background:transparent;box-shadow:none}
+  20%,29.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
+  30%,39.9%{background:transparent;box-shadow:none}
+  40%,49.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
+  50%,59.9%{background:transparent;box-shadow:none}
+  60%,69.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
+  70%,79.9%{background:transparent;box-shadow:none}
+  80%,89.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
+  90%,100% {background:transparent;box-shadow:none}
 }
-.tx-glow{animation:tx-pulse 1.8s ease;border-radius:12px;}
+@keyframes tx-blink-light{
+  0%,  9.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
+  10%,19.9%{background:transparent;box-shadow:none}
+  20%,29.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
+  30%,39.9%{background:transparent;box-shadow:none}
+  40%,49.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
+  50%,59.9%{background:transparent;box-shadow:none}
+  60%,69.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
+  70%,79.9%{background:transparent;box-shadow:none}
+  80%,89.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
+  90%,100% {background:transparent;box-shadow:none}
+}
+.tx-glow{animation:tx-blink-dark 10s linear forwards;border-radius:12px;}
+:root[data-theme='light'] .tx-glow{animation:tx-blink-light 10s linear forwards;}
 /* tx-card-row hover slide */
 .tx-card-row{transition:transform .14s ease,background .14s ease,box-shadow .14s ease;}
 @media(hover:hover){
@@ -226,7 +245,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.4</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.5</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -1691,7 +1710,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.4</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.5</div>
   </div>
 </div>
 

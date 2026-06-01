@@ -81,7 +81,9 @@ function renderDash(){
     if(a.date < b.date) return 1;
     return Number(b.id) - Number(a.id);
   });
-  var recent = curM === thisM ? _dbFiltered.slice(0,6) : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}).slice(0,6);
+  var _recentPool = (curM === thisM ? _dbFiltered : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}))
+    .filter(function(e){ return e.status !== 'pending'; });
+  var recent = _recentPool.slice(0,6);
   document.getElementById('recentTx').innerHTML=recent.length?'<table class="hf-table"><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
     '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
@@ -129,15 +131,6 @@ function renderSalaryCycleCard(){
     dayLeft   = Math.max(0, Math.ceil((new Date(cycle.end) - today) / 86400000));
   }
 
-  // Forecast (v3)
-  var forecastHtml = '';
-  if (cycleId && typeof renderForecastCard === 'function') {
-    forecastHtml = renderForecastCard(cycleId);
-  }
-  if (typeof renderForecastBudgetPanel === 'function') {
-    forecastHtml += renderForecastBudgetPanel(cycleId);
-  }
-
   // Pending salary entries
   var _myUid3 = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var _cycleDb2 = _myUid3 ? db.filter(function(e){ return (e.user_id||e.person) === _myUid3; }) : db;
@@ -152,64 +145,72 @@ function renderSalaryCycleCard(){
 
   card.style.display='flex';
   content.innerHTML=
-    // Header
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">'+
+    // ── Header
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:6px">'+
       '<div>'+
-        '<div style="font-size:12px;font-weight:700;color:#1a4fa0;letter-spacing:.3px">💼 รอบเงินเดือน</div>'+
-        '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+cycle.label+'</div>'+
+        '<div style="font-size:11px;font-weight:700;color:var(--blue,#1a4fa0);letter-spacing:.3px;text-transform:uppercase">💼 รอบเงินเดือน</div>'+
+        '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-top:1px">'+cycle.label+'</div>'+
       '</div>'+
-      '<div style="font-size:11px;color:var(--ink3);background:var(--surface2);padding:3px 10px;border-radius:12px">'+
-        'เหลืออีก <b>'+dayLeft+'</b> วัน'+
+      '<div style="font-size:11px;color:var(--ink2);background:var(--surface2);padding:4px 12px;border-radius:20px;font-weight:600;flex-shrink:0">'+
+        (dayLeft===0?'<span style="color:#f87171">สิ้นสุดวันนี้</span>':'เหลืออีก <b>'+dayLeft+'</b> วัน')+
       '</div>'+
     '</div>'+
-    // Cycle progress bar
-    '<div style="margin-bottom:10px">'+
-      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-bottom:3px">'+
-        '<span>เริ่ม '+toThaiDateShort(cycle.start)+'</span>'+
-        '<span>'+progressPct+'% ของรอบ</span>'+
-        '<span>สิ้นสุด '+toThaiDateShort(cycle.end)+'</span>'+
+    // ── Time progress bar
+    '<div style="margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-bottom:4px">'+
+        '<span>'+toThaiDateShort(cycle.start)+'</span>'+
+        '<span style="font-weight:600;color:var(--ink2)">'+progressPct+'%</span>'+
+        '<span>'+toThaiDateShort(cycle.end)+'</span>'+
       '</div>'+
       '<div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">'+
-        '<div style="height:100%;width:'+progressPct+'%;background:#1a4fa0;border-radius:3px;transition:width .4s"></div>'+
+        '<div style="height:100%;width:'+progressPct+'%;background:var(--blue,#1a4fa0);border-radius:3px;transition:width .5s"></div>'+
       '</div>'+
     '</div>'+
-    // 4-metric grid
+    // ── 4-metric grid (2×2)
     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">'+
-      '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">✅ รับแล้ว (Active)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:var(--green);font-family:monospace">'+fmtH(received)+'</div>'+
+      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💰 รายรับ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#4ade80;font-family:monospace;letter-spacing:-0.5px">'+fmtH(received)+'</div>'+
+        '<div style="font-size:9px;color:var(--ink3);margin-top:2px">รับแล้ว</div>'+
       '</div>'+
-      '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">💸 รายจ่ายรอบนี้</div>'+
-        '<div style="font-size:15px;font-weight:700;color:var(--red);font-family:monospace">'+fmtH(totalExp)+'</div>'+
+      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💸 รายจ่าย</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#f87171;font-family:monospace;letter-spacing:-0.5px">'+fmtH(totalExp)+'</div>'+
+        '<div style="font-size:9px;color:var(--ink3);margin-top:2px">จ่ายแล้ว</div>'+
       '</div>'+
-      '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">💰 คงเหลือ (Active)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:'+(remain>=0?'var(--green)':'var(--red)')+';font-family:monospace">'+fmtH(remain)+'</div>'+
+      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px;'+(remain<0?'border:1px solid #f87171;':'')+'">'+
+        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💵 คงเหลือ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:'+(remain>=0?'#4ade80':'#f87171')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(remain)+'</div>'+
+        '<div style="font-size:9px;color:var(--ink3);margin-top:2px">สุทธิรอบนี้</div>'+
       '</div>'+
-      (pending > 0 ?
-      '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:#b5600a">⏳ รอรับ (Pending)</div>'+
-        '<div style="font-size:15px;font-weight:700;color:#b5600a;font-family:monospace">'+fmtH(pending)+'</div>'+
-      '</div>'
-      :
-      '<div style="background:var(--surface2);border-radius:8px;padding:8px">'+
-        '<div style="font-size:10px;color:var(--ink3)">📊 ใช้จ่ายไป</div>'+
-        '<div style="font-size:15px;font-weight:700;color:var(--ink2);font-family:monospace">'+spendPct+'%</div>'+
-      '</div>') +
+      '<div style="background:'+(pending>0?'rgba(251,191,36,.1)':'var(--surface2)')+';border-radius:12px;padding:12px 10px;'+(pending>0?'border:1px solid rgba(251,191,36,.4);':'')+'">'+
+        '<div style="font-size:10px;color:'+(pending>0?'#b5600a':'var(--ink3)')+';margin-bottom:4px">⏳ รอรับ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:'+(pending>0?'#fbbf24':'var(--ink3)')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(pending)+'</div>'+
+        '<div style="font-size:9px;color:var(--ink3);margin-top:2px">'+(pending>0?'รอดำเนินการ':'ไม่มีรอรับ')+'</div>'+
+      '</div>'+
     '</div>'+
-    // Pending salary activation
+    // ── Spend bar
+    (received > 0 ?
+    '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-bottom:4px">'+
+        '<span>ใช้จ่ายไป '+spendPct+'%</span>'+
+        '<span>'+fmtH(totalExp)+' / '+fmtH(received)+'</span>'+
+      '</div>'+
+      '<div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">'+
+        '<div style="height:100%;width:'+spendPct+'%;border-radius:4px;transition:width .5s;background:'+(spendPct>=90?'#f87171':spendPct>=70?'#fbbf24':'#4ade80')+'"></div>'+
+      '</div>'+
+    '</div>'
+    : '')+
+    // ── Pending salary entries
     (pendList.length ?
-    '<div style="background:#fdf4e7;border:1px solid #f0c36a;border-radius:8px;padding:8px 10px;margin-bottom:10px">'+
-      '<div style="font-size:11px;font-weight:700;color:#b5600a;margin-bottom:6px">⏳ รอรับ — จะเปิดใช้งานวันที่ '+SALARY_DAY+'</div>'+
-      pendList.map(function(e){return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(240,195,106,.3)">'+
-          '<span>'+e.desc+'</span>'+
-          '<span style="font-family:monospace;font-weight:600;color:#b5600a">+'+fmtH(e.amt)+'</span>'+
-        '</div>';}).join('')+
-      '<button onclick="activateSalaryNow()" style="margin-top:8px;width:100%;background:#1a4fa0;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
-    '</div>' : '')+
-    // Forecast card (v3)
-    forecastHtml;
+    '<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);border-radius:10px;padding:10px 12px;margin-bottom:2px">'+
+      '<div style="font-size:11px;font-weight:700;color:#b5600a;margin-bottom:6px">⏳ รอรับ — เปิดใช้วันที่ '+SALARY_DAY+'</div>'+
+      pendList.map(function(e){ return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(240,195,106,.25)">'+
+        '<span>'+e.desc+'</span>'+
+        '<span style="font-family:monospace;font-weight:700;color:#fbbf24">'+fmtH(e.amt)+'</span>'+
+      '</div>'; }).join('')+
+      '<button onclick="activateSalaryNow()" style="margin-top:10px;width:100%;background:var(--blue,#1a4fa0);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
+    '</div>' : '');
 }
 
 function activateSalaryNow(){

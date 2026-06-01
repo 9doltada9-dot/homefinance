@@ -179,6 +179,8 @@ function resetFilters(){
   if (fltMr) { fltMr.value = ''; fltMr._initialized = false; }
   var fltSCr = document.getElementById('fltSalaryCycle');
   if (fltSCr) { fltSCr.value = ''; fltSCr._initialized = false; }
+  var fltYr = document.getElementById('fltYear');
+  if (fltYr) fltYr.value = '';
   _updateTxModeUI();
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
   document.querySelectorAll('.tx-pill').forEach(function(p){ p.setAttribute('data-active','0'); });
@@ -204,6 +206,10 @@ function getFilteredTx(){
   if (!_txShowAllUsers && _myUid) {
     list = list.filter(function(e){ return (e.user_id || e.person) === _myUid; });
   }
+  // year filter
+  var fltY2 = document.getElementById('fltYear');
+  if(fltY2 && fltY2.value) list = list.filter(function(e){ return e.date.startsWith(fltY2.value); });
+
   // date filter — calendar: by month prefix, salary: by date range
   if (_txFilterMode === 'calendar') {
     if(fltM && fltM.value) list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
@@ -228,6 +234,19 @@ function getFilteredTx(){
     list = list.filter(function(e){ return fusers.indexOf(e.user_id || e.person) > -1; });
   }
   return list;
+}
+
+/** Populate year <select> from years present in db */
+function populateFltYear(sel) {
+  if (!sel) sel = document.getElementById('fltYear');
+  if (!sel) return;
+  var cur = sel.value;
+  var years = Array.from(new Set(db.map(function(e){ return e.date.slice(0,4); }))).sort().reverse();
+  sel.innerHTML = '<option value="">ทุกปี</option>' +
+    years.map(function(y){
+      return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+(Number(y)+543)+'</option>';
+    }).join('');
+  if (cur) sel.value = cur;
 }
 
 /** Populate salary-cycle <select> — last 14 cycles going backward */
@@ -362,6 +381,8 @@ function renderTx(){
   _updateTxModeUI();
 
   // always rebuild multi filters
+  var fltY=document.getElementById('fltYear');
+  populateFltYear(fltY);
   populateMFCat();
   populateMFVendor();
 
@@ -373,6 +394,9 @@ function renderTx(){
   if (!_txShowAllUsers && _myUid2) {
     list = list.filter(function(e){ return (e.user_id || e.person) === _myUid2; });
   }
+  // year filter (applies in all modes)
+  if(fltY && fltY.value) list=list.filter(function(e){return e.date.startsWith(fltY.value);});
+
   // date filter — calendar: month prefix, salary: date range
   if(_txFilterMode==='calendar'){
     if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});

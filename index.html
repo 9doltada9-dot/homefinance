@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.1</title>
+<title>HomeFinance v3.18.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -138,6 +138,12 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
 .mf-label.active{border-color:var(--hf-accent) !important;color:var(--hf-accent) !important;background:var(--hf-accent-soft) !important;}
 #txTotal{display:none;gap:20px;flex-wrap:wrap;padding:20px 22px;}
 #txTotal.shown{display:flex;}
+/* tx-card-row hover slide */
+.tx-card-row{transition:transform .14s ease,background .14s ease,box-shadow .14s ease;}
+@media(hover:hover){
+  .tx-card-row:hover{transform:translateX(5px);background:var(--surface2) !important;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+}
+.tx-card-row:active{transform:scale(.97);opacity:.88;transition:transform .08s ease,opacity .08s ease;}
 </style>
 <script>
 (function(){
@@ -163,7 +169,7 @@ function hfInitThemeBtns(){
 
 <div class="topbar">
   <div style="display:flex;flex-direction:column;justify-content:center;gap:1px">
-    <div class="topbar-title">HomeFinance</div>
+    <div class="topbar-title">HomeFinance <span style="font-size:10px;font-weight:400;opacity:.65;letter-spacing:.4px">v3.18.2</span></div>
     <div id="topbarDate" style="font-size:10px;color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px"></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -271,7 +277,7 @@ function hfInitThemeBtns(){
   <div class="hf-side-foot">
     <div id="sidebarUserInfo" style="display:none"></div>
     <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:rgba(255,255,255,.7);margin-bottom:8px">🚪 ออกจากระบบ</button>
-    HomeFinance v3.18.1 © 2025
+    <div style="font-size:10px;color:rgba(255,255,255,.35);text-align:center">© 2025 HomeFinance</div>
   </div>
 </nav>
 
@@ -476,6 +482,10 @@ function hfInitThemeBtns(){
   <div class="hf-card" style="padding:10px 14px;position:relative;z-index:10;margin-bottom:14px">
     <div class="hf-filter-row" style="gap:8px;flex-wrap:wrap">
 
+      <!-- year filter -->
+      <select id="fltYear" onchange="renderTx()" class="hf-chip" style="cursor:pointer;appearance:auto;min-width:72px">
+        <option value="">ทุกปี</option>
+      </select>
       <!-- mode toggle: ปฏิทิน / รอบเงินเดือน -->
       <div style="display:inline-flex;border-radius:20px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">
         <button id="btnTxModeCalendar" onclick="setTxFilterMode('calendar')"
@@ -1669,7 +1679,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.1</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.2</div>
   </div>
 </div>
 

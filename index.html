@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.17</title>
+<title>HomeFinance v3.18.18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -249,7 +249,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.17 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.18 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -1724,7 +1724,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.17</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.18</div>
   </div>
 </div>
 
@@ -2101,13 +2101,82 @@ create policy "public write" on transactions for all using (true);</div>
 </svg>
 
 <!-- Glass Settings FAB — ปุ่มลอยทุกหน้า -->
-<div id="glassControlGroup" style="position:fixed;top:16px;right:16px;z-index:8888;display:flex;align-items:center;gap:1px;padding:4px 6px;border-radius:99px;background:var(--g-strong);backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));-webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));border:1px solid var(--g-brd);box-shadow:var(--g-ring),var(--g-shadow)">
+<div id="glassControlGroup" style="position:fixed;top:16px;right:16px;z-index:8888;display:flex;align-items:center;gap:1px;padding:4px 6px;border-radius:99px;background:var(--g-strong);backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));-webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));border:1px solid var(--g-brd);box-shadow:var(--g-ring),var(--g-shadow);cursor:grab;user-select:none">
   <button id="hfBtnLight" onclick="hfSetTheme('light')" style="background:none;border:none;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;min-height:36px;transition:color .15s,background .15s;touch-action:manipulation">☀︎ สว่าง</button>
   <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
   <button id="hfBtnDark" onclick="hfSetTheme('dark')" style="background:none;border:none;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;min-height:36px;transition:color .15s,background .15s;touch-action:manipulation">☾ มืด</button>
   <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
   <button onclick="glassTogglePanel()" style="background:none;border:none;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--accent);font-family:Sarabun,sans-serif;white-space:nowrap;min-height:36px;touch-action:manipulation">✦ ปรับแต่ง</button>
 </div>
+<script>
+(function(){
+  var el, dragging=false, ox=0, oy=0, sx=0, sy=0, ex=0, ey=0, didDrag=false;
+  function init(){
+    el = document.getElementById('glassControlGroup');
+    if(!el) return;
+    // restore saved position
+    try{
+      var p=JSON.parse(localStorage.getItem('hf_grp_pos')||'null');
+      if(p){el.style.right='auto';el.style.left=p.x+'px';el.style.top=p.y+'px';}
+    }catch(_){}
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('touchstart', onTouchStart, {passive:true});
+  }
+  function onDown(e){
+    if(e.button!==0) return;
+    start(e.clientX, e.clientY);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    e.preventDefault();
+  }
+  function onTouchStart(e){
+    var t=e.touches[0];
+    start(t.clientX, t.clientY);
+    document.addEventListener('touchmove', onTouchMove, {passive:false});
+    document.addEventListener('touchend', onTouchEnd);
+  }
+  function start(cx, cy){
+    dragging=true; didDrag=false;
+    var r=el.getBoundingClientRect();
+    el.style.right='auto'; el.style.left=r.left+'px'; el.style.top=r.top+'px';
+    el.style.transition='none';
+    ox=cx-r.left; oy=cy-r.top;
+    sx=cx; sy=cy; ex=cx; ey=cy;
+    el.style.cursor='grabbing';
+  }
+  function move(cx,cy){
+    if(!dragging) return;
+    ex=cx; ey=cy;
+    var left=cx-ox, top=cy-oy;
+    left=Math.max(0,Math.min(left,window.innerWidth-el.offsetWidth));
+    top=Math.max(0,Math.min(top,window.innerHeight-el.offsetHeight));
+    el.style.left=left+'px'; el.style.top=top+'px';
+    if(Math.abs(ex-sx)>4||Math.abs(ey-sy)>4) didDrag=true;
+  }
+  function stop(){
+    if(!dragging) return;
+    dragging=false;
+    el.style.cursor='grab'; el.style.transition='';
+    if(didDrag){
+      localStorage.setItem('hf_grp_pos',JSON.stringify({x:parseInt(el.style.left),y:parseInt(el.style.top)}));
+      // ป้องกัน click ของปุ่มหลัง drag
+      el.addEventListener('click',eatClick,true);
+      setTimeout(function(){el.removeEventListener('click',eatClick,true);},300);
+    }
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+    document.removeEventListener('touchmove',onTouchMove);
+    document.removeEventListener('touchend',onTouchEnd);
+  }
+  function eatClick(e){e.stopPropagation();e.preventDefault();}
+  function onMove(e){move(e.clientX,e.clientY);}
+  function onUp(){stop();}
+  function onTouchMove(e){var t=e.touches[0];move(t.clientX,t.clientY);e.preventDefault();}
+  function onTouchEnd(){stop();}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+</script>
 
 </body>
 </html>

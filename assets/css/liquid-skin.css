@@ -1,0 +1,172 @@
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  HomeFinance · LIQUID GLASS — Premium Skin v1.0                ║
+   ║  วางเป็น <link> สุดท้าย (ต่อจาก glass.css) เพื่อ override ชนะ   ║
+   ║  ไม่แตะ HTML / JS — รีโทเคนสไตล์ใหม่ทั้งหมด (มืด+สว่าง)         ║
+   ║  ยกเลิกเอฟเฟกต์เก่า → กระจกเหลว iOS 26 / visionOS              ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ─────────────────────────────────────────────
+   1) TOKENS — LIGHT (ค่าเริ่มต้น)
+   รีแมปทั้งชุดเดิม (--g-*, --accent) และชุด bento (--hf-*)
+   ───────────────────────────────────────────── */
+:root{
+  /* accent ใหม่ */
+  --accent:#3f6fe0; --accent-2:#6a5ae0; --accent-soft:rgba(63,111,224,.14);
+  --hf-accent:#3f6fe0; --hf-accent-2:#6a5ae0; --hf-accent-soft:rgba(63,111,224,.13);
+
+  /* รัศมีใหญ่ขึ้น (พรีเมียม) */
+  --r:16px; --r2:22px; --r3:30px;
+  --hf-r:16px; --hf-r2:22px; --hf-r3:30px;
+
+  /* กระจก — เบลอหนัก + อิ่มสีสูง */
+  --g-blur:40px; --g-sat:220%;
+  --hf-blur:40px;
+  --g-card:rgba(255,255,255,.66); --g-strong:rgba(255,255,255,.82);
+  --g-brd:rgba(255,255,255,.85); --g-sheen:rgba(255,255,255,.85);
+  --hf-g-card:rgba(255,255,255,.62); --hf-g-strong:rgba(255,255,255,.82); --hf-g-brd:rgba(255,255,255,.85);
+  --g-shadow:0 26px 70px -20px rgba(40,52,110,.32), 0 6px 20px -8px rgba(40,52,110,.18);
+  --hf-shadow:0 26px 70px -20px rgba(40,52,110,.32), 0 6px 20px -8px rgba(40,52,110,.18);
+  --g-ring:inset 0 1.5px 0 rgba(255,255,255,.95);
+  --hf-ring:inset 0 1.5px 0 rgba(255,255,255,.95);
+
+  /* surfaces */
+  --surface:rgba(255,255,255,.66); --surface2:rgba(255,255,255,.5);
+  --line:rgba(60,72,130,.14); --line2:rgba(60,72,130,.24);
+  --hf-line:rgba(60,72,130,.14); --hf-line2:rgba(60,72,130,.24);
+
+  /* aurora — สดใส มีสี refraction */
+  --bg-base:#e9edfb; --hf-bg-base:#e9edfb;
+  --orb-1:#9db8ff; --orb-2:#ffc2e2; --orb-3:#aef0ff; --orb-4:#cdc4ff;
+  --hf-orb-1:#9db8ff; --hf-orb-2:#ffc2e2; --hf-orb-3:#aef0ff; --hf-orb-4:#cdc4ff;
+  --orb-opacity:.95; --orb-blur:30px;
+
+  /* semantic (คงความหมายเดิม) */
+  --green:#10a36b; --green-bg:rgba(16,163,107,.12);
+  --red:#d8485c;   --red-bg:rgba(216,72,92,.10);
+  --amber:#c47d11; --amber-bg:rgba(196,125,17,.13);
+  --blue:#3f6fe0;  --blue-bg:rgba(63,111,224,.12);
+  --hf-green:#10a36b; --hf-green-bg:rgba(16,163,107,.12);
+  --hf-red:#d8485c;   --hf-red-bg:rgba(216,72,92,.10);
+  --hf-amber:#c47d11; --hf-amber-bg:rgba(196,125,17,.13);
+  --hf-blue:#3f6fe0;  --hf-blue-bg:rgba(63,111,224,.12);
+}
+
+/* ─────────────────────────────────────────────
+   2) TOKENS — DARK (data-theme="dark")
+   ───────────────────────────────────────────── */
+html[data-theme="dark"]{
+  --ink:#f4f5ff; --ink2:#c2c8ec; --ink3:#9097bd;
+  --hf-ink:#f4f5ff; --hf-ink2:#c2c8ec; --hf-ink3:#9097bd;
+
+  --accent:#5c8dff; --accent-2:#7b6cff; --accent-soft:rgba(92,141,255,.20);
+  --hf-accent:#5c8dff; --hf-accent-2:#7b6cff; --hf-accent-soft:rgba(92,141,255,.22);
+
+  /* กระจกขาวโปร่ง (true liquid glass) */
+  --g-card:rgba(44,52,88,.55); --g-strong:rgba(56,64,104,.72);
+  --g-brd:rgba(255,255,255,.16); --g-sheen:rgba(255,255,255,.40);
+  --hf-g-card:rgba(44,52,88,.55); --hf-g-strong:rgba(56,64,104,.72); --hf-g-brd:rgba(255,255,255,.16);
+  --surface:rgba(44,52,88,.5); --surface2:rgba(44,52,88,.34);
+  --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.20);
+  --hf-line:rgba(255,255,255,.12); --hf-line2:rgba(255,255,255,.20);
+  --g-shadow:0 28px 80px -22px rgba(0,0,0,.55), 0 6px 20px -10px rgba(0,0,0,.5);
+  --hf-shadow:0 28px 80px -22px rgba(0,0,0,.55), 0 6px 20px -10px rgba(0,0,0,.5);
+  --g-ring:inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.08);
+  --hf-ring:inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.08);
+
+  /* aurora เข้ม สีสด */
+  --bg-base:#0d111b; --hf-bg-base:#0d111b;
+  --orb-1:#3f63c8; --orb-2:#b5407f; --orb-3:#1f8fb0; --orb-4:#5848c0;
+  --hf-orb-1:#3f63c8; --hf-orb-2:#b5407f; --hf-orb-3:#1f8fb0; --hf-orb-4:#5848c0;
+  --orb-opacity:.55; --orb-blur:34px;
+
+  --green:#52e6a6; --green-bg:rgba(82,230,166,.15);
+  --red:#ff7a8f;   --red-bg:rgba(255,122,143,.15);
+  --amber:#ffb15c; --amber-bg:rgba(255,177,92,.16);
+  --blue:#5c8dff;  --blue-bg:rgba(92,141,255,.16);
+  --hf-green:#52e6a6; --hf-green-bg:rgba(82,230,166,.15);
+  --hf-red:#ff7a8f;   --hf-red-bg:rgba(255,122,143,.15);
+  --hf-amber:#ffb15c; --hf-amber-bg:rgba(255,177,92,.16);
+  --hf-blue:#5c8dff;  --hf-blue-bg:rgba(92,141,255,.16);
+}
+
+/* ─────────────────────────────────────────────
+   3) DARK อัตโนมัติ (ไม่ได้ล็อกธีม) — ใช้ค่าเดียวกับด้านบน
+   ───────────────────────────────────────────── */
+@media (prefers-color-scheme:dark){
+  html:not([data-theme="light"]):not([data-theme="dark"]){
+    --ink:#f4f5ff; --ink2:#c2c8ec; --ink3:#9097bd;
+    --hf-ink:#f4f5ff; --hf-ink2:#c2c8ec; --hf-ink3:#9097bd;
+    --accent:#5c8dff; --accent-2:#7b6cff; --accent-soft:rgba(92,141,255,.20);
+    --hf-accent:#5c8dff; --hf-accent-2:#7b6cff; --hf-accent-soft:rgba(92,141,255,.22);
+    --g-card:rgba(44,52,88,.55); --g-strong:rgba(56,64,104,.72);
+    --g-brd:rgba(255,255,255,.16); --g-sheen:rgba(255,255,255,.40);
+    --hf-g-card:rgba(44,52,88,.55); --hf-g-strong:rgba(56,64,104,.72); --hf-g-brd:rgba(255,255,255,.16);
+    --surface:rgba(44,52,88,.5); --surface2:rgba(44,52,88,.34);
+    --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.20);
+    --hf-line:rgba(255,255,255,.12); --hf-line2:rgba(255,255,255,.20);
+    --g-shadow:0 28px 80px -22px rgba(0,0,0,.55), 0 6px 20px -10px rgba(0,0,0,.5);
+    --hf-shadow:0 28px 80px -22px rgba(0,0,0,.55), 0 6px 20px -10px rgba(0,0,0,.5);
+    --g-ring:inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.08);
+    --hf-ring:inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.08);
+    --bg-base:#0d111b; --hf-bg-base:#0d111b;
+    --orb-1:#5c8dff; --orb-2:#ff5fb0; --orb-3:#00d4ff; --orb-4:#7b6cff;
+    --hf-orb-1:#5c8dff; --hf-orb-2:#ff5fb0; --hf-orb-3:#00d4ff; --hf-orb-4:#7b6cff;
+    --green:#52e6a6; --green-bg:rgba(82,230,166,.15);
+    --red:#ff7a8f; --red-bg:rgba(255,122,143,.15);
+    --amber:#ffb15c; --amber-bg:rgba(255,177,92,.16);
+    --blue:#5c8dff; --blue-bg:rgba(92,141,255,.16);
+    --hf-green:#52e6a6; --hf-green-bg:rgba(82,230,166,.15);
+    --hf-red:#ff7a8f; --hf-red-bg:rgba(255,122,143,.15);
+    --hf-amber:#ffb15c; --hf-amber-bg:rgba(255,177,92,.16);
+    --hf-blue:#5c8dff; --hf-blue-bg:rgba(92,141,255,.16);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   4) เบลอหนักขึ้นทุกพื้นผิวกระจก
+   ───────────────────────────────────────────── */
+.card,.metric,.settings-section,.hf-card,.settle-card{
+  -webkit-backdrop-filter:blur(40px) saturate(150%)!important;
+  backdrop-filter:blur(40px) saturate(150%)!important;
+}
+html[data-theme="dark"] .card,html[data-theme="dark"] .metric,
+html[data-theme="dark"] .hf-card,html[data-theme="dark"] .settle-card{
+  background:rgba(44,52,88,.55)!important;
+}
+
+/* ─────────────────────────────────────────────
+   5) ปุ่ม / nav active = accent ใหม่
+   ───────────────────────────────────────────── */
+.btn-primary,.hf-btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2))!important;
+  box-shadow:0 14px 30px -12px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,.4)!important;
+}
+.nav-item.active,.hf-nav-item.active{
+  background:linear-gradient(135deg, color-mix(in srgb,var(--accent) 36%,transparent), transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20), inset 3px 0 0 var(--accent)!important;
+}
+.bn-item.active{color:var(--accent)!important}
+.chart-tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
+.mf-label.active{border-color:var(--accent)!important;color:var(--accent)!important;background:var(--accent-soft)!important}
+
+/* ─────────────────────────────────────────────
+   6) แถบ aurora — บูสต์ความสดให้ refraction ชัด
+   ───────────────────────────────────────────── */
+body::before{
+  background:
+    radial-gradient(32vw 32vw at 12% 8%,  var(--orb-1) 0%, transparent 55%),
+    radial-gradient(28vw 28vw at 88% 14%, var(--orb-2) 0%, transparent 55%),
+    radial-gradient(38vw 38vw at 50% 100%, var(--orb-3) 0%, transparent 60%),
+    radial-gradient(24vw 24vw at 95% 92%, var(--orb-4) 0%, transparent 55%)!important;
+  filter:blur(42px)!important;
+  opacity:var(--orb-opacity)!important;
+}
+html[data-theme="dark"] body::before{ opacity:.48!important; }
+
+/* radius สม่ำเสมอกับสเกลใหม่ */
+.hf-card,.card,.metric,.settings-section,.settle-card{ border-radius:var(--r2)!important; }
+
+/* ─────────────────────────────────────────────
+   7) ตัวเลข — ให้สัญลักษณ์ ฿ มี glyph ที่ถูกต้อง (IBM Plex Mono ไม่มี ฿)
+   ───────────────────────────────────────────── */
+.hf-mono,.mono{ font-family:'IBM Plex Mono','Sarabun',monospace!important; }

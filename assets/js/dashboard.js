@@ -366,34 +366,54 @@ function switchChart(type, passedMonth){
 // ─── CATEGORY SUB-CHART ──────────────────────────────────
 
 function renderCatChips(chartDb, months, labelsT) {
-  // เก็บใน globals เพื่อหลีกเลี่ยง double-quote ใน onclick attribute
   window._catChartDb = chartDb;
   window._catMonths  = months;
   window._catLabels  = labelsT;
-  var el = document.getElementById('catChipRow');
-  if (!el) return;
+  if (!window._selCats) window._selCats = [];
+  var drop = document.getElementById('catTrendDrop');
+  if (!drop) return;
   var catMap = {};
   chartDb.forEach(function(e){ if(e.type==='expense'&&isPaid(e)&&e.cat_name) catMap[e.cat_name]=true; });
   var cats = Object.keys(catMap).sort();
-  if (!window._selCats) window._selCats = [];
-  el.innerHTML = cats.length
-    ? cats.map(function(c,i){
-        var on = window._selCats.indexOf(c) > -1;
-        var col = PALETTE[i % PALETTE.length];
-        return '<button class="tx-pill'+(on?' active':'')+'" onclick="toggleCatChip(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')\" style="--pc:'+col+';--pb:'+col+'28">'+c+'</button>';
-      }).join('')
-    : '<span style="font-size:11px;color:var(--hf-ink3)">ยังไม่มีข้อมูล</span>';
+  drop.innerHTML = cats.length
+    ? '<div style="padding:8px 10px;display:flex;flex-direction:column;gap:3px">'
+      + cats.map(function(c,i){
+          var on = window._selCats.indexOf(c) > -1;
+          var col = PALETTE[i % PALETTE.length];
+          return '<button data-cat="'+c.replace(/"/g,'&quot;')+'" data-col="'+col+'"'
+            +' onclick="toggleCatSel(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')\"'
+            +' style="text-align:left;width:100%;background:'+(on?col+'28':'transparent')+';color:'+(on?col:'var(--ink)')+';border:1px solid '+(on?col:'transparent')+';padding:8px 12px;border-radius:10px;font-size:13px;font-weight:'+(on?700:500)+';cursor:pointer;font-family:Sarabun,sans-serif;display:flex;align-items:center;gap:8px">'
+            +'<span style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'+c+'</button>';
+        }).join('')+'</div>'
+    : '<div style="padding:12px;font-size:12px;color:var(--hf-ink3)">ยังไม่มีข้อมูล</div>';
+  _updateCatLabel();
   renderCatChart(chartDb, months, labelsT);
 }
 
-function toggleCatChip(c) {
+function _updateCatLabel() {
+  var lbl = document.getElementById('catTrendLabel');
+  if (!lbl) return;
+  var n = (window._selCats||[]).length;
+  lbl.innerHTML = n===0 ? 'เลือกหมวด ▾' : n===1 ? window._selCats[0]+' ▾' : n+' หมวด ▾';
+  lbl.classList.toggle('active', n > 0);
+}
+
+function toggleCatSel(c) {
   if (!window._selCats) window._selCats = [];
   var idx = window._selCats.indexOf(c);
   if (idx > -1) window._selCats.splice(idx, 1); else window._selCats.push(c);
-  var el = document.getElementById('catChipRow');
-  if (el) el.querySelectorAll('.tx-pill').forEach(function(btn){
-    btn.classList.toggle('active', window._selCats.indexOf(btn.textContent.trim()) > -1);
+  // อัปเดต style ปุ่มใน dropdown โดยไม่ rebuild (dropdown ยังค้างเปิดอยู่)
+  var drop = document.getElementById('catTrendDrop');
+  if (drop) drop.querySelectorAll('button[data-cat]').forEach(function(btn){
+    var cat = btn.getAttribute('data-cat');
+    var col = btn.getAttribute('data-col');
+    var on  = window._selCats.indexOf(cat) > -1;
+    btn.style.background  = on ? col+'28' : 'transparent';
+    btn.style.color       = on ? col : 'var(--ink)';
+    btn.style.border      = '1px solid '+(on ? col : 'transparent');
+    btn.style.fontWeight  = on ? '700' : '500';
   });
+  _updateCatLabel();
   renderCatChart(window._catChartDb, window._catMonths, window._catLabels);
 }
 

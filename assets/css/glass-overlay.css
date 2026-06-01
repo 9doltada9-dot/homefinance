@@ -198,18 +198,21 @@ html[data-theme="dark"] body::after{ opacity:.08; }
 }
 .mf-label{ background:var(--surface) !important; border:1px solid var(--g-brd) !important; border-radius:11px; }
 .mf-dropdown, .ac-list, #noteHistoryDrop{
-  background:var(--g-strong) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
-  backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
+  background:var(--surface) !important;
   border:1px solid var(--g-brd) !important;
   border-radius:var(--r2,22px) !important;
   box-shadow:var(--g-ring),var(--g-shadow) !important;
 }
-.mf-dropdown.open{ animation:glassDropIn .16s ease; }
+html[data-theme="dark"] .mf-dropdown,
+html[data-theme="dark"] .ac-list,
+html[data-theme="dark"] #noteHistoryDrop{
+  background:var(--g-strong) !important;
+}
+.mf-dropdown.open{ animation:glassDropIn .14s ease; }
 .mf-dropdown{ scrollbar-width:none; }
 .mf-dropdown::-webkit-scrollbar{ display:none; }
 @keyframes glassDropIn{
-  from{opacity:0;transform:translateY(-6px) scale(.97)}
+  from{opacity:0;transform:translateY(-4px) scale(.98)}
   to{opacity:1;transform:none}
 }
 

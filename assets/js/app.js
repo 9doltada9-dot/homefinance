@@ -18,7 +18,6 @@ document.addEventListener('click', function(e){
   if(!e.target.closest('.multi-filter')){
     document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
       d.classList.remove('open');
-      d.style.position=''; d.style.top=''; d.style.left=''; d.style.zIndex=''; d.style.visibility='';
     });
   }
 });

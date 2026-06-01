@@ -496,7 +496,7 @@ function renderSettle(){
             : '<span style="font-size:14px">💳</span>';
           var noteText = (e.note||'').trim();
           return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
-            +'style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;'
+            +'style="display:flex;align-items:center;gap:10px;padding:10px 18px 10px 14px;cursor:pointer;'
             +(idx>0?'border-top:1px solid var(--line);':'')
             +'">'
             +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
@@ -559,7 +559,7 @@ function renderSettle(){
                 ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
                 : '<span style="font-size:14px">💳</span>';
               return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
-                +'style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;'
+                +'style="display:flex;align-items:center;gap:10px;padding:10px 18px 10px 14px;cursor:pointer;'
                 +(idx>0?'border-top:1px solid var(--line);':'')
                 +'">'
                 +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'

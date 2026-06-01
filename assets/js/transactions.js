@@ -2,6 +2,27 @@
 
 // ─── ADMIN "SHOW ALL USERS" TOGGLE ───────────────────────
 var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin)
+var _txFilterMode = 'calendar'; // 'calendar' | 'salary'
+
+function _updateTxModeUI() {
+  var mode = _txFilterMode;
+  var fltM  = document.getElementById('fltMonth');
+  var fltSC = document.getElementById('fltSalaryCycle');
+  var btnC  = document.getElementById('btnTxModeCalendar');
+  var btnS  = document.getElementById('btnTxModeSalary');
+  if (fltM)  fltM.style.display  = mode === 'calendar' ? '' : 'none';
+  if (fltSC) fltSC.style.display = mode === 'salary'   ? '' : 'none';
+  if (btnC) { btnC.style.background = mode==='calendar' ? 'var(--blue)' : 'transparent';
+              btnC.style.color      = mode==='calendar' ? '#fff'        : 'var(--ink2)'; }
+  if (btnS) { btnS.style.background = mode==='salary'   ? 'var(--blue)' : 'transparent';
+              btnS.style.color      = mode==='salary'   ? '#fff'        : 'var(--ink2)'; }
+}
+
+function setTxFilterMode(mode) {
+  _txFilterMode = mode;
+  _updateTxModeUI();
+  renderTx();
+}
 
 function txAdminUnlockAll() {
   if (typeof isAdminUser !== 'function' || !isAdminUser()) return;
@@ -153,9 +174,12 @@ function populateMFCat(){
 
 
 function resetFilters(){
-  document.getElementById('fltMonth').value='';
-  var fltBM = document.getElementById('fltBillingMonth');
-  if (fltBM) { fltBM.value = ''; populateFltBillingMonth(fltBM); }
+  _txFilterMode = 'calendar';
+  var fltMr = document.getElementById('fltMonth');
+  if (fltMr) { fltMr.value = ''; fltMr._initialized = false; }
+  var fltSCr = document.getElementById('fltSalaryCycle');
+  if (fltSCr) { fltSCr.value = ''; fltSCr._initialized = false; }
+  _updateTxModeUI();
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
   document.querySelectorAll('.tx-pill').forEach(function(p){ p.setAttribute('data-active','0'); });
   [['mfType','ประเภท'],['mfCat','หมวด'],['mfItem','รายการ'],['mfVendor','ร้านค้า'],['mfStatus','สถานะ'],['mfUser','ผู้บันทึก']].forEach(function(pair){
@@ -171,7 +195,7 @@ function resetFilters(){
  */
 function getFilteredTx(){
   var fltM  = document.getElementById('fltMonth');
-  var fltBM = document.getElementById('fltBillingMonth');
+  var fltSC = document.getElementById('fltSalaryCycle');
   var list  = db.slice();
   // ซ่อน transfer IN — แสดงเฉพาะ OUT
   list = list.filter(function(e){ return e.transfer_direction !== 'in'; });
@@ -180,14 +204,14 @@ function getFilteredTx(){
   if (!_txShowAllUsers && _myUid) {
     list = list.filter(function(e){ return (e.user_id || e.person) === _myUid; });
   }
-  // transaction_date filter
-  if(fltM  && fltM.value)  list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
-  // billing_month filter (v3)
-  if(fltBM && fltBM.value){
-    list = list.filter(function(e){
-      var bm = e.billing_month || e.date.slice(0,7);
-      return bm === fltBM.value;
-    });
+  // date filter — calendar: by month prefix, salary: by date range
+  if (_txFilterMode === 'calendar') {
+    if(fltM && fltM.value) list = list.filter(function(e){ return e.date.startsWith(fltM.value); });
+  } else {
+    if(fltSC && fltSC.value){
+      var _gp = fltSC.value.split('|');
+      list = list.filter(function(e){ return e.date >= _gp[0] && e.date <= _gp[1]; });
+    }
   }
   var ftypes   = getMFValues('mfType');
   if(ftypes.length)   list = list.filter(function(e){ return ftypes.indexOf(e.type)>-1; });
@@ -206,19 +230,25 @@ function getFilteredTx(){
   return list;
 }
 
-/** Populate billing_month <select> from unique values in db */
-function populateFltBillingMonth(sel) {
-  if (!sel) sel = document.getElementById('fltBillingMonth');
+/** Populate salary-cycle <select> — last 14 cycles going backward */
+function populateFltSalaryCycle(sel) {
+  if (!sel) sel = document.getElementById('fltSalaryCycle');
   if (!sel) return;
   var cur = sel.value;
-  var months = Array.from(new Set(db.map(function(e){
-    return e.billing_month || e.date.slice(0,7);
-  }))).sort().reverse();
-  sel.innerHTML = '<option value="">เดือนบิล (billing)</option>' +
-    months.map(function(m){
-      var parts = m.split('-').map(Number);
-      return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+
-             SHORT_M[parts[1]-1]+' '+(parts[0]+543)+'</option>';
+  var cycles = [], seen = {};
+  var d = new Date();
+  for (var i = 0; i < 14; i++) {
+    var c = getSalaryCycle(d);
+    var val = c.start + '|' + c.end;
+    if (!seen[val]) {
+      seen[val] = true;
+      cycles.push({ val: val, label: c.label });
+    }
+    d = new Date(d.getFullYear(), d.getMonth() - 1, 10);
+  }
+  sel.innerHTML = '<option value="">— รอบเงินเดือน —</option>' +
+    cycles.map(function(c){
+      return '<option value="'+c.val+'"'+(c.val===cur?' selected':'')+'>'+c.label+'</option>';
     }).join('');
   if (cur) sel.value = cur;
 }
@@ -310,20 +340,30 @@ function renderTx(){
   var months=Array.from(new Set(db.map(function(e){return e.date.substring(0,7);}))).sort().reverse();
   if(months.indexOf(thisM)===-1) months.unshift(thisM);
   var fltM=document.getElementById('fltMonth');
-  // default to current month on first load
+  var fltSC=document.getElementById('fltSalaryCycle');
+  // calendar: default to current month on first load
   if(!fltM._initialized){ fltM._initialized=true; fltM.value=thisM; }
   var curM=fltM.value;
-  fltM.innerHTML=months.map(function(m){
+  fltM.innerHTML='<option value="">ทุกเดือน</option>'+months.map(function(m){
     var parts=m.split('-').map(Number);
     var y=parts[0], mo=parts[1];
     return '<option value="'+m+'" '+(m===curM?'selected':'')+'>'+SHORT_M[mo-1]+' '+(y+543)+'</option>';
   }).join('');
   if(curM) fltM.value=curM;
 
+  // salary cycle: populate + default to current cycle on first load
+  populateFltSalaryCycle(fltSC);
+  if(fltSC && !fltSC._initialized && _txFilterMode==='salary'){
+    fltSC._initialized=true;
+    var _cc=getSalaryCycle(); fltSC.value=_cc.start+'|'+_cc.end;
+  }
+
+  // sync toggle UI
+  _updateTxModeUI();
+
   // always rebuild multi filters
   populateMFCat();
   populateMFVendor();
-  populateFltBillingMonth();
 
   var list = db.slice();
   // ซ่อน transfer IN entry — แสดงเฉพาะ OUT (ตัวเดียวต่อการโอน)
@@ -333,14 +373,14 @@ function renderTx(){
   if (!_txShowAllUsers && _myUid2) {
     list = list.filter(function(e){ return (e.user_id || e.person) === _myUid2; });
   }
-  if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
-
-  // billing_month filter (v3)
-  var fltBM = document.getElementById('fltBillingMonth');
-  if(fltBM && fltBM.value){
-    list = list.filter(function(e){
-      return (e.billing_month || e.date.slice(0,7)) === fltBM.value;
-    });
+  // date filter — calendar: month prefix, salary: date range
+  if(_txFilterMode==='calendar'){
+    if(fltM.value) list=list.filter(function(e){return e.date.startsWith(fltM.value);});
+  } else {
+    if(fltSC && fltSC.value){
+      var _scp=fltSC.value.split('|');
+      list=list.filter(function(e){return e.date>=_scp[0]&&e.date<=_scp[1];});
+    }
   }
 
   var ftypes = getMFValues('mfType');
@@ -368,8 +408,11 @@ function renderTx(){
     list = list.filter(function(e){ return fusers2.indexOf(e.user_id || e.person) > -1; });
   }
 
-  // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกัน เรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
+  // เรียง: pending ลงล่างสุด → วันที่ล่าสุดก่อน → ภายในวันเดียวกัน เรียงตาม id ล่าสุดก่อน
   list.sort(function(a, b){
+    var aPend = a.status==='pending' ? 1 : 0;
+    var bPend = b.status==='pending' ? 1 : 0;
+    if(aPend !== bPend) return aPend - bPend;
     if(a.date > b.date) return -1;
     if(a.date < b.date) return 1;
     return Number(b.id) - Number(a.id);
@@ -434,9 +477,16 @@ function renderTx(){
           });
           return _groups.map(function(g){
             return '<div style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
-              g.items.map(function(e){return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
+              g.items.map(function(e){
+                var _mIid=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
+                var _mIhtml=_mIid
+                  ?'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><use href="#'+_mIid+'"></use></svg>'
+                  :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>';
+                var _mCircle='<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
+                return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
             '<div style="padding:12px 12px 10px">'+
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
+                _mCircle+
                 '<div style="flex:1;min-width:0">'+
                   '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'+
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
@@ -450,8 +500,8 @@ function renderTx(){
                 '</div>'+
                 '<div style="text-align:right;flex-shrink:0">'+
                   (isSalary(e) ?
-                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--green);display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
-                    '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">+'+fmtH(e.amt)+'</span>'+
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:#4ade80;display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
+                    '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">'+fmtH(e.amt)+'</span>'+
                     '<button '+
                       'onpointerdown="revealSal(\''+e.id+'\')" '+
                       'onpointerup="hideSal(\''+e.id+'\')" '+
@@ -462,9 +512,8 @@ function renderTx(){
                   '</div>' :
                   e.type==='transfer' ?
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmtH(e.amt)+'</div>' :
-                  
-                  '<span style="font-size:15px;font-weight:600;font-family:monospace;color:'+(e.type==='income'?'var(--green)':'var(--red)')+'">'+
-                    (e.type==='income'?'+':'−')+fmtH(e.amt)+
+                  '<span style="font-size:16px;font-weight:700;font-family:monospace;color:'+(e.type==='income'?'#4ade80':'#f87171')+'">'+
+                    fmtH(e.amt)+
                   '</span>')+
                   '<div style="margin-top:3px;display:flex;align-items:center;gap:5px;justify-content:flex-end">'+
                     _acctDot(e)+
@@ -502,20 +551,20 @@ function renderTx(){
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--hf-line);margin-bottom:8px">'
         +  '<div style="font-size:13px;font-weight:700;color:var(--hf-accent)">'+toThaiDateStr(g.date)+' <span style="color:var(--hf-ink3);font-weight:500">· '+g.items.length+' รายการ</span></div>'
         +  '<span style="font-size:12px;font-family:monospace">'
-        +    (dayIn?'<span style="color:var(--hf-green);font-weight:600">+'+fmtH(dayIn)+'</span>':'')+
+        +    (dayIn?'<span style="color:#4ade80;font-weight:600">'+fmtH(dayIn)+'</span>':'')+
              (dayIn&&dayOut?' <span style="color:var(--hf-ink3)">·</span> ':'')+
-             (dayOut?'<span style="color:var(--hf-red);font-weight:600">−'+fmtH(dayOut)+'</span>':'')
+             (dayOut?'<span style="color:#f87171;font-weight:600">'+fmtH(dayOut)+'</span>':'')
         +  '</span>'
         +'</div>'
         // cards
         + g.items.map(function(e){
-            var amtColor = e.type==='transfer'?'var(--blue)':e.type==='income'?'var(--green)':'var(--red)';
-            var amtSign  = e.type==='transfer'?'↗ ':e.type==='income'?'+':'−';
+            var amtColor  = e.type==='transfer'?'var(--blue)':e.type==='income'?'#4ade80':'#f87171';
+            var amtPrefix = e.type==='transfer'?'↗ ':'';
             var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
             var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
             var iconHtml = iconId
-              ? '<svg width="20" height="20" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-              : '<span style="font-size:18px;line-height:1">💳</span>';
+              ? '<svg width="28" height="28" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+              : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>';
             var vendorName = e.vendor_id ? (((vendorsData||[]).find(function(v){return v.id===e.vendor_id;})||{}).name||'') : '';
             var statusBadge = e.type==='transfer'
               ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
@@ -530,7 +579,7 @@ function renderTx(){
               +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
 
               // icon circle
-              +'<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);'
+              +'<div style="width:52px;height:52px;border-radius:50%;background:var(--surface2);'
               +'display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
 
               // center: desc + meta
@@ -549,7 +598,7 @@ function renderTx(){
 
               // right: amount + status + account
               +'<div style="text-align:right;flex-shrink:0">'
-              +  '<div style="font-size:15px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtSign+fmtH(e.amt)+'</div>'
+              +  '<div style="font-size:16px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtPrefix+fmtH(e.amt)+'</div>'
               +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
               +    statusBadge
               +    (acct?'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>':'')

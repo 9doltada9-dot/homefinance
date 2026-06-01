@@ -226,6 +226,7 @@ function activateSalaryNow(){
 
 // ─── DASHBOARD CHARTS ─────────────────────────────────────
 var chartMain = null;
+var chartCat  = null;
 
 /** ดึงชื่อที่ดีที่สุดสำหรับ person entry (legacy — ใช้กับ persons array) */
 function _personDisplayName(p) {
@@ -308,32 +309,21 @@ function switchChart(type, passedMonth){
       options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},padding:8,boxWidth:8,usePointStyle:true}}}}});
 
   } else if(type==='trend'){
-    // แนวโน้ม 6 เดือนย้อนหลัง
+    // แนวโน้ม 6 เดือนย้อนหลัง — รายรับ vs รายจ่ายรวม
     var months=[];
     for(var i=5;i>=0;i--){
       var d=new Date(now.getFullYear(), now.getMonth()-i, 1);
       months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
     }
-    var _tc=window._trendCat||null;
     var incVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
-    var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e)&&(!_tc||(e.cat_name||'—')===_tc);}).reduce(function(s,e){return s+e.amt;},0);});
+    var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
     var labelsT = months.map(function(m){ var p=m.split('-').map(Number); return SHORT_M[p[1]-1]+(p[0]+543-2500<100?'':"'"+String(p[0]+543).slice(2)); });
     chartMain = new Chart(ctx,{type:'line',data:{labels:labelsT,datasets:[
       {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
-      {label:_tc||'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
+      {label:'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
-    // populate category chips
-    var _tcEl=document.getElementById('trendCatFilter');
-    if(_tcEl){
-      var _tcMap={};
-      _chartDb.forEach(function(e){if(e.type==='expense'&&isPaid(e)&&e.cat_name)_tcMap[e.cat_name]=true;});
-      var _tcKeys=Object.keys(_tcMap).sort();
-      if(_tcKeys.length){
-        _tcEl.style.display='flex';
-        _tcEl.innerHTML='<span style="font-size:10px;color:var(--hf-ink3);white-space:nowrap;align-self:center">หมวด:</span>'
-          +_tcKeys.map(function(c){return '<button class="tx-pill'+(_tc===c?' active':'')+'" onclick="trendFilterCat(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')" style="--pc:var(--hf-blue,#3f6fe0);--pb:var(--hf-blue-bg,rgba(63,111,224,.12))">'+c+'</button>';}).join('');
-      } else { _tcEl.style.display='none'; }
-    }
+    // render category sub-chart chips
+    renderCatChips(_chartDb, months, labelsT);
 
   } else if(type==='person'){
     // แยกรายจ่ายตามคน
@@ -371,16 +361,62 @@ function switchChart(type, passedMonth){
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},scales:Object.assign({}, opts.scales, {x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:Object.assign({stacked:false}, opts.scales.y)})})
     });
   }
-  // clear category filter chips when not on trend
-  if(type!=='trend'){
-    var _tcElC=document.getElementById('trendCatFilter');
-    if(_tcElC){_tcElC.style.display='none';_tcElC.innerHTML='';}
-  }
 }
 
-function trendFilterCat(c){
-  window._trendCat=(window._trendCat===c?null:c);
-  switchChart('trend');
+// ─── CATEGORY SUB-CHART ──────────────────────────────────
+
+function renderCatChips(chartDb, months, labelsT) {
+  var el = document.getElementById('catChipRow');
+  if (!el) return;
+  var catMap = {};
+  chartDb.forEach(function(e){ if(e.type==='expense'&&isPaid(e)&&e.cat_name) catMap[e.cat_name]=true; });
+  var cats = Object.keys(catMap).sort();
+  if (!window._selCats) window._selCats = [];
+  el.innerHTML = cats.length
+    ? cats.map(function(c,i){
+        var on = window._selCats.indexOf(c) > -1;
+        var col = PALETTE[i % PALETTE.length];
+        return '<button class="tx-pill'+(on?' active':'')+'" onclick="toggleCatChip(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\','+JSON.stringify(months)+','+JSON.stringify(labelsT)+')" style="--pc:'+col+';--pb:'+col+'28">'+c+'</button>';
+      }).join('')
+    : '<span style="font-size:11px;color:var(--hf-ink3)">ยังไม่มีข้อมูล</span>';
+  renderCatChart(chartDb, months, labelsT);
+}
+
+function toggleCatChip(c, months, labelsT) {
+  if (!window._selCats) window._selCats = [];
+  var idx = window._selCats.indexOf(c);
+  if (idx > -1) window._selCats.splice(idx, 1); else window._selCats.push(c);
+  // re-render chips to update active state
+  var el = document.getElementById('catChipRow');
+  if (el) el.querySelectorAll('.tx-pill').forEach(function(btn){
+    var active = window._selCats.indexOf(btn.textContent.trim()) > -1;
+    btn.classList.toggle('active', active);
+  });
+  var _myUid = typeof getAuthUserId==='function'?getAuthUserId():null;
+  var db2 = _myUid ? db.filter(function(e){return(e.user_id||e.person)===_myUid;}) : db;
+  renderCatChart(db2, months, labelsT);
+}
+
+function renderCatChart(chartDb, months, labelsT) {
+  var canvas = document.getElementById('chartCat');
+  var legend = document.getElementById('chartCatLegend');
+  if (!canvas) return;
+  if (chartCat) { chartCat.destroy(); chartCat = null; }
+  if (!window._selCats || !window._selCats.length) {
+    if (legend) legend.textContent = 'เลือกหมวดด้านบนเพื่อดูแนวโน้ม';
+    return;
+  }
+  if (legend) legend.textContent = '';
+  var opts2 = {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:9},usePointStyle:true,padding:8,boxWidth:8}}},
+    scales:{y:{ticks:{callback:function(v){return typeof fmt==='function'?fmt(v):v;},font:{size:9}},grid:{color:'rgba(128,128,128,0.08)'},border:{dash:[3,3]}},
+            x:{grid:{display:false},ticks:{font:{size:9}}}}};
+  var datasets = window._selCats.map(function(c,i){
+    var col = PALETTE[i % PALETTE.length];
+    var vals = months.map(function(m){return chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e)&&(e.cat_name||'—')===c;}).reduce(function(s,e){return s+e.amt;},0);});
+    return {label:c,data:vals,borderColor:col,backgroundColor:col+'22',tension:.3,fill:true,pointRadius:3,borderWidth:2};
+  });
+  chartCat = new Chart(canvas.getContext('2d'),{type:'line',data:{labels:labelsT,datasets:datasets},options:opts2});
 }
 
 // ─── DASHBOARD BENTO MINI WIDGETS ────────────────────────

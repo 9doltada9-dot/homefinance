@@ -125,26 +125,28 @@ function toggleMF(id){
   var dd = el.querySelector('.mf-dropdown');
   if (!dd) return;
   var wasOpen = dd.classList.contains('open');
-  // close all + reset fixed positioning
+  // close all + reset positioning
   document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
     d.classList.remove('open');
-    d.style.position=''; d.style.top=''; d.style.left=''; d.style.zIndex='';
+    d.style.position=''; d.style.top=''; d.style.left=''; d.style.zIndex=''; d.style.visibility='';
   });
   if (!wasOpen) {
-    // position:fixed → หลุด stacking context ของ card → backdrop-filter ใช้ glass settings ได้จริง
+    // position:fixed → หลุด stacking context ของ card → backdrop-filter ทำงานกับ aurora จริง
     var lbl = el.querySelector('.mf-label') || el;
     var rect = lbl.getBoundingClientRect();
-    dd.style.position = 'fixed';
-    dd.style.top      = (rect.bottom + 4) + 'px';
-    dd.style.left     = rect.left + 'px';
-    dd.style.zIndex   = '9000';
+    // ซ่อนก่อนวัดขนาด เพื่อกำหนด left ที่ถูกต้องทันที (ไม่มี 1-frame jump)
+    dd.style.visibility = 'hidden';
+    dd.style.position   = 'fixed';
+    dd.style.top        = (rect.bottom + 6) + 'px';
+    dd.style.left       = rect.left + 'px';
+    dd.style.zIndex     = '9000';
     dd.classList.add('open');
-    // แก้ overflow ขวา (หลัง paint)
-    requestAnimationFrame(function(){
-      var r = dd.getBoundingClientRect();
-      if (r.right > window.innerWidth - 8)
-        dd.style.left = Math.max(8, window.innerWidth - r.width - 8) + 'px';
-    });
+    // วัด offsetWidth (synchronous reflow) แล้วแก้ overflow ขวา
+    var dropW = dd.offsetWidth;
+    var left  = rect.left;
+    if (left + dropW > window.innerWidth - 8) left = Math.max(8, window.innerWidth - dropW - 8);
+    dd.style.left       = left + 'px';
+    dd.style.visibility = '';   // แสดงในตำแหน่งที่ถูกต้องทันที
   }
 }
 

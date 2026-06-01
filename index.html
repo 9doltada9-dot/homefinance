@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.13</title>
+<title>HomeFinance v3.18.14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -249,7 +249,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.13 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.14 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -336,9 +336,15 @@ function hfInitThemeBtns(){
     <!-- Trend Chart — span 7 (ข้างมูลสุทธิรวม) -->
     <div class="hf-card" style="grid-column:span 7">
       <div class="hf-card-title">แนวโน้ม 6 เดือน <span class="hf-link" onclick="nav('monthly')">รายงาน →</span></div>
-      <div style="position:relative;height:200px"><canvas id="chartMain" role="img"></canvas></div>
-      <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
-      <div id="trendCatFilter" style="display:none;gap:6px;flex-wrap:wrap;padding:8px 0 2px;align-items:center"></div>
+      <div style="position:relative;height:170px"><canvas id="chartMain" role="img"></canvas></div>
+      <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0 10px"></div>
+      <!-- Category trend sub-chart -->
+      <div style="border-top:1px solid var(--line);padding-top:10px">
+        <div style="font-size:10px;font-weight:700;color:var(--hf-ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">แนวโน้มหมวดรายจ่าย</div>
+        <div id="catChipRow" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px"></div>
+        <div style="position:relative;height:120px"><canvas id="chartCat" role="img"></canvas></div>
+        <div id="chartCatLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:3px 0 0"></div>
+      </div>
     </div>
     <!-- Metrics 4×1 — span 12 -->
     <div id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-content:start"></div>
@@ -1715,7 +1721,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.13</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.14</div>
   </div>
 </div>
 

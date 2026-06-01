@@ -510,21 +510,32 @@ function renderAccountList() {
       var icon = TYPE_ICON[a.type] || '💳';
       var hasUsage = db.some(function(e){ return e.account_id === a.id; });
       var cantDel  = hasUsage || accountsData.filter(function(x){ return x.is_active !== false; }).length <= 1;
-      return '<div style="background:var(--surface2);border-radius:var(--r2);padding:14px 12px;border:1.5px solid var(--line);border-top:3px solid '+a.color+'">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
-          +'<div style="font-size:22px">'+icon+'</div>'
-          +'<div style="flex:1;min-width:0">'
-            +'<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.name+'</div>'
-            +'<div style="font-size:10px;color:var(--hf-ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
-          +'</div>'
+      // horizontal card row: คลิกทั้งการ์ด = เปิด ledger
+      return '<div onclick="openAccountLedger(\''+a.id+'\')" '
+        +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;'
+        +'background:var(--surface2);border-radius:var(--r2);border:1px solid var(--line);'
+        +'border-left:4px solid '+a.color+';transition:background .12s">'
+        // icon circle
+        +'<div style="width:40px;height:40px;border-radius:50%;background:'+a.color+'22;'
+          +'border:2px solid '+a.color+'55;display:flex;align-items:center;justify-content:center;'
+          +'font-size:20px;flex-shrink:0">'+icon+'</div>'
+        // name + type
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
+          +'<div style="font-size:11px;color:var(--hf-ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
         +'</div>'
-        +'<div style="font-size:17px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+(bal>=0?'var(--hf-green)':'var(--hf-red)')+';margin-bottom:10px">'+fmtH(bal)+'</div>'
-        +'<div style="display:flex;gap:4px;border-top:1px solid var(--line);padding-top:8px">'
-          +'<button onclick="openAccountLedger(\''+a.id+'\')" title="รายการ" style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">📋</button>'
-          +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="flex:1;background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation">+ฝาก</button>'
-          +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="flex:1;background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
-          +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
-          +(cantDel?'':'<button onclick="deleteAccountInline(\''+a.id+'\')" title="ลบ" style="flex:0 0 auto;background:var(--surface);border:1px solid #fca5a5;border-radius:6px;padding:6px 8px;font-size:12px;cursor:pointer;color:var(--red);font-family:Sarabun,sans-serif;touch-action:manipulation">🗑</button>')
+        // balance
+        +'<div style="text-align:right;flex-shrink:0;margin-right:8px">'
+          +'<div style="font-size:16px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
+            +(bal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(bal)+'</div>'
+          +'<div style="font-size:10px;color:var(--ink3)">บาท</div>'
+        +'</div>'
+        // action buttons (stopPropagation เพื่อไม่ให้ trigger openAccountLedger)
+        +'<div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">'
+          +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation;white-space:nowrap">+ฝาก</button>'
+          +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
+          +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
+          +(cantDel?'':'<button onclick="deleteAccountInline(\''+a.id+'\')" title="ลบ" style="background:var(--surface);border:1px solid #fca5a5;border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;color:var(--red);font-family:Sarabun,sans-serif;touch-action:manipulation">🗑</button>')
         +'</div>'
       +'</div>';
     }).join('');
@@ -535,7 +546,7 @@ function renderAccountList() {
         + '<span style="font-size:14px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
         + (groupTotal>=0?'var(--hf-green)':'var(--hf-red)') + '">' + fmtH(groupTotal) + ' ฿</span>'
       + '</div>'
-      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
       + cardsHtml
       + '</div>'
       + '</div>';
@@ -648,8 +659,8 @@ function deleteAccountInline(id) {
   _openModal('deleteConfirmModal');
 }
 
-/** นำทางไปยังหน้ารายการ กรองตามวันที่และเลื่อนไปหาวันนั้น (เรียกจาก ledger row) */
-function navToTxDate(date, accountId) {
+/** นำทางไปหน้ารายการ + เลื่อนหา + เรืองแสงรายการที่คลิกมา (เรียกจาก ledger row) */
+function navToTxEntry(entryId, date) {
   _closeModal('accountLedgerModal', function() {
     _ledgerAccountId = null;
     if (typeof nav === 'function') nav('transactions');
@@ -659,11 +670,19 @@ function navToTxDate(date, accountId) {
     if (fltM) { fltM._initialized = true; fltM.value = date.slice(0, 7); }
     if (typeof _updateTxModeUI === 'function') _updateTxModeUI();
     if (typeof renderTx === 'function') renderTx();
-    // scroll to the date group
+    // scroll + glow highlight
     setTimeout(function() {
-      var el = document.getElementById('txdate-' + date);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 400);
+      var el = document.getElementById('row-'+entryId) || document.getElementById('srow-'+entryId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('tx-glow');
+        setTimeout(function(){ el.classList.remove('tx-glow'); }, 2200);
+      } else {
+        // fallback: scroll to date header
+        var dateEl = document.getElementById('txdate-'+date);
+        if (dateEl) dateEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 450);
   });
 }
 
@@ -803,7 +822,7 @@ function renderLedger() {
     }
 
     var balColor = running >= 0 ? 'var(--green)' : 'var(--red)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer" onclick="navToTxDate(\''+e.date+'\',\''+accountId+'\')" title="ดูรายการวันนี้ในหน้ารายการ">' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer" onclick="navToTxEntry(\''+e.id+'\',\''+e.date+'\')" title="คลิกเพื่อดูรายการนี้ในหน้ารายการ">' +
 
       '<td style="padding:8px 6px;max-width:180px">' +
         '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.desc || '—') + '</div>' +

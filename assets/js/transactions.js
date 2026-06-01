@@ -180,7 +180,7 @@ function resetFilters(){
   var fltSCr = document.getElementById('fltSalaryCycle');
   if (fltSCr) { fltSCr.value = ''; fltSCr._initialized = false; }
   var fltYr = document.getElementById('fltYear');
-  if (fltYr) fltYr.value = '';
+  if (fltYr) { fltYr.value = ''; fltYr._initialized = false; }
   _updateTxModeUI();
   document.querySelectorAll('.mf-dropdown input[type=checkbox]').forEach(function(cb){cb.checked=false;});
   document.querySelectorAll('.tx-pill').forEach(function(p){ p.setAttribute('data-active','0'); });
@@ -240,13 +240,16 @@ function getFilteredTx(){
 function populateFltYear(sel) {
   if (!sel) sel = document.getElementById('fltYear');
   if (!sel) return;
-  var cur = sel.value;
+  var thisY = String(new Date().getFullYear());
+  // default to current year on first load
+  if (!sel._initialized) { sel._initialized = true; sel.value = thisY; }
+  var cur = sel.value || thisY;
   var years = Array.from(new Set(db.map(function(e){ return e.date.slice(0,4); }))).sort().reverse();
   sel.innerHTML = '<option value="">ทุกปี</option>' +
     years.map(function(y){
       return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+(Number(y)+543)+'</option>';
     }).join('');
-  if (cur) sel.value = cur;
+  sel.value = cur;
 }
 
 /** Populate salary-cycle <select> — last 14 cycles going backward */

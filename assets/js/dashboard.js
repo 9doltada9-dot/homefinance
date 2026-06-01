@@ -166,8 +166,8 @@ function renderSalaryCycleCard(){
         '<div style="height:100%;width:'+progressPct+'%;background:var(--blue,#1a4fa0);border-radius:3px;transition:width .5s"></div>'+
       '</div>'+
     '</div>'+
-    // ── 4-metric grid (2×2)
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">'+
+    // ── 4-metric grid (1×4 desktop / 2×2 mobile via CSS class)
+    '<div class="salary-metrics-grid">'+
       '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px">'+
         '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💰 รายรับ</div>'+
         '<div style="font-size:18px;font-weight:800;color:#4ade80;font-family:monospace;letter-spacing:-0.5px">'+fmtH(received)+'</div>'+

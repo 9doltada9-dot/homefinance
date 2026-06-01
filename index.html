@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.2</title>
+<title>HomeFinance v3.18.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -138,6 +138,9 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
 .mf-label.active{border-color:var(--hf-accent) !important;color:var(--hf-accent) !important;background:var(--hf-accent-soft) !important;}
 #txTotal{display:none;gap:20px;flex-wrap:wrap;padding:20px 22px;}
 #txTotal.shown{display:flex;}
+/* salary cycle 4-metric row (responsive) */
+.salary-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+@media(max-width:768px){.salary-metrics-grid{grid-template-columns:repeat(2,1fr);}}
 /* tx-card-row hover slide */
 .tx-card-row{transition:transform .14s ease,background .14s ease,box-shadow .14s ease;}
 @media(hover:hover){
@@ -169,7 +172,7 @@ function hfInitThemeBtns(){
 
 <div class="topbar">
   <div style="display:flex;flex-direction:column;justify-content:center;gap:1px">
-    <div class="topbar-title">HomeFinance <span style="font-size:10px;font-weight:400;opacity:.65;letter-spacing:.4px">v3.18.2</span></div>
+    <div class="topbar-title">HomeFinance <span style="font-size:10px;font-weight:400;opacity:.65;letter-spacing:.4px">v3.18.3</span></div>
     <div id="topbarDate" style="font-size:10px;color:rgba(255,255,255,.65);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px"></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -301,20 +304,20 @@ function hfInitThemeBtns(){
     <div id="salaryCycleCard" class="hf-cycle" style="display:none;grid-column:span 12">
       <div id="salaryCycleContent" style="flex:1"></div>
     </div>
-    <!-- Net Worth — span 4, row-span 2 -->
-    <div id="networthCard" class="hf-card" style="grid-column:span 4;grid-row:span 2;display:flex;flex-direction:column"></div>
-    <!-- Metrics 2×2 — span 8, row-span 2 -->
-    <div id="metrics" style="grid-column:span 8;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;grid-row:span 2;align-content:start"></div>
+    <!-- Net Worth — span 5 -->
+    <div id="networthCard" class="hf-card" style="grid-column:span 5;display:flex;flex-direction:column"></div>
+    <!-- Trend Chart — span 7 (ข้างมูลสุทธิรวม) -->
+    <div class="hf-card" style="grid-column:span 7">
+      <div class="hf-card-title">แนวโน้ม 6 เดือน <span class="hf-link" onclick="nav('monthly')">รายงาน →</span></div>
+      <div style="position:relative;height:200px"><canvas id="chartMain" role="img"></canvas></div>
+      <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
+    </div>
+    <!-- Metrics 4×1 — span 12 -->
+    <div id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-content:start"></div>
     <!-- Recent TX — span 7 -->
     <div class="hf-card" style="grid-column:span 7">
       <div class="hf-card-title">รายการล่าสุด <span class="hf-link" onclick="nav('transactions')">ดูทั้งหมด →</span></div>
       <div id="recentTx"></div>
-    </div>
-    <!-- Trend Chart — span 5 -->
-    <div class="hf-card" style="grid-column:span 5">
-      <div class="hf-card-title">แนวโน้ม 6 เดือน <span class="hf-link" onclick="nav('monthly')">รายงาน →</span></div>
-      <div style="position:relative;height:200px"><canvas id="chartMain" role="img"></canvas></div>
-      <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0"></div>
     </div>
     <!-- Budget Mini — span 5 -->
     <div id="dashBudgetMini" class="hf-card" style="grid-column:span 5"></div>
@@ -1679,7 +1682,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.2</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.3</div>
   </div>
 </div>
 

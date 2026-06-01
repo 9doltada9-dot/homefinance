@@ -508,16 +508,25 @@ function renderAccountList() {
     var cardsHtml = list.map(function(a){
       var bal = getAccountBalance(a.id);
       var icon = TYPE_ICON[a.type] || '💳';
-      return '<div onclick="openAccountDetailModal(\'' + a.id + '\')" '
-        + 'style="cursor:pointer;background:var(--surface2);border-radius:var(--r2);padding:14px 12px;'
-        + 'border:1.5px solid var(--line);border-top:3px solid ' + a.color + '">'
-        + '<div style="font-size:20px;margin-bottom:8px">' + icon + '</div>'
-        + '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;'
-        + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.name + '</div>'
-        + '<div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
-        + (bal>=0?'var(--hf-green)':'var(--hf-red)') + '">' + fmtH(bal) + '</div>'
-        + '<div style="font-size:10px;color:var(--hf-ink3);margin-top:2px">' + (ACCOUNT_TYPES[a.type]||a.type) + '</div>'
-        + '</div>';
+      var hasUsage = db.some(function(e){ return e.account_id === a.id; });
+      var cantDel  = hasUsage || accountsData.filter(function(x){ return x.is_active !== false; }).length <= 1;
+      return '<div style="background:var(--surface2);border-radius:var(--r2);padding:14px 12px;border:1.5px solid var(--line);border-top:3px solid '+a.color+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+          +'<div style="font-size:22px">'+icon+'</div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.name+'</div>'
+            +'<div style="font-size:10px;color:var(--hf-ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="font-size:17px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'+(bal>=0?'var(--hf-green)':'var(--hf-red)')+';margin-bottom:10px">'+fmtH(bal)+'</div>'
+        +'<div style="display:flex;gap:4px;border-top:1px solid var(--line);padding-top:8px">'
+          +'<button onclick="openAccountLedger(\''+a.id+'\')" title="รายการ" style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">📋</button>'
+          +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="flex:1;background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation">+ฝาก</button>'
+          +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="flex:1;background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
+          +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 2px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
+          +(cantDel?'':'<button onclick="deleteAccountInline(\''+a.id+'\')" title="ลบ" style="flex:0 0 auto;background:var(--surface);border:1px solid #fca5a5;border-radius:6px;padding:6px 8px;font-size:12px;cursor:pointer;color:var(--red);font-family:Sarabun,sans-serif;touch-action:manipulation">🗑</button>')
+        +'</div>'
+      +'</div>';
     }).join('');
 
     return '<div class="hf-card" style="margin-bottom:14px">'
@@ -609,6 +618,52 @@ function deleteAccountFromDetail(id) {
       btn.onclick = execDeleteConfirmed;
     };
     _openModal('deleteConfirmModal');
+  });
+}
+
+/** ลบบัญชีโดยตรงจากการ์ด (ไม่ผ่าน detail modal) */
+function deleteAccountInline(id) {
+  var hasUsage = db.some(function(e){ return e.account_id === id; });
+  if (hasUsage) { showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้'); return; }
+  if (accountsData.filter(function(a){ return a.is_active !== false; }).length <= 1) {
+    showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี'); return;
+  }
+  var acct = accountsData.find(function(a){ return a.id === id; });
+  var descEl = document.getElementById('delConfirmDesc');
+  var noteEl = document.getElementById('delConfirmNote');
+  if (descEl) descEl.textContent = 'ลบบัญชี "' + (acct ? acct.name : '') + '" ออกจากระบบ?';
+  if (noteEl) noteEl.textContent = 'การลบนี้ไม่สามารถกู้คืนได้';
+  var btn = document.getElementById('delConfirmBtn');
+  var _prev = btn.onclick;
+  btn.onclick = function(){
+    accountsData = accountsData.filter(function(x){ return x.id !== id; });
+    saveAccountsLocal();
+    if (acct && typeof sbSyncAccount === 'function') sbSyncAccount(acct, 'delete');
+    closeDeleteConfirmModal();
+    renderAccountList();
+    renderAccountCards();
+    showCycleToast('ลบบัญชีแล้ว');
+    btn.onclick = _prev;
+  };
+  _openModal('deleteConfirmModal');
+}
+
+/** นำทางไปยังหน้ารายการ กรองตามวันที่และเลื่อนไปหาวันนั้น (เรียกจาก ledger row) */
+function navToTxDate(date, accountId) {
+  _closeModal('accountLedgerModal', function() {
+    _ledgerAccountId = null;
+    if (typeof nav === 'function') nav('transactions');
+    // switch to calendar mode + set month
+    if (typeof _txFilterMode !== 'undefined') _txFilterMode = 'calendar';
+    var fltM = document.getElementById('fltMonth');
+    if (fltM) { fltM._initialized = true; fltM.value = date.slice(0, 7); }
+    if (typeof _updateTxModeUI === 'function') _updateTxModeUI();
+    if (typeof renderTx === 'function') renderTx();
+    // scroll to the date group
+    setTimeout(function() {
+      var el = document.getElementById('txdate-' + date);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
   });
 }
 
@@ -748,7 +803,7 @@ function renderLedger() {
     }
 
     var balColor = running >= 0 ? 'var(--green)' : 'var(--red)';
-    return '<tr style="border-bottom:1px solid var(--line)">' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer" onclick="navToTxDate(\''+e.date+'\',\''+accountId+'\')" title="ดูรายการวันนี้ในหน้ารายการ">' +
 
       '<td style="padding:8px 6px;max-width:180px">' +
         '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.desc || '—') + '</div>' +

@@ -500,7 +500,7 @@ function renderTx(){
             _dmap[d].push(e);
           });
           return _groups.map(function(g){
-            return '<div style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
+            return '<div id="txdate-'+g.date+'" style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
               g.items.map(function(e){
                 var _mIid=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
                 var _mIhtml=_mIid
@@ -570,7 +570,7 @@ function renderTx(){
       var dayIn=0, dayOut=0;
       g.items.forEach(function(e){ if(e.type==='income') dayIn+=e.amt; else if(e.type==='expense') dayOut+=e.amt; });
 
-      return '<div class="hf-card" style="margin-bottom:14px;padding:12px 20px 8px">'
+      return '<div class="hf-card" id="txdate-'+g.date+'" style="margin-bottom:14px;padding:12px 20px 8px">'
         // date header
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--hf-line);margin-bottom:8px">'
         +  '<div style="font-size:13px;font-weight:700;color:var(--hf-accent)">'+toThaiDateStr(g.date)+' <span style="color:var(--hf-ink3);font-weight:500">· '+g.items.length+' รายการ</span></div>'

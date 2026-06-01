@@ -484,6 +484,10 @@ async function addEntry(){
   if(!_ok) return;
   db.unshift(_entry);
   save();
+  // refresh all affected panels immediately
+  if (typeof renderDash          === 'function') renderDash();
+  if (typeof renderAccountCards  === 'function') renderAccountCards();
+  if (typeof renderAccountList   === 'function') renderAccountList();
   addNoteHistory(note);
   // Mark recurring template as run if this entry came from one
   if (window._pending_recurring_id) {

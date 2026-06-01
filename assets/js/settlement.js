@@ -319,7 +319,7 @@ function renderSettle(){
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:8px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(o)+'</span></div>'
       +'<div style="border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;align-items:center">'
         +'<span style="font-size:11px;color:'+balColor+';font-weight:700">'+balLabel+'</span>'
-        +'<span style="font-family:monospace;font-weight:800;font-size:15px;color:'+balColor+'">'+(bal>=0?'+':'')+fmtH(Math.abs(bal))+'</span>'
+        +'<span style="font-family:monospace;font-weight:800;font-size:15px;color:'+balColor+'">'+fmtH(Math.abs(bal))+'</span>'
       +'</div>'
     +'</div>';
   }).join('');
@@ -474,7 +474,7 @@ function renderSettle(){
       +'box-shadow:var(--g-shadow);margin-bottom:12px;overflow:hidden">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--surface2)">'
       +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
-      +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(dayTotal)+'</span>'
+      +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">'+fmtH(dayTotal)+'</span>'
       +'</div>'
       + g.items.map(function(e, idx){
           var payerU = e.user_id || _pidToUid(e.person) || e.person;
@@ -510,7 +510,7 @@ function renderSettle(){
               +'</div>'
             +'</div>'
             +'<div style="flex-shrink:0;text-align:right">'
-              +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
+              +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">'+fmtH(e.amt)+'</div>'
             +'</div>'
           +'</div>';
         }).join('')
@@ -546,7 +546,7 @@ function renderSettle(){
           +'box-shadow:var(--g-shadow);margin-bottom:10px;overflow:hidden">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--surface2)">'
           +  '<span style="font-size:12px;font-weight:700;color:var(--ink2)">'+toThaiDateStr(g.date)+'</span>'
-          +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">−'+fmtH(persDay)+'</span>'
+          +  '<span style="font-size:11px;color:var(--red,#dc2626);font-family:monospace;font-weight:600">'+fmtH(persDay)+'</span>'
           +'</div>'
           + g.items.map(function(e, idx){
               var pu = e.user_id || _pidToUid(e.person) || e.person;
@@ -572,7 +572,7 @@ function renderSettle(){
                   +'</div>'
                 +'</div>'
                 +'<div style="flex-shrink:0;text-align:right">'
-                  +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">−'+fmtH(e.amt)+'</div>'
+                  +'<div style="font-size:14px;font-weight:700;font-family:monospace;color:var(--red,#dc2626)">'+fmtH(e.amt)+'</div>'
                 +'</div>'
               +'</div>';
             }).join('')
@@ -755,7 +755,7 @@ function exportSettleHTML(month, groupId) {
       +'<td>'+pill+'</td>'
       +'<td style="text-align:right">'+fmtH(p)+'</td>'
       +'<td style="text-align:right">'+fmtH(o)+'</td>'
-      +'<td style="text-align:right;font-weight:600;color:'+(bal>=0?'#1a7a4a':'#c0392b')+'">'+(bal>=0?'+':'')+fmtH(bal)+'</td>'
+      +'<td style="text-align:right;font-weight:600;color:'+(bal>=0?'#1a7a4a':'#c0392b')+'">'+fmtH(Math.abs(bal))+'</td>'
     +'</tr>';
   }).join('');
 
@@ -879,7 +879,7 @@ function exportSettleHTML(month, groupId) {
       +'<div style="font-size:11px;color:#64748b;display:flex;justify-content:space-between;margin-bottom:8px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:#1a1a1a">'+fmtH(o)+'</span></div>'
       +'<div style="border-top:1px solid #e2e8f0;padding-top:6px;display:flex;justify-content:space-between;align-items:center">'
         +'<span style="font-size:10px;font-weight:700;color:'+balColor+'">'+balLabel+'</span>'
-        +'<span style="font-family:monospace;font-weight:800;font-size:13px;color:'+balColor+'">'+(bal>=0?'+':'')+fmtH(Math.abs(bal))+'</span>'
+        +'<span style="font-family:monospace;font-weight:800;font-size:13px;color:'+balColor+'">'+fmtH(Math.abs(bal))+'</span>'
       +'</div>'
     +'</div>';
   }).join('');
@@ -890,7 +890,7 @@ function exportSettleHTML(month, groupId) {
     return '<div style="margin-bottom:16px">'
       +'<div style="display:flex;justify-content:space-between;padding:4px 0 6px;border-bottom:2px solid #e2e8f0;margin-bottom:6px">'
         +'<span style="font-size:11px;font-weight:700;color:#475569">'+toThaiDateStr(g.date)+'</span>'
-        +'<span style="font-size:11px;font-family:monospace;font-weight:700;color:#dc2626">−'+fmtH(dayTotal)+'</span>'
+        +'<span style="font-size:11px;font-family:monospace;font-weight:700;color:#dc2626">'+fmtH(dayTotal)+'</span>'
       +'</div>'
       + g.items.map(function(e){
           var pu = e.user_id||_pidToUid(e.person)||e.person;
@@ -914,7 +914,7 @@ function exportSettleHTML(month, groupId) {
               +(chips?'<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">'+chips+'</div>':'')
             +'</div>'
             +'<div style="text-align:right;flex-shrink:0">'
-              +'<div style="font-size:13px;font-weight:700;font-family:monospace;color:#dc2626">−'+fmtH(e.amt)+'</div>'
+              +'<div style="font-size:13px;font-weight:700;font-family:monospace;color:#dc2626">'+fmtH(e.amt)+'</div>'
               +'<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+'">'+payerName+'</span>'
             +'</div>'
           +'</div>';
@@ -925,11 +925,11 @@ function exportSettleHTML(month, groupId) {
   // ── HTML ──────────────────────────────────────────────────
   var todayStr = toThaiDateStr(new Date().toISOString().split('T')[0]);
   var html = '<!DOCTYPE html>\n<html lang="th">\n<head>\n<meta charset="UTF-8">\n'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">\n'
     +'<title>Settlement '+monthThai+' · '+groupTitle+'</title>\n'
     +'<style>\n'
-    +'@import url(\'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap\');\n'
     +'*{box-sizing:border-box;margin:0;padding:0}\n'
-    +'body{font-family:\'Sarabun\',sans-serif;font-size:12px;color:#1a1a1a;padding:20px;background:#f8fafc}\n'
+    +'body{font-family:\'Sarabun\',\'TH Sarabun New\',\'Noto Sans Thai\',Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:20px;background:#f8fafc}\n'
     +'.page{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 16px rgba(0,0,0,.08)}\n'
     +'.section-label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px}\n'
     +'.footer{margin-top:16px;font-size:9px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:8px}\n'
@@ -948,14 +948,19 @@ function exportSettleHTML(month, groupId) {
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">'+pdfPersonCards+'</div>\n'
     +'<div class="section-label">📋 รายการทั้งหมด</div>\n'
     +pdfDetailCards
-    +'<div class="footer">HomeFinance · Settlement Report · '+monthThai+'</div>\n'
+    +'<div class="footer">HomeFinance · Settlement Report · '+monthThai+' · ส่งออกเมื่อ '+todayStr+'</div>\n'
     +'</div>\n</body>\n</html>';
 
-  var win = window.open('','_blank','width=960,height=720');
-  if (!win) { alert('กรุณาอนุญาต popup เพื่อพิมพ์ PDF'); return; }
-  win.document.write(html);
-  win.document.close();
-  win.focus();
+  var fname = 'settlement-' + month + (groupId ? '-' + groupTitle.replace(/[^a-zA-Zก-๙0-9]/g,'_') : '') + '.html';
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
   } catch(err) {
     console.error('[Settlement] exportSettlePDF error:', err);
     alert('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)));

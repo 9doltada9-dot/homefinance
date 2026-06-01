@@ -290,29 +290,33 @@ body.view-mobile .layout{
 .nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
 
 /* ─────────────────────────────────────────────
-   9) Modal overlays — blur content ข้างหลัง
+   9) Modal overlays — frosted glass card บนพื้นหลังปกติ
    ───────────────────────────────────────────── */
-/* overlay backdrop — มืด + เบลอ อ่านไม่ออก */
+/* overlay backdrop — อ่อน ไม่เบลอ เห็นพื้นหลังทะลุ */
 #editOverlay, #catOverlay, #splitGroupModal, #transferModal,
 #recurringModal, #recurringDueModal, #depositModal,
 #editAccountModal, #deleteConfirmModal, #accountLedgerModal,
 #adjustModal, #accountDetailModal, #addAccountModal,
 #txDetailOverlay {
-  background: rgba(8,10,32,var(--modal-dark)) !important;
-  -webkit-backdrop-filter: blur(var(--modal-blur));
-  backdrop-filter: blur(var(--modal-blur));
+  background: rgba(100,110,180,.15) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
-/* modal box — โปร่งใสมากขึ้น */
+/* modal box — แก้วฝ้าขาว blur เฉพาะการ์ด */
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,
 #accountLedgerModal > div, #adjustModal > div,
 #accountDetailModal > div, #addAccountModal > div,
 #txDetailOverlay > div {
-  background: rgba(255,255,255,.45) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255,255,255,.60) !important;
-  box-shadow: var(--g-shadow), var(--g-ring);
+  background: rgba(255,255,255,.82) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255,255,255,.88) !important;
+  box-shadow:
+    0 24px 64px rgba(0,0,0,.12),
+    0 6px 20px rgba(0,0,0,.07),
+    inset 0 1.5px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(200,210,255,.30);
 }

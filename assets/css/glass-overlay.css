@@ -183,22 +183,58 @@ html[data-theme="dark"] body::after{ opacity:.08; }
 
 /* ─────────────────────────────────────────────
    6) ฟอร์ม / select / dropdown / autocomplete
+   blur ใช้ var(--g-blur) เดียวกับ glass card
    ───────────────────────────────────────────── */
 .field input, .field select, .field textarea,
-.filter-row select, .name-input{
+.filter-row select, .name-input,
+select, input[type="date"], input[type="month"] {
   background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
   border:1px solid var(--g-brd) !important;
   border-radius:11px !important;
+  color:var(--ink) !important;
 }
 .field input:focus, .field select:focus, .field textarea:focus,
-.filter-row select:focus{
+.filter-row select:focus, select:focus, input[type="date"]:focus, input[type="month"]:focus{
   border-color:var(--accent) !important;
   box-shadow:0 0 0 4px var(--accent-soft);
+  outline:none;
 }
-.mf-label{ background:var(--surface) !important; border:1px solid var(--g-brd) !important; border-radius:11px; }
-.mf-dropdown, .ac-list, #noteHistoryDrop{
+
+/* chip-selects + pill-selects */
+select.hf-chip, select.hf-pill-select {
   background:var(--surface) !important;
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  border:1px solid var(--g-brd) !important;
+  border-radius:11px !important;
+  color:var(--ink2) !important;
+}
+
+/* hf-chip buttons — ให้ blur ตาม card */
+.hf-chip {
+  background:var(--surface) !important;
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat)) !important;
+  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat)) !important;
+  border-color:var(--g-brd) !important;
+  color:var(--ink2) !important;
+}
+.hf-chip.on { border-color:var(--accent) !important; color:var(--accent) !important; background:var(--accent-soft) !important; }
+
+/* mf-label trigger button */
+.mf-label{
+  background:var(--surface) !important;
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  border:1px solid var(--g-brd) !important;
+  border-radius:11px;
+}
+/* dropdown panels + autocomplete + note history */
+.mf-dropdown, .ac-list, #noteHistoryDrop{
+  background:var(--g-strong) !important;
+  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
   border:1px solid var(--g-brd) !important;
   border-radius:var(--r2,22px) !important;
   box-shadow:var(--g-ring),var(--g-shadow) !important;
@@ -265,8 +301,79 @@ tr:hover td{ background:var(--surface2) !important; }
 .vm-card{ background:var(--surface) !important; border:1.5px solid var(--g-brd) !important; border-radius:var(--r2) !important; }
 .vm-card.active{ border-color:var(--accent) !important; background:var(--accent-soft) !important; }
 
-/* settings icon chips: ให้ดูนุ่มขึ้นเล็กน้อย */
-.stg-icon, .settings-icon{ box-shadow:var(--g-ring); }
+/* ─────────────────────────────────────────────
+   Settings / Admin — liquid glass enhancements
+   ───────────────────────────────────────────── */
+
+/* Group label — accent bar ซ้าย */
+.stg-group-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--ink2) !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  padding: 18px 2px 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.stg-group-label::before {
+  content: '';
+  display: inline-block;
+  width: 3px; height: 14px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+/* row variant (label + action button ขวา) */
+.stg-group-label.stg-group-row {
+  justify-content: space-between !important;
+  flex-wrap: wrap;
+}
+.stg-action-btn {
+  font-size: 11px !important;
+  padding: 5px 12px !important;
+  min-height: 30px !important;
+  border-radius: 9px !important;
+  font-weight: 600 !important;
+}
+
+/* Section icons — bigger, glass ring */
+.stg-icon, .settings-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 13px !important;
+  font-size: 18px !important;
+  box-shadow: var(--g-ring), 0 4px 10px -4px rgba(40,46,96,.15) !important;
+  border: 1px solid rgba(255,255,255,.65) !important;
+  flex-shrink: 0 !important;
+}
+html[data-theme="dark"] .stg-icon,
+html[data-theme="dark"] .settings-icon {
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+/* Section card inner header — separator */
+.stg-sect-head {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+/* Subtitle text */
+.stg-sub {
+  font-size: 11px !important;
+  color: var(--ink3) !important;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* Divider — fade edges */
+.stg-divider {
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, var(--line) 8%, var(--line) 92%, transparent) !important;
+  margin: 0 !important;
+  border: none !important;
+}
 
 /* mobile view simulation: ขอบให้เป็น glass */
 body.view-mobile .layout{

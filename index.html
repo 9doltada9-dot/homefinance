@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.23</title>
+<title>HomeFinance v3.18.24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -144,32 +144,24 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
 .salary-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
 @media(max-width:768px){.salary-metrics-grid{grid-template-columns:repeat(2,1fr);}}
 /* tx row highlight blink — 5 ครั้ง ครั้งละ 2 วิ (รวม 10 วิ) */
+/* กระพริบขอบ 2 ครั้งถี่ๆ — ไม่มีพื้นหลัง */
 @keyframes tx-blink-dark{
-  0%,  9.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
-  10%,19.9%{background:transparent;box-shadow:none}
-  20%,29.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
-  30%,39.9%{background:transparent;box-shadow:none}
-  40%,49.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
-  50%,59.9%{background:transparent;box-shadow:none}
-  60%,69.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
-  70%,79.9%{background:transparent;box-shadow:none}
-  80%,89.9%{background:rgba(250,204,21,.36);box-shadow:0 0 0 2px rgba(250,204,21,.75),0 0 18px rgba(250,204,21,.3)}
-  90%,100% {background:transparent;box-shadow:none}
+  0%   {box-shadow:0 0 0 3px rgba(250,204,21,1),0 0 20px rgba(250,204,21,.55)}
+  17%  {box-shadow:none}
+  33%  {box-shadow:0 0 0 3px rgba(250,204,21,1),0 0 20px rgba(250,204,21,.55)}
+  50%  {box-shadow:none}
+  100% {box-shadow:none}
 }
 @keyframes tx-blink-light{
-  0%,  9.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
-  10%,19.9%{background:transparent;box-shadow:none}
-  20%,29.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
-  30%,39.9%{background:transparent;box-shadow:none}
-  40%,49.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
-  50%,59.9%{background:transparent;box-shadow:none}
-  60%,69.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
-  70%,79.9%{background:transparent;box-shadow:none}
-  80%,89.9%{background:rgba(234,88,12,.18);box-shadow:0 0 0 2px rgba(234,88,12,.65),0 0 14px rgba(234,88,12,.2)}
-  90%,100% {background:transparent;box-shadow:none}
+  0%   {box-shadow:0 0 0 3px rgba(99,102,241,1),0 0 18px rgba(99,102,241,.45)}
+  17%  {box-shadow:none}
+  33%  {box-shadow:0 0 0 3px rgba(99,102,241,1),0 0 18px rgba(99,102,241,.45)}
+  50%  {box-shadow:none}
+  100% {box-shadow:none}
 }
-.tx-glow{animation:tx-blink-dark 10s linear forwards;border-radius:12px;}
-:root[data-theme='light'] .tx-glow{animation:tx-blink-light 10s linear forwards;}
+.tx-glow{animation:tx-blink-dark 1.1s ease-out forwards;border-radius:inherit;}
+html[data-theme='light'] .tx-glow{animation:tx-blink-light 1.1s ease-out forwards;}
+@media(prefers-color-scheme:light){html:not([data-theme='dark']) .tx-glow{animation:tx-blink-light 1.1s ease-out forwards;}}
 /* tx-card-row hover slide */
 .tx-card-row{transition:transform .14s ease,background .14s ease,box-shadow .14s ease;}
 @media(hover:hover){
@@ -249,7 +241,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.23 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.24 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -1583,32 +1575,47 @@ create policy "public write" on transactions for all using (true);</div>
 
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page" style="display:none">
-  <div class="page-header">
-    <div class="page-title">🛡 Admin</div>
-    <div class="page-sub">จัดการผู้ใช้ · รายงาน Settlement</div>
+  <div class="hf-head">
+    <div>
+      <div class="hf-title">🛡 Admin</div>
+      <div class="hf-sub">จัดการผู้ใช้ · รายงาน Settlement</div>
+    </div>
   </div>
 
   <!-- ผู้ใช้งานทั้งหมด -->
-  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between">
+  <div class="stg-group-label stg-group-row">
     <span>👥 ผู้ใช้งานทั้งหมด</span>
-    <button onclick="renderAdminUserList()" style="background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:var(--ink3)">🔄 รีเฟรช</button>
+    <button onclick="renderAdminUserList()" class="btn btn-ghost stg-action-btn">🔄 รีเฟรช</button>
   </div>
   <div class="settings-section hf-card" style="padding:0">
-    <div style="padding:12px 16px">
-      <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">กดปุ่ม → Admin / → User เพื่อเปลี่ยนสิทธิ์ผู้ใช้</div>
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:linear-gradient(135deg,#dbeafe,#ede9fe)">👥</span>
+      <div>
+        <div class="stg-title">รายชื่อผู้ใช้</div>
+        <div class="stg-sub">กดปุ่ม → Admin / → User เพื่อเปลี่ยนสิทธิ์</div>
+      </div>
+    </div>
+    <div style="padding:0 14px 14px">
       <div id="adminUserList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">กำลังโหลด...</div></div>
     </div>
   </div>
 
   <!-- Settlement Groups (Admin) -->
-  <div class="stg-group-label" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+  <div class="stg-group-label stg-group-row" style="flex-wrap:wrap;gap:6px">
     <span>🏠 Settlement Groups</span>
     <div style="display:flex;gap:6px">
-      <button onclick="adminPushSplitGroups()" style="background:var(--surface2);color:var(--ink2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif">💾 Push ขึ้น Supabase</button>
-      <button onclick="openSplitGroupModal(null)" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">+ สร้างกลุ่ม</button>
+      <button onclick="adminPushSplitGroups()" class="btn btn-ghost stg-action-btn">💾 Push ขึ้น Supabase</button>
+      <button onclick="openSplitGroupModal(null)" class="btn btn-primary stg-action-btn">+ สร้างกลุ่ม</button>
     </div>
   </div>
-  <div class="settings-section card" style="padding:0;overflow:hidden">
+  <div class="settings-section hf-card" style="padding:0;overflow:hidden">
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:linear-gradient(135deg,#fef3c7,#d1fae5)">🏠</span>
+      <div>
+        <div class="stg-title">กลุ่ม Settlement</div>
+        <div class="stg-sub">จัดการกลุ่มและสมาชิกที่ใช้คำนวณ Settlement</div>
+      </div>
+    </div>
     <div id="splitGroupsList">
       <div style="color:var(--ink3);font-size:13px;text-align:center;padding:20px">กำลังโหลด...</div>
     </div>
@@ -1724,7 +1731,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.23</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.24</div>
   </div>
 </div>
 

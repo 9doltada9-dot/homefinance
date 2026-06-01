@@ -676,7 +676,7 @@ function navToTxEntry(entryId, date) {
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('tx-glow');
-        setTimeout(function(){ el.classList.remove('tx-glow'); }, 10200);
+        setTimeout(function(){ el.classList.remove('tx-glow'); }, 1300);
       } else {
         // fallback: scroll to date header
         var dateEl = document.getElementById('txdate-'+date);

@@ -496,7 +496,7 @@ function renderSettle(){
             : '<span style="font-size:14px">💳</span>';
           var noteText = (e.note||'').trim();
           return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
-            +'style="display:flex;align-items:center;gap:10px;padding:10px 18px 10px 14px;cursor:pointer;'
+            +'style="display:flex;align-items:center;gap:10px;padding:10px 22px 10px 16px;cursor:pointer;'
             +(idx>0?'border-top:1px solid var(--line);':'')
             +'">'
             +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
@@ -559,7 +559,7 @@ function renderSettle(){
                 ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
                 : '<span style="font-size:14px">💳</span>';
               return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
-                +'style="display:flex;align-items:center;gap:10px;padding:10px 18px 10px 14px;cursor:pointer;'
+                +'style="display:flex;align-items:center;gap:10px;padding:10px 22px 10px 16px;cursor:pointer;'
                 +(idx>0?'border-top:1px solid var(--line);':'')
                 +'">'
                 +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
@@ -628,7 +628,7 @@ function renderSettle(){
     // detail section
     +'<div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">'
       +'<span style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">📋 รายละเอียด</span>'
-      +'<button onclick="exportSettleHTML(\'' + m + '\',\'' + groupId + '\')" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📋 HTML</button>'
+      +'<button onclick="exportSettleHTML(\'' + m + '\',\'' + groupId + '\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📄 PDF</button>'
     +'</div>'
     +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
     +personalHtml;
@@ -951,6 +951,8 @@ function exportSettleHTML(month, groupId) {
     +'<div class="footer">HomeFinance · Settlement Report · '+monthThai+' · ส่งออกเมื่อ '+todayStr+'</div>\n'
     +'</div>\n</body>\n</html>';
 
+  // เพิ่ม auto-print script ใน HTML ก่อนปิด </body>
+  html = html.replace('</body>', '<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body>');
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
   var win  = window.open(url, '_blank');
@@ -961,7 +963,7 @@ function exportSettleHTML(month, groupId) {
     a.href = url; a.download = fname;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
   } catch(err) {
     console.error('[Settlement] exportSettlePDF error:', err);
     alert('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)));

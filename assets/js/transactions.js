@@ -125,8 +125,27 @@ function toggleMF(id){
   var dd = el.querySelector('.mf-dropdown');
   if (!dd) return;
   var wasOpen = dd.classList.contains('open');
-  document.querySelectorAll('.mf-dropdown.open').forEach(function(d){d.classList.remove('open');});
-  if(!wasOpen) dd.classList.add('open');
+  // close all + reset fixed positioning
+  document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
+    d.classList.remove('open');
+    d.style.position=''; d.style.top=''; d.style.left=''; d.style.zIndex='';
+  });
+  if (!wasOpen) {
+    // position:fixed → หลุด stacking context ของ card → backdrop-filter ใช้ glass settings ได้จริง
+    var lbl = el.querySelector('.mf-label') || el;
+    var rect = lbl.getBoundingClientRect();
+    dd.style.position = 'fixed';
+    dd.style.top      = (rect.bottom + 4) + 'px';
+    dd.style.left     = rect.left + 'px';
+    dd.style.zIndex   = '9000';
+    dd.classList.add('open');
+    // แก้ overflow ขวา (หลัง paint)
+    requestAnimationFrame(function(){
+      var r = dd.getBoundingClientRect();
+      if (r.right > window.innerWidth - 8)
+        dd.style.left = Math.max(8, window.innerWidth - r.width - 8) + 'px';
+    });
+  }
 }
 
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };

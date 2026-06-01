@@ -141,12 +141,17 @@ function toggleMF(id){
     dd.style.left       = rect.left + 'px';
     dd.style.zIndex     = '9000';
     dd.classList.add('open');
-    // วัด offsetWidth (synchronous reflow) แล้วแก้ overflow ขวา
+    // วัด offsetWidth (synchronous reflow)
     var dropW = dd.offsetWidth;
+    var vw    = window.innerWidth;
     var left  = rect.left;
-    if (left + dropW > window.innerWidth - 8) left = Math.max(8, window.innerWidth - dropW - 8);
+    // right-align เมื่อ: ปุ่มอยู่ซีกขวา หรือ dropdown ล้นขอบ
+    if (rect.left > vw / 2 || left + dropW > vw - 8) {
+      left = rect.right - dropW;   // ขอบขวา dropdown = ขอบขวาปุ่ม
+      if (left < 8) left = 8;      // clamp ไม่ให้ล้นซ้าย
+    }
     dd.style.left       = left + 'px';
-    dd.style.visibility = '';   // แสดงในตำแหน่งที่ถูกต้องทันที
+    dd.style.visibility = '';
   }
 }
 

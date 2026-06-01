@@ -314,13 +314,26 @@ function switchChart(type, passedMonth){
       var d=new Date(now.getFullYear(), now.getMonth()-i, 1);
       months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
     }
+    var _tc=window._trendCat||null;
     var incVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='income'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
-    var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
+    var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e)&&(!_tc||(e.cat_name||'—')===_tc);}).reduce(function(s,e){return s+e.amt;},0);});
     var labelsT = months.map(function(m){ var p=m.split('-').map(Number); return SHORT_M[p[1]-1]+(p[0]+543-2500<100?'':"'"+String(p[0]+543).slice(2)); });
     chartMain = new Chart(ctx,{type:'line',data:{labels:labelsT,datasets:[
       {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
-      {label:'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
+      {label:_tc||'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
+    // populate category chips
+    var _tcEl=document.getElementById('trendCatFilter');
+    if(_tcEl){
+      var _tcMap={};
+      _chartDb.forEach(function(e){if(e.type==='expense'&&isPaid(e)&&e.cat_name)_tcMap[e.cat_name]=true;});
+      var _tcKeys=Object.keys(_tcMap).sort();
+      if(_tcKeys.length){
+        _tcEl.style.display='flex';
+        _tcEl.innerHTML='<span style="font-size:10px;color:var(--hf-ink3);white-space:nowrap;align-self:center">หมวด:</span>'
+          +_tcKeys.map(function(c){return '<button class="tx-pill'+(_tc===c?' active':'')+'" onclick="trendFilterCat(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')" style="--pc:var(--hf-blue,#3f6fe0);--pb:var(--hf-blue-bg,rgba(63,111,224,.12))">'+c+'</button>';}).join('');
+      } else { _tcEl.style.display='none'; }
+    }
 
   } else if(type==='person'){
     // แยกรายจ่ายตามคน
@@ -358,6 +371,16 @@ function switchChart(type, passedMonth){
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},scales:Object.assign({}, opts.scales, {x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:Object.assign({stacked:false}, opts.scales.y)})})
     });
   }
+  // clear category filter chips when not on trend
+  if(type!=='trend'){
+    var _tcElC=document.getElementById('trendCatFilter');
+    if(_tcElC){_tcElC.style.display='none';_tcElC.innerHTML='';}
+  }
+}
+
+function trendFilterCat(c){
+  window._trendCat=(window._trendCat===c?null:c);
+  switchChart('trend');
 }
 
 // ─── DASHBOARD BENTO MINI WIDGETS ────────────────────────

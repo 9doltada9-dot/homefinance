@@ -6,16 +6,55 @@ var _txFilterMode = 'calendar'; // 'calendar' | 'salary'
 
 function _updateTxModeUI() {
   var mode = _txFilterMode;
-  var fltM  = document.getElementById('fltMonth');
   var fltSC = document.getElementById('fltSalaryCycle');
+  var mfM   = document.getElementById('mfMonth');
   var btnC  = document.getElementById('btnTxModeCalendar');
   var btnS  = document.getElementById('btnTxModeSalary');
-  if (fltM)  fltM.style.display  = mode === 'calendar' ? '' : 'none';
+  if (mfM)   mfM.style.display   = mode === 'calendar' ? '' : 'none';
   if (fltSC) fltSC.style.display = mode === 'salary'   ? '' : 'none';
   if (btnC) { btnC.style.background = mode==='calendar' ? 'var(--blue)' : 'transparent';
               btnC.style.color      = mode==='calendar' ? '#fff'        : 'var(--ink2)'; }
   if (btnS) { btnS.style.background = mode==='salary'   ? 'var(--blue)' : 'transparent';
               btnS.style.color      = mode==='salary'   ? '#fff'        : 'var(--ink2)'; }
+}
+
+// ── custom glass dropdown helpers ──────────────────────────
+function _syncYearDrop(years, cur) {
+  var drop = document.getElementById('fltYearDrop');
+  var lbl  = document.getElementById('fltYearLabel');
+  if (!drop) return;
+  var opts = [{val:'',label:'ทุกปี'}].concat(years.map(function(y){return {val:y,label:String(Number(y)+543)};}));
+  drop.innerHTML = '<div style="padding:6px 8px;display:flex;flex-direction:column;gap:2px">'
+    + opts.map(function(o){
+        var on = o.val===cur||(!o.val&&!cur);
+        return '<button onclick="setFltYear(\''+o.val+'\')" style="text-align:left;width:100%;background:'+(on?'var(--accent-soft)':'transparent')+';color:'+(on?'var(--accent)':'var(--ink)')+';border:none;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:'+(on?700:500)+';cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">'+o.label+'</button>';
+      }).join('') + '</div>';
+  if (lbl) { lbl.innerHTML=(cur?String(Number(cur)+543):'ทุกปี')+' ▾'; lbl.classList.toggle('active',!!cur); }
+}
+function setFltYear(y) {
+  var sel=document.getElementById('fltYear'); if(sel)sel.value=y;
+  var mf=document.getElementById('mfYear'); if(mf){var d=mf.querySelector('.mf-dropdown');if(d)d.classList.remove('open');}
+  renderTx();
+}
+function _syncMonthDrop(months, cur) {
+  var drop = document.getElementById('fltMonthDrop');
+  var lbl  = document.getElementById('fltMonthLabel');
+  if (!drop) return;
+  var opts = [{val:'',label:'ทุกเดือน'}].concat(months.map(function(m){var p=m.split('-').map(Number);return {val:m,label:SHORT_M[p[1]-1]+' '+(p[0]+543)};}));
+  drop.innerHTML = '<div style="padding:6px 8px;display:flex;flex-direction:column;gap:2px">'
+    + opts.map(function(o){
+        var on = o.val===cur||(!o.val&&!cur);
+        return '<button onclick="setFltMonth(\''+o.val+'\')" style="text-align:left;width:100%;background:'+(on?'var(--accent-soft)':'transparent')+';color:'+(on?'var(--accent)':'var(--ink)')+';border:none;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:'+(on?700:500)+';cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">'+o.label+'</button>';
+      }).join('') + '</div>';
+  if (lbl) {
+    var txt = cur?(function(){var p=cur.split('-').map(Number);return SHORT_M[p[1]-1]+' '+(p[0]+543);})():'ทุกเดือน';
+    lbl.innerHTML=txt+' ▾'; lbl.classList.toggle('active',!!cur);
+  }
+}
+function setFltMonth(m) {
+  var sel=document.getElementById('fltMonth'); if(sel)sel.value=m;
+  var mf=document.getElementById('mfMonth'); if(mf){var d=mf.querySelector('.mf-dropdown');if(d)d.classList.remove('open');}
+  renderTx();
 }
 
 function setTxFilterMode(mode) {
@@ -250,6 +289,7 @@ function populateFltYear(sel) {
       return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+(Number(y)+543)+'</option>';
     }).join('');
   sel.value = cur;
+  _syncYearDrop(years, cur);
 }
 
 /** Populate salary-cycle <select> — last 14 cycles going backward */
@@ -372,6 +412,7 @@ function renderTx(){
     return '<option value="'+m+'" '+(m===curM?'selected':'')+'>'+SHORT_M[mo-1]+' '+(y+543)+'</option>';
   }).join('');
   if(curM) fltM.value=curM;
+  _syncMonthDrop(months, curM);
 
   // salary cycle: populate + default to current cycle on first load
   populateFltSalaryCycle(fltSC);
@@ -701,7 +742,7 @@ function txDetailModal(id) {
 
   wrap.innerHTML =
     '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-end;justify-content:center">'
-    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,0)">'
+    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0)">'
 
       // drag handle + header
       +'<div style="display:flex;justify-content:center;padding:10px 0 0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'

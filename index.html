@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.11</title>
+<title>HomeFinance v3.18.12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -249,7 +249,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.11 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.12 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -513,10 +513,12 @@ function hfInitThemeBtns(){
   <div class="hf-card" style="padding:10px 14px;position:relative;z-index:10;margin-bottom:14px">
     <div class="hf-filter-row" style="gap:8px;flex-wrap:wrap">
 
-      <!-- year filter -->
-      <select id="fltYear" onchange="renderTx()" class="hf-chip" style="cursor:pointer;appearance:auto;min-width:72px">
-        <option value="">ทุกปี</option>
-      </select>
+      <!-- year filter — custom glass dropdown -->
+      <div class="multi-filter" id="mfYear">
+        <div class="mf-label hf-chip" id="fltYearLabel" onclick="toggleMF('mfYear')">ทุกปี ▾</div>
+        <div class="mf-dropdown" id="fltYearDrop" style="min-width:120px;max-height:260px;overflow-y:auto"></div>
+      </div>
+      <select id="fltYear" style="display:none"></select>
       <!-- mode toggle: ปฏิทิน / รอบเงินเดือน -->
       <div style="display:inline-flex;border-radius:20px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">
         <button id="btnTxModeCalendar" onclick="setTxFilterMode('calendar')"
@@ -524,9 +526,12 @@ function hfInitThemeBtns(){
         <button id="btnTxModeSalary" onclick="setTxFilterMode('salary')"
           style="padding:5px 13px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--ink2);font-family:Sarabun,sans-serif;touch-action:manipulation">💰 รอบ</button>
       </div>
-      <select id="fltMonth" onchange="renderTx()" class="hf-chip" style="cursor:pointer;appearance:auto;min-width:100px">
-        <option value="">ทุกเดือน</option>
-      </select>
+      <!-- month filter — custom glass dropdown -->
+      <div class="multi-filter" id="mfMonth">
+        <div class="mf-label hf-chip" id="fltMonthLabel" onclick="toggleMF('mfMonth')">ทุกเดือน ▾</div>
+        <div class="mf-dropdown" id="fltMonthDrop" style="min-width:160px;max-height:320px;overflow-y:auto"></div>
+      </div>
+      <select id="fltMonth" style="display:none"></select>
       <select id="fltSalaryCycle" onchange="renderTx()" class="hf-chip" style="display:none;cursor:pointer;appearance:auto;min-width:155px">
         <option value="">— รอบเงินเดือน —</option>
       </select>
@@ -1710,7 +1715,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.11</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.12</div>
   </div>
 </div>
 

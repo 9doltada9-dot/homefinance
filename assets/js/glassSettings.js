@@ -1,105 +1,170 @@
-/* HomeFinance · glassSettings.js — Live glass customization panel */
+/* HomeFinance · glassSettings.js v2 — liquid-skin.css compatible */
 
+// ─── DEFAULTS (match liquid-skin.css tokens) ──────────────
 var GLASS_DEFAULTS = {
-  gBlur:        24,
-  gCardOpacity: 72,
-  gSat:        140,
-  orbOpacity:   85,
-  orbBlur:      36,
-  bgBase:      '#e8eaf6',
-  orb1:        '#c4b5fd',
-  orb2:        '#fbcfe8',
-  orb3:        '#bae6fd',
-  orb4:        '#bbf7d0',
-  modalDark:    82,
-  modalBlur:    40,
+  gBlur: 40, gSat: 220, gCardOpacity: 66,
+  orbOpacity: 90, orbBlur: 30,
+  bgBase: '#e9edfb',
+  orb1: '#9db8ff', orb2: '#ffc2e2', orb3: '#aef0ff', orb4: '#cdc4ff',
+  accent: '#3f6fe0',
+  modalDark: 45, modalBlur: 24,
 };
 
-var GLASS_KEY = 'hf_glass_settings';
+var GLASS_DARK_PRESET = {
+  gBlur: 40, gSat: 220, gCardOpacity: 55,
+  orbOpacity: 55, orbBlur: 34,
+  bgBase: '#0d111b',
+  orb1: '#3f63c8', orb2: '#b5407f', orb3: '#1f8fb0', orb4: '#5848c0',
+  accent: '#5c8dff',
+  modalDark: 45, modalBlur: 24,
+};
 
+var GLASS_KEY = 'hf_glass_v2';
+
+// ─── LOAD / SAVE ──────────────────────────────────────────
 function glassLoad() {
-  try {
-    var saved = JSON.parse(localStorage.getItem(GLASS_KEY) || '{}');
-    // migrate: ถ้า gBlur เก่าเกิน 80px ให้ reset เป็น default ใหม่
-    if (saved.gBlur && saved.gBlur > 80) { saved.gBlur = GLASS_DEFAULTS.gBlur; }
-    return Object.assign({}, GLASS_DEFAULTS, saved);
-  }
+  try { return Object.assign({}, GLASS_DEFAULTS, JSON.parse(localStorage.getItem(GLASS_KEY) || '{}')); }
   catch(e) { return Object.assign({}, GLASS_DEFAULTS); }
 }
+function glassSave(s) { localStorage.setItem(GLASS_KEY, JSON.stringify(s)); }
 
+// ─── THEME DETECT ─────────────────────────────────────────
+function _glassIsDark() {
+  var dt = document.documentElement.getAttribute('data-theme');
+  if (dt === 'dark') return true;
+  if (dt === 'light') return false;
+  return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches);
+}
+
+// ─── APPLY — sets all CSS vars used by liquid-skin.css ────
 function glassApply(s) {
   var r = document.documentElement;
-  r.style.setProperty('--g-blur',        s.gBlur + 'px');
-  r.style.setProperty('--g-card',        'rgba(255,255,255,' + (s.gCardOpacity/100).toFixed(2) + ')');
-  r.style.setProperty('--g-strong',      'rgba(255,255,255,' + Math.min((s.gCardOpacity/100 + 0.14), 1).toFixed(2) + ')');
-  r.style.setProperty('--g-sat',         s.gSat + '%');
-  r.style.setProperty('--orb-opacity',   (s.orbOpacity/100).toFixed(2));
-  r.style.setProperty('--orb-blur',      s.orbBlur + 'px');
-  r.style.setProperty('--bg-base',       s.bgBase);
-  r.style.setProperty('--orb-1',         s.orb1);
-  r.style.setProperty('--orb-2',         s.orb2);
-  r.style.setProperty('--orb-3',         s.orb3);
-  r.style.setProperty('--orb-4',         s.orb4);
-  r.style.setProperty('--modal-dark',    (s.modalDark/100).toFixed(2));
-  r.style.setProperty('--modal-blur',    s.modalBlur + 'px');
+  var dark = _glassIsDark();
+  var op  = (s.gCardOpacity / 100).toFixed(2);
+  var op2 = (s.gCardOpacity * 0.62 / 100).toFixed(2);
+
+  // blur + sat (เป็น var ใน backdrop-filter rule ของ liquid-skin.css)
+  r.style.setProperty('--g-blur', s.gBlur + 'px');
+  r.style.setProperty('--g-sat',  s.gSat  + '%');
+
+  // card surfaces — base color ต่างกันตาม mode
+  var base = dark ? '44,52,88' : '255,255,255';
+  var card    = 'rgba(' + base + ',' + op  + ')';
+  var strong  = dark
+    ? 'rgba(56,64,104,' + Math.min((+op + .18), 1).toFixed(2) + ')'
+    : 'rgba(255,255,255,' + Math.min((+op + .16), 1).toFixed(2) + ')';
+  var surf2   = 'rgba(' + base + ',' + op2 + ')';
+
+  r.style.setProperty('--g-card',     card);
+  r.style.setProperty('--g-strong',   strong);
+  r.style.setProperty('--surface',    card);
+  r.style.setProperty('--surface2',   surf2);
+  r.style.setProperty('--hf-g-card',  card);
+  r.style.setProperty('--hf-g-strong',strong);
+
+  // orbs
+  r.style.setProperty('--orb-opacity', (s.orbOpacity / 100).toFixed(2));
+  r.style.setProperty('--orb-blur',    s.orbBlur + 'px');
+  r.style.setProperty('--bg-base',     s.bgBase);
+  r.style.setProperty('--hf-bg-base',  s.bgBase);
+  ['1','2','3','4'].forEach(function(n) {
+    r.style.setProperty('--orb-'    + n, s['orb' + n]);
+    r.style.setProperty('--hf-orb-' + n, s['orb' + n]);
+  });
+
+  // accent — คำนวณ accent-soft จาก hex
+  r.style.setProperty('--accent',    s.accent);
+  r.style.setProperty('--hf-accent', s.accent);
+  r.style.setProperty('--blue',      s.accent);
+  r.style.setProperty('--hf-blue',   s.accent);
+  try {
+    var h = s.accent.replace('#','');
+    var ar = parseInt(h.slice(0,2),16), ag = parseInt(h.slice(2,4),16), ab = parseInt(h.slice(4,6),16);
+    var soft = 'rgba('+ar+','+ag+','+ab+',.16)';
+    r.style.setProperty('--accent-soft',    soft);
+    r.style.setProperty('--hf-accent-soft', soft);
+    r.style.setProperty('--blue-bg',        soft);
+    r.style.setProperty('--hf-blue-bg',     soft);
+  } catch(_){}
+
+  // modal
+  r.style.setProperty('--modal-dark', (s.modalDark / 100).toFixed(2));
+  r.style.setProperty('--modal-blur', s.modalBlur + 'px');
 }
 
-function glassSave(s) {
-  localStorage.setItem(GLASS_KEY, JSON.stringify(s));
-}
-
+// ─── RESET / PRESETS ──────────────────────────────────────
 function glassReset() {
   localStorage.removeItem(GLASS_KEY);
-  glassApply(GLASS_DEFAULTS);
-  renderGlassSettings();
-  showMsg('glassMsg', 'รีเซ็ตเป็นค่าเริ่มต้นแล้ว', 'success');
+  var def = _glassIsDark()
+    ? Object.assign({}, GLASS_DEFAULTS, GLASS_DARK_PRESET)
+    : Object.assign({}, GLASS_DEFAULTS);
+  glassSave(def);
+  glassApply(def);
+  _glassRefreshPanel();
+  if (typeof showCycleToast === 'function') showCycleToast('✓ รีเซ็ต Glass Settings แล้ว');
 }
 
-// ── Init: load + apply on page load ───────────────────────
+function glassPresetLight() {
+  var s = Object.assign(glassLoad(), GLASS_DEFAULTS);
+  glassSave(s); glassApply(s); _glassRefreshPanel();
+}
+
+function glassPresetDark() {
+  var s = Object.assign(glassLoad(), GLASS_DARK_PRESET);
+  glassSave(s); glassApply(s); _glassRefreshPanel();
+}
+
+// ─── INIT on load ─────────────────────────────────────────
 (function(){ glassApply(glassLoad()); })();
 
-// ── Slider helper ─────────────────────────────────────────
-function _slider(id, label, key, min, max, unit, s, hint) {
-  return '<div style="margin-bottom:14px">'
+// ─── SLIDER / COLOR helpers ───────────────────────────────
+function _gSlider(id, label, key, min, max, unit, s, hint) {
+  return '<div style="margin-bottom:13px">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-    +   '<span style="font-size:13px;color:var(--ink2)">' + label + (hint ? ' <span style="font-size:11px;color:var(--ink3)">'+hint+'</span>' : '') + '</span>'
-    +   '<span id="lbl-' + id + '" style="font-size:13px;font-weight:600;color:var(--accent);min-width:48px;text-align:right">' + s[key] + unit + '</span>'
+    +   '<span style="font-size:12px;color:var(--ink2)">' + label
+    +     (hint ? ' <span style="font-size:10px;color:var(--ink3)">'+hint+'</span>' : '') + '</span>'
+    +   '<span id="glbl-'+id+'" style="font-size:12px;font-weight:700;color:var(--accent);min-width:44px;text-align:right">' + s[key] + unit + '</span>'
     + '</div>'
-    + '<input type="range" min="' + min + '" max="' + max + '" value="' + s[key] + '" '
+    + '<input type="range" min="'+min+'" max="'+max+'" value="'+s[key]+'" '
     +   'style="width:100%;accent-color:var(--accent)" '
     +   'oninput="glassOnSlider(\''+key+'\',this.value,\''+id+'\',\''+unit+'\')">'
     + '</div>';
 }
 
-function _color(id, label, key, s) {
-  return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
-    + '<input type="color" value="' + s[key] + '" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:2px" '
+function _gColor(id, label, key, s) {
+  return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
+    + '<input type="color" value="' + s[key] + '" '
+    +   'style="width:30px;height:30px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none;flex-shrink:0" '
     +   'oninput="glassOnColor(\''+key+'\',this.value)">'
-    + '<span style="font-size:13px;color:var(--ink2)">' + label + '</span>'
+    + '<span style="font-size:12px;color:var(--ink2)">' + label + '</span>'
     + '</div>';
 }
 
+function _gSection(icon, title, body) {
+  return '<div style="padding:11px 16px;border-bottom:1px solid var(--line)">'
+    + '<div style="font-size:9.5px;font-weight:700;color:var(--ink3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:9px">' + icon + ' ' + title + '</div>'
+    + body + '</div>';
+}
+
 function glassOnSlider(key, val, id, unit) {
-  var s = glassLoad();
-  s[key] = Number(val);
-  glassSave(s);
-  glassApply(s);
-  var lbl = document.getElementById('lbl-' + id);
+  var s = glassLoad(); s[key] = Number(val); glassSave(s); glassApply(s);
+  var lbl = document.getElementById('glbl-' + id);
   if (lbl) lbl.textContent = val + unit;
 }
 
 function glassOnColor(key, val) {
-  var s = glassLoad();
-  s[key] = val;
-  glassSave(s);
-  glassApply(s);
+  var s = glassLoad(); s[key] = val; glassSave(s); glassApply(s);
 }
 
-// ── Floating panel toggle ─────────────────────────────────
+// ─── FLOATING PANEL ───────────────────────────────────────
 function glassTogglePanel() {
-  var panel = document.getElementById('glassFP');
-  if (panel) { panel.remove(); return; }
+  var p = document.getElementById('glassFP');
+  if (p) { p.remove(); return; }
   _glassCreatePanel();
+}
+
+function _glassRefreshPanel() {
+  if (document.getElementById('glassFP')) { document.getElementById('glassFP').remove(); _glassCreatePanel(); }
 }
 
 function _glassCreatePanel() {
@@ -109,67 +174,67 @@ function _glassCreatePanel() {
   fp.style.cssText = [
     'position:fixed;top:60px;right:12px;z-index:9999',
     'width:300px;max-height:calc(100vh - 80px);overflow-y:auto',
-    'background:rgba(255,255,255,.92)',
-    'backdrop-filter:blur(24px) saturate(160%)',
-    '-webkit-backdrop-filter:blur(24px) saturate(160%)',
-    'border:1px solid rgba(200,206,255,.7)',
-    'border-radius:18px',
-    'box-shadow:0 20px 60px -16px rgba(40,46,96,.30),0 4px 16px -6px rgba(40,46,96,.18)',
-    'font-family:Sarabun,sans-serif'
+    'background:var(--g-strong)',
+    'backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,180%))',
+    '-webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,180%))',
+    'border:1px solid var(--g-brd,rgba(255,255,255,.7))',
+    'border-radius:var(--r2,22px)',
+    'box-shadow:var(--g-shadow)',
+    'font-family:Sarabun,sans-serif',
+    'color:var(--ink)',
   ].join(';');
 
   fp.innerHTML =
-    // header + close
-    '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;border-bottom:1px solid rgba(92,104,158,.12);position:sticky;top:0;background:rgba(255,255,255,.95);border-radius:18px 18px 0 0;z-index:1">'
-    + '<span style="font-size:14px;font-weight:700;color:#3730a3">🎨 Glass Settings</span>'
-    + '<button onclick="glassTogglePanel()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;padding:0 4px;line-height:1">×</button>'
+    // header
+    '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;'
+    +   'border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1;'
+    +   'background:var(--surface2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);'
+    +   'border-radius:var(--r2,22px) var(--r2,22px) 0 0">'
+    + '<span style="font-size:14px;font-weight:700;color:var(--accent)">✦ Liquid Glass</span>'
+    + '<button onclick="glassTogglePanel()" style="background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer;padding:0 4px;line-height:1">×</button>'
     + '</div>'
 
-    // ── พื้นหลัง
-    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
-    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🌈 พื้นหลัง</div>'
-    + _color('bgBase','สีพื้นหลัง','bgBase',s)
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px">'
-    +   _color('orb1','Orb 1','orb1',s) + _color('orb2','Orb 2','orb2',s)
-    +   _color('orb3','Orb 3','orb3',s) + _color('orb4','Orb 4','orb4',s)
-    + '</div>'
-    + _slider('orbOpacity','ความเข้ม Orb','orbOpacity',0,100,'%',s)
-    + _slider('orbBlur','Blur Orb','orbBlur',0,80,'px',s,'')
+    // preset buttons
+    + '<div style="padding:10px 16px;border-bottom:1px solid var(--line);display:flex;gap:6px">'
+    + '<button onclick="glassPresetLight()" style="flex:1;background:rgba(240,243,255,.72);border:1px solid rgba(200,210,255,.8);border-radius:10px;padding:7px;font-size:12px;cursor:pointer;font-weight:600;color:#2d3a6e;font-family:Sarabun,sans-serif;touch-action:manipulation">☀️ Light</button>'
+    + '<button onclick="glassPresetDark()"  style="flex:1;background:rgba(20,26,58,.7);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:7px;font-size:12px;cursor:pointer;font-weight:600;color:#c2c8ec;font-family:Sarabun,sans-serif;touch-action:manipulation">🌙 Dark</button>'
+    + '<button onclick="glassReset()" title="รีเซ็ต" style="flex:0 0 auto;background:transparent;border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:13px;cursor:pointer;color:var(--ink3);font-family:Sarabun,sans-serif;touch-action:manipulation">↺</button>'
     + '</div>'
 
-    // ── กระจก
-    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
-    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🪟 กระจก</div>'
-    + _slider('gBlur','Blur กระจก','gBlur',0,200,'px',s,'')
-    + _slider('gCardOpacity','ความโปร่งใส','gCardOpacity',10,100,'%',s,'')
-    + _slider('gSat','Saturation','gSat',100,250,'%',s,'')
-    + '</div>'
+    + _gSection('🎨','Accent / สี',
+        _gColor('accent','สี Accent (ปุ่ม, Link, Active)','accent',s))
 
-    // ── Modal
-    + '<div style="padding:12px 16px 4px;border-bottom:1px solid rgba(92,104,158,.10)">'
-    + '<div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.6px;margin-bottom:8px">🗔 Modal</div>'
-    + _slider('modalDark','ความมืด backdrop','modalDark',0,100,'%',s,'')
-    + _slider('modalBlur','Blur Modal','modalBlur',0,80,'px',s,'')
-    + '</div>'
+    + _gSection('🌈','Aurora Background',
+        _gColor('bgBase','พื้นหลัง bg-base','bgBase',s)
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px">'
+        + _gColor('orb1','Orb 1','orb1',s) + _gColor('orb2','Orb 2','orb2',s)
+        + _gColor('orb3','Orb 3','orb3',s) + _gColor('orb4','Orb 4','orb4',s)
+        + '</div>'
+        + _gSlider('orbOpacity','ความเข้ม Orb','orbOpacity',0,100,'%',s)
+        + _gSlider('orbBlur','Blur Orb','orbBlur',0,80,'px',s))
 
-    // ── actions
-    + '<div style="padding:10px 16px;display:flex;gap:8px">'
-    + '<button onclick="glassReset()" style="flex:1;padding:8px;border-radius:10px;border:1px solid rgba(92,104,158,.2);background:rgba(255,255,255,.6);font-size:12px;cursor:pointer;color:#475569">↺ รีเซ็ต</button>'
-    + '<div id="glassMsg" style="flex:2;font-size:11px;color:#22c55e;display:flex;align-items:center;justify-content:center"></div>'
-    + '</div>';
+    + _gSection('🪟','Glass Cards',
+        _gSlider('gBlur','Blur กระจก','gBlur',0,80,'px',s)
+        + _gSlider('gCardOpacity','ความทึบการ์ด','gCardOpacity',10,100,'%',s,'(light=66 / dark=55)')
+        + _gSlider('gSat','Saturation','gSat',100,300,'%',s))
+
+    + _gSection('🗔','Modal / Overlay',
+        _gSlider('modalDark','ความมืด backdrop','modalDark',0,100,'%',s)
+        + _gSlider('modalBlur','Blur Modal','modalBlur',0,80,'px',s))
+
+    + '<div style="padding:8px 16px 12px;text-align:center;font-size:10px;color:var(--ink3)">บันทึกอัตโนมัติ · มีผลทันที · รองรับ Light/Dark</div>';
 
   document.body.appendChild(fp);
 }
 
-// ── Settings page embed (ปุ่มเปิด floating panel) ─────────
+// ─── Settings page embed ──────────────────────────────────
 function renderGlassSettings() {
   var wrap = document.getElementById('glassSettingsPanel');
   if (!wrap) return;
   wrap.innerHTML =
     '<div style="padding:14px 16px">'
     + '<button onclick="glassTogglePanel()" class="btn btn-primary" style="width:100%;min-height:44px;font-size:14px">'
-    + '🎨 เปิดหน้าต่างปรับแต่ง Glass (แบบ live preview)'
-    + '</button>'
-    + '<p style="font-size:12px;color:var(--ink3);margin:8px 0 0;text-align:center">panel จะลอยอยู่มุมขวาบน — เห็นผลจริงขณะปรับ</p>'
+    + '✦ เปิด Liquid Glass Settings</button>'
+    + '<p style="font-size:11px;color:var(--ink3);margin:8px 0 0;text-align:center">panel ลอยมุมขวาบน · ปรับแล้วเห็นผลทันที · รองรับ Light &amp; Dark mode</p>'
     + '</div>';
 }

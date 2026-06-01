@@ -123,15 +123,15 @@ html[data-theme="dark"]{
 }
 
 /* ─────────────────────────────────────────────
-   4) เบลอหนักขึ้นทุกพื้นผิวกระจก
+   4) blur/sat ใช้ CSS var → ควบคุมได้จาก glassSettings
    ───────────────────────────────────────────── */
 .card,.metric,.settings-section,.hf-card,.settle-card{
-  -webkit-backdrop-filter:blur(40px) saturate(150%)!important;
-  backdrop-filter:blur(40px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%))!important;
+  backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%))!important;
 }
 html[data-theme="dark"] .card,html[data-theme="dark"] .metric,
 html[data-theme="dark"] .hf-card,html[data-theme="dark"] .settle-card{
-  background:rgba(44,52,88,.55)!important;
+  background:var(--g-card,rgba(44,52,88,.55))!important;
 }
 
 /* ─────────────────────────────────────────────

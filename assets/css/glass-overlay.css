@@ -290,33 +290,30 @@ body.view-mobile .layout{
 .nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
 
 /* ─────────────────────────────────────────────
-   9) Modal overlays — frosted glass card บนพื้นหลังปกติ
+   9) Modal overlays — ✦ Liquid Glass (ปรับตาม light/dark อัตโนมัติ)
    ───────────────────────────────────────────── */
-/* overlay backdrop — อ่อน ไม่เบลอ เห็นพื้นหลังทะลุ */
+/* overlay backdrop — tint เข้มพอ + เบลอเบาๆ เพื่อ frame modal */
 #editOverlay, #catOverlay, #splitGroupModal, #transferModal,
 #recurringModal, #recurringDueModal, #depositModal,
 #editAccountModal, #deleteConfirmModal, #accountLedgerModal,
 #adjustModal, #accountDetailModal, #addAccountModal,
 #txDetailOverlay {
-  background: rgba(100,110,180,.15) !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  background: rgba(8,10,30,.40) !important;
+  -webkit-backdrop-filter: blur(var(--modal-blur,12px));
+  backdrop-filter: blur(var(--modal-blur,12px));
 }
 
-/* modal box — แก้วฝ้าขาว blur เฉพาะการ์ด */
+/* modal box — liquid glass card: ใช้ tokens จาก liquid-skin/glass-overlay */
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,
 #accountLedgerModal > div, #adjustModal > div,
 #accountDetailModal > div, #addAccountModal > div,
 #txDetailOverlay > div {
-  background: rgba(255,255,255,.82) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255,255,255,.88) !important;
-  box-shadow:
-    0 24px 64px rgba(0,0,0,.12),
-    0 6px 20px rgba(0,0,0,.07),
-    inset 0 1.5px 0 rgba(255,255,255,.95),
-    inset 0 -1px 0 rgba(200,210,255,.30);
+  background: var(--g-strong) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
+  backdrop-filter: blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: var(--r3) !important;
+  box-shadow: var(--g-ring), var(--g-shadow) !important;
 }

@@ -366,6 +366,10 @@ function switchChart(type, passedMonth){
 // ─── CATEGORY SUB-CHART ──────────────────────────────────
 
 function renderCatChips(chartDb, months, labelsT) {
+  // เก็บใน globals เพื่อหลีกเลี่ยง double-quote ใน onclick attribute
+  window._catChartDb = chartDb;
+  window._catMonths  = months;
+  window._catLabels  = labelsT;
   var el = document.getElementById('catChipRow');
   if (!el) return;
   var catMap = {};
@@ -376,25 +380,21 @@ function renderCatChips(chartDb, months, labelsT) {
     ? cats.map(function(c,i){
         var on = window._selCats.indexOf(c) > -1;
         var col = PALETTE[i % PALETTE.length];
-        return '<button class="tx-pill'+(on?' active':'')+'" onclick="toggleCatChip(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\','+JSON.stringify(months)+','+JSON.stringify(labelsT)+')" style="--pc:'+col+';--pb:'+col+'28">'+c+'</button>';
+        return '<button class="tx-pill'+(on?' active':'')+'" onclick="toggleCatChip(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')\" style="--pc:'+col+';--pb:'+col+'28">'+c+'</button>';
       }).join('')
     : '<span style="font-size:11px;color:var(--hf-ink3)">ยังไม่มีข้อมูล</span>';
   renderCatChart(chartDb, months, labelsT);
 }
 
-function toggleCatChip(c, months, labelsT) {
+function toggleCatChip(c) {
   if (!window._selCats) window._selCats = [];
   var idx = window._selCats.indexOf(c);
   if (idx > -1) window._selCats.splice(idx, 1); else window._selCats.push(c);
-  // re-render chips to update active state
   var el = document.getElementById('catChipRow');
   if (el) el.querySelectorAll('.tx-pill').forEach(function(btn){
-    var active = window._selCats.indexOf(btn.textContent.trim()) > -1;
-    btn.classList.toggle('active', active);
+    btn.classList.toggle('active', window._selCats.indexOf(btn.textContent.trim()) > -1);
   });
-  var _myUid = typeof getAuthUserId==='function'?getAuthUserId():null;
-  var db2 = _myUid ? db.filter(function(e){return(e.user_id||e.person)===_myUid;}) : db;
-  renderCatChart(db2, months, labelsT);
+  renderCatChart(window._catChartDb, window._catMonths, window._catLabels);
 }
 
 function renderCatChart(chartDb, months, labelsT) {

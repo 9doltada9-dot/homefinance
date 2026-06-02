@@ -1,4 +1,4 @@
-/* HomeFinance · Service Worker · v3.18.39
+/* HomeFinance · Service Worker · v3.18.40
  * กลยุทธ์:
  *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first → ใช้งาน offline ได้
  *   - Supabase API call: network-first → ดึงข้อมูลล่าสุดเสมอ ถ้าไม่มี net ใช้ของเก่า

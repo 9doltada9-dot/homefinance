@@ -177,8 +177,11 @@ function toggleMF(id){
   }
 }
 
-// ปิด mf-dropdown เมื่อ scroll/resize
-window.addEventListener('scroll', _mfCloseAll, true);
+// ปิด mf-dropdown เมื่อ scroll/resize (ยกเว้น scroll ภายใน dropdown เอง)
+window.addEventListener('scroll', function(e){
+  if(e.target && e.target.closest && e.target.closest('.mf-dropdown')) return;
+  _mfCloseAll();
+}, true);
 window.addEventListener('resize', _mfCloseAll);
 
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };

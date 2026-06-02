@@ -98,8 +98,9 @@ function deleteAccount(id) {
     showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี');
     return;
   }
-  // ห้ามลบถ้าบัญชีมีรายการอยู่
-  var hasUsage = db.some(function(e) { return e.account_id === id; });
+  // ห้ามลบถ้าบัญชีมีรายการอยู่ (เช็คเฉพาะ transaction ของตัวเอง — admin ไม่นับของคนอื่น)
+  var _delUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var hasUsage = db.some(function(e) { return e.account_id === id && (!_delUid || e.user_id === _delUid); });
   if (hasUsage) {
     showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้');
     return;
@@ -508,7 +509,8 @@ function renderAccountList() {
     var cardsHtml = list.map(function(a){
       var bal = getAccountBalance(a.id);
       var icon = TYPE_ICON[a.type] || '💳';
-      var hasUsage = db.some(function(e){ return e.account_id === a.id; });
+      var _ruid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+      var hasUsage = db.some(function(e){ return e.account_id === a.id && (!_ruid || e.user_id === _ruid); });
       var cantDel  = hasUsage || accountsData.filter(function(x){ return x.is_active !== false; }).length <= 1;
       // horizontal card row: คลิกทั้งการ์ด = เปิด ledger
       return '<div onclick="openAccountLedger(\''+a.id+'\')" '
@@ -570,7 +572,8 @@ function openAccountDetailModal(id) {
   var bal = getAccountBalance(id);
   var TYPE_ICON = { bank:'🏦', cash:'💵', ewallet:'📱' };
   var icon = TYPE_ICON[acct.type] || '💳';
-  var hasUsage = db.some(function(e){ return e.account_id === id; });
+  var _duid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var hasUsage = db.some(function(e){ return e.account_id === id && (!_duid || e.user_id === _duid); });
 
   var header = document.getElementById('acctDetailHeader');
   if (header) {
@@ -608,7 +611,8 @@ function closeAccountDetailModal(e) {
 
 function deleteAccountFromDetail(id) {
   if (!id) return;
-  var hasUsage = db.some(function(e){ return e.account_id === id; });
+  var _dfuid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var hasUsage = db.some(function(e){ return e.account_id === id && (!_dfuid || e.user_id === _dfuid); });
   if (hasUsage) { showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้'); return; }
   if (accountsData.length <= 1) { showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี'); return; }
   var acct = accountsData.find(function(a){ return a.id === id; });
@@ -634,7 +638,8 @@ function deleteAccountFromDetail(id) {
 
 /** ลบบัญชีโดยตรงจากการ์ด (ไม่ผ่าน detail modal) */
 function deleteAccountInline(id) {
-  var hasUsage = db.some(function(e){ return e.account_id === id; });
+  var _diuid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var hasUsage = db.some(function(e){ return e.account_id === id && (!_diuid || e.user_id === _diuid); });
   if (hasUsage) { showCycleToast('⚠️ บัญชีนี้มีรายการอยู่ — ลบไม่ได้'); return; }
   if (accountsData.filter(function(a){ return a.is_active !== false; }).length <= 1) {
     showCycleToast('⚠️ ต้องมีบัญชีอย่างน้อย 1 บัญชี'); return;

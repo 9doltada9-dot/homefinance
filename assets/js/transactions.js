@@ -158,7 +158,8 @@ function _mfPortalPosition(dd, trigger){
 function toggleMF(id){
   var el = document.getElementById(id);
   if (!el) return;
-  var dd = el.querySelector('.mf-dropdown');
+  if(!el._mfDd) el._mfDd = el.querySelector('.mf-dropdown');
+  var dd = el._mfDd;
   if (!dd) return;
   var trigger = el.querySelector('.mf-label') || el.querySelector('button');
   var wasOpen = dd.classList.contains('open');

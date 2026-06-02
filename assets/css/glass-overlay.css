@@ -386,7 +386,7 @@ html[data-theme="dark"] #noteHistoryDrop{
   background:var(--g-strong) !important;
 }
 .mf-dropdown.open{ animation:glassDropIn .14s ease; }
-.mf-dropdown{ scrollbar-width:none; }
+.mf-dropdown{ scrollbar-width:none; max-width:min(360px,calc(100vw - 24px)); }
 .mf-dropdown::-webkit-scrollbar{ display:none; }
 @keyframes glassDropIn{
   from{opacity:0;transform:translateY(-4px) scale(.98)}

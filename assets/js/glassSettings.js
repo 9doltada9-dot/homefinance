@@ -62,15 +62,6 @@ function glassApply(s) {
   r.style.setProperty('--hf-g-card',  card);
   r.style.setProperty('--hf-g-strong',strong);
 
-  // dropdown panel — opacity สูงกว่า card เสมอ (min 80% dark / 88% light)
-  // เพราะ backdrop-filter ของ dropdown ถูก block โดย parent glass card
-  var dropOp = dark
-    ? Math.min(Math.max(+op + 0.60, 0.80), 1).toFixed(2)
-    : Math.min(Math.max(+op + 0.65, 0.88), 1).toFixed(2);
-  var dropdown = dark
-    ? 'rgba(36,42,76,' + dropOp + ')'
-    : 'rgba(248,250,255,' + dropOp + ')';
-  r.style.setProperty('--g-dropdown', dropdown);
 
   // orbs
   r.style.setProperty('--orb-opacity', (s.orbOpacity / 100).toFixed(2));

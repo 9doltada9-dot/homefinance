@@ -299,9 +299,9 @@ select.hf-chip, select.hf-pill-select {
   max-height: 240px;
   overflow-y: auto;
   z-index: 2000;
-  background: var(--g-dropdown, rgba(36,42,76,.85)) !important;
-  -webkit-backdrop-filter: blur(max(var(--g-blur, 16px), 12px)) saturate(var(--g-sat, 160%));
-  backdrop-filter: blur(max(var(--g-blur, 16px), 12px)) saturate(var(--g-sat, 160%));
+  background: var(--g-strong) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
   border: 1px solid var(--g-brd) !important;
   border-radius: 14px !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;

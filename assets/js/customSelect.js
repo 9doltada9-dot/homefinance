@@ -1,48 +1,90 @@
-/* HomeFinance · customSelect.js — replaces native <select> with glass dropdown */
+/* HomeFinance · customSelect.js — glass dropdown (portal rendering)
+   Panel ต่อที่ <body> โดยตรง เพื่อหลีก CSS compositing layer ของ glass card
+   ทำให้ backdrop-filter เห็น orb background เหมือน glass settings panel */
 (function(w,d){
   'use strict';
 
-  var _openWrap = null;   // currently open wrapper div
-  var _pollList = [];     // [{sel, syncFn, lastVal}] for programmatic value detection
+  var _openBtn   = null;   // trigger button ที่เปิดอยู่
+  var _openPanel = null;   // panel ที่เปิดอยู่ (attached to body)
+  var _pollList  = [];     // [{sel, syncFn, lastVal}]
 
-  // ── Close panel when clicking OUTSIDE the open wrap ────────
-  // ⚠ ใช้ bubble phase (false) เพื่อให้ btn.click handler ยิงก่อน
+  // ── Close panel when clicking outside ──────────────────────
   d.addEventListener('click', function(e){
-    if(_openWrap && !_openWrap.contains(e.target)){
+    if(_openPanel && _openBtn &&
+       !_openPanel.contains(e.target) &&
+       !_openBtn.closest('.csd-wrap').contains(e.target)){
       _closeAll();
     }
   });
   d.addEventListener('keydown', function(e){
     if(e.key==='Escape') _closeAll();
   });
+  // Close on scroll / resize (reposition would be complex)
+  w.addEventListener('scroll', _closeAll, true);
+  w.addEventListener('resize', _closeAll);
 
   function _closeAll(){
-    if(!_openWrap) return;
-    var p = _openWrap.querySelector('.csd-panel');
-    var b = _openWrap.querySelector('.csd-btn');
-    if(p) p.classList.remove('open');
-    if(b) b.classList.remove('open');
-    _openWrap = null;
+    if(_openPanel){
+      _openPanel.classList.remove('open');
+      _openPanel = null;
+    }
+    if(_openBtn){
+      _openBtn.classList.remove('open');
+      _openBtn = null;
+    }
+  }
+
+  // ── Position panel over trigger (fixed coords) ─────────────
+  function _positionPanel(btn, panel){
+    var rect = btn.getBoundingClientRect();
+    var vw   = w.innerWidth;
+    var vh   = w.innerHeight;
+
+    // ความกว้าง: อย่างน้อยเท่า button, ไม่เกิน viewport
+    var pw = Math.max(rect.width, 180);
+    pw = Math.min(pw, vw - 16);
+
+    // ตำแหน่ง left: ถ้าชนขอบขวาให้ชิดขวา
+    var left = rect.left;
+    if(left + pw > vw - 8) left = vw - pw - 8;
+    if(left < 8) left = 8;
+
+    // ตำแหน่ง top: เปิดลงล่าง ถ้าไม่พอให้เปิดขึ้นบน
+    var topDown = rect.bottom + 4;
+    var topUp   = rect.top - 4;
+    var showUp  = topDown + 240 > vh && rect.top > 240;
+
+    panel.style.position  = 'fixed';
+    panel.style.left      = left + 'px';
+    panel.style.minWidth  = pw + 'px';
+    panel.style.maxWidth  = Math.min(pw * 1.5, 400) + 'px';
+    panel.style.zIndex    = '99999';
+
+    if(showUp){
+      panel.style.top    = '';
+      panel.style.bottom = (vh - topUp) + 'px';
+      panel.style.maxHeight = Math.min(topUp - 8, 260) + 'px';
+    } else {
+      panel.style.bottom    = '';
+      panel.style.top       = topDown + 'px';
+      panel.style.maxHeight = Math.min(vh - topDown - 8, 260) + 'px';
+    }
   }
 
   // ── Wrap one <select> ───────────────────────────────────────
   function wrapSelect(sel){
-    if(sel._csd) return;                    // already wrapped
-    if(sel.style.display === 'none') return; // internal hidden select (fltYear etc.)
+    if(sel._csd) return;
+    if(sel.style.display === 'none') return;
     sel._csd = true;
 
     var chip = sel.classList.contains('hf-chip') || sel.classList.contains('hf-pill-select');
 
-    /* wrapper div */
+    /* wrapper */
     var wrap = d.createElement('div');
     wrap.className = 'csd-wrap' + (chip ? ' csd-chip' : '');
-
-    /* copy layout styles to wrapper (not visual styles) */
     var layoutProps = ['flex','flexShrink','flexGrow','minWidth','width','maxWidth',
                        'marginTop','marginBottom','marginLeft','marginRight'];
-    layoutProps.forEach(function(p){
-      if(sel.style[p]) wrap.style[p] = sel.style[p];
-    });
+    layoutProps.forEach(function(p){ if(sel.style[p]) wrap.style[p] = sel.style[p]; });
     if(sel.style.flex) wrap.style.flex = sel.style.flex;
 
     /* trigger button */
@@ -60,19 +102,19 @@
     arrow.textContent = '▾';
     btn.appendChild(arrow);
 
-    /* dropdown panel */
+    wrap.appendChild(btn);
+
+    /* panel — ต่อที่ body โดยตรง (portal) */
     var panel = d.createElement('div');
     panel.className = 'csd-panel';
+    d.body.appendChild(panel);
 
-    wrap.appendChild(btn);
-    wrap.appendChild(panel);
-
-    /* insert wrap, then move select inside (hidden) */
+    /* insert wrap before select, hide select */
     if(sel.parentNode) sel.parentNode.insertBefore(wrap, sel);
     wrap.appendChild(sel);
     sel.style.cssText += ';display:none!important;position:absolute!important;';
 
-    /* ── rebuild panel from select.options ── */
+    /* ── rebuild items ── */
     function rebuild(){
       panel.innerHTML = '';
       Array.from(sel.children).forEach(function(child){
@@ -95,7 +137,6 @@
       el.dataset.v = o.value;
       el.textContent = o.text || o.label || '';
       if(!o.disabled){
-        // ใช้ click + stopPropagation เพื่อไม่ให้ document listener ปิด panel
         el.addEventListener('click', function(e){
           e.stopPropagation();
           sel.value = o.value;
@@ -115,70 +156,60 @@
       });
     }
 
-    /* ── toggle panel on button CLICK (ไม่ใช้ mousedown) ── */
+    /* toggle */
     btn.addEventListener('click', function(e){
-      e.stopPropagation(); // ป้องกัน document listener ปิด panel ทันที
-      var isOpen = panel.classList.contains('open');
+      e.stopPropagation();
+      var isOpen = _openPanel === panel;
       _closeAll();
       if(!isOpen){
+        _positionPanel(btn, panel);
         panel.classList.add('open');
         btn.classList.add('open');
-        _openWrap = wrap;
+        _openBtn   = btn;
+        _openPanel = panel;
       }
     });
 
-    /* keyboard support */
+    /* keyboard */
     btn.addEventListener('keydown', function(e){
       if(e.key==='Enter'||e.key===' '){
-        e.preventDefault();
-        e.stopPropagation();
-        var isOpen = panel.classList.contains('open');
-        _closeAll();
-        if(!isOpen){
-          panel.classList.add('open');
-          btn.classList.add('open');
-          _openWrap = wrap;
-        }
+        e.preventDefault(); e.stopPropagation();
+        btn.click();
       } else if(e.key==='ArrowDown'||e.key==='ArrowUp'){
         e.preventDefault();
         var items = Array.from(panel.querySelectorAll('.csd-item:not(.csd-dis)'));
         if(!items.length) return;
         var cur = items.findIndex(function(el){ return el.dataset.v === sel.value; });
-        var next = e.key==='ArrowDown' ? Math.min(cur+1, items.length-1) : Math.max(cur-1, 0);
+        var next = e.key==='ArrowDown' ? Math.min(cur+1,items.length-1) : Math.max(cur-1,0);
         items[next].click();
       }
     });
 
-    /* MutationObserver — detects when options are dynamically added */
-    new MutationObserver(function(){ rebuild(); }).observe(sel, {
-      childList: true, subtree: true
-    });
+    /* observe option changes */
+    new MutationObserver(function(){ rebuild(); }).observe(sel, {childList:true, subtree:true});
 
-    /* register for polling (catch programmatic sel.value = 'x') */
+    /* poll for programmatic value changes */
     _pollList.push({ sel:sel, sync:syncLabel, last:'' });
 
     rebuild();
   }
 
-  /* ── Poll for programmatic value changes (every 80ms) ─────── */
+  /* ── Poll every 80ms ─────────────────────────────────────── */
   setInterval(function(){
     for(var i=0;i<_pollList.length;i++){
       var e = _pollList[i];
-      if(e.sel.value !== e.last){
-        e.last = e.sel.value;
-        e.sync();
-      }
+      if(e.sel.value !== e.last){ e.last=e.sel.value; e.sync(); }
     }
   }, 80);
 
-  /* ── Apply to all qualifying selects in container ─────────── */
+  /* ── Apply to all qualifying selects ─────────────────────── */
   function applyAll(root){
     (root||d).querySelectorAll('select').forEach(function(s){
       if(!s._csd && s.style.display !== 'none') wrapSelect(s);
     });
   }
 
-  /* ── Watch for dynamically created selects (budget, vendor edit…) */
+  /* ── Watch for dynamically created selects ────────────────── */
   new MutationObserver(function(muts){
     muts.forEach(function(m){
       m.addedNodes.forEach(function(n){
@@ -189,12 +220,9 @@
     });
   }).observe(d.documentElement, {childList:true, subtree:true});
 
-  /* ── Initial + delayed passes (wait for async data + render) ─ */
-  [50, 350, 900, 2500].forEach(function(t){
-    setTimeout(function(){ applyAll(); }, t);
-  });
+  /* ── Initial passes ───────────────────────────────────────── */
+  [50, 350, 900, 2500].forEach(function(t){ setTimeout(applyAll, t); });
 
-  /* expose for manual call after custom renders */
   w._csApply = applyAll;
 
 })(window, document);

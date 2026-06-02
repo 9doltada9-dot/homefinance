@@ -291,14 +291,9 @@ select.hf-chip, select.hf-pill-select {
 }
 /* dropdown panel */
 .csd-panel {
+  /* position/top/left/z-index ถูก set โดย JS (portal ต่อที่ body) */
   display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 100%;
-  max-height: 240px;
   overflow-y: auto;
-  z-index: 2000;
   background: var(--g-strong) !important;
   -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
   backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));

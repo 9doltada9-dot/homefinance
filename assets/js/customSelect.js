@@ -62,7 +62,8 @@
     // ตำแหน่ง top: เปิดลงล่าง ถ้าไม่พอให้เปิดขึ้นบน
     var topDown = rect.bottom + 4;
     var topUp   = rect.top - 4;
-    var showUp  = topDown + panelH + 8 > vh && rect.top > panelH + 8;
+    // เปิดขึ้นบนถ้า panel จะล้นหรือใกล้ขอบล่าง viewport (margin 24px)
+    var showUp  = topDown + panelH > vh - 24 && rect.top > panelH + 8;
 
     panel.style.position  = 'fixed';
     panel.style.left      = left + 'px';

@@ -72,12 +72,6 @@ function getBudgetSpending() {
     toCheck = cy
       ? _db.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date >= cy.start && e.date <= cy.end; })
       : _db.filter(function(e){ return e.type==='expense' && isPaid(e); });
-  } else if (_budgetMode === 'billing') {
-    var curBM = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-    toCheck = _db.filter(function(e){
-      var bm = e.billing_month || e.date.slice(0,7);
-      return e.type==='expense' && isPaid(e) && bm === curBM;
-    });
   } else {
     var curM = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
     toCheck = _db.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date.startsWith(curM); });
@@ -118,8 +112,6 @@ function renderBudget() {
   var cy       = cycleId && typeof getCycleById === 'function' ? getCycleById(cycleId) : null;
   var modeLabel = _budgetMode === 'cycle'
     ? (cy ? cy.label : 'รอบปัจจุบัน')
-    : _budgetMode === 'billing'
-    ? 'เดือนบิล ' + THAI_MONTHS[now.getMonth()] + ' ' + (now.getFullYear()+543)
     : THAI_MONTHS[now.getMonth()] + ' ' + (now.getFullYear()+543);
 
   var actual   = getBudgetSpending();
@@ -154,8 +146,8 @@ function renderBudget() {
   // Mode tabs
   var modeTabs =
     '<div style="display:flex;gap:4px;margin-bottom:14px;background:var(--surface2);border-radius:8px;padding:3px">' +
-    ['cycle','billing','calendar'].map(function(m){
-      var labels = { cycle:'💼 รอบเงินเดือน', billing:'📋 เดือนบิล', calendar:'📅 ปฏิทิน' };
+    ['cycle','calendar'].map(function(m){
+      var labels = { cycle:'💼 รอบเงินเดือน', calendar:'📅 ปฏิทิน' };
       var active = _budgetMode === m;
       return '<button onclick="setBudgetMode(\''+m+'\')" style="flex:1;padding:5px 6px;border:none;border-radius:6px;' +
         'font-size:11px;font-family:Sarabun,sans-serif;cursor:pointer;font-weight:600;' +

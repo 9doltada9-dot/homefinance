@@ -92,9 +92,6 @@ function openEdit(id){
   // populate vendors (with smart sort via fillEditVendors) — filter by tx type
   fillEditVendors(e.type);
   if(e.vendor_id) document.getElementById('eVendor').value = e.vendor_id;
-  // v3: billing_month + account
-  var eBM = document.getElementById('eBillingMonth');
-  if(eBM) eBM.value = e.billing_month || (e.date ? e.date.slice(0,7) : '');
   if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
   var eAcct = document.getElementById('eAccount');
   if(eAcct && e.account_id) eAcct.value = e.account_id;
@@ -214,9 +211,8 @@ function saveEdit(){
   e.note=document.getElementById('eNote').value.trim();
   e.item_id=(itemObj && itemObj.id)||e.item_id||null;
   e.vendor_id=document.getElementById('eVendor').value||null;
-  // v3: update cycle_id, billing_month, account_id
+  // v3: update cycle_id, account_id
   e.cycle_id = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(date) : e.cycle_id || null;
-  e.billing_month = (document.getElementById('eBillingMonth')||{}).value || date.slice(0,7);
   e.account_id    = (document.getElementById('eAccount')||{}).value || null;
   save();
   sbUpdate(e);

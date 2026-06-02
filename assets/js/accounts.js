@@ -163,7 +163,6 @@ async function addTransfer(fromAccountId, toAccountId, amount, dateStr, note) {
     status:     'paid',
     note:       note || '',
     cycle_id:   (typeof cycleIdFromDate==='function' ? cycleIdFromDate(dateStr) : null),
-    billing_month: (typeof defaultBillingMonth==='function' ? defaultBillingMonth(dateStr) : dateStr.slice(0,7)),
   };
   // OUT entry
   var outEntry = Object.assign({}, base, {
@@ -361,7 +360,6 @@ async function doDeposit() {
     split: false, status: 'received', note: note || '',
     account_id: accountId,
     cycle_id: (typeof cycleIdFromDate==='function' ? cycleIdFromDate(date) : null),
-    billing_month: (typeof defaultBillingMonth==='function' ? defaultBillingMonth(date) : date.slice(0,7)),
   };
   var _okDep = await sbAdd(entry);
   if(!_okDep) return;
@@ -468,7 +466,6 @@ async function doAdjustBalance() {
     note: note || '',
     account_id: accountId,
     cycle_id: (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(date) : null),
-    billing_month: (typeof defaultBillingMonth === 'function' ? defaultBillingMonth(date) : date.slice(0, 7)),
   };
   var _okAdj = await sbAdd(entry);
   if(!_okAdj) return;

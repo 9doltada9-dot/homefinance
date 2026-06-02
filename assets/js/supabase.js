@@ -3,7 +3,7 @@
 // ─── ROW MAPPER (Supabase → local JS object) ──────────────
 /**
  * Maps a raw Supabase row to the internal transaction object.
- * Handles both v2 (no cycle_id/billing_month) and v3 rows.
+ * Handles both v2 (no cycle_id) and v3 rows.
  */
 function mapSbRow(e) {
   return {
@@ -23,7 +23,6 @@ function mapSbRow(e) {
     vendor_name:  e.vendor_name||'',
     // v3 fields
     cycle_id:           e.cycle_id||null,
-    billing_month:      e.billing_month||null,
     account_id:         e.account_id||null,
     transfer_direction: e.transfer_direction||null,
     transfer_pair_id:   e.transfer_pair_id||null,
@@ -682,7 +681,6 @@ async function sbAdd(e){
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
     var headers = Object.assign({}, sbHeadersFrom(creds.key), {'Prefer':'resolution=merge-duplicates,return=minimal'});
     var cycleId      = e.cycle_id      || (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : null);
-    var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : null);
     var r = await fetch(creds.url+'/rest/v1/'+SB_TABLE, {
       method:'POST',
       headers: headers,
@@ -697,7 +695,6 @@ async function sbAdd(e){
         item_id:e.item_id||null,
         vendor_id:e.vendor_id||null,
         cycle_id:       cycleId||null,
-        billing_month:  billingMonth||null,
         account_id:     e.account_id||null,
         transfer_direction: e.transfer_direction||null,
         transfer_pair_id:   e.transfer_pair_id||null,
@@ -721,7 +718,6 @@ async function sbUpdate(e){
   try {
     var catId = e.cat_id || ((categories.find(function(c){return c.name===e.cat_name;})||{}).id) || null;
     var cycleId      = e.cycle_id      || (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : null);
-    var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : null);
     await fetch(creds.url+'/rest/v1/'+SB_TABLE+'?id=eq.'+encodeURIComponent(String(e.id)), {
       method:'PATCH',
       headers:sbHeadersFrom(creds.key),
@@ -736,7 +732,6 @@ async function sbUpdate(e){
         vendor_id:e.vendor_id||null,
         // v3 new fields
         cycle_id:      cycleId||null,
-        billing_month: billingMonth||null,
         account_id:    e.account_id||null,
         // v3.2: คงผู้จ่ายต้นฉบับ — ❌ ห้ามใช้ getAuthUserId() ตอน PATCH เพราะ admin แก้ไขจะ overwrite user_id ของ user อื่น
         user_id: e.user_id || null,
@@ -871,7 +866,7 @@ async function sbPushAllLocal(){
           person: e.person, split: e.split||false,
           status: e.status||doneStatus(e.type), note: e.note||'',
           item_id: e.item_id||null, vendor_id: e.vendor_id||null,
-          cycle_id: e.cycle_id||null, billing_month: e.billing_month||null,
+          cycle_id: e.cycle_id||null,
           account_id: e.account_id||null,
           transfer_direction: e.transfer_direction||null,
           transfer_pair_id:   e.transfer_pair_id||null,

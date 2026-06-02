@@ -42,12 +42,6 @@ function initForm(){
     updatePersonLabels();
     renderNoteHistory();
     if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
-    // v3: auto-set billing_month to current month
-    var bmSel = document.getElementById('fBillingMonth');
-    if(bmSel && !bmSel.value){
-      var now = new Date();
-      bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    }
   }
 }
 
@@ -84,13 +78,6 @@ function updateThaiDate(){
   var v = document.getElementById('fDate')?.value;
   var el = document.getElementById('fDateThai');
   if(el) el.textContent = v ? toThaiDateStr(v) : '';
-  // v3: update billing month suggestion when date changes
-  if(typeof updateBillingMonthSelector === 'function'){
-    var catName = '';
-    var catSel = document.getElementById('fCat');
-    if(catSel) { var catObj = catMap[catSel.value]; catName = catObj ? catObj.name : ''; }
-    updateBillingMonthSelector(v, catName);
-  }
   // salary cycle warning
   var warn = document.getElementById('fDateCycleWarn');
   if(!warn) return;
@@ -148,12 +135,6 @@ function onCatChange(){
   fillDescByCat(catId);
   autoSplit();
   fillVendors();
-  // v3: re-suggest billing_month when category changes
-  if(typeof updateBillingMonthSelector === 'function'){
-    var date = (document.getElementById('fDate')||{}).value || '';
-    var cat  = catMap[catId]; var catName = cat ? cat.name : '';
-    updateBillingMonthSelector(date, catName);
-  }
 }
 
 function fillDescByCat(catId){
@@ -433,18 +414,10 @@ async function addEntry(){
   var itemObj = (itemsData[cat_id]||[]).find(function(x){return x.name===desc;});
   var item_id = (itemObj && itemObj.id)||null;
 
-  // v3: billing_month and account_id
-  var billing_month = (document.getElementById('fBillingMonth')||{}).value || null;
   var account_id    = (document.getElementById('fAccount')||{}).value    || null;
 
   // v3: compute cycle_id from date
   var cycle_id = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(date) : null;
-
-  // v3: auto-suggest billing_month for utility categories if not set
-  if(!billing_month && cType==='expense' && typeof suggestBillingMonth === 'function'){
-    billing_month = suggestBillingMonth(date, cat_name) || (date ? date.slice(0,7) : null);
-  }
-  if(!billing_month && date) billing_month = date.slice(0,7);
 
   // ── SALARY CYCLE: auto-pending if income before 25th ──────
   var _salary_cycle = null;
@@ -478,7 +451,7 @@ async function addEntry(){
     split_snapshot:Object.keys(_split_snapshot).length ? _split_snapshot : null,
     status:status, note:note, item_id:item_id, vendor_id:vendor_id,
     _salary_cycle:_salary_cycle,
-    cycle_id:cycle_id, billing_month:billing_month, account_id:account_id||null};
+    cycle_id:cycle_id, account_id:account_id||null};
 
   var _ok = await sbAdd(_entry);
   if(!_ok) return;
@@ -503,12 +476,6 @@ function clearForm(){
   document.getElementById('fAmt').value='';
   document.getElementById('fNote').value='';
   selectSplitBtn(''); // reset split → ส่วนตัว
-  // reset billing_month back to current month
-  var bmSel = document.getElementById('fBillingMonth');
-  if(bmSel){
-    var now = new Date();
-    bmSel.value = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  }
   var acctSel = document.getElementById('fAccount');
   if(acctSel) acctSel.value = '';
 }

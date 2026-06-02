@@ -1,12 +1,12 @@
 /* HomeFinance · module: features.js · v3.0.0
  * ฟีเจอร์หลักที่ไม่ได้อยู่ใน module เฉพาะ:
- *   1. exportFilteredCSV  — export CSV พร้อม billing_month (v3)
+ *   1. exportFilteredCSV  — export CSV (v3)
  *   2. registerServiceWorker — PWA
  *
  * NOTE: Recurring Transactions ย้ายไปอยู่ใน recurringEngine.js แล้ว
  */
 
-// ─── 1. CSV EXPORT (v3 — รวม billing_month + cycle_id) ───
+// ─── 1. CSV EXPORT (v3 — รวม cycle_id) ───
 function exportFilteredCSV(){
   var rows = (typeof getFilteredTx === 'function') ? getFilteredTx()
            : (typeof db !== 'undefined' ? db.slice() : []);
@@ -17,7 +17,6 @@ function exportFilteredCSV(){
 
   var header = [
     'วันที่ (transaction_date)',
-    'เดือนบิล (billing_month)',
     'รอบเงินเดือน (cycle_id)',
     'ประเภท','หมวด','รายการ','ร้านค้า',
     'จำนวน','ผู้บันทึก','หาร2','สถานะ','หมายเหตุ'
@@ -39,14 +38,12 @@ function exportFilteredCSV(){
       if (v) vendorName = v.name;
     }
 
-    // v3: resolve billing_month and cycle_id with fallbacks
-    var billingMonth = e.billing_month || (e.date ? e.date.slice(0,7) : '');
+    // v3: resolve cycle_id with fallback
     var cycleId      = e.cycle_id      ||
                        (typeof cycleIdFromDate === 'function' ? cycleIdFromDate(e.date) : '');
 
     lines.push([
       e.date,
-      billingMonth,
       cycleId,
       e.type === 'income' ? 'รายรับ' : (e.type === 'transfer' ? 'โอน' : 'รายจ่าย'),
       e.cat_name || '',

@@ -1,7 +1,6 @@
 /* HomeFinance · module: cycleEngine.js · v3.0.0
  * Salary-cycle-aware engine:
  *   - Derives cycle_id from any date (25th-to-24th model)
- *   - Manages billing_month separation from transaction_date
  *   - Maintains a local cycle registry in localStorage
  */
 
@@ -90,32 +89,6 @@ function txCycleId(e) {
   return e.cycle_id || cycleIdFromDate(e.date);
 }
 
-// ─── BILLING MONTH HELPERS ────────────────────────────────
-/**
- * Default billing_month = same YYYY-MM as the transaction_date.
- */
-function defaultBillingMonth(txDateStr) {
-  return (txDateStr || '').slice(0, 7);
-}
-
-/**
- * Smart suggestion: utility bills paid on day 1-10 often belong to prev month.
- */
-function suggestBillingMonth(txDateStr, catName) {
-  if (!txDateStr) return '';
-  var d   = new Date(txDateStr + 'T00:00:00');
-  var day = d.getDate();
-  var cat = (catName || '').toLowerCase();
-  var utilityKw = ['ไฟ', 'น้ำ', 'อินเตอร์เน็ต', 'เน็ต', 'โทรศัพท์', 'ค่าน้ำ', 'ค่าไฟ'];
-  var isUtility = utilityKw.some(function(k) { return cat.indexOf(k) > -1; });
-
-  if (isUtility && day <= 10) {
-    var prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-    return prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
-  }
-  return defaultBillingMonth(txDateStr);
-}
-
 // ─── CYCLE REGISTRY (localStorage) ───────────────────────
 function loadCycleRegistry() {
   try { return JSON.parse(localStorage.getItem('hf2_cycles') || '[]'); }
@@ -131,45 +104,6 @@ function ensureCycleExists(cycleId) {
   if (list.find(function(c) { return c.id === cycleId; })) return;
   var cy = getCycleById(cycleId);
   if (cy) { list.push(cy); saveCycleRegistry(list); }
-}
-
-// ─── BILLING MONTH SELECTOR UI ───────────────────────────
-/**
- * Update the billing month field when the transaction date or category changes.
- * Supports both <input type="month"> and <select> elements with id="fBillingMonth".
- * Shows smart suggestion for utility bills paid on day 1-10.
- */
-function updateBillingMonthSelector(txDateStr, catName) {
-  var el = document.getElementById('fBillingMonth');
-  if (!el) return;
-  if (!txDateStr) { el.value = ''; return; }
-
-  var suggested = suggestBillingMonth(txDateStr, catName);
-
-  // If it's an <input type="month">, just set the value
-  if (el.tagName === 'INPUT') {
-    el.value = suggested;
-    return;
-  }
-
-  // Legacy: <select> behaviour — rebuild options
-  var d    = new Date(txDateStr + 'T00:00:00');
-  var mo   = d.getMonth();
-  var yr   = d.getFullYear();
-  var prev = new Date(yr, mo - 1, 1);
-  var next = new Date(yr, mo + 1, 1);
-
-  el.innerHTML = [prev, d, next].map(function(dt) {
-    var ym  = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
-    var thY = dt.getFullYear() + 543;
-    var thM = SHORT_M[dt.getMonth()];
-    var isSuggested = ym === suggested;
-    return '<option value="' + ym + '"' + (isSuggested ? ' selected' : '') + '>' +
-           thM + ' ' + thY +
-           (isSuggested && suggested !== defaultBillingMonth(txDateStr) ? ' (แนะนำ)' : '') +
-           '</option>';
-  }).join('');
-  el.value = suggested;
 }
 
 // ─── INIT ─────────────────────────────────────────────────

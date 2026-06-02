@@ -192,15 +192,6 @@ function fillFormFromRecurring(templateId) {
     var dueDay = t.day_of_month || 1;
     var entryDate = yyyymm + '-' + String(dueDay).padStart(2, '0');
 
-    var offset = t.billing_month_offset || 0;
-    var bm;
-    if (offset === -1) {
-      var prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      bm = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
-    } else {
-      bm = yyyymm;
-    }
-
     if (typeof setType === 'function') setType(t.type || 'expense');
 
     var catSel = document.getElementById('fCat');
@@ -225,9 +216,6 @@ function fillFormFromRecurring(templateId) {
 
     var amtEl = document.getElementById('fAmt');
     if (amtEl && t.amt) amtEl.value = t.amt;
-
-    var bmSel = document.getElementById('fBillingMonth');
-    if (bmSel) bmSel.value = bm;
 
     var acctSel = document.getElementById('fAccount');
     if (acctSel && t.account_id) acctSel.value = t.account_id;
@@ -281,7 +269,6 @@ function renderRecurringList() {
     var typeLbl = t.type === 'income'
       ? '<span class="badge badge-income">รายรับ</span>'
       : '<span class="badge badge-expense">รายจ่าย</span>';
-    var offsetLbl = t.billing_month_offset === -1 ? ' · บิลเดือนก่อน' : '';
     var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
     var label = (t.cat_name || '');
     if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
@@ -299,7 +286,7 @@ function renderRecurringList() {
       + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
         + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
-          + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt) + offsetLbl + ' ' + lastRun
+          + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt) + ' ' + lastRun
         + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:4px;align-items:center">'
@@ -376,7 +363,6 @@ function openRecurringModal() {
   var typeEl = document.getElementById('recType');    if (typeEl) typeEl.value = 'expense';
   var amtEl  = document.getElementById('recAmt');     if (amtEl)  amtEl.value = '';
   var dayEl  = document.getElementById('recDay');     if (dayEl)  dayEl.value = '';
-  var offEl  = document.getElementById('recBillingOffset'); if (offEl) offEl.value = '0';
   var noteEl = document.getElementById('recNote');    if (noteEl) noteEl.value = '';
   var accEl  = document.getElementById('recAccount'); if (accEl)  accEl.value = '';
   var venEl  = document.getElementById('recVendor');  if (venEl)  venEl.value = '';
@@ -418,7 +404,6 @@ function openEditRecurringModal(id) {
 
   var amtEl = document.getElementById('recAmt'); if (amtEl) amtEl.value = t.amt || '';
   var dayEl = document.getElementById('recDay'); if (dayEl) dayEl.value = t.day_of_month || '';
-  var offEl = document.getElementById('recBillingOffset'); if (offEl) offEl.value = String(t.billing_month_offset || 0);
   var noteEl    = document.getElementById('recNote');    if (noteEl)    noteEl.value = t.note || '';
   var acctEl    = document.getElementById('recAccount');
   if (acctEl) { _fillRecurringAccounts(); acctEl.value = t.account_id || ''; }
@@ -460,7 +445,6 @@ function onSaveRecurring() {
   var desc    = descSel ? (descSel.value || '').trim() : '';
   var amt     = parseFloat((document.getElementById('recAmt')    || {}).value) || 0;
   var day     = parseInt((document.getElementById('recDay')      || {}).value, 10) || 1;
-  var offset  = parseInt((document.getElementById('recBillingOffset') || {}).value, 10) || 0;
   var note      = ((document.getElementById('recNote')    || {}).value || '').trim();
   var account_id = (document.getElementById('recAccount') || {}).value || null;
   var vendor_id  = (document.getElementById('recVendor')  || {}).value || null;
@@ -478,7 +462,6 @@ function onSaveRecurring() {
     desc:                 desc || catName,
     amt:                  amt,
     day_of_month:         day,
-    billing_month_offset: offset,
     person:               person,
     note:                 note,
     account_id:           account_id,

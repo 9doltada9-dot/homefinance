@@ -806,9 +806,6 @@ function txDetailModal(id) {
     }
   }
 
-  var bmStr = '';
-  if (e.billing_month) { var bmp=e.billing_month.split('-').map(Number); bmStr=SHORT_M[bmp[1]-1]+' '+(bmp[0]+543); }
-
   // vendor name chip (detail modal)
   var bigAvatar = '';
   if (vendorName) {
@@ -849,7 +846,6 @@ function txDetailModal(id) {
         +row('📅','วันที่', toThaiDateStr(e.date))
         +row('📂','หมวด', e.cat_name||'—')
         +(acctName?'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">💳 บัญชี</span><span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)"><span style="width:10px;height:10px;border-radius:50%;background:'+acctColor+';display:inline-block"></span>'+acctName+'</span></div>':'')
-        +(bmStr?row('📆','เดือนบิล', bmStr):'')
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">✅ สถานะ</span><span style="font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px;background:'+statusBg+';color:'+statusFg+'">'+statusLabel+'</span></div>'
         +splitHtml
         +(e.note?'<div style="padding:9px 14px;background:var(--surface2);border-radius:10px"><div style="font-size:12px;color:var(--ink3);margin-bottom:4px">📝 หมายเหตุ</div><div style="font-size:13px;color:var(--ink);font-style:italic">'+e.note+'</div></div>':'')

@@ -118,18 +118,67 @@ function populateMFUser() {
     : '<span style="font-size:12px;color:var(--ink3)">ไม่มีข้อมูลผู้ใช้</span>';
 }
 
-// ─── MULTI FILTER ─────────────────────────────────────────
+// ─── MULTI FILTER (portal rendering) ─────────────────────
+function _mfCloseAll(){
+  document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
+    d.classList.remove('open');
+    d.style.position = '';
+    d.style.top = '';
+    d.style.left = '';
+    d.style.bottom = '';
+    d.style.maxHeight = '';
+    d.style.zIndex = '';
+  });
+}
+
+function _mfPortalPosition(dd, trigger){
+  var rect = trigger.getBoundingClientRect();
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var pw = Math.max(dd.offsetWidth || parseInt(dd.style.minWidth) || 180, rect.width);
+  pw = Math.min(pw, vw - 16);
+  var left = rect.left;
+  if(left + pw > vw - 8) left = vw - pw - 8;
+  if(left < 8) left = 8;
+  var topDown = rect.bottom + 4;
+  var showUp  = topDown + 280 > vh && rect.top > 280;
+  dd.style.position = 'fixed';
+  dd.style.left     = left + 'px';
+  dd.style.zIndex   = '99999';
+  if(showUp){
+    dd.style.top    = '';
+    dd.style.bottom = (vh - rect.top + 4) + 'px';
+    dd.style.maxHeight = Math.min(rect.top - 8, 320) + 'px';
+  } else {
+    dd.style.bottom = '';
+    dd.style.top    = topDown + 'px';
+    dd.style.maxHeight = Math.min(vh - topDown - 8, 320) + 'px';
+  }
+}
+
 function toggleMF(id){
   var el = document.getElementById(id);
   if (!el) return;
   var dd = el.querySelector('.mf-dropdown');
   if (!dd) return;
+  var trigger = el.querySelector('.mf-label') || el.querySelector('button');
   var wasOpen = dd.classList.contains('open');
-  document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
-    d.classList.remove('open');
-  });
-  if (!wasOpen) dd.classList.add('open');
+
+  // portal: ย้าย dropdown ไป body ครั้งแรก
+  if(!dd._mfPortaled){
+    dd._mfPortaled = true;
+    document.body.appendChild(dd);
+  }
+
+  _mfCloseAll();
+  if(!wasOpen){
+    dd.classList.add('open');
+    if(trigger) _mfPortalPosition(dd, trigger);
+  }
 }
+
+// ปิด mf-dropdown เมื่อ scroll/resize
+window.addEventListener('scroll', _mfCloseAll, true);
+window.addEventListener('resize', _mfCloseAll);
 
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };
 

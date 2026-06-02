@@ -92,7 +92,8 @@ tr:hover td{background:var(--surface2)}
 .multi-filter{position:relative;user-select:none}
 .mf-label{padding:6px 10px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;min-height:34px;display:flex;align-items:center;color:var(--ink2);gap:4px;font-family:'Sarabun',sans-serif}
 .mf-label.active{border-color:var(--green);color:var(--green)}
-.mf-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;min-width:140px;padding:6px 0}
+/* position/top/left/z-index set โดย toggleMF (portal ต่อที่ body) */
+.mf-dropdown{display:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:140px;padding:6px 0;overflow-y:auto}
 .mf-dropdown.open{display:block}
 .mf-dropdown label{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;cursor:pointer;color:var(--ink);font-family:'Sarabun',sans-serif;white-space:nowrap}
 .mf-dropdown label:hover{background:var(--surface2)}

@@ -322,8 +322,8 @@ function switchChart(type, passedMonth){
       {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
       {label:'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
-    // render item trend chips
-    renderItemChips(_chartDb, months, labelsT);
+    // render item trend chips — ใช้ db ทุก user (ไม่กรองเจ้าของ)
+    renderItemChips(db, months, labelsT);
 
   } else if(type==='person'){
     // แยกรายจ่ายตามคน
@@ -580,7 +580,7 @@ function renderDashBudgetMini() {
   if (!el) return;
   var items = typeof budgetItems !== 'undefined' ? budgetItems : [];
   var mode = (typeof _budgetMode !== 'undefined' ? _budgetMode : null) || localStorage.getItem('hf2_budget_mode') || 'cycle';
-  var modeTitleMap = { cycle: 'รอบเงินเดือน', billing: 'เดือนบิล', calendar: 'ปฏิทิน' };
+  var modeTitleMap = { cycle: 'รอบเงินเดือน', calendar: 'ปฏิทิน' };
   var title = '<div class="hf-card-title">งบประมาณ <span style="font-size:11px;font-weight:400;color:var(--hf-ink3)">' + (modeTitleMap[mode]||mode) + '</span> <span class="hf-link" onclick="nav(\'budget\')">จัดการ →</span></div>';
   if (!items.length) {
     el.innerHTML = title + '<div class="empty" onclick="nav(\'budget\')" style="cursor:pointer">ยังไม่ได้ตั้งงบประมาณ</div>';

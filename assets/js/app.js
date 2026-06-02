@@ -139,7 +139,7 @@ function startAppAfterAuth() {
         save();
       }
       // v3: merge Supabase accounts into local store
-      if(sbAccounts && sbAccounts.length && typeof saveAccountsLocal === 'function'){
+      if(sbAccounts !== null && typeof saveAccountsLocal === 'function'){
         accountsData = sbAccounts;
         saveAccountsLocal();
       }

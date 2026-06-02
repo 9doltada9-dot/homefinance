@@ -23,7 +23,7 @@ function loadAccountsLocal() {
     var _restored = false;
     if (_uid && typeof db !== 'undefined' && db.length) {
       var _usedIds = {};
-      db.forEach(function(e){ if (e.account_id) _usedIds[e.account_id] = true; });
+      db.forEach(function(e){ if (e.account_id && e.user_id === _uid) _usedIds[e.account_id] = true; });
       var _idList = Object.keys(_usedIds);
       if (_idList.length) {
         // v3.16.21: ไม่ใช้ null-user_id legacy accounts อีกต่อไป

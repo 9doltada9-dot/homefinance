@@ -49,10 +49,20 @@
     if(left + pw > vw - 8) left = vw - pw - 8;
     if(left < 8) left = 8;
 
+    // วัด panel height จริง (off-screen) เพื่อตัดสินใจทิศทางเปิด
+    panel.style.position   = 'fixed';
+    panel.style.top        = '-9999px';
+    panel.style.left       = '-9999px';
+    panel.style.visibility = 'hidden';
+    panel.style.display    = 'block';
+    var panelH = Math.min(panel.offsetHeight + 2, 280);
+    panel.style.display    = '';
+    panel.style.visibility = '';
+
     // ตำแหน่ง top: เปิดลงล่าง ถ้าไม่พอให้เปิดขึ้นบน
     var topDown = rect.bottom + 4;
     var topUp   = rect.top - 4;
-    var showUp  = topDown + 240 > vh && rect.top > 240;
+    var showUp  = topDown + panelH + 8 > vh && rect.top > panelH + 8;
 
     panel.style.position  = 'fixed';
     panel.style.left      = left + 'px';

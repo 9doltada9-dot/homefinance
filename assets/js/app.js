@@ -15,7 +15,7 @@ document.addEventListener('click', function(e){
 
 // ─── CLICK OUTSIDE: close multi-filter dropdowns ──────────
 document.addEventListener('click', function(e){
-  if(!e.target.closest('.multi-filter')){
+  if(!e.target.closest('.multi-filter') && !e.target.closest('.mf-dropdown')){
     document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
       d.classList.remove('open');
     });

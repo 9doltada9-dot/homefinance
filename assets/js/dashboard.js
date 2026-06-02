@@ -586,12 +586,15 @@ function renderDashBudgetMini() {
   }
   var actual = typeof getBudgetSpending === 'function' ? getBudgetSpending() : {};
   var rows = items.slice(0, 4).map(function(bi){
-    var spent = actual[bi.catId] || actual[bi.catName] || 0;
+    var spent = bi.itemId
+      ? ((actual._byItem || {})[bi.itemId] || 0)
+      : (actual[bi.catId] || actual[bi.catName] || 0);
     var pct = bi.amount ? Math.min(100, Math.round(spent / bi.amount * 100)) : 0;
     var cls = pct > 100 ? 'over' : pct > 85 ? 'warn' : '';
+    var label = (bi.catName||bi.catId||'—') + (bi.itemName ? ' <span style="color:var(--hf-ink3)">› '+bi.itemName+'</span>' : '');
     return '<div style="margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">'
-        +'<span style="font-weight:600">'+(bi.catName||bi.catId||'—')+'</span>'
+        +'<span style="font-weight:600">'+label+'</span>'
         +'<span class="hf-mono" style="font-size:11.5px;color:'+(cls==='over'?'var(--hf-red)':'var(--hf-ink2)')+'">'+fmtH(spent)+' / '+fmtH(bi.amount)+'</span>'
       +'</div>'
       +'<div class="hf-prog"><div class="hf-prog-fill '+cls+'" style="width:'+pct+'%"></div></div>'

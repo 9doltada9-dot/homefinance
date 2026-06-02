@@ -299,7 +299,7 @@ select.hf-chip, select.hf-pill-select {
   max-height: 240px;
   overflow-y: auto;
   z-index: 2000;
-  background: var(--g-strong) !important;
+  background: var(--g-card) !important;
   -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
   backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
   border: 1px solid var(--g-brd) !important;

@@ -180,8 +180,6 @@ function hfSetTheme(t){
   var l=document.getElementById('hfBtnLight'),d=document.getElementById('hfBtnDark');
   if(l) l.className=t==='light'?'on':'';
   if(d) d.className=t==='dark'?'on':'';
-  var ic=document.getElementById('gcgIcon');
-  if(ic) ic.textContent=t==='light'?'☀︎':'☾';
   // re-apply glass vars ให้ตรงกับ mode ใหม่ (card color คำนวณต่าง mode กัน)
   if(typeof glassApply==='function'&&typeof glassLoad==='function') glassApply(glassLoad());
 }
@@ -190,8 +188,6 @@ function hfInitThemeBtns(){
   var l=document.getElementById('hfBtnLight'),d=document.getElementById('hfBtnDark');
   if(l) l.className=t==='light'?'on':'';
   if(d) d.className=t==='dark'?'on':'';
-  var ic=document.getElementById('gcgIcon');
-  if(ic) ic.textContent=t==='light'?'☀︎':t==='dark'?'☾':'◑';
 }
 function gcgToggle(e){
   if(e) e.stopPropagation();
@@ -2142,7 +2138,7 @@ create policy "public write" on transactions for all using (true);</div>
 
 <!-- Glass Settings FAB — Expandable pill -->
 <div id="glassControlGroup" style="position:fixed;top:16px;right:16px;z-index:8888;display:flex;align-items:center;border-radius:99px;background:var(--g-strong);backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));-webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));border:1px solid var(--g-brd);box-shadow:var(--g-ring),var(--g-shadow);cursor:grab;user-select:none">
-  <button id="gcgToggle" onclick="gcgToggle(event)" style="background:none;border:none;border-radius:99px;cursor:pointer;color:var(--ink);font-family:Sarabun,sans-serif;touch-action:manipulation;padding:0"><span id="gcgIcon">◑</span></button>
+  <button id="gcgToggle" onclick="gcgToggle(event)" style="background:none;border:none;border-radius:99px;cursor:pointer;color:var(--ink);font-family:Sarabun,sans-serif;touch-action:manipulation;padding:0"><svg id="gcgIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div id="gcgContent">
     <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
     <button id="hfBtnLight" onclick="hfSetTheme('light')" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;transition:color .15s,background .15s;touch-action:manipulation">☀︎ สว่าง</button>

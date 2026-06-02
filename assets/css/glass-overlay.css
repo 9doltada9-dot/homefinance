@@ -635,8 +635,10 @@ body.view-mobile .layout{
 
 /* glassControlGroup — Expandable FAB */
 #glassControlGroup button.on { background:var(--accent-soft) !important; color:var(--accent) !important; }
-#gcgContent { display:flex; align-items:center; overflow:hidden; max-width:0; opacity:0; transition:max-width .32s cubic-bezier(.4,0,.2,1), opacity .2s ease; white-space:nowrap; }
-#glassControlGroup.gcg-open #gcgContent { max-width:320px; opacity:1; }
-#gcgToggle { width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:17px; line-height:1; transition:transform .2s ease; }
+#glassControlGroup { max-width:42px; overflow:hidden; transition:max-width .34s cubic-bezier(.4,0,.2,1); }
+#glassControlGroup.gcg-open { max-width:380px; }
+#gcgToggle { width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:17px; line-height:1; transition:transform .22s ease; }
 #glassControlGroup.gcg-open #gcgToggle { transform:rotate(20deg); }
+#gcgContent { display:flex; align-items:center; white-space:nowrap; flex-shrink:0; opacity:0; transition:opacity .15s ease; }
+#glassControlGroup.gcg-open #gcgContent { opacity:1; transition:opacity .2s ease .18s; }
 @media(max-width:768px){ #glassControlGroup{ top:60px; right:12px; } }

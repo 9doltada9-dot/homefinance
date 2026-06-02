@@ -168,6 +168,8 @@ function toggleMF(id){
   if(!dd._mfPortaled){
     dd._mfPortaled = true;
     document.body.appendChild(dd);
+    // ป้องกัน touchmove ใน dropdown ทำให้ page scroll แล้ว trigger close
+    dd.addEventListener('touchmove', function(e){ e.stopPropagation(); }, {passive:true});
   }
 
   _mfCloseAll();
@@ -177,9 +179,15 @@ function toggleMF(id){
   }
 }
 
-// ปิด mf-dropdown เมื่อ scroll/resize (ยกเว้น scroll ภายใน dropdown เอง)
+// ปิด mf-dropdown เมื่อ scroll/resize (ยกเว้น scroll ภายใน dropdown ที่เปิดอยู่)
 window.addEventListener('scroll', function(e){
-  if(e.target && e.target.closest && e.target.closest('.mf-dropdown')) return;
+  var t = e.target;
+  if(t instanceof Element){
+    var dds = document.querySelectorAll('.mf-dropdown.open');
+    for(var i=0;i<dds.length;i++){
+      if(dds[i]===t || dds[i].contains(t)) return;
+    }
+  }
   _mfCloseAll();
 }, true);
 window.addEventListener('resize', _mfCloseAll);

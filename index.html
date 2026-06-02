@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.56</title>
+<title>HomeFinance v3.18.57</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -254,7 +254,7 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.56 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.57 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -300,6 +300,10 @@ function gcgToggle(e){
     <div class="nav-item hf-nav-item" onclick="nav('savings')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 014.9 6H14a1 1 0 010 2h-1a1 1 0 01-1-1 4 4 0 10-4 4 1 1 0 010 2 6 6 0 110-12zm0 3a1 1 0 011 1v2.6l1.7 1.7-1.4 1.4-2-2A1 1 0 017 9V5a1 1 0 011-1zm-1 9h6v1.5H7V13zm2-2h4v1.5H9V11z"/></svg>
       เป้าหมายออม
+    </div>
+    <div class="nav-item hf-nav-item" onclick="nav('recurring')">
+      <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 8A5.5 5.5 0 0113.4 5H11a1 1 0 000 2h4a1 1 0 001-1V2a1 1 0 00-2 0v1.338A7.5 7.5 0 100.503 8.665a1 1 0 001.994-.13A5.507 5.507 0 012.5 8zm5-2a1 1 0 011 1v1.586l1.207 1.207a1 1 0 01-1.414 1.414l-1.5-1.5A1 1 0 016.5 9V7a1 1 0 011-1z"/></svg>
+      รายการประจำ
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('settings')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.4 1.6a5.5 5.5 0 00-1.4.8L3.1 2.9 1.4 4.6l.8 1.6a5.5 5.5 0 00-.6 1.7L0 8.5v2.5l1.6.6c.2.6.4 1.2.8 1.7l-.8 1.6 1.7 1.7 1.6-.8c.5.3 1.1.6 1.7.8l.4 1.4h2.5l.4-1.6c.6-.2 1.2-.5 1.7-.8l1.6.8 1.7-1.7-.8-1.6c.3-.5.6-1.1.8-1.7L16 11V8.5l-1.6-.6a5.5 5.5 0 00-.8-1.7l.8-1.6L12.7 3l-1.6.8a5.5 5.5 0 00-1.7-.8L9 1H6.5z"/></svg>
@@ -920,20 +924,14 @@ function gcgToggle(e){
   <div class="stg-group-label">🤖 ระบบอัตโนมัติ</div>
   <div class="settings-section hf-card" style="padding:0">
 
-    <!-- รายการประจำ -->
-    <div class="stg-sect-head">
+    <!-- รายการประจำ (ลิงก์ไปหน้าหลัก) -->
+    <div class="stg-sect-head" style="cursor:pointer" onclick="nav('recurring')">
       <span class="stg-icon" style="background:#f0eef9">🔄</span>
-      <div>
+      <div style="flex:1">
         <div class="stg-title">รายการประจำเดือน</div>
-        <div class="stg-sub">สร้างรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div>
+        <div class="stg-sub">จัดการรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div>
       </div>
-    </div>
-    <div style="padding:0 14px 12px">
-      <div id="recurringList" style="margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="checkRecurringDueNow()" style="flex:1;min-height:40px;font-size:13px">🔔 รายการถึงกำหนด</button>
-        <button class="btn btn-primary" onclick="openRecurringModal()" style="flex:1;min-height:40px;font-size:13px">+ เพิ่มรายการประจำ</button>
-      </div>
+      <span style="font-size:12px;color:var(--blue);font-weight:600;white-space:nowrap">ไปหน้านี้ →</span>
     </div>
 
     <div class="stg-divider"></div>
@@ -999,6 +997,7 @@ function gcgToggle(e){
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
+        <strong>v3.18.57</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
         <strong>v3.15.6</strong> — หน้ารายการ: เรียงวันล่าสุดก่อน ภายในวันเดียวกันเรียงตามลำดับบันทึกล่าสุด<br><strong>v3.15.5</strong> — ปรับ logic early salary: ตรวจสอบเฉพาะวันที่ 25 ตรงเสาร์/อาทิตย์ ลบ EARLY_DAYS 2 วัน<br><strong>v3.15.4</strong> — แก้สถานะไม่รีเซ็ตเมื่อเปลี่ยนวันที่จาก 24 → 25 (รอรับ/รอจ่าย ค้าง)<br><strong>v3.15.3</strong> — บล็อกปุ่มบันทึก/เพิ่ม/แก้ไข/ลบทุกหน้าเมื่อ offline; แก้ badge “รอ sync” ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงหลัง login ใหม่
         <br><strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
         <br><strong>v3.4.1</strong> — Email confirmation redirect
@@ -1028,6 +1027,25 @@ function gcgToggle(e){
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v1.0.0</strong> — เวอร์ชันเริ่มต้น: รายรับ/รายจ่าย, Settlement, Dashboard
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECURRING PAGE -->
+<div id="page-recurring" class="page" style="display:none">
+  <div class="hf-head">
+    <div>
+      <div class="hf-title">🔄 รายการประจำเดือน</div>
+      <div class="hf-sub">บันทึกรายการที่ทำซ้ำทุกเดือน · กด ⚡ ทำทันที เพื่อบันทึกอัตโนมัติ</div>
+    </div>
+  </div>
+  <div class="settings-section hf-card" style="padding:0">
+    <div style="padding:12px 14px 14px">
+      <div id="recurringList" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="checkRecurringDueNow()" style="flex:1;min-height:42px;font-size:13px">🔔 รายการถึงกำหนด</button>
+        <button class="btn btn-primary" onclick="openRecurringModal()" style="flex:1;min-height:42px;font-size:13px">+ เพิ่มรายการประจำ</button>
       </div>
     </div>
   </div>
@@ -1740,7 +1758,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.56</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.57</div>
   </div>
 </div>
 

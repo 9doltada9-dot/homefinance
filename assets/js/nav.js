@@ -87,6 +87,9 @@ function nav(page){
     if(typeof renderSavingsGoals==='function') renderSavingsGoals();
     if(typeof fillAccountSelectors==='function') fillAccountSelectors();
   }
+  if(page==='recurring'){
+    if(typeof renderRecurringList==='function') renderRecurringList();
+  }
   if(page==='admin'){
     // Guard — redirect non-admins
     if(typeof isAdminUser==='function' && !isAdminUser()){ nav('dashboard'); return; }

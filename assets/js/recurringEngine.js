@@ -262,7 +262,7 @@ function renderRecurringList() {
   var todayDay = today.getDate();
   var list = getRecurringList();
   if (!list.length) {
-    box.innerHTML = '<div class="empty">ยังไม่มีรายการประจำ</div>';
+    box.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--ink3);font-size:14px">ยังไม่มีรายการประจำ<br><span style="font-size:12px">กด "+ เพิ่มรายการประจำ" เพื่อเริ่มต้น</span></div>';
     return;
   }
   box.innerHTML = list.map(function(t) {
@@ -272,31 +272,105 @@ function renderRecurringList() {
     var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
     var label = (t.cat_name || '');
     if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
+    var dueDay   = t.day_of_month || 1;
+    var isDone   = t.last_run_yyyymm === yyyymm;
     // Urgency dot
-    var dueDay = t.day_of_month || 1;
     var statusDot = '';
-    if (t.last_run_yyyymm !== yyyymm) {
-      if (todayDay >= dueDay) {
-        statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle" title="ถึงกำหนดแล้ว"></span>';
-      } else if (dueDay - todayDay <= 7) {
-        statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:6px;vertical-align:middle" title="ใกล้ถึงกำหนด"></span>';
-      }
+    if (isDone) {
+      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-left:6px;vertical-align:middle" title="ทำแล้วเดือนนี้"></span>';
+    } else if (todayDay >= dueDay) {
+      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle" title="ถึงกำหนดแล้ว"></span>';
+    } else if (dueDay - todayDay <= 7) {
+      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:6px;vertical-align:middle" title="ใกล้ถึงกำหนด"></span>';
     }
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">'
+    // ทำทันที button (แสดงเฉพาะเดือนที่ยังไม่ได้ทำ)
+    var doNowBtn = isDone
+      ? '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>'
+      : '<button onclick="executeRecurringNow(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
+          + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
+          + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
+          + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';
+
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">'
       + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
         + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
           + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt) + ' ' + lastRun
         + '</div>'
       + '</div>'
-      + '<div style="display:flex;gap:4px;align-items:center">'
-        + '<button onclick="openEditRecurringModal(\'' + t.id + '\')" '
-          + 'style="background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:4px 6px;touch-action:manipulation" title="แก้ไข">✏️</button>'
-        + '<button onclick="onDeleteRecurring(\'' + t.id + '\')" '
-          + 'style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 6px;touch-action:manipulation">×</button>'
+      + '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;margin-left:10px">'
+        + doNowBtn
+        + '<div style="display:flex;gap:0">'
+          + '<button onclick="openEditRecurringModal(\'' + t.id + '\')" '
+            + 'style="background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:3px 6px;touch-action:manipulation" title="แก้ไข">✏️</button>'
+          + '<button onclick="onDeleteRecurring(\'' + t.id + '\')" '
+            + 'style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:3px 6px;touch-action:manipulation">×</button>'
+        + '</div>'
       + '</div>'
     + '</div>';
   }).join('');
+}
+
+// ─── EXECUTE NOW (บันทึกทันทีจาก template) ────────────────
+async function executeRecurringNow(id) {
+  if (typeof checkOnlineForAction === 'function' && !checkOnlineForAction()) return;
+  var list = getRecurringList();
+  var t = list.find(function(x) { return x.id === id; });
+  if (!t) return;
+
+  // disable button while saving
+  var btn = document.getElementById('recNowBtn-' + id);
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  var today  = new Date();
+  var yyyymm = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+  var dueDay = t.day_of_month || 1;
+  var entryDate = yyyymm + '-' + String(dueDay).padStart(2, '0');
+
+  var cycle_id = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(entryDate) : null;
+  var _currentUserId = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+  var person   = t.person || (typeof getCurrentPerson === 'function' ? getCurrentPerson() : null);
+  var _status  = t.status || (t.type === 'income' ? 'received' : 'paid');
+
+  var _entry = {
+    id:              Date.now(),
+    date:            entryDate,
+    type:            t.type || 'expense',
+    cat_id:          t.cat_id,
+    cat_name:        t.cat_name || '',
+    desc:            t.desc || t.cat_name || '',
+    amt:             t.amt,
+    person:          person,
+    user_id:         _currentUserId || person,
+    split:           false,
+    split_type:      'personal',
+    split_members:   [],
+    split_ratios:    {},
+    split_group_id:  null,
+    split_snapshot:  null,
+    status:          _status,
+    note:            t.note || '',
+    item_id:         null,
+    vendor_id:       t.vendor_id || null,
+    _salary_cycle:   null,
+    cycle_id:        cycle_id,
+    account_id:      t.account_id || null,
+    _recurring_id:   id,
+  };
+
+  var _ok = await sbAdd(_entry);
+  if (!_ok) {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ ทำทันที'; }
+    return;
+  }
+  db.unshift(_entry);
+  save();
+  markRecurringRun(id);
+  if (typeof renderDash         === 'function') renderDash();
+  if (typeof renderAccountCards === 'function') renderAccountCards();
+  if (typeof renderAccountList  === 'function') renderAccountList();
+  if (typeof showCycleToast     === 'function') showCycleToast('✅ บันทึก "' + _entry.desc + '" แล้ว');
+  renderRecurringList();
 }
 
 function onDeleteRecurring(id) {

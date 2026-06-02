@@ -70,7 +70,8 @@ function _fmtMthLabel(m) {
 function populateMths(selId){
   var months=Array.from(new Set(db.map(function(e){return e.date.substring(0,7);}))).sort().reverse();
   var sel=document.getElementById(selId);
-  var cur=sel.value||months[0];
+  var _now2=new Date(), _thisM2=_now2.getFullYear()+'-'+String(_now2.getMonth()+1).padStart(2,'0');
+  var cur=sel.value||(months.indexOf(_thisM2)>-1?_thisM2:months[0]);
   sel.innerHTML='<option value="">เลือกเดือน</option>'+months.map(function(m){return '<option value="'+m+'" '+(m===cur?'selected':'')+'>'+_fmtMthLabel(m)+'</option>';}).join('');
   if(!sel.value && months[0]) sel.value=months[0];
   // populate group select

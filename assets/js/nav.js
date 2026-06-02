@@ -54,10 +54,19 @@ function nav(page){
 
   if(page==='dashboard'){ renderDash(); autoActivateSalary(); }
   if(page==='transactions'){
+    // reset month filter to current month on every nav
+    var _fltM = document.getElementById('fltMonth');
+    if (_fltM) _fltM._initialized = false;
     if(typeof _txUpdateAdminBar === 'function') _txUpdateAdminBar();
     renderTx();
   }
-  if(page==='settlement'){ populateMths('settleMonth'); renderSettle(); }
+  if(page==='settlement'){
+    // reset settlement month to current on every nav
+    var _settleM = document.getElementById('settleMonth');
+    if (_settleM) _settleM.value = '';
+    populateMths('settleMonth');
+    renderSettle();
+  }
   if(page==='monthly'){ populateMths('monthSel'); renderMonthly(); }
   if(page==='add'){ initForm(); }
   if(page==='settings'){

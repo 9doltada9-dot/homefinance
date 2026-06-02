@@ -405,9 +405,9 @@ function renderTx(){
   if(months.indexOf(thisM)===-1) months.unshift(thisM);
   var fltM=document.getElementById('fltMonth');
   var fltSC=document.getElementById('fltSalaryCycle');
-  // calendar: default to current month on first load
-  if(!fltM._initialized){ fltM._initialized=true; fltM.value=thisM; }
-  var curM=fltM.value;
+  // calendar: default to current month (use saved curM if already initialized, else thisM)
+  var curM = fltM._initialized ? fltM.value : thisM;
+  if (!fltM._initialized) fltM._initialized = true;
   fltM.innerHTML='<option value="">ทุกเดือน</option>'+months.map(function(m){
     var parts=m.split('-').map(Number);
     var y=parts[0], mo=parts[1];

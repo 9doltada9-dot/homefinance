@@ -171,7 +171,7 @@ function startEditVendor(id) {
   nameEl.innerHTML =
     '<input id="vedit-' + id + '" value="' + v.name + '" style="font-size:14px;border:1px solid var(--accent);border-radius:6px;padding:4px 8px;width:120px" '
     + 'onkeydown="if(event.key===\'Enter\')saveEditVendor(\'' + id + '\');if(event.key===\'Escape\')renderVendorList()">'
-    + '<select id="vedit-type-' + id + '" style="font-size:13px;border:1px solid var(--line);border-radius:6px;padding:4px 6px">'
+    + '<select id="vedit-type-' + id + '" class="hf-chip" style="font-size:13px !important">'
     +   '<option value="both"'  + (vt==='both'?' selected':'')  + '>🔄 ทั้งคู่</option>'
     +   '<option value="expense"' + (vt==='expense'?' selected':'') + '>🛒 ร้านค้า</option>'
     +   '<option value="income"'  + (vt==='income'?' selected':'')  + '>💰 แหล่งรายรับ</option>'

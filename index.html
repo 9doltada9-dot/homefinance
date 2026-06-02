@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.27</title>
+<title>HomeFinance v3.18.28</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -241,7 +241,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.27 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.28 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -902,7 +902,7 @@ function hfInitThemeBtns(){
       <div id="vendorList" style="margin-bottom:8px"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;min-width:140px;font-size:16px !important">
-        <select id="newVendorType" style="font-size:14px !important;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:var(--surface);color:var(--ink)">
+        <select id="newVendorType" style="font-size:14px !important">
           <option value="expense">🛒 ร้านค้า (รายจ่าย)</option>
           <option value="income">💰 แหล่งรายรับ</option>
           <option value="both">🔄 ทั้งคู่</option>
@@ -1544,7 +1544,7 @@ create policy "public write" on transactions for all using (true);</div>
     <div style="padding:14px 20px;display:flex;gap:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:flex-end">
       <div style="flex:1;min-width:0">
         <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">กรองเดือน</div>
-        <select id="ledgerMonthFilter" onchange="renderLedger()" style="font-family:Sarabun,sans-serif;font-size:13px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:100%;max-width:160px">
+        <select id="ledgerMonthFilter" onchange="renderLedger()" class="hf-chip" style="width:100%;max-width:180px">
           <option value="">ทุกเดือน</option>
         </select>
       </div>
@@ -1746,7 +1746,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.27</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.28</div>
   </div>
 </div>
 

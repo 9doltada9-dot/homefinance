@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.24</title>
+<title>HomeFinance v3.18.25</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -241,7 +241,7 @@ function hfInitThemeBtns(){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.24 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.25 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -339,6 +339,16 @@ function hfInitThemeBtns(){
         </div>
         <div style="position:relative;height:120px"><canvas id="chartCat" role="img"></canvas></div>
         <div id="chartCatLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:3px 0 0"></div>
+      </div>
+      <!-- Item trend sub-chart -->
+      <div id="itemTrendSection" style="margin-top:16px;display:none">
+        <div style="font-size:10px;font-weight:700;color:var(--hf-ink3);letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="flex:1;height:1px;background:var(--line);display:block"></span>รายการที่ติดตาม<span style="flex:1;height:1px;background:var(--line);display:block"></span></div>
+        <div class="multi-filter" id="mfItemTrend" style="margin-bottom:10px">
+          <div class="mf-label hf-chip" id="itemTrendLabel" onclick="toggleMF('mfItemTrend')">เลือกรายการ ▾</div>
+          <div class="mf-dropdown" id="itemTrendDrop" style="min-width:220px;max-height:300px;overflow-y:auto"></div>
+        </div>
+        <div style="position:relative;height:120px"><canvas id="chartItem" role="img"></canvas></div>
+        <div id="chartItemLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:3px 0 0"></div>
       </div>
     </div>
     <!-- Metrics 4×1 — span 12 -->
@@ -872,6 +882,21 @@ function hfInitThemeBtns(){
   </div>
 
   <div id="settingsMsg" class="msg" style="margin:4px 0 8px;text-align:center"></div>
+
+  <!-- ─── รายการติดตามแนวโน้ม ──────────────── -->
+  <div class="stg-group-label">📈 แนวโน้มรายจ่าย</div>
+  <div class="settings-section hf-card" style="padding:0">
+    <div class="stg-sect-head">
+      <span class="stg-icon" style="background:#e8f5e9">📈</span>
+      <div>
+        <div class="stg-title">รายการที่ติดตาม</div>
+        <div class="stg-sub">เลือกรายการที่จะแสดงใน dropdown กรองแนวโน้มรายจ่าย</div>
+      </div>
+    </div>
+    <div style="padding:0 14px 14px">
+      <div id="trackedItemList" style="margin-bottom:4px"></div>
+    </div>
+  </div>
 
   <!-- ─── ข้อมูลอ้างอิง ──────────────────────── -->
   <div class="stg-group-label">📦 ข้อมูลอ้างอิง</div>
@@ -1731,7 +1756,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.24</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.25</div>
   </div>
 </div>
 

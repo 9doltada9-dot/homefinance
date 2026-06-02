@@ -324,6 +324,8 @@ function switchChart(type, passedMonth){
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
     // render category sub-chart chips
     renderCatChips(_chartDb, months, labelsT);
+    // render item trend chips
+    renderItemChips(_chartDb, months, labelsT);
 
   } else if(type==='person'){
     // แยกรายจ่ายตามคน
@@ -437,6 +439,104 @@ function renderCatChart(chartDb, months, labelsT) {
     return {label:c,data:vals,borderColor:col,backgroundColor:col+'22',tension:.3,fill:true,pointRadius:3,borderWidth:2};
   });
   chartCat = new Chart(canvas.getContext('2d'),{type:'line',data:{labels:labelsT,datasets:datasets},options:opts2});
+}
+
+// ─── ITEM TREND SUB-CHART ─────────────────────────────────
+
+var chartItem = null;
+
+function renderItemChips(chartDb, months, labelsT) {
+  window._itemChartDb = chartDb;
+  window._itemMonths  = months;
+  window._itemLabels  = labelsT;
+  if (!window._selItems) window._selItems = [];
+  var section = document.getElementById('itemTrendSection');
+  var drop    = document.getElementById('itemTrendDrop');
+  if (!drop) return;
+
+  var tracked = [];
+  try { tracked = JSON.parse(localStorage.getItem('hf_tracked_items') || '[]'); } catch(e) {}
+
+  if (!tracked.length) {
+    if (section) section.style.display = 'none';
+    return;
+  }
+  if (section) section.style.display = '';
+
+  // กรอง tracked items ที่มีข้อมูลจริงใน chartDb
+  drop.innerHTML = '<div style="padding:8px 10px;display:flex;flex-direction:column;gap:3px">'
+    + tracked.map(function(item, i){
+        var on  = window._selItems.indexOf(item.id) > -1;
+        var col = PALETTE[i % PALETTE.length];
+        return '<button data-iid="' + item.id.replace(/"/g,'&quot;') + '" data-col="' + col + '"'
+          + ' onclick="toggleItemSel(\'' + item.id.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')"'
+          + ' style="text-align:left;width:100%;background:' + (on ? col+'28' : 'transparent') + ';color:' + (on ? col : 'var(--ink)') + ';border:1px solid ' + (on ? col : 'transparent') + ';padding:8px 12px;border-radius:10px;font-size:13px;font-weight:' + (on ? 700 : 500) + ';cursor:pointer;font-family:Sarabun,sans-serif;display:flex;align-items:center;gap:8px">'
+          + '<span style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></span>' + item.name + '</button>';
+      }).join('')
+    + '</div>';
+
+  _updateItemLabel();
+  renderItemChart(chartDb, months, labelsT);
+}
+
+function _updateItemLabel() {
+  var lbl = document.getElementById('itemTrendLabel');
+  if (!lbl) return;
+  var n = (window._selItems||[]).length;
+  var tracked = [];
+  try { tracked = JSON.parse(localStorage.getItem('hf_tracked_items') || '[]'); } catch(e) {}
+  if (n === 0) lbl.innerHTML = 'เลือกรายการ ▾';
+  else if (n === 1) { var t = tracked.find(function(x){ return x.id === window._selItems[0]; }); lbl.innerHTML = (t ? t.name : window._selItems[0]) + ' ▾'; }
+  else lbl.innerHTML = n + ' รายการ ▾';
+  lbl.classList.toggle('active', n > 0);
+}
+
+function toggleItemSel(itemId) {
+  if (!window._selItems) window._selItems = [];
+  var idx = window._selItems.indexOf(itemId);
+  if (idx > -1) window._selItems.splice(idx, 1); else window._selItems.push(itemId);
+  var drop = document.getElementById('itemTrendDrop');
+  if (drop) drop.querySelectorAll('button[data-iid]').forEach(function(btn){
+    var iid = btn.getAttribute('data-iid');
+    var col = btn.getAttribute('data-col');
+    var on  = window._selItems.indexOf(iid) > -1;
+    btn.style.background = on ? col+'28' : 'transparent';
+    btn.style.color      = on ? col : 'var(--ink)';
+    btn.style.border     = '1px solid ' + (on ? col : 'transparent');
+    btn.style.fontWeight = on ? '700' : '500';
+  });
+  _updateItemLabel();
+  renderItemChart(window._itemChartDb, window._itemMonths, window._itemLabels);
+}
+
+function renderItemChart(chartDb, months, labelsT) {
+  var canvas = document.getElementById('chartItem');
+  var legend = document.getElementById('chartItemLegend');
+  if (!canvas) return;
+  if (chartItem) { chartItem.destroy(); chartItem = null; }
+  if (!window._selItems || !window._selItems.length) {
+    if (legend) legend.textContent = 'เลือกรายการด้านบนเพื่อดูแนวโน้ม';
+    return;
+  }
+  if (legend) legend.textContent = '';
+  var tracked = [];
+  try { tracked = JSON.parse(localStorage.getItem('hf_tracked_items') || '[]'); } catch(e) {}
+  var opts3 = {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,position:'top',labels:{font:{size:9},usePointStyle:true,padding:8,boxWidth:8}}},
+    scales:{y:{ticks:{callback:function(v){return typeof fmt==='function'?fmt(v):v;},font:{size:9}},grid:{color:'rgba(128,128,128,0.08)'},border:{dash:[3,3]}},
+            x:{grid:{display:false},ticks:{font:{size:9}}}}};
+  var datasets = window._selItems.map(function(itemId, i){
+    var col  = PALETTE[i % PALETTE.length];
+    var info = tracked.find(function(t){ return t.id === itemId; }) || {};
+    var vals = months.map(function(m){
+      return chartDb.filter(function(e){
+        return e.date.startsWith(m) && e.type==='expense' && isPaid(e)
+          && (e.item_id === itemId || e.desc === info.name);
+      }).reduce(function(s,e){ return s+e.amt; }, 0);
+    });
+    return {label: info.name||itemId, data:vals, borderColor:col, backgroundColor:col+'22', tension:.3, fill:true, pointRadius:3, borderWidth:2};
+  });
+  chartItem = new Chart(canvas.getContext('2d'),{type:'line',data:{labels:labelsT,datasets:datasets},options:opts3});
 }
 
 // ─── DASHBOARD BENTO MINI WIDGETS ────────────────────────

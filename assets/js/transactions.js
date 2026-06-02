@@ -187,9 +187,15 @@ window.addEventListener('resize', _mfCloseAll);
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };
 
 function togglePill(mfId, val, btn) {
-  var el = document.getElementById(mfId);
-  if (!el) return;
-  var chk = el.querySelector('input[value="'+val+'"]');
+  // checkbox อยู่ก่อน button ใน _dpPill — ค้นจาก previousElementSibling ก่อน
+  // (ใช้ได้ทั้งก่อนและหลัง portal ย้าย .mf-dropdown ไป body)
+  var chk = btn.previousElementSibling;
+  if (!chk || chk.tagName !== 'INPUT') {
+    // fallback: ค้นใน portaled dropdown หรือ container
+    var el = document.getElementById(mfId);
+    var root = (el && el._mfDd && el._mfDd._mfPortaled) ? el._mfDd : el;
+    chk = root ? root.querySelector('input[value="'+val+'"]') : null;
+  }
   if (chk) chk.checked = !chk.checked;
   var active = chk ? chk.checked : (btn.getAttribute('data-active') !== '1');
   btn.setAttribute('data-active', active ? '1' : '0');
@@ -198,7 +204,11 @@ function togglePill(mfId, val, btn) {
 }
 
 function getMFValues(id){
-  return [].slice.call(document.querySelectorAll('#'+id+' input[type=checkbox]:checked')).map(function(c){return c.value;});
+  var el = document.getElementById(id);
+  // หลัง portal: .mf-dropdown อยู่ใน body แล้ว → ค้นจาก el._mfDd แทน
+  var root = (el && el._mfDd && el._mfDd._mfPortaled) ? el._mfDd : el;
+  if (!root) return [];
+  return [].slice.call(root.querySelectorAll('input[type=checkbox]:checked')).map(function(c){return c.value;});
 }
 
 var MF_LABELS = {

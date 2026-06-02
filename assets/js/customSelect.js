@@ -5,8 +5,13 @@
   var _openWrap = null;   // currently open wrapper div
   var _pollList = [];     // [{sel, syncFn, lastVal}] for programmatic value detection
 
-  // ── Close open panel on outside click ──────────────────────
-  d.addEventListener('click', function(){ _closeAll(); }, true);
+  // ── Close panel when clicking OUTSIDE the open wrap ────────
+  // ⚠ ใช้ bubble phase (false) เพื่อให้ btn.click handler ยิงก่อน
+  d.addEventListener('click', function(e){
+    if(_openWrap && !_openWrap.contains(e.target)){
+      _closeAll();
+    }
+  });
   d.addEventListener('keydown', function(e){
     if(e.key==='Escape') _closeAll();
   });
@@ -38,7 +43,6 @@
     layoutProps.forEach(function(p){
       if(sel.style[p]) wrap.style[p] = sel.style[p];
     });
-    /* forward any explicit flex:1 written as shorthand */
     if(sel.style.flex) wrap.style.flex = sel.style.flex;
 
     /* trigger button */
@@ -91,8 +95,9 @@
       el.dataset.v = o.value;
       el.textContent = o.text || o.label || '';
       if(!o.disabled){
-        el.addEventListener('mousedown', function(e){
-          e.preventDefault(); e.stopPropagation();
+        // ใช้ click + stopPropagation เพื่อไม่ให้ document listener ปิด panel
+        el.addEventListener('click', function(e){
+          e.stopPropagation();
           sel.value = o.value;
           sel.dispatchEvent(new Event('change',{bubbles:true}));
           _closeAll();
@@ -110,9 +115,9 @@
       });
     }
 
-    /* toggle panel on button click */
-    btn.addEventListener('mousedown', function(e){
-      e.preventDefault(); e.stopPropagation();
+    /* ── toggle panel on button CLICK (ไม่ใช้ mousedown) ── */
+    btn.addEventListener('click', function(e){
+      e.stopPropagation(); // ป้องกัน document listener ปิด panel ทันที
       var isOpen = panel.classList.contains('open');
       _closeAll();
       if(!isOpen){
@@ -126,14 +131,21 @@
     btn.addEventListener('keydown', function(e){
       if(e.key==='Enter'||e.key===' '){
         e.preventDefault();
-        btn.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+        e.stopPropagation();
+        var isOpen = panel.classList.contains('open');
+        _closeAll();
+        if(!isOpen){
+          panel.classList.add('open');
+          btn.classList.add('open');
+          _openWrap = wrap;
+        }
       } else if(e.key==='ArrowDown'||e.key==='ArrowUp'){
         e.preventDefault();
         var items = Array.from(panel.querySelectorAll('.csd-item:not(.csd-dis)'));
         if(!items.length) return;
         var cur = items.findIndex(function(el){ return el.dataset.v === sel.value; });
         var next = e.key==='ArrowDown' ? Math.min(cur+1, items.length-1) : Math.max(cur-1, 0);
-        items[next].dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+        items[next].click();
       }
     });
 

@@ -154,7 +154,40 @@ html[data-theme="dark"] body::after{ opacity:.08; }
   backdrop-filter:blur(22px) saturate(160%);
   border-bottom:1px solid rgba(255,255,255,.10);
 }
-.bottomnav{ border-top:1px solid rgba(255,255,255,.10); border-bottom:none; }
+.bottomnav{ border-top:1px solid rgba(255,255,255,.10); border-bottom:none; overflow:visible !important; }
+
+/* ── FAB center button ── */
+#bn-add{
+  transform:translateY(-14px);
+  padding:0 2px;
+  gap:0;
+  min-height:0;
+}
+.bn-fab-ring{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--accent,#818cf8), var(--accent-2,#a78bfa));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 20px rgba(129,140,248,.65), 0 0 0 4px rgba(14,16,38,.95);
+  transition:transform .15s ease, box-shadow .15s ease;
+  flex-shrink:0;
+}
+#bn-add:active .bn-fab-ring{
+  transform:scale(.91);
+  box-shadow:0 2px 10px rgba(129,140,248,.4), 0 0 0 4px rgba(14,16,38,.95);
+}
+#bn-add.active .bn-fab-ring{
+  box-shadow:0 6px 26px rgba(129,140,248,.85), 0 0 0 4px rgba(14,16,38,.95), 0 0 0 7px rgba(129,140,248,.28);
+}
+.bn-fab-icon{
+  width:30px;
+  height:30px;
+  color:#fff;
+  flex-shrink:0;
+}
 
 .nav-item{ margin:2px 10px; border-radius:12px; border-left:none !important; padding:10px 14px; }
 .nav-item:hover{ background:rgba(255,255,255,.08) !important; }

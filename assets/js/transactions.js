@@ -180,6 +180,18 @@ function toggleMF(id){
   if(!dd._mfPortaled){
     dd._mfPortaled = true;
     document.body.appendChild(dd);
+
+    // ป้องกัน page scroll ขณะ mouse wheel อยู่เหนือ dropdown
+    // (เมื่อ dropdown scroll ถึงขอบ หรือ content ไม่ overflow → wheel chain ไป page → IO fires → close)
+    dd.addEventListener('wheel', function(e){
+      var canScroll  = dd.scrollHeight > dd.clientHeight;
+      var atTop      = dd.scrollTop <= 0 && e.deltaY < 0;
+      var atBottom   = dd.scrollTop >= dd.scrollHeight - dd.clientHeight - 1 && e.deltaY > 0;
+      if(!canScroll || atTop || atBottom) e.preventDefault();
+    }, {passive: false});
+
+    // mobile: ป้องกัน touchmove chain ออก dropdown
+    dd.addEventListener('touchmove', function(e){ e.stopPropagation(); }, {passive: true});
   }
 
   _mfCloseAll();

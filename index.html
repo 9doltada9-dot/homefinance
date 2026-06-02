@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.52</title>
+<title>HomeFinance v3.18.53</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -254,7 +254,7 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.52 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.53 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -460,11 +460,6 @@ function gcgToggle(e){
         </div>
       </div>
       <div class="form-row">
-        <div class="field">
-          <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
-          <input type="month" id="fBillingMonth" style="font-size:15px !important">
-          <div style="font-size:11px;color:var(--ink3);margin-top:3px">สำหรับค่าไฟ/น้ำ ที่จ่ายเดือนนี้แต่ใช้เดือนที่แล้ว</div>
-        </div>
         <div class="field">
           <label>บัญชี</label>
           <select id="fAccount" style="font-size:15px !important">
@@ -707,12 +702,7 @@ function gcgToggle(e){
     <div class="form-row">
       <div class="field"><label>สถานะ</label><select id="eStatus"><option value="pending">รอรับ</option><option value="paid">รับแล้ว</option></select></div>
     </div>
-    <!-- v3: billing_month + account -->
     <div class="form-row">
-      <div class="field">
-        <label>เดือนบิล <span style="font-size:11px;color:var(--ink3)">(billing_month)</span></label>
-        <input type="month" id="eBillingMonth" style="font-size:14px !important">
-      </div>
       <div class="field">
         <label>บัญชี</label>
         <select id="eAccount" style="font-size:14px !important">
@@ -1016,7 +1006,7 @@ function gcgToggle(e){
         <br><strong>v3.2.1</strong> — แก้ HTTP 500 บันทึกชื่อ (เพิ่ม user_id ใน settings), แก้ข้อมูลหายหลัง login (sbGetHeaders + user_id filter), แก้ "ตรวจสอบ Database" แสดงผล error ถูกต้อง, getSbCreds fallback config.js defaults
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v3.0.0</strong> — รอบเงินเดือน (cycle_id), billing_month, Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
+        <strong>v3.0.0</strong> — รอบเงินเดือน (cycle_id), Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
         <strong>v2.9.3</strong> — sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, แก้ปุ่มยกเลิก
@@ -1423,15 +1413,6 @@ create policy "public write" on transactions for all using (true);</div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>เดือนบิล</label>
-        <select id="recBillingOffset" style="font-size:14px !important">
-          <option value="0">เดือนเดียวกัน (default)</option>
-          <option value="-1">เดือนก่อนหน้า (ค่าไฟ/น้ำ)</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
         <label>บัญชี</label>
         <select id="recAccount" style="font-size:15px !important"></select>
       </div>
@@ -1759,7 +1740,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.52</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.53</div>
   </div>
 </div>
 

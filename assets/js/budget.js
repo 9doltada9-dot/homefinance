@@ -16,6 +16,7 @@ function setBudgetMode(mode) {
   _budgetMode = mode;
   localStorage.setItem('hf2_budget_mode', mode);
   renderBudget();
+  if (typeof renderDashBudgetMini === 'function') renderDashBudgetMini();
 }
 
 // ─── LOAD ─────────────────────────────────────────────────

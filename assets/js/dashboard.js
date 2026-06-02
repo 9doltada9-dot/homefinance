@@ -579,9 +579,19 @@ function renderDashBudgetMini() {
   var el = document.getElementById('dashBudgetMini');
   if (!el) return;
   var items = typeof budgetItems !== 'undefined' ? budgetItems : [];
-  var title = '<div class="hf-card-title">งบประมาณเดือนนี้ <span class="hf-link" onclick="nav(\'budget\')">จัดการ →</span></div>';
+  var mode = (typeof _budgetMode !== 'undefined' ? _budgetMode : null) || localStorage.getItem('hf2_budget_mode') || 'cycle';
+  var modeLabels = { cycle: '💼 รอบ', billing: '📋 บิล', calendar: '📅 ปฏิทิน' };
+  var modeTitleMap = { cycle: 'รอบเงินเดือน', billing: 'เดือนบิล', calendar: 'ปฏิทิน' };
+  var modeTabs = '<div style="display:flex;gap:3px;margin-bottom:10px">' +
+    ['cycle','billing','calendar'].map(function(m){
+      var active = mode === m;
+      return '<button onclick="setBudgetMode(\''+m+'\')" style="flex:1;padding:4px 2px;border:none;border-radius:5px;font-size:10px;font-family:Sarabun,sans-serif;cursor:pointer;font-weight:600;' +
+        (active ? 'background:#1a4fa0;color:#fff' : 'background:var(--surface2);color:var(--ink2)') + '">' +
+        modeLabels[m] + '</button>';
+    }).join('') + '</div>';
+  var title = '<div class="hf-card-title">งบประมาณ <span style="font-size:11px;font-weight:400;color:var(--hf-ink3)">'+modeTitleMap[mode]+'</span> <span class="hf-link" onclick="nav(\'budget\')">จัดการ →</span></div>';
   if (!items.length) {
-    el.innerHTML = title+'<div class="empty" onclick="nav(\'budget\')" style="cursor:pointer">ยังไม่ได้ตั้งงบประมาณ</div>';
+    el.innerHTML = title + modeTabs + '<div class="empty" onclick="nav(\'budget\')" style="cursor:pointer">ยังไม่ได้ตั้งงบประมาณ</div>';
     return;
   }
   var actual = typeof getBudgetSpending === 'function' ? getBudgetSpending() : {};
@@ -600,7 +610,7 @@ function renderDashBudgetMini() {
       +'<div class="hf-prog"><div class="hf-prog-fill '+cls+'" style="width:'+pct+'%"></div></div>'
     +'</div>';
   }).join('');
-  el.innerHTML = title + rows + (items.length > 4 ? '<div style="font-size:11px;color:var(--hf-ink3);text-align:right">+' + (items.length-4) + ' หมวดอื่น</div>' : '');
+  el.innerHTML = title + modeTabs + rows + (items.length > 4 ? '<div style="font-size:11px;color:var(--hf-ink3);text-align:right">+' + (items.length-4) + ' หมวดอื่น</div>' : '');
 }
 
 function renderDashSettleMini(pendList) {

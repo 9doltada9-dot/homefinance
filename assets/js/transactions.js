@@ -128,8 +128,6 @@ function _mfCloseAll(){
     d.style.bottom = '';
     d.style.maxHeight = '';
     d.style.zIndex = '';
-    // disconnect IntersectionObserver เมื่อปิด
-    if(d._mfIO){ d._mfIO.disconnect(); d._mfIO = null; }
   });
 }
 
@@ -155,16 +153,6 @@ function _mfPortalPosition(dd, trigger){
     dd.style.top    = topDown + 'px';
     dd.style.maxHeight = Math.min(vh - topDown - 8, 320) + 'px';
   }
-
-  // ใช้ IntersectionObserver แทน scroll listener —
-  // ปิด dropdown เฉพาะเมื่อ trigger button เลื่อนออกนอกจอ
-  if(dd._mfIO) dd._mfIO.disconnect();
-  dd._mfIO = new IntersectionObserver(function(entries){
-    if(!entries[0].isIntersecting && dd.classList.contains('open')){
-      _mfCloseAll();
-    }
-  }, { threshold: 0 });
-  dd._mfIO.observe(trigger);
 }
 
 function toggleMF(id){
@@ -180,18 +168,14 @@ function toggleMF(id){
   if(!dd._mfPortaled){
     dd._mfPortaled = true;
     document.body.appendChild(dd);
-
-    // ป้องกัน page scroll ขณะ mouse wheel อยู่เหนือ dropdown
-    // (เมื่อ dropdown scroll ถึงขอบ หรือ content ไม่ overflow → wheel chain ไป page → IO fires → close)
+    // ป้องกัน wheel/touch chain ไปยัง page scroll
     dd.addEventListener('wheel', function(e){
-      var canScroll  = dd.scrollHeight > dd.clientHeight;
-      var atTop      = dd.scrollTop <= 0 && e.deltaY < 0;
-      var atBottom   = dd.scrollTop >= dd.scrollHeight - dd.clientHeight - 1 && e.deltaY > 0;
+      var canScroll = dd.scrollHeight > dd.clientHeight;
+      var atTop     = dd.scrollTop <= 0 && e.deltaY < 0;
+      var atBottom  = dd.scrollTop >= dd.scrollHeight - dd.clientHeight - 1 && e.deltaY > 0;
       if(!canScroll || atTop || atBottom) e.preventDefault();
-    }, {passive: false});
-
-    // mobile: ป้องกัน touchmove chain ออก dropdown
-    dd.addEventListener('touchmove', function(e){ e.stopPropagation(); }, {passive: true});
+    }, {passive:false});
+    dd.addEventListener('touchmove', function(e){ e.stopPropagation(); }, {passive:true});
   }
 
   _mfCloseAll();
@@ -201,8 +185,8 @@ function toggleMF(id){
   }
 }
 
-// scroll listener ถูกลบออก — ใช้ IntersectionObserver ใน _mfPortalPosition แทน
-// (scroll listener เดิมทำให้ scroll ใน dropdown ปิด dropdown โดยไม่ตั้งใจ)
+// ปิด dropdown เมื่อ resize เท่านั้น
+// (ไม่มี scroll listener / IntersectionObserver — ป้องกัน scroll ใน dropdown ปิด dropdown)
 window.addEventListener('resize', _mfCloseAll);
 
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };

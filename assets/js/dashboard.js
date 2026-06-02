@@ -322,8 +322,6 @@ function switchChart(type, passedMonth){
       {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
       {label:'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
-    // render category sub-chart chips
-    renderCatChips(_chartDb, months, labelsT);
     // render item trend chips
     renderItemChips(_chartDb, months, labelsT);
 
@@ -486,7 +484,7 @@ function _updateItemLabel() {
   var tracked = [];
   try { tracked = JSON.parse(localStorage.getItem('hf_tracked_items') || '[]'); } catch(e) {}
   if (n === 0) lbl.innerHTML = 'เลือกรายการ ▾';
-  else if (n === 1) { var t = tracked.find(function(x){ return x.id === window._selItems[0]; }); lbl.innerHTML = (t ? t.name : window._selItems[0]) + ' ▾'; }
+  else if (n === 1) { var sid0 = String(window._selItems[0]); var t = tracked.find(function(x){ return String(x.id) === sid0; }); lbl.innerHTML = (t ? t.name : sid0) + ' ▾'; }
   else lbl.innerHTML = n + ' รายการ ▾';
   lbl.classList.toggle('active', n > 0);
 }
@@ -527,14 +525,15 @@ function renderItemChart(chartDb, months, labelsT) {
             x:{grid:{display:false},ticks:{font:{size:9}}}}};
   var datasets = window._selItems.map(function(itemId, i){
     var col  = PALETTE[i % PALETTE.length];
-    var info = tracked.find(function(t){ return t.id === itemId; }) || {};
+    var sid  = String(itemId);
+    var info = tracked.find(function(t){ return String(t.id) === sid; }) || {};
     var vals = months.map(function(m){
       return chartDb.filter(function(e){
         return e.date.startsWith(m) && e.type==='expense' && isPaid(e)
-          && (e.item_id === itemId || e.desc === info.name);
+          && (String(e.item_id) === sid || (info.name && e.desc === info.name));
       }).reduce(function(s,e){ return s+e.amt; }, 0);
     });
-    return {label: info.name||itemId, data:vals, borderColor:col, backgroundColor:col+'22', tension:.3, fill:true, pointRadius:3, borderWidth:2};
+    return {label: info.name||sid, data:vals, borderColor:col, backgroundColor:col+'22', tension:.3, fill:true, pointRadius:3, borderWidth:2};
   });
   chartItem = new Chart(canvas.getContext('2d'),{type:'line',data:{labels:labelsT,datasets:datasets},options:opts3});
 }

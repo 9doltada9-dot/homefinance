@@ -82,10 +82,13 @@ function getBudgetSpending() {
     toCheck = _db.filter(function(e){ return e.type==='expense' && isPaid(e) && e.date.startsWith(curM); });
   }
 
+  var itemActual = {};
   toCheck.forEach(function(e){
     var k = e.cat_id || e.cat_name || '—';
     actual[k] = (actual[k]||0) + e.amt;
+    if (e.item_id) itemActual[e.item_id] = (itemActual[e.item_id]||0) + e.amt;
   });
+  actual._byItem = itemActual;
   return actual;
 }
 
@@ -121,22 +124,26 @@ function renderBudget() {
   var actual   = getBudgetSpending();
   var expCats  = categories.filter(function(c){ return c.type === 'expense'; });
 
-  // Group budgetItems by catId for spending lookup
-  var catActual = {}; // catId → actual spent
+  // Compute spending per budget row (item-aware)
+  var biActual = {}; // bi.id → actual spent
   budgetItems.forEach(function(bi){
     var cat = expCats.find(function(c){ return c.id === bi.catId; });
-    var spent = actual[bi.catId] || (cat ? actual[cat.name] : 0) || 0;
-    catActual[bi.catId] = spent;
+    if (bi.itemId) {
+      biActual[bi.id] = ((actual._byItem || {})[bi.itemId]) || 0;
+    } else {
+      biActual[bi.id] = actual[bi.catId] || (cat ? actual[cat.name] : 0) || 0;
+    }
   });
 
-  // Summary
+  // Summary — deduplicate whole-cat rows per catId, sum item rows individually
   var totalBudget = budgetItems.reduce(function(s,bi){ return s + bi.amount; }, 0);
   var totalSpent  = (function(){
-    var seenCats = {};
+    var seenWholeCats = {};
     return budgetItems.reduce(function(s,bi){
-      if (!seenCats[bi.catId]) {
-        seenCats[bi.catId] = true;
-        return s + (catActual[bi.catId] || 0);
+      if (bi.itemId) return s + (biActual[bi.id] || 0);
+      if (!seenWholeCats[bi.catId]) {
+        seenWholeCats[bi.catId] = true;
+        return s + (biActual[bi.id] || 0);
       }
       return s;
     }, 0);
@@ -170,9 +177,7 @@ function renderBudget() {
 
   // Rows
   var rows = budgetItems.map(function(bi) {
-    var cat = expCats.find(function(c){ return c.id === bi.catId; });
-    var spent  = catActual[bi.catId] || 0;
-    return budgetRow(bi, spent);
+    return budgetRow(bi, biActual[bi.id] || 0);
   }).join('');
 
   var emptyHint = budgetItems.length === 0

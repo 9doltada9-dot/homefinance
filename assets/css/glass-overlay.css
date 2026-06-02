@@ -300,8 +300,8 @@ select.hf-chip, select.hf-pill-select {
   overflow-y: auto;
   z-index: 2000;
   background: var(--g-dropdown, rgba(36,42,76,.85)) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(max(var(--g-blur, 16px), 12px)) saturate(var(--g-sat, 160%));
+  backdrop-filter: blur(max(var(--g-blur, 16px), 12px)) saturate(var(--g-sat, 160%));
   border: 1px solid var(--g-brd) !important;
   border-radius: 14px !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;

@@ -28,6 +28,8 @@
   --g-card:rgba(255,255,255,.80);
   --g-strong:rgba(255,255,255,.90);
   --g-brd:rgba(230,232,255,.65);
+  /* dropdown panel — opaque พอที่จะปิดบัง content ด้านหลัง */
+  --csd-panel-bg:rgba(238,240,255,.97);
   --g-sheen:rgba(255,255,255,.80);
   --g-shadow:0 24px 64px -16px rgba(40,46,96,.30), 0 8px 24px -6px rgba(40,46,96,.20), 0 1px 4px rgba(40,46,96,.10);
   --g-ring:inset 0 1.5px 0 rgba(255,255,255,.90);
@@ -61,6 +63,7 @@ html[data-theme="dark"]{
   --accent:#818cf8; --accent-2:#a78bfa; --accent-soft:rgba(129,140,248,.22);
   --g-card:rgba(46,53,90,.55);
   --g-strong:rgba(58,66,108,.7);
+  --csd-panel-bg:rgba(22,28,58,.97);
   --g-brd:rgba(255,255,255,.16);
   --g-sheen:rgba(255,255,255,.14);
   --g-shadow:0 28px 60px -26px rgba(0,0,0,.7), 0 6px 18px -10px rgba(0,0,0,.5);
@@ -82,7 +85,7 @@ html[data-theme="dark"]{
     --blue-bg:rgba(96,165,250,.16); --blue:#7fb1ff;
     --violet-bg:rgba(167,139,250,.18); --violet:#b69bff;
     --accent:#818cf8; --accent-2:#a78bfa; --accent-soft:rgba(129,140,248,.22);
-    --g-card:rgba(46,53,90,.55); --g-strong:rgba(58,66,108,.7);
+    --g-card:rgba(46,53,90,.55); --g-strong:rgba(58,66,108,.7); --csd-panel-bg:rgba(22,28,58,.97);
     --g-brd:rgba(255,255,255,.16); --g-sheen:rgba(255,255,255,.14);
     --g-shadow:0 28px 60px -26px rgba(0,0,0,.7), 0 6px 18px -10px rgba(0,0,0,.5);
     --g-ring:inset 0 1px 0 rgba(255,255,255,.14);
@@ -347,9 +350,9 @@ select.hf-chip, select.hf-pill-select {
   /* position/top/left/z-index ถูก set โดย JS (portal ต่อที่ body) */
   display: none;
   overflow-y: auto;
-  background: var(--g-strong) !important;
-  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  background: var(--csd-panel-bg) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
   border: 1px solid var(--g-brd) !important;
   border-radius: 14px !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;
@@ -427,19 +430,14 @@ select.hf-chip, select.hf-pill-select {
   border:1px solid var(--g-brd) !important;
   border-radius:11px;
 }
-/* dropdown panels + autocomplete + note history */
+/* dropdown panels + autocomplete + note history — opaque พอที่จะปิดบัง content */
 .mf-dropdown, .ac-list, #noteHistoryDrop{
-  background:var(--g-strong) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
+  background:var(--csd-panel-bg) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(160%);
+  backdrop-filter:blur(12px) saturate(160%);
   border:1px solid var(--g-brd) !important;
   border-radius:var(--r2,22px) !important;
   box-shadow:var(--g-ring),var(--g-shadow) !important;
-}
-html[data-theme="dark"] .mf-dropdown,
-html[data-theme="dark"] .ac-list,
-html[data-theme="dark"] #noteHistoryDrop{
-  background:var(--g-strong) !important;
 }
 /* 1) ซ่อน scrollbar หน้าหลัก */
 html{ scrollbar-width:none; }

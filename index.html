@@ -997,7 +997,7 @@ function gcgToggle(e){
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
         <strong>v3.18.67</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
-        <strong>v3.18.66</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
+        <strong>v3.18.67</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
         <strong>v3.18.64</strong> — ปุ่มทำทันที: ตรวจสถานะ db เดือนนี้ — รอจ่าย→ปุ่ม 💳 จ่ายทันที, ยังไม่มี→ปุ่ม ⚡ ทำทันที, จ่ายแล้ว→✅<br>
         <strong>v3.18.62</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
         <strong>v3.18.61</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
@@ -1275,11 +1275,13 @@ create policy "public write" on transactions for all using (true);</div>
             <input type="text" id="goalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
           </div>
         </div>
-        <div class="form-row" style="margin-bottom:10px">
+        <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
             <label>เป้าหมาย (฿)</label>
             <input type="number" id="goalTarget" placeholder="0" min="0" style="font-size:20px !important;font-weight:700;text-align:right;font-family:monospace">
           </div>
+        </div>
+        <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
             <label>มีอยู่แล้ว (฿)</label>
             <input type="number" id="goalCurrent" placeholder="0" min="0" style="font-size:16px !important;text-align:right;font-family:monospace">

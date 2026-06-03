@@ -2,8 +2,8 @@
 
 /* ─── Savings Goals layout ─── */
 .savings-layout{display:grid;grid-template-columns:280px 1fr;grid-template-areas:'form list';gap:16px;margin-top:16px;align-items:start}
-.savings-form-col{grid-area:form;position:sticky;top:16px}
-.savings-list-col{grid-area:list}
+.savings-form-col{grid-area:form;position:sticky;top:16px;min-width:0;overflow:hidden}
+.savings-list-col{grid-area:list;min-width:0}
 @media(max-width:900px){
   .savings-layout{grid-template-columns:1fr;grid-template-areas:'form''list'}
   .savings-form-col{position:static}

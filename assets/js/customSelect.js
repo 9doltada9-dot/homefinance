@@ -41,6 +41,20 @@
     _csdUnlock();
   }
 
+  // ── หา container bottom (modal card หรือ viewport) ──────────
+  function _containerBottom(btn, vh){
+    var el = btn.parentElement;
+    while(el && el !== d.body){
+      // หา ancestor ที่มี position:relative และสูงน้อยกว่า 90% ของ viewport
+      if(el.style && el.style.position === 'relative'){
+        var r = el.getBoundingClientRect();
+        if(r.height > 80 && r.height < vh * 0.9){ return r.bottom; }
+      }
+      el = el.parentElement;
+    }
+    return vh;
+  }
+
   // ── Position panel over trigger (fixed coords) ─────────────
   function _positionPanel(btn, panel){
     var rect = btn.getBoundingClientRect();
@@ -66,11 +80,13 @@
     panel.style.display    = '';
     panel.style.visibility = '';
 
-    // ตำแหน่ง top: เปิดลงล่าง ถ้าไม่พอให้เปิดขึ้นบน
+    // หา container bottom — ถ้าอยู่ใน modal card ให้ใช้ขอบล่างของ card
+    var cBottom = _containerBottom(btn, vh);
+
+    // ตำแหน่ง top: เปิดลงล่าง ถ้าล้น container/viewport ให้เปิดขึ้นบน
     var topDown = rect.bottom + 4;
     var topUp   = rect.top - 4;
-    // เปิดขึ้นบนถ้า panel จะล้นหรือใกล้ขอบล่าง viewport (margin 24px)
-    var showUp  = topDown + panelH > vh - 24 && rect.top > panelH + 8;
+    var showUp  = topDown + panelH + 8 > cBottom && rect.top > panelH + 8;
 
     panel.style.position  = 'fixed';
     panel.style.left      = left + 'px';
@@ -85,7 +101,7 @@
     } else {
       panel.style.bottom    = '';
       panel.style.top       = topDown + 'px';
-      panel.style.maxHeight = Math.min(vh - topDown - 8, 260) + 'px';
+      panel.style.maxHeight = Math.min(Math.min(cBottom, vh) - topDown - 8, 260) + 'px';
     }
   }
 

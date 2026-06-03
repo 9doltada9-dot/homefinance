@@ -119,7 +119,22 @@ function populateMFUser() {
 }
 
 // ─── MULTI FILTER (portal rendering) ─────────────────────
+
+// lock/unlock body scroll เมื่อ dropdown เปิด/ปิด
+function _mfLockBody(){
+  var sb = window.scrollY || document.documentElement.scrollTop;
+  document.body.style.top = '-' + sb + 'px';
+  document.body.classList.add('mf-body-lock');
+}
+function _mfUnlockBody(){
+  var top = parseInt(document.body.style.top || '0', 10);
+  document.body.classList.remove('mf-body-lock');
+  document.body.style.top = '';
+  window.scrollTo(0, -top);
+}
+
 function _mfCloseAll(){
+  var any = document.querySelectorAll('.mf-dropdown.open').length > 0;
   document.querySelectorAll('.mf-dropdown.open').forEach(function(d){
     d.classList.remove('open');
     d.style.position = '';
@@ -129,6 +144,7 @@ function _mfCloseAll(){
     d.style.maxHeight = '';
     d.style.zIndex = '';
   });
+  if(any) _mfUnlockBody();
 }
 
 function _mfPortalPosition(dd, trigger){
@@ -168,25 +184,16 @@ function toggleMF(id){
   if(!dd._mfPortaled){
     dd._mfPortaled = true;
     document.body.appendChild(dd);
-    // ป้องกัน wheel/touch chain ไปยัง page scroll
-    dd.addEventListener('wheel', function(e){
-      var canScroll = dd.scrollHeight > dd.clientHeight;
-      var atTop     = dd.scrollTop <= 0 && e.deltaY < 0;
-      var atBottom  = dd.scrollTop >= dd.scrollHeight - dd.clientHeight - 1 && e.deltaY > 0;
-      if(!canScroll || atTop || atBottom) e.preventDefault();
-    }, {passive:false});
-    dd.addEventListener('touchmove', function(e){ e.stopPropagation(); }, {passive:true});
   }
 
   _mfCloseAll();
   if(!wasOpen){
     dd.classList.add('open');
+    _mfLockBody();
     if(trigger) _mfPortalPosition(dd, trigger);
   }
 }
 
-// ปิด dropdown เมื่อ resize เท่านั้น
-// (ไม่มี scroll listener / IntersectionObserver — ป้องกัน scroll ใน dropdown ปิด dropdown)
 window.addEventListener('resize', _mfCloseAll);
 
 var _MF_NAMES = { mfType:'ประเภท', mfStatus:'สถานะ', mfCat:'หมวด', mfVendor:'ร้านค้า', mfItem:'รายการ', mfUser:'ผู้บันทึก' };

@@ -269,34 +269,72 @@ function renderRecurringList() {
     var typeLbl = t.type === 'income'
       ? '<span class="badge badge-income">รายรับ</span>'
       : '<span class="badge badge-expense">รายจ่าย</span>';
-    var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
     var label = (t.cat_name || '');
     if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
-    var dueDay   = t.day_of_month || 1;
-    var isDone   = t.last_run_yyyymm === yyyymm;
+    var dueDay = t.day_of_month || 1;
+
+    // ─── ตรวจหา transaction เดือนนี้จาก db ─────────
+    var existingTx = null;
+    if (typeof db !== 'undefined' && Array.isArray(db)) {
+      existingTx = db.find(function(tx) {
+        return tx._recurring_id && String(tx._recurring_id) === String(t.id)
+          && tx.date && tx.date.slice(0, 7) === yyyymm;
+      });
+    }
+
+    // สถานะหลัก
+    var isPaid       = existingTx && (existingTx.status === 'paid' || existingTx.status === 'received');
+    var isPending    = existingTx && existingTx.status === 'pending';
+    var isDoneLegacy = !existingTx && t.last_run_yyyymm === yyyymm; // บันทึกผ่านฟอร์ม (ไม่มี _recurring_id)
+    var isDone       = isPaid || isDoneLegacy;
+    var noTx         = !existingTx && t.last_run_yyyymm !== yyyymm;
+
     // Urgency dot
-    var statusDot = '';
+    var statusDot;
     if (isDone) {
       statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-left:6px;vertical-align:middle" title="ทำแล้วเดือนนี้"></span>';
-    } else if (todayDay >= dueDay) {
+    } else if (isPending) {
+      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f97316;margin-left:6px;vertical-align:middle" title="รอจ่าย/รอรับ — ยังไม่เสร็จสิ้น"></span>';
+    } else if (noTx && todayDay >= dueDay) {
       statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle" title="ถึงกำหนดแล้ว"></span>';
-    } else if (dueDay - todayDay <= 7) {
+    } else if (noTx && dueDay - todayDay <= 7) {
       statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:6px;vertical-align:middle" title="ใกล้ถึงกำหนด"></span>';
+    } else {
+      statusDot = '';
     }
-    // ทำทันที button (แสดงเฉพาะเดือนที่ยังไม่ได้ทำ)
-    var doNowBtn = isDone
-      ? '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>'
-      : '<button onclick="executeRecurringNow(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
-          + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
-          + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
-          + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';
+
+    // Info line (บรรทัดสอง)
+    var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
+    var statusHint = '';
+    if (isPending) {
+      statusHint = ' · <span style="color:#f97316;font-weight:600">⏳ รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + '</span>';
+    } else if (noTx && t.status === 'pending') {
+      statusHint = ' · <span style="color:var(--ink3);font-size:10px">(จะบันทึกเป็น รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + ')</span>';
+    }
+
+    // Action button
+    var doNowBtn;
+    if (isDone) {
+      doNowBtn = '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>';
+    } else if (isPending) {
+      var payLabel = t.type === 'income' ? '💰 รับทันที' : '💳 จ่ายทันที';
+      doNowBtn = '<button onclick="payRecurringNow(' + existingTx.id + ',\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
+        + 'style="padding:5px 10px;background:#f97316;color:#fff;border:none;border-radius:8px;'
+        + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
+        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">' + payLabel + '</button>';
+    } else {
+      doNowBtn = '<button onclick="executeRecurringNow(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
+        + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
+        + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
+        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';
+    }
 
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">'
       + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
         + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
           + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt)
-          + (t.status === 'pending' ? ' · <span style="color:#f59e0b;font-weight:600">⏳ รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + '</span>' : '')
+          + statusHint
           + ' ' + lastRun
         + '</div>'
       + '</div>'
@@ -311,6 +349,34 @@ function renderRecurringList() {
       + '</div>'
     + '</div>';
   }).join('');
+}
+
+// ─── PAY NOW (อัปเดต pending → paid/received) ─────────────
+async function payRecurringNow(txId, recurringId) {
+  if (typeof checkOnlineForAction === 'function' && !checkOnlineForAction()) return;
+  var btn = document.getElementById('recNowBtn-' + recurringId);
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  var txIdx = (typeof db !== 'undefined' && Array.isArray(db))
+    ? db.findIndex(function(x) { return String(x.id) === String(txId); })
+    : -1;
+  if (txIdx < 0) {
+    if (btn) { btn.disabled = false; }
+    if (typeof showCycleToast === 'function') showCycleToast('❌ ไม่พบรายการ');
+    return;
+  }
+
+  var tx       = db[txIdx];
+  var newStatus = tx.type === 'income' ? 'received' : 'paid';
+  tx.status = newStatus;
+  save();
+  sbUpdate(tx); // async — ไม่รอ ใช้ fire-and-forget แบบเดียวกับ dashboard.js
+
+  if (typeof renderDash         === 'function') renderDash();
+  if (typeof renderAccountCards === 'function') renderAccountCards();
+  if (typeof renderAccountList  === 'function') renderAccountList();
+  if (typeof showCycleToast     === 'function') showCycleToast('✅ อัปเดต "' + tx.desc + '" เป็น' + (tx.type === 'income' ? 'รับแล้ว' : 'จ่ายแล้ว'));
+  renderRecurringList();
 }
 
 // ─── EXECUTE NOW (บันทึกทันทีจาก template) ────────────────

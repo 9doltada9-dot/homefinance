@@ -260,6 +260,7 @@
   /* ── Initial passes ───────────────────────────────────────── */
   [50, 350, 900, 2500].forEach(function(t){ setTimeout(applyAll, t); });
 
-  w._csApply = applyAll;
+  w._csApply    = applyAll;
+  w._csdCloseAll = _closeAll;
 
 })(window, document);

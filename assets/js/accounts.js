@@ -533,42 +533,57 @@ function _positionAcctPortal(btn, portal) {
   }
 }
 
+function _closeAllAcctPickers() {
+  document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){
+    p.style.display = 'none';
+    p.classList.remove('open');
+  });
+  document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
+  if (typeof _mfUnlockBody === 'function') _mfUnlockBody();
+}
+
 function _toggleAcctPicker(selId) {
   var portal = document.getElementById(selId+'_apicker_portal');
   var btn    = document.getElementById(selId+'_apicker_btn');
   if (!portal || !btn) return;
   var isOpen = portal.style.display !== 'none';
-  // ปิดทุก portal ก่อน
-  document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
-  document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
+  _closeAllAcctPickers();
   if (!isOpen) {
+    // ปิด CSD panel อื่นๆ และ mf-dropdown ด้วย
+    if (typeof window._csdCloseAll === 'function') window._csdCloseAll();
+    if (typeof _mfCloseAll === 'function') _mfCloseAll();
     _positionAcctPortal(btn, portal);
     portal.style.display = 'block';
+    portal.classList.add('open');
     btn.classList.add('open');
+    if (typeof _mfLockBody === 'function') _mfLockBody();
   }
 }
 
 function _selectAcctPicker(selId, acctId) {
   var sel = document.getElementById(selId);
   if (sel) { sel.value = acctId; sel.dispatchEvent(new Event('change',{bubbles:true})); }
-  document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
-  document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
+  _closeAllAcctPickers();
   _buildAcctPicker(selId);
 }
 
 // ปิด portal เมื่อคลิกนอก / scroll
 (function(){
-  function _closeAllAcctPickers() {
-    document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
-    document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
-  }
+  // capture phase: fire ก่อน stopPropagation ของ CSD buttons
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.acct-picker-wrap') && !e.target.closest('[id$="_apicker_portal"]')) {
       _closeAllAcctPickers();
     }
-  });
-  window.addEventListener('scroll', _closeAllAcctPickers, true);
+  }, true);
+  // scroll: ไม่ปิดถ้า scroll ภายใน portal เอง
+  window.addEventListener('scroll', function(e) {
+    if (e.target && typeof e.target.id === 'string' && e.target.id.endsWith('_apicker_portal')) return;
+    _closeAllAcctPickers();
+  }, true);
   window.addEventListener('resize', _closeAllAcctPickers);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') _closeAllAcctPickers();
+  });
 })();
 
 // ─── RENDER ACCOUNT CARDS (Dashboard) ────────────────────

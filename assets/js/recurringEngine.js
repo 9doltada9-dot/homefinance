@@ -343,7 +343,13 @@ function renderRecurringList() {
         + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';
     }
 
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">'
+    var _vobj = t.vendor_id ? ((typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===t.vendor_id;})||null) : null;
+    var _iconHtml = _vobj && typeof vendorLogoHtml==='function'
+      ? vendorLogoHtml(_vobj, 40)
+      : '<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:19px">'+(t.type==='income'?'💰':'💳')+'</div>';
+
+    return '<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">'
+      + _iconHtml
       + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
         + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'

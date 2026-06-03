@@ -849,7 +849,7 @@ function renderAccountList() {
       return '<div onclick="openAccountLedger(\''+a.id+'\')" '
         +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;'
         +'background:var(--surface2);border-radius:var(--r2);border:1px solid var(--line);'
-        +'border-left:4px solid '+a.color+';transition:background .12s">'
+        +'transition:background .12s">'
         // icon / logo
         +acctLogoHtml(a, 40)
         // name + type

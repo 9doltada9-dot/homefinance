@@ -448,69 +448,128 @@ function fillAccountSelectors() {
   });
 }
 
-/** สร้าง / อัปเดต custom account picker แทน <select> */
+/** สร้าง / อัปเดต custom account picker — portal rendering แบบเดียวกับ CSD */
 function _buildAcctPicker(selId) {
   var sel = document.getElementById(selId);
   if (!sel) return;
-  var pickerId = selId + '_apicker';
+  var pickerId  = selId + '_apicker';
+  var portalId  = selId + '_apicker_portal';
+  var btnId     = selId + '_apicker_btn';
+
+  // ── Wrapper + trigger button (อยู่ใน DOM ของ form) ────────
   var picker = document.getElementById(pickerId);
   if (!picker) {
     picker = document.createElement('div');
     picker.id = pickerId;
     picker.className = 'acct-picker-wrap';
-    picker.style.cssText = 'position:relative;width:100%';
+    picker.style.cssText = 'width:100%';
     sel.parentNode.insertBefore(picker, sel);
     sel.style.display = 'none';
   }
   var isTransfer = selId === 'transferFrom' || selId === 'transferTo';
-  var accts = accountsData.filter(function(a) { return a.is_active; });
-  var selAcct = accts.find(function(a) { return a.id === sel.value; });
+  var accts   = accountsData.filter(function(a){ return a.is_active; });
+  var selAcct = accts.find(function(a){ return a.id === sel.value; });
+
   picker.innerHTML =
-    // ── trigger button — ใช้ class csd-btn เพื่อให้ glass style เหมือน dropdown อื่น ──
-    '<button type="button" class="csd-btn" onclick="_toggleAcctPicker(\''+selId+'\')" '
+    '<button type="button" class="csd-btn" id="'+btnId+'" onclick="_toggleAcctPicker(\''+selId+'\')" '
     +'style="display:flex;align-items:center;gap:8px;text-align:left">'
     +(selAcct
         ? acctLogoHtml(selAcct,24)+'<span class="csd-lbl" style="font-weight:500">'+selAcct.name+'</span>'
         : '<span class="csd-lbl" style="color:var(--ink3)">-- ไม่ระบุ --</span>')
     +'<span class="csd-arrow">▾</span>'
-    +'</button>'
-    // ── dropdown panel — ใช้ class csd-panel-opaque (opaque เพราะ position:absolute ทับ form) ──
-    +'<div id="'+pickerId+'_drop" class="csd-panel" '
-    +'style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:500;max-height:240px;overflow-y:auto">'
-    +(isTransfer ? '' :
-        '<div class="csd-item" onclick="_selectAcctPicker(\''+selId+'\',\'\')" '
-        +'style="color:var(--ink3)">-- ไม่ระบุ --</div>')
+    +'</button>';
+
+  // ── Portal panel (แนบที่ body — position:fixed เหมือน CSD) ──
+  var portal = document.getElementById(portalId);
+  if (!portal) {
+    portal = document.createElement('div');
+    portal.id = portalId;
+    portal.className = 'csd-panel';
+    portal.style.display = 'none';
+    document.body.appendChild(portal);
+  }
+  portal.innerHTML =
+    (isTransfer ? '' :
+      '<div class="csd-item" onclick="_selectAcctPicker(\''+selId+'\',\'\')" style="color:var(--ink3)">-- ไม่ระบุ --</div>')
     +accts.map(function(a){
       var active = sel.value === a.id;
-      return '<div class="csd-item'+(active?' csd-sel':'')+'" onclick="_selectAcctPicker(\''+selId+'\',\''+a.id+'\')" '
+      return '<div class="csd-item'+(active?' csd-sel':'')+'" '
+        +'onclick="_selectAcctPicker(\''+selId+'\',\''+a.id+'\')" '
         +'style="display:flex;align-items:center;gap:10px">'
         +acctLogoHtml(a,28)
-        +'<div><div style="font-size:13px;font-weight:500;color:var(--ink)">'+a.name+'</div>'
-        +'<div style="font-size:10px;color:var(--ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div></div>'
-        +'</div>';
-    }).join('')
-    +'</div>';
+        +'<div style="min-width:0">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--ink)">'+a.name+'</div>'
+        +'<div style="font-size:10px;color:var(--ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
+        +'</div></div>';
+    }).join('');
 }
+
+function _positionAcctPortal(btn, portal) {
+  var rect = btn.getBoundingClientRect();
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var pw = Math.max(rect.width, 200); pw = Math.min(pw, vw - 16);
+  var left = rect.left;
+  if (left + pw > vw - 8) left = vw - pw - 8;
+  if (left < 8) left = 8;
+  // วัด height จริง off-screen
+  portal.style.position = 'fixed';
+  portal.style.top = '-9999px'; portal.style.left = '-9999px';
+  portal.style.visibility = 'hidden'; portal.style.display = 'block';
+  var ph = Math.min(portal.offsetHeight + 2, 280);
+  portal.style.display = 'none'; portal.style.visibility = '';
+  // ทิศทาง
+  var topDown = rect.bottom + 4;
+  var showUp  = topDown + ph + 8 > vh && rect.top > ph + 8;
+  portal.style.left     = left + 'px';
+  portal.style.minWidth = pw + 'px';
+  portal.style.maxWidth = Math.min(pw * 1.5, 400) + 'px';
+  portal.style.zIndex   = '99999';
+  if (showUp) {
+    portal.style.top = ''; portal.style.bottom = (vh - rect.top + 4) + 'px';
+    portal.style.maxHeight = Math.min(rect.top - 8, 260) + 'px';
+  } else {
+    portal.style.bottom = ''; portal.style.top = topDown + 'px';
+    portal.style.maxHeight = Math.min(vh - topDown - 8, 260) + 'px';
+  }
+}
+
 function _toggleAcctPicker(selId) {
-  var drop = document.getElementById(selId+'_apicker_drop');
-  if (!drop) return;
-  var isOpen = drop.style.display !== 'none';
-  // ปิดทุก picker ก่อน
-  document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
-  if (!isOpen) drop.style.display = 'block';
+  var portal = document.getElementById(selId+'_apicker_portal');
+  var btn    = document.getElementById(selId+'_apicker_btn');
+  if (!portal || !btn) return;
+  var isOpen = portal.style.display !== 'none';
+  // ปิดทุก portal ก่อน
+  document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
+  document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
+  if (!isOpen) {
+    _positionAcctPortal(btn, portal);
+    portal.style.display = 'block';
+    btn.classList.add('open');
+  }
 }
+
 function _selectAcctPicker(selId, acctId) {
   var sel = document.getElementById(selId);
   if (sel) { sel.value = acctId; sel.dispatchEvent(new Event('change',{bubbles:true})); }
-  document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
+  document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
+  document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
   _buildAcctPicker(selId);
 }
-// ปิด picker เมื่อคลิกนอก
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.acct-picker-wrap')) {
-    document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
+
+// ปิด portal เมื่อคลิกนอก / scroll
+(function(){
+  function _closeAllAcctPickers() {
+    document.querySelectorAll('[id$="_apicker_portal"]').forEach(function(p){ p.style.display='none'; });
+    document.querySelectorAll('[id$="_apicker_btn"]').forEach(function(b){ b.classList.remove('open'); });
   }
-});
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.acct-picker-wrap') && !e.target.closest('[id$="_apicker_portal"]')) {
+      _closeAllAcctPickers();
+    }
+  });
+  window.addEventListener('scroll', _closeAllAcctPickers, true);
+  window.addEventListener('resize', _closeAllAcctPickers);
+})();
 
 // ─── RENDER ACCOUNT CARDS (Dashboard) ────────────────────
 function renderAccountCards() {

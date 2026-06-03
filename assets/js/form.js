@@ -415,6 +415,7 @@ async function addEntry(){
   var item_id = (itemObj && itemObj.id)||null;
 
   var account_id    = (document.getElementById('fAccount')||{}).value    || null;
+  if (account_id) window._lastFormAccountId = account_id; // จำบัญชีล่าสุดเพื่อ sticky
 
   // v3: compute cycle_id from date
   var cycle_id = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(date) : null;
@@ -477,6 +478,12 @@ function clearForm(){
   document.getElementById('fAmt').value='';
   document.getElementById('fNote').value='';
   selectSplitBtn(''); // reset split → ส่วนตัว
+  // รีเฟรช account selector — ใช้บัญชีล่าสุดเป็น sticky default
+  if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
   var acctSel = document.getElementById('fAccount');
-  if(acctSel) acctSel.value = '';
+  if(acctSel && window._lastFormAccountId){
+    acctSel.value = window._lastFormAccountId;
+    // dispatch change เพื่อให้ CSD label sync ทันที
+    acctSel.dispatchEvent(new Event('change',{bubbles:true}));
+  }
 }

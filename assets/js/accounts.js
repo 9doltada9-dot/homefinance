@@ -475,7 +475,7 @@ function _buildAcctPicker(selId) {
     +'<span class="csd-arrow">▾</span>'
     +'</button>'
     // ── dropdown panel — ใช้ class csd-panel-opaque (opaque เพราะ position:absolute ทับ form) ──
-    +'<div id="'+pickerId+'_drop" class="csd-panel csd-panel-opaque" '
+    +'<div id="'+pickerId+'_drop" class="csd-panel" '
     +'style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:500;max-height:240px;overflow-y:auto">'
     +(isTransfer ? '' :
         '<div class="csd-item" onclick="_selectAcctPicker(\''+selId+'\',\'\')" '

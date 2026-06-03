@@ -317,13 +317,15 @@ function renderRecurringList() {
     if (isDone) {
       doNowBtn = '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>';
     } else if (isPending) {
+      // มี transaction pending อยู่ → เปิดหน้าแก้ไขรายการนั้น
       var payLabel = t.type === 'income' ? '💰 รับทันที' : '💳 จ่ายทันที';
-      doNowBtn = '<button onclick="payRecurringNow(' + existingTx.id + ',\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
+      doNowBtn = '<button onclick="openEdit(' + existingTx.id + ')" id="recNowBtn-' + t.id + '" '
         + 'style="padding:5px 10px;background:#f97316;color:#fff;border:none;border-radius:8px;'
         + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
         + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">' + payLabel + '</button>';
     } else {
-      doNowBtn = '<button onclick="executeRecurringNow(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
+      // ยังไม่มี transaction → เปิดหน้าบันทึกพร้อมกรอกข้อมูลล่วงหน้า
+      doNowBtn = '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
         + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
         + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
         + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';

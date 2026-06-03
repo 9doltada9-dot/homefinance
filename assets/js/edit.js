@@ -222,5 +222,7 @@ function saveEdit(){
     // อัปเดตยอดบัญชีทุกใบที่อาจได้รับผล (กรณีเปลี่ยนบัญชีจาก A → B)
     if (typeof renderAccountCards === 'function') renderAccountCards();
     if (typeof renderAccountList  === 'function') renderAccountList();
+    // re-render รายการประจำ เผื่อสถานะ (pending/paid) เปลี่ยน
+    if (typeof renderRecurringList === 'function') renderRecurringList();
   }, 800);
 }

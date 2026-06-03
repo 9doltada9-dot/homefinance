@@ -451,6 +451,7 @@ async function addEntry(){
     split_snapshot:Object.keys(_split_snapshot).length ? _split_snapshot : null,
     status:status, note:note, item_id:item_id, vendor_id:vendor_id,
     _salary_cycle:_salary_cycle,
+    _recurring_id: window._pending_recurring_id || null,
     cycle_id:cycle_id, account_id:account_id||null};
 
   var _ok = await sbAdd(_entry);

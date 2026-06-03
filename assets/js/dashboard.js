@@ -168,23 +168,23 @@ function renderSalaryCycleCard(){
     '</div>'+
     // ── 4-metric grid (1×4 desktop / 2×2 mobile via CSS class)
     '<div class="salary-metrics-grid">'+
-      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💰 รายรับ</div>'+
+      '<div style="background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.35);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:#15803d;margin-bottom:4px;font-weight:700">💰 รายรับ</div>'+
         '<div style="font-size:18px;font-weight:800;color:#4ade80;font-family:monospace;letter-spacing:-0.5px">'+fmtH(received)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">รับแล้ว</div>'+
       '</div>'+
-      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💸 รายจ่าย</div>'+
+      '<div style="background:rgba(248,113,113,.10);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:#991b1b;margin-bottom:4px;font-weight:700">💸 รายจ่าย</div>'+
         '<div style="font-size:18px;font-weight:800;color:#f87171;font-family:monospace;letter-spacing:-0.5px">'+fmtH(totalExp)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">จ่ายแล้ว</div>'+
       '</div>'+
-      '<div style="background:var(--surface2);border-radius:12px;padding:12px 10px;'+(remain<0?'border:1px solid #f87171;':'')+'">'+
-        '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">💵 คงเหลือ</div>'+
+      '<div style="background:'+(remain>=0?'rgba(74,222,128,.08)':'rgba(248,113,113,.10)')+';border:1px solid '+(remain>=0?'rgba(74,222,128,.30)':'rgba(248,113,113,.35)')+';border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:'+(remain>=0?'#15803d':'#991b1b')+';margin-bottom:4px;font-weight:700">💵 คงเหลือ</div>'+
         '<div style="font-size:18px;font-weight:800;color:'+(remain>=0?'#4ade80':'#f87171')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(remain)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">สุทธิรอบนี้</div>'+
       '</div>'+
-      '<div style="background:'+(pending>0?'rgba(251,191,36,.1)':'var(--surface2)')+';border-radius:12px;padding:12px 10px;'+(pending>0?'border:1px solid rgba(251,191,36,.4);':'')+'">'+
-        '<div style="font-size:10px;color:'+(pending>0?'#b5600a':'var(--ink3)')+';margin-bottom:4px">⏳ รอรับ</div>'+
+      '<div style="background:'+(pending>0?'rgba(251,191,36,.10)':'rgba(255,255,255,.04)')+';border:1px solid '+(pending>0?'rgba(251,191,36,.40)':'rgba(255,255,255,.08)')+';border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:'+(pending>0?'#b5600a':'var(--ink3)')+';margin-bottom:4px;font-weight:700">⏳ รอรับ</div>'+
         '<div style="font-size:18px;font-weight:800;color:'+(pending>0?'#fbbf24':'var(--ink3)')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(pending)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">'+(pending>0?'รอดำเนินการ':'ไม่มีรอรับ')+'</div>'+
       '</div>'+

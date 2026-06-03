@@ -68,16 +68,32 @@ function saveAccountsLocal() {
   localStorage.setItem('hf2_accounts', JSON.stringify(accountsData));
 }
 
-// ─── LOGO EDITOR (drag-to-position + canvas crop) ─────────
+// ─── LOGO EDITOR (drag + scroll/pinch zoom + canvas crop) ──
 var _logoState = {
-  new:  { src: '', posX: 0, posY: 0 },
-  edit: { src: '', posX: 0, posY: 0 }
+  new:  { src: '', posX: 0, posY: 0, scale: 1 },
+  edit: { src: '', posX: 0, posY: 0, scale: 1 }
 };
-var _logoDrag = { on: false, mode: '', sx: 0, sy: 0, ox: 0, oy: 0 };
+var _logoDrag  = { on: false, mode: '', sx: 0, sy: 0, ox: 0, oy: 0 };
+var _logoPinch = { on: false, mode: '', dist: 0, sc0: 1 };
 
-// Global pointer listeners — registered once
+function _pinchDist(touches) {
+  var dx = touches[0].clientX - touches[1].clientX;
+  var dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+// Global pointer + pinch listeners — registered once
 (function(){
   function _move(e) {
+    // pinch-to-zoom (2 fingers)
+    if (_logoPinch.on && e.touches && e.touches.length === 2) {
+      e.preventDefault();
+      var st = _logoState[_logoPinch.mode];
+      st.scale = Math.min(6, Math.max(0.2, _logoPinch.sc0 * (_pinchDist(e.touches) / _logoPinch.dist)));
+      _logoApplyTransform(_logoPinch.mode);
+      return;
+    }
+    // drag (1 finger / mouse)
     if (!_logoDrag.on) return;
     e.preventDefault();
     var pt = e.touches ? e.touches[0] : e;
@@ -86,7 +102,8 @@ var _logoDrag = { on: false, mode: '', sx: 0, sy: 0, ox: 0, oy: 0 };
     st.posY = _logoDrag.oy + (pt.clientY - _logoDrag.sy);
     _logoApplyTransform(_logoDrag.mode);
   }
-  function _end() {
+  function _end(e) {
+    if (_logoPinch.on && (!e.touches || e.touches.length < 2)) _logoPinch.on = false;
     if (!_logoDrag.on) return;
     _logoDrag.on = false;
     var el = document.getElementById(_logoPrevId(_logoDrag.mode));
@@ -105,10 +122,21 @@ function _logoApplyTransform(mode) {
   var st  = _logoState[mode];
   var img = document.getElementById(_logoPrevId(mode) + 'Img');
   if (img) img.style.transform =
-    'translate(calc(-50% + '+st.posX+'px), calc(-50% + '+st.posY+'px))';
+    'translate(calc(-50% + '+st.posX+'px), calc(-50% + '+st.posY+'px)) scale('+st.scale+')';
 }
+
+// ── called from HTML onmousedown / ontouchstart ──
 function logoDragStart(e, mode) {
   if (!_logoState[mode].src) return;
+  // Pinch: 2 fingers
+  if (e.touches && e.touches.length === 2) {
+    e.preventDefault();
+    _logoPinch.on = true; _logoPinch.mode = mode;
+    _logoPinch.dist = _pinchDist(e.touches);
+    _logoPinch.sc0  = _logoState[mode].scale;
+    return;
+  }
+  // Drag: 1 finger / mouse
   e.preventDefault();
   var st = _logoState[mode];
   _logoDrag.on = true; _logoDrag.mode = mode;
@@ -119,47 +147,60 @@ function logoDragStart(e, mode) {
   if (el) el.style.cursor = 'grabbing';
 }
 
+// ── scroll wheel zoom ──
+function logoWheelZoom(e, mode) {
+  if (!_logoState[mode].src) return;
+  e.preventDefault();
+  var factor = e.deltaY < 0 ? 1.1 : 0.9;
+  var st = _logoState[mode];
+  st.scale = Math.min(6, Math.max(0.2, st.scale * factor));
+  _logoApplyTransform(mode);
+}
+
 function _acctLogoPreview(mode, src) {
-  var pid = _logoPrevId(mode);
-  var el  = document.getElementById(pid);
+  var pid  = _logoPrevId(mode);
+  var el   = document.getElementById(pid);
   var hint = document.getElementById(pid.replace('Preview','DragHint'));
   if (!el) return;
   if (src) {
     var st = _logoState[mode];
-    el.style.border  = '2px solid var(--accent,#6366f1)';
-    el.style.cursor  = 'grab';
-    el.setAttribute('onmousedown', 'logoDragStart(event,"'+mode+'")');
+    el.style.border = '2px solid var(--accent,#6366f1)';
+    el.style.cursor = 'grab';
+    el.setAttribute('onmousedown',  'logoDragStart(event,"'+mode+'")');
     el.setAttribute('ontouchstart', 'logoDragStart(event,"'+mode+'")');
+    el.setAttribute('onwheel',      'logoWheelZoom(event,"'+mode+'")');
     el.innerHTML =
       '<img id="'+pid+'Img" src="'+src+'" '
       +'style="position:absolute;min-width:115%;min-height:115%;max-width:none;'
       +'top:50%;left:50%;'
-      +'transform:translate(calc(-50% + '+st.posX+'px),calc(-50% + '+st.posY+'px));'
-      +'pointer-events:none;user-select:none;border-radius:0">';
+      +'transform:translate(calc(-50% + '+st.posX+'px),calc(-50% + '+st.posY+'px)) scale('+st.scale+');'
+      +'pointer-events:none;user-select:none;border-radius:0;transform-origin:center center">';
     if (hint) hint.style.display = 'block';
   } else {
-    _logoState[mode].src = '';
-    _logoState[mode].posX = 0; _logoState[mode].posY = 0;
+    _logoState[mode].src = ''; _logoState[mode].posX = 0;
+    _logoState[mode].posY = 0; _logoState[mode].scale = 1;
     el.innerHTML = '🏦';
-    el.style.border  = '2px dashed var(--line)';
-    el.style.cursor  = 'default';
+    el.style.border = '2px dashed var(--line)';
+    el.style.cursor = 'default';
     el.removeAttribute('onmousedown');
     el.removeAttribute('ontouchstart');
+    el.removeAttribute('onwheel');
     if (hint) hint.style.display = 'none';
   }
 }
 function _acctLogoSetSrc(mode, src) {
-  _logoState[mode].src  = src;
-  _logoState[mode].posX = 0;
-  _logoState[mode].posY = 0;
+  _logoState[mode].src   = src;
+  _logoState[mode].posX  = 0;
+  _logoState[mode].posY  = 0;
+  _logoState[mode].scale = 1;
   _acctLogoPreview(mode, src);
 }
 
-/** ตัด canvas 80×80 วงกลม ตามตำแหน่งที่ลาก (data URL เท่านั้น; URL ภายนอก → คืน as-is) */
+/** ตัด canvas 80×80 วงกลม ตามตำแหน่ง + scale ที่ปรับ */
 function _acctLogoGetCropped(mode, callback) {
   var st = _logoState[mode];
   if (!st.src) { callback(null); return; }
-  if (!st.src.startsWith('data:')) { callback(st.src); return; } // external URL — no crop needed
+  if (!st.src.startsWith('data:')) { callback(st.src); return; }
   var S = 80;
   var cv = document.createElement('canvas');
   cv.width = cv.height = S;
@@ -167,7 +208,8 @@ function _acctLogoGetCropped(mode, callback) {
   ctx.beginPath(); ctx.arc(S/2, S/2, S/2, 0, Math.PI*2); ctx.clip();
   var img = new Image();
   img.onload = function() {
-    var sc = Math.max(S / img.naturalWidth, S / img.naturalHeight);
+    var base = Math.max(S / img.naturalWidth, S / img.naturalHeight);
+    var sc = base * st.scale;
     var dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
     ctx.drawImage(img, (S-dw)/2 + st.posX, (S-dh)/2 + st.posY, dw, dh);
     try { callback(cv.toDataURL('image/png')); }

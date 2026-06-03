@@ -448,17 +448,23 @@ body.mf-body-lock{
 /* ── mf-dropdown: focus scroll ── */
 .mf-dropdown.open{ animation:glassDropIn .14s ease; }
 .mf-dropdown{
-  scrollbar-width:thin;                 /* แสดง scrollbar บาง (desktop) */
+  scrollbar-width:auto;
+  scrollbar-color:rgba(99,102,241,.55) transparent;
   max-width:min(360px,calc(100vw - 24px));
-  overflow-y:auto !important;           /* บังคับให้ dropdown scroll เองได้เสมอ */
+  overflow-y:auto !important;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   touch-action:pan-y;
   scroll-behavior:smooth;
 }
-.mf-dropdown::-webkit-scrollbar{ width:4px; }
-.mf-dropdown::-webkit-scrollbar-track{ background:transparent; }
-.mf-dropdown::-webkit-scrollbar-thumb{ background:var(--g-brd); border-radius:4px; }
+.mf-dropdown::-webkit-scrollbar{ width:6px; }
+.mf-dropdown::-webkit-scrollbar-track{ background:rgba(255,255,255,.08); border-radius:6px; margin:4px; }
+.mf-dropdown::-webkit-scrollbar-thumb{
+  background:rgba(99,102,241,.6);
+  border-radius:6px;
+  min-height:32px;
+}
+.mf-dropdown::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.85); }
 @keyframes glassDropIn{
   from{opacity:0;transform:translateY(-4px) scale(.98)}
   to{opacity:1;transform:none}

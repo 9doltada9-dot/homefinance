@@ -24,10 +24,11 @@ function nav(page){
     p.style.display = 'none';
   });
 
-  // Step 2: แสดง target page — set display:block อย่างชัดเจน
+  // Step 2: แสดง target page — set display อย่างชัดเจน
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
   targetEl.classList.add('active');
-  targetEl.style.display = 'block';
+  // transactions page ใช้ flex layout (ให้ #txContent scroll ได้)
+  targetEl.style.display = (page === 'transactions') ? 'flex' : 'block';
 
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));

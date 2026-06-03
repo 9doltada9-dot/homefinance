@@ -29,6 +29,8 @@ function nav(page){
   targetEl.classList.add('active');
   // transactions page ใช้ flex layout (ให้ #txContent scroll ได้)
   targetEl.style.display = (page === 'transactions') ? 'flex' : 'block';
+  // ล็อค body scroll เฉพาะหน้า transactions ให้ #txContent scroll แทน
+  document.documentElement.classList.toggle('tx-fullscreen', page === 'transactions');
 
   // highlight sidebar item
   var navItems=[].slice.call(document.querySelectorAll('.nav-item'));

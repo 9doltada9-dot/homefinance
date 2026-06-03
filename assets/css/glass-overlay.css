@@ -633,10 +633,15 @@ body.view-mobile .layout{
 .nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
 
 /* ── หน้ารายการทั้งหมด — flex column เต็มจอ ─────────────── */
+/* ป้องกัน body scroll เมื่ออยู่หน้า transactions (ให้ #txContent scroll แทน) */
+html.tx-fullscreen,
+html.tx-fullscreen body{ overflow:hidden; }
+
 #page-transactions{
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px); /* main padding 32px × 2 */
+  /* desktop: ลบแค่ padding-top ของ .main (32px) → ลงถึงขอบล่างจอพอดี */
+  height: calc(100vh - 32px);
 }
 #txContent{
   flex: 1;
@@ -655,8 +660,8 @@ body.view-mobile .layout{
 #txContent::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.8); }
 @media(max-width:900px){
   #page-transactions{
-    height: calc(100vh - 60px - 64px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
-    /* topbar 60px + bottomnav ~64px */
+    /* mobile: topbar 60px + bottomnav จริง 52px */
+    height: calc(100vh - 60px - 52px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
   }
 }
 

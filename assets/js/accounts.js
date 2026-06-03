@@ -68,8 +68,62 @@ function saveAccountsLocal() {
   localStorage.setItem('hf2_accounts', JSON.stringify(accountsData));
 }
 
+// ─── LOGO HELPERS ─────────────────────────────────────────
+var _acctLogoPending = { new: '', edit: '' };
+
+function onAcctLogoInput(mode, val) {
+  _acctLogoPending[mode] = val.trim();
+  _acctLogoPreview(mode, val.trim());
+}
+
+function onAcctLogoFile(mode, input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    _acctLogoPending[mode] = e.target.result;
+    _acctLogoPreview(mode, e.target.result);
+    var urlEl = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoUrl');
+    if (urlEl) urlEl.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function onAcctLogoClear(mode) {
+  _acctLogoPending[mode] = '';
+  _acctLogoPreview(mode, '');
+  var urlEl = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoUrl');
+  if (urlEl) urlEl.value = '';
+}
+
+function _acctLogoPreview(mode, src) {
+  var el = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoPreview');
+  if (!el) return;
+  if (src) {
+    el.innerHTML = '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    el.style.border = '2px solid var(--accent)';
+  } else {
+    el.innerHTML = '🏦';
+    el.style.border = '2px dashed var(--line)';
+  }
+}
+
+/** คืน HTML icon/logo สำหรับ account — ใช้ใน render ทุกที่ */
+function acctLogoHtml(acct, size) {
+  size = size || 40;
+  var TYPE_ICN = { bank:'🏦', cash:'💵', ewallet:'📱' };
+  if (acct && acct.logo_url) {
+    return '<img src="'+acct.logo_url+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block">';
+  }
+  var icon = TYPE_ICN[acct && acct.type] || '💳';
+  var col = (acct && acct.color) || '#1a4fa0';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+col+'22;'
+    +'border:2px solid '+col+'55;display:flex;align-items:center;justify-content:center;'
+    +'font-size:'+(size*0.5)+'px;flex-shrink:0">'+icon+'</div>';
+}
+
 // ─── CRUD ─────────────────────────────────────────────────
-function addAccount(name, type, color, initialBalance) {
+function addAccount(name, type, color, initialBalance, logoUrl) {
   var acct = {
     id: 'acct-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
     name: (name || 'บัญชีใหม่').trim(),
@@ -78,6 +132,7 @@ function addAccount(name, type, color, initialBalance) {
     initial_balance: Number(initialBalance) || 0,
     is_active: true,
     user_id: (typeof getAuthUserId === 'function' ? getAuthUserId() : null) || null,
+    logo_url: logoUrl || null,
   };
   accountsData.push(acct);
   saveAccountsLocal();
@@ -290,12 +345,16 @@ function renderAccountCards() {
       // card แต่ละบัญชี
       + active.map(function(a){
           var bal = getAccountBalance(a.id);
-          var icon = TYPE_ICON[a.type] || '💳';
+          var TYPE_ICN = { bank:'🏦', cash:'💵', ewallet:'📱' };
+          var icon = TYPE_ICN[a.type] || '💳';
+          var logoHdr = a.logo_url
+            ? '<img src="'+a.logo_url+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px"> '
+            : icon + ' ';
           return '<div onclick="nav(\'accounts\')" style="flex-shrink:0;min-width:130px;cursor:pointer;'
             +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'
             +'padding:14px 16px;border-top:3px solid '+a.color+'">'
-            +'<div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">'
-              +icon+' '+a.name
+            +'<div style="font-size:11px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;gap:4px">'
+              +logoHdr+a.name
             +'</div>'
             +'<div style="font-size:19px;font-weight:700;font-family:monospace;letter-spacing:-.5px;color:'+(bal>=0?'var(--green)':'var(--red)')+'">'+fmtH(bal)+'</div>'
             +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
@@ -378,9 +437,15 @@ function openEditAccountModal(id) {
   document.getElementById('editAcctId').value = id;
   document.getElementById('editAcctName').value = acct.name;
   document.getElementById('editAcctType').value = acct.type || 'bank';
+  // โลโก้ปัจจุบัน
+  _acctLogoPending.edit = acct.logo_url || '';
+  var urlEl = document.getElementById('editAcctLogoUrl');
+  if (urlEl) urlEl.value = (acct.logo_url && !acct.logo_url.startsWith('data:')) ? acct.logo_url : '';
+  _acctLogoPreview('edit', acct.logo_url || '');
   _openModal('editAccountModal');
 }
 function closeEditAccountModal() {
+  _acctLogoPending.edit = '';
   _closeModal('editAccountModal');
 }
 function doEditAccount() {
@@ -388,7 +453,8 @@ function doEditAccount() {
   var name = (document.getElementById('editAcctName').value || '').trim();
   var type = document.getElementById('editAcctType').value;
   if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
-  updateAccount(id, { name: name, type: type });
+  var logoUrl = _acctLogoPending.edit || null;
+  updateAccount(id, { name: name, type: type, logo_url: logoUrl });
   closeEditAccountModal();
   renderAccountList();
   renderAccountCards();
@@ -514,10 +580,8 @@ function renderAccountList() {
         +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;'
         +'background:var(--surface2);border-radius:var(--r2);border:1px solid var(--line);'
         +'border-left:4px solid '+a.color+';transition:background .12s">'
-        // icon circle
-        +'<div style="width:40px;height:40px;border-radius:50%;background:'+a.color+'22;'
-          +'border:2px solid '+a.color+'55;display:flex;align-items:center;justify-content:center;'
-          +'font-size:20px;flex-shrink:0">'+icon+'</div>'
+        // icon / logo
+        +acctLogoHtml(a, 40)
         // name + type
         +'<div style="flex:1;min-width:0">'
           +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
@@ -707,6 +771,8 @@ function openAddAccountModal() {
   setTimeout(function(){ if (nEl) nEl.focus(); }, 100);
 }
 function closeAddAccountModal() {
+  _acctLogoPending.new = '';
+  _acctLogoPreview('new', '');
   _closeModal('addAccountModal');
 }
 
@@ -911,7 +977,9 @@ function onAddAccount() {
   var bal  = parseFloat((document.getElementById('newAcctBalance') || {}).value) || 0;
   name = name.trim();
   if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
-  addAccount(name, type, null, bal);
+  var logoUrl = _acctLogoPending.new || null;
+  addAccount(name, type, null, bal, logoUrl);
+  _acctLogoPending.new = '';
   closeAddAccountModal();
   renderAccountList();
   fillAccountSelectors();

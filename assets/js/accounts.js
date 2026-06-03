@@ -672,13 +672,14 @@ function navToTxEntry(entryId, date) {
     if (fltM) { fltM._initialized = true; fltM.value = date.slice(0, 7); }
     if (typeof _updateTxModeUI === 'function') _updateTxModeUI();
     if (typeof renderTx === 'function') renderTx();
-    // scroll + glow highlight
+    // scroll + glow highlight — เรืองแสงค้างไว้จนกว่าจะออกหน้า transactions
     setTimeout(function() {
       var el = document.getElementById('row-'+entryId) || document.getElementById('srow-'+entryId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // ล้าง glow เดิมก่อน (ถ้ามี) แล้ว add ใหม่
+        document.querySelectorAll('.tx-glow').forEach(function(e){ e.classList.remove('tx-glow'); });
         el.classList.add('tx-glow');
-        setTimeout(function(){ el.classList.remove('tx-glow'); }, 1300);
       } else {
         // fallback: scroll to date header
         var dateEl = document.getElementById('txdate-'+date);

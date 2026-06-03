@@ -23,6 +23,8 @@ function nav(page){
     p.classList.remove('active');
     p.style.display = 'none';
   });
+  // ล้าง tx-glow highlight เมื่อออกจากหน้า transactions
+  document.querySelectorAll('.tx-glow').forEach(function(e){ e.classList.remove('tx-glow'); });
 
   // Step 2: แสดง target page — set display อย่างชัดเจน
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});

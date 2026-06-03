@@ -140,7 +140,9 @@
 
     /* panel — ต่อที่ body โดยตรง (portal) */
     var panel = d.createElement('div');
-    panel.className = 'csd-panel';
+    // dropdown บัญชี (fAccount/eAccount) ใช้ opaque เพราะ form content อยู่ด้านหลัง
+    var _acctIds = ['fAccount','eAccount','newGoalAccount'];
+    panel.className = 'csd-panel' + (_acctIds.indexOf(sel.id) > -1 ? ' csd-panel-opaque' : '');
     d.body.appendChild(panel);
 
     /* insert wrap before select, hide select */

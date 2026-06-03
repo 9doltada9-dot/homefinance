@@ -19,9 +19,15 @@
   d.addEventListener('keydown', function(e){
     if(e.key==='Escape') _closeAll();
   });
-  // Close on scroll / resize (reposition would be complex)
-  w.addEventListener('scroll', _closeAll, true);
+  // resize เท่านั้น — ไม่มี scroll listener (ใช้ body lock แทน)
   w.addEventListener('resize', _closeAll);
+
+  function _csdLock(){
+    if(typeof _mfLockBody === 'function') _mfLockBody();
+  }
+  function _csdUnlock(){
+    if(typeof _mfUnlockBody === 'function') _mfUnlockBody();
+  }
 
   function _closeAll(){
     if(_openPanel){
@@ -32,6 +38,7 @@
       _openBtn.classList.remove('open');
       _openBtn = null;
     }
+    _csdUnlock();
   }
 
   // ── Position panel over trigger (fixed coords) ─────────────
@@ -178,6 +185,7 @@
         btn.classList.add('open');
         _openBtn   = btn;
         _openPanel = panel;
+        _csdLock();
       }
     });
 

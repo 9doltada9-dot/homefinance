@@ -1,5 +1,14 @@
 /* HomeFinance · module: nav.js · v3.2.1 */
 
+// ─── Settings collapsible toggle ─────────────────────────
+function stgToggle(label) {
+  var body = label.nextElementSibling;
+  if (!body || !body.classList.contains('stg-body')) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  label.classList.toggle('open', !isOpen);
+}
+
 // ─── disable browser scroll-restoration ──────────────────
 // ป้องกัน SW client.navigate() reload แล้ว browser คืน Y เดิม ทับ scroll reset ของเรา
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';

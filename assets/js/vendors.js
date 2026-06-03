@@ -143,23 +143,21 @@ function renderVendorList() {
   var el = document.getElementById('vendorList');
   if (!el) return;
   el.innerHTML = vendorsData.length
-    ? vendorsData.map(function(v) {
+    ? '<div class="stg-vendor-grid">' + vendorsData.map(function(v) {
         var vt = v.vendor_type || 'both';
-        var badge = '<span style="font-size:10px;padding:1px 7px;border-radius:10px;'
-          + 'background:var(--surface2);color:' + (_VTYPE_COLORS[vt] || 'var(--ink3)') + ';white-space:nowrap;font-weight:600">'
-          + (_VTYPE_LABELS[vt] || vt) + '</span>';
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)" id="vrow-' + v.id + '">'
-          + '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0" id="vname-' + v.id + '">'
-          +   '<span style="font-size:14px;color:var(--ink)">' + v.name + '</span>'
-          +   badge
+        var vtColor = _VTYPE_COLORS[vt] || 'var(--ink3)';
+        return '<div class="stg-vendor-card" id="vrow-' + v.id + '">'
+          + '<div id="vname-' + v.id + '" style="font-weight:600;font-size:12px;color:var(--ink);word-break:break-word;line-height:1.35;flex:1">'
+          +   v.name
           + '</div>'
-          + '<div style="display:flex;gap:4px;flex-shrink:0">'
-          +   '<button onclick="startEditVendor(\'' + v.id + '\')" style="background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px" title="แก้ไข">✏️</button>'
-          +   '<button onclick="deleteVendor(\'' + v.id + '\')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px">×</button>'
+          + '<div style="font-size:10px;color:' + vtColor + ';font-weight:600;margin-top:3px">' + (_VTYPE_LABELS[vt] || vt) + '</div>'
+          + '<div style="display:flex;gap:4px;justify-content:flex-end;margin-top:6px">'
+          +   '<button onclick="startEditVendor(\'' + v.id + '\')" class="stg-cat-card-btn" title="แก้ไข">✎</button>'
+          +   '<button onclick="deleteVendor(\'' + v.id + '\')" class="stg-cat-card-btn" style="color:#f87171">×</button>'
           + '</div>'
           + '</div>';
-      }).join('')
-    : '<div style="font-size:13px;color:var(--ink3);padding:8px 0">ยังไม่มีรายการ</div>';
+      }).join('') + '</div>'
+    : '<div style="font-size:13px;color:var(--ink3);padding:8px 14px">ยังไม่มีรายการ</div>';
 }
 
 function startEditVendor(id) {

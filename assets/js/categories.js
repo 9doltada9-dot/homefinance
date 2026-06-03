@@ -42,32 +42,32 @@ function renderCatList(type){
     return;
   }
   var _isAdmin = typeof isAdminUser === 'function' && isAdminUser();
-  listEl.innerHTML = catsOfType.map(function(c){
+  // สีตาม type (เหมือน dashboard รอรับ/รอจ่าย)
+  var cardBg   = type==='income' ? 'rgba(251,191,36,.10)' : 'rgba(248,113,113,.10)';
+  var cardBord = type==='income' ? 'rgba(251,191,36,.35)' : 'rgba(248,113,113,.35)';
+  listEl.innerHTML = '<div class="stg-cat-grid">' + catsOfType.map(function(c){
     var inUse = db.some(function(e){return e.cat_id === c.id;});
     var delBtn = '';
     if (inUse) {
-      delBtn = '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:11px;opacity:.4">ใช้อยู่</button>';
+      delBtn = '<button class="stg-cat-card-btn" disabled title="มีรายการใช้อยู่">ใช้อยู่</button>';
     } else if (_isAdmin) {
-      delBtn = '<button class="btn btn-sm" onclick="delCat(\''+c.id+'\')" style="min-width:36px;min-height:36px;padding:4px;font-size:14px;color:var(--red);border-color:var(--red)" title="ลบหมวด (Admin)">×</button>';
+      delBtn = '<button class="stg-cat-card-btn" onclick="delCat(\''+c.id+'\')" style="color:#f87171" title="ลบ (Admin)">×</button>';
     } else {
-      delBtn = '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:14px;opacity:.35" title="เฉพาะ Admin เท่านั้น">🔒</button>';
+      delBtn = '<button class="stg-cat-card-btn" disabled title="เฉพาะ Admin">🔒</button>';
     }
-    // สี dot ตาม type (เหมือน dashboard รอรับ/รอจ่าย)
-    var dotCol  = type==='income' ? '#fbbf24' : '#f87171';
-    var dotBg   = type==='income' ? 'rgba(251,191,36,.15)' : 'rgba(248,113,113,.15)';
-    return '<div class="settings-row" style="border-left:3px solid '+dotCol+';background:'+dotBg+';border-radius:0 8px 8px 0;margin:2px 0">'+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="font-weight:600;color:var(--ink)">'+c.name+'</div>'+
-        (type==='expense' ? '<div style="font-size:11px;margin-top:1px;color:'+(c.split_default?'var(--green)':'var(--ink3)')+'">'+
-          (c.split_default ? '÷ ระบบหาร' : '● ส่วนตัว')+
-        '</div>' : '')+
-      '</div>'+
-      '<div class="settings-row-right" style="gap:6px">'+
-        '<button class="btn btn-sm" onclick="editCat(\''+c.id+'\')" style="min-width:36px;min-height:36px;padding:4px;font-size:14px">✎</button>'+
+    var sub = type==='expense'
+      ? '<div class="stg-cat-card-sub" style="color:'+(c.split_default?'var(--green)':'var(--ink3)')+'">'+
+          (c.split_default ? '÷ หาร' : '● ส่วนตัว')+'</div>'
+      : '';
+    return '<div class="stg-cat-card" style="background:'+cardBg+';border:1px solid '+cardBord+'">'+
+      '<div class="stg-cat-card-name">'+c.name+'</div>'+
+      sub+
+      '<div class="stg-cat-card-actions">'+
+        '<button class="stg-cat-card-btn" onclick="editCat(\''+c.id+'\')">✎</button>'+
         delBtn+
       '</div>'+
     '</div>';
-  }).join('');
+  }).join('') + '</div>';
 }
 
 // ─── CAT MODAL ────────────────────────────────────────────

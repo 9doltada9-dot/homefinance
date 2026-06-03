@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.61</title>
+<title>HomeFinance v3.18.62</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -254,7 +254,7 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.61 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.62 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -757,21 +757,9 @@ function gcgToggle(e){
     </div>
   </div>
 
-  <!-- ─── ปรับแต่ง Glass ──────────────────────── -->
-  <div class="stg-group-label">🪟 ปรับแต่ง Glass Effect</div>
-  <div class="settings-section hf-card" style="padding:0">
-    <div class="settings-header" style="padding:14px 16px 12px">
-      <div class="settings-icon" style="background:linear-gradient(135deg,#ede9fe,#dbeafe)">🎨</div>
-      <div>
-        <div class="settings-header-text">Glass &amp; Background</div>
-        <div class="settings-header-sub">ปรับความเบลอ โปร่งใส สี พื้นหลัง แบบ real-time</div>
-      </div>
-    </div>
-    <div id="glassSettingsPanel" style="padding:0 16px 4px"></div>
-  </div>
-
   <!-- ─── การแสดงผล ──────────────────────────── -->
-  <div class="stg-group-label">🖥 การแสดงผล</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🖥 การแสดงผล <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="view-mode-cards">
       <div class="vm-card" id="btnViewDesktop" onclick="setViewMode('desktop')">
@@ -785,9 +773,11 @@ function gcgToggle(e){
     </div>
     <div style="padding:0 16px 12px;font-size:11px;color:var(--ink3)" id="viewModeDesc">กำลังใช้: Desktop</div>
   </div>
+  </div>
 
   <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
-  <div class="stg-group-label">👤 ผู้ใช้งาน</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">👤 ผู้ใช้งาน <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head" style="flex-wrap:wrap;gap:10px">
       <span class="stg-icon" style="background:var(--blue-bg)">👤</span>
@@ -827,9 +817,11 @@ function gcgToggle(e){
       <div id="changePasswordMsg" style="margin-top:8px;font-size:12px;display:none;padding-bottom:4px"></div>
     </div>
   </div>
+  </div>
 
   <!-- ─── หมวดหมู่ ───────────────────────────── -->
-  <div class="stg-group-label">🗂 หมวดหมู่</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🗂 หมวดหมู่ <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
 
     <!-- รายรับ -->
@@ -877,11 +869,13 @@ function gcgToggle(e){
       <div id="itemMsg" class="msg" style="margin-top:8px"></div>
     </div>
   </div>
+  </div>
 
   <div id="settingsMsg" class="msg" style="margin:4px 0 8px;text-align:center"></div>
 
   <!-- ─── รายการติดตามแนวโน้ม ──────────────── -->
-  <div class="stg-group-label">📈 แนวโน้มรายจ่าย</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">📈 แนวโน้มรายจ่าย <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head">
       <span class="stg-icon" style="background:#e8f5e9">📈</span>
@@ -894,9 +888,11 @@ function gcgToggle(e){
       <div id="trackedItemList" style="margin-bottom:4px"></div>
     </div>
   </div>
+  </div>
 
   <!-- ─── ข้อมูลอ้างอิง ──────────────────────── -->
-  <div class="stg-group-label">📦 ข้อมูลอ้างอิง</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">📦 ข้อมูลอ้างอิง <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head">
       <span class="stg-icon" style="background:#fff3e8">🏪</span>
@@ -919,9 +915,11 @@ function gcgToggle(e){
       <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
     </div>
   </div>
+  </div>
 
   <!-- ─── ระบบอัตโนมัติ ──────────────────────── -->
-  <div class="stg-group-label">🤖 ระบบอัตโนมัติ</div>
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🤖 ระบบอัตโนมัติ <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
 
     <!-- รายการประจำ (ลิงก์ไปหน้าหลัก) -->
@@ -954,10 +952,11 @@ function gcgToggle(e){
       <span id="notifStatusText" style="font-size:12px;color:var(--ink3)"></span>
     </div>
   </div>
+  </div>
 
   <!-- ─── ระบบ ───────────────────────────────── -->
-  <div class="stg-group-label">☁️ ระบบ</div>
-
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">☁️ ระบบ <span class="stg-caret">▾</span></div>
+  <div class="stg-body" style="display:none">
   <!-- Sync Panel -->
   <div class="hf-card" style="padding:0">
     <div class="stg-sect-head" style="cursor:default">
@@ -997,8 +996,8 @@ function gcgToggle(e){
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.18.61</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
-        <strong>v3.18.61</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
+        <strong>v3.18.62</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
+        <strong>v3.18.62</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
         <strong>v3.15.6</strong> — หน้ารายการ: เรียงวันล่าสุดก่อน ภายในวันเดียวกันเรียงตามลำดับบันทึกล่าสุด<br><strong>v3.15.5</strong> — ปรับ logic early salary: ตรวจสอบเฉพาะวันที่ 25 ตรงเสาร์/อาทิตย์ ลบ EARLY_DAYS 2 วัน<br><strong>v3.15.4</strong> — แก้สถานะไม่รีเซ็ตเมื่อเปลี่ยนวันที่จาก 24 → 25 (รอรับ/รอจ่าย ค้าง)<br><strong>v3.15.3</strong> — บล็อกปุ่มบันทึก/เพิ่ม/แก้ไข/ลบทุกหน้าเมื่อ offline; แก้ badge “รอ sync” ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงหลัง login ใหม่
         <br><strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
         <br><strong>v3.4.1</strong> — Email confirmation redirect
@@ -1031,6 +1030,7 @@ function gcgToggle(e){
       </div>
     </div>
   </div>
+  </div><!-- /stg-body ระบบ -->
 </div>
 
 <!-- RECURRING PAGE -->
@@ -1766,7 +1766,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.61</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.62</div>
   </div>
 </div>
 

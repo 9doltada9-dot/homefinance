@@ -549,6 +549,7 @@ function renderDashNetworthCard() {
   var total = active.reduce(function(s, a){ return s + (typeof getAccountBalance === 'function' ? getAccountBalance(a.id) : 0); }, 0);
   var TYPE_ICON = { bank:'🏦', cash:'💵', ewallet:'📱' };
   var ACCT_TYPES = typeof ACCOUNT_TYPES !== 'undefined' ? ACCOUNT_TYPES : {};
+  var _acctLogoFn = typeof acctLogoHtml === 'function' ? acctLogoHtml : null;
   if (!active.length) {
     el.innerHTML = '<div class="hf-card-title">มูลค่าสุทธิรวม</div>'
       +'<div style="flex:1;display:flex;align-items:center;justify-content:center">'
@@ -564,9 +565,10 @@ function renderDashNetworthCard() {
     +active.map(function(a){
       var bal = typeof getAccountBalance === 'function' ? getAccountBalance(a.id) : 0;
       var icon = TYPE_ICON[a.type] || '💳';
+      var logoNode = _acctLogoFn ? _acctLogoFn(a, 22) : '<span style="font-size:14px">'+icon+'</span>';
       return '<div class="hf-row" onclick="nav(\'accounts\')" style="padding:9px 0;cursor:pointer">'
-        +'<div style="width:9px;height:9px;border-radius:50%;background:'+a.color+';flex-shrink:0;margin-top:2px"></div>'
-        +'<div class="hf-row-main"><div class="hf-row-name" style="font-size:13px">'+icon+' '+a.name+'</div>'
+        +logoNode
+        +'<div class="hf-row-main"><div class="hf-row-name" style="font-size:13px">'+a.name+'</div>'
         +'<div class="hf-row-meta">'+(ACCT_TYPES[a.type]||a.type||'')+'</div></div>'
         +'<div class="hf-row-amt" style="font-size:13px;color:'+(bal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(bal)+'</div>'
         +'</div>';

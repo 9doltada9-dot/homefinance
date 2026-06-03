@@ -432,23 +432,90 @@ function fillAccountSelectors() {
     if (!sel) return;
     var cur = sel.value;
     var isTransfer = id === 'transferFrom' || id === 'transferTo';
+    // ยังคงเติม <select> ไว้สำหรับ read value ด้วย .value (hidden ด้วย CSS)
     sel.innerHTML = (isTransfer ? '' : '<option value="">-- ไม่ระบุ --</option>') +
       accountsData.filter(function(a) { return a.is_active; }).map(function(a) {
-        return '<option value="' + a.id + '">' +
-               '<span style="color:' + a.color + '">●</span> ' + a.name +
-               ' (' + (ACCOUNT_TYPES[a.type] || a.type) + ')' +
-               '</option>';
+        return '<option value="' + a.id + '">' + a.name + '</option>';
       }).join('');
     if (cur) {
       sel.value = cur;
     } else if (id === 'fAccount' || id === 'eAccount') {
-      // ค่าเริ่มต้น: บัญชีธนาคารแรกที่ active
       var defAcct = accountsData.filter(function(a){ return a.is_active; })
         .find(function(a){ return a.type === 'bank'; });
       if (defAcct) sel.value = defAcct.id;
     }
+    _buildAcctPicker(id);
   });
 }
+
+/** สร้าง / อัปเดต custom account picker แทน <select> */
+function _buildAcctPicker(selId) {
+  var sel = document.getElementById(selId);
+  if (!sel) return;
+  var pickerId = selId + '_apicker';
+  var picker = document.getElementById(pickerId);
+  if (!picker) {
+    picker = document.createElement('div');
+    picker.id = pickerId;
+    picker.className = 'acct-picker-wrap';
+    picker.style.cssText = 'position:relative;width:100%';
+    sel.parentNode.insertBefore(picker, sel);
+    sel.style.display = 'none';
+  }
+  var isTransfer = selId === 'transferFrom' || selId === 'transferTo';
+  var accts = accountsData.filter(function(a) { return a.is_active; });
+  var selAcct = accts.find(function(a) { return a.id === sel.value; });
+  picker.innerHTML =
+    // ── trigger button ──
+    '<button type="button" onclick="_toggleAcctPicker(\''+selId+'\')" '
+    +'style="width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;'
+    +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r);'
+    +'cursor:pointer;font-family:Sarabun,sans-serif;font-size:14px;color:var(--ink);text-align:left;min-height:44px">'
+    +(selAcct
+        ? acctLogoHtml(selAcct,24)+'<span style="flex:1;font-weight:500">'+selAcct.name+'</span>'
+        : '<span style="flex:1;color:var(--ink3)">-- ไม่ระบุ --</span>')
+    +'<span style="color:var(--ink3);font-size:11px;flex-shrink:0">▾</span>'
+    +'</button>'
+    // ── dropdown ──
+    +'<div id="'+pickerId+'_drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;'
+    +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'
+    +'box-shadow:0 6px 24px rgba(0,0,0,.18);z-index:500;max-height:240px;overflow-y:auto">'
+    +(isTransfer ? '' :
+        '<div onclick="_selectAcctPicker(\''+selId+'\',\'\')" '
+        +'style="padding:10px 12px;cursor:pointer;color:var(--ink3);font-size:13px;'
+        +'border-bottom:1px solid var(--line)">-- ไม่ระบุ --</div>')
+    +accts.map(function(a){
+      var active = sel.value === a.id;
+      return '<div onclick="_selectAcctPicker(\''+selId+'\',\''+a.id+'\')" '
+        +'style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;'
+        +(active?'background:var(--surface2)':'')+'">'
+        +acctLogoHtml(a,28)
+        +'<div><div style="font-size:13px;font-weight:'+(active?'600':'500')+';color:var(--ink)">'+a.name+'</div>'
+        +'<div style="font-size:10px;color:var(--ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div></div>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+}
+function _toggleAcctPicker(selId) {
+  var drop = document.getElementById(selId+'_apicker_drop');
+  if (!drop) return;
+  var isOpen = drop.style.display !== 'none';
+  // ปิดทุก picker ก่อน
+  document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
+  if (!isOpen) drop.style.display = 'block';
+}
+function _selectAcctPicker(selId, acctId) {
+  var sel = document.getElementById(selId);
+  if (sel) { sel.value = acctId; sel.dispatchEvent(new Event('change',{bubbles:true})); }
+  document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
+  _buildAcctPicker(selId);
+}
+// ปิด picker เมื่อคลิกนอก
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.acct-picker-wrap')) {
+    document.querySelectorAll('[id$="_apicker_drop"]').forEach(function(d){ d.style.display='none'; });
+  }
+});
 
 // ─── RENDER ACCOUNT CARDS (Dashboard) ────────────────────
 function renderAccountCards() {
@@ -765,8 +832,6 @@ function openAccountDetailModal(id) {
   _currentDetailAcctId = id;
 
   var bal = getAccountBalance(id);
-  var TYPE_ICON = { bank:'🏦', cash:'💵', ewallet:'📱' };
-  var icon = TYPE_ICON[acct.type] || '💳';
   var _duid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var hasUsage = db.some(function(e){ return e.account_id === id && (!_duid || e.user_id === _duid); });
 
@@ -774,9 +839,7 @@ function openAccountDetailModal(id) {
   if (header) {
     header.innerHTML =
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
-        + '<div style="width:48px;height:48px;border-radius:50%;background:' + acct.color + '22;'
-        + 'border:2px solid ' + acct.color + ';display:flex;align-items:center;justify-content:center;'
-        + 'font-size:22px;flex-shrink:0">' + icon + '</div>'
+        + acctLogoHtml(acct, 48)
         + '<div><div style="font-size:16px;font-weight:700;color:var(--ink)">' + acct.name + '</div>'
         + '<div style="font-size:12px;color:var(--ink3)">' + (ACCOUNT_TYPES[acct.type]||acct.type) + '</div></div>'
       + '</div>'

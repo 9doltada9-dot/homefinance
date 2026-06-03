@@ -597,11 +597,15 @@ function renderTx(){
     '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7.25 4v4.31l2.97 1.71-.75 1.3L5.75 9.1V4h1.5z"/></svg>'+
   '</button>'; };
 
-  // จุดสีธนาคาร: คืน <span> สีตาม account หรือ '' ถ้าไม่ระบุ
+  // โลโก้/จุดสีธนาคาร: คืน logo เล็กๆ หรือ dot สีถ้าไม่มีโลโก้
   var _acctDot = function(e){
     if (!e.account_id) return '';
     var acct = (typeof accountsData !== 'undefined' ? accountsData : []).find(function(a){ return a.id === e.account_id; });
     if (!acct) return '';
+    if (acct.logo_url) {
+      return '<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" '
+        +'style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
+    }
     var col  = acct.color || '#1a4fa0';
     var name = (acct.name || '').replace(/"/g,'&quot;');
     return '<span title="'+name+'" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
@@ -742,7 +746,10 @@ function renderTx(){
               +  '<div style="font-size:16px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtPrefix+fmtH(e.amt)+'</div>'
               +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
               +    statusBadge
-              +    (acct?'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>':'')
+              +    (acct?(acct.logo_url
+                  ?'<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle">'
+                  :'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>')
+                :'')
               +  '</div>'
               +'</div>'
 
@@ -765,8 +772,8 @@ function txDetailModal(id) {
 
   var vendorName = '';
   if (e.vendor_id) { var vobj = (vendorsData||[]).find(function(v){ return v.id===e.vendor_id; }); if(vobj) vendorName = vobj.name||''; }
-  var acctName = '', acctColor = '';
-  if (e.account_id) { var aobj = (typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }); if(aobj){acctName=aobj.name||'';acctColor=aobj.color||'#1a4fa0';} }
+  var acctName = '', acctColor = '', acctObj = null;
+  if (e.account_id) { acctObj=(typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }); if(acctObj){acctName=acctObj.name||'';acctColor=acctObj.color||'#1a4fa0';} }
   var typeLabel = e.type==='income'?'รายรับ':e.type==='expense'?'รายจ่าย':'โอน/ฝาก';
   var typeColor = e.type==='income'?'var(--green)':e.type==='expense'?'var(--red)':'var(--blue)';
   var amtSign   = e.type==='income'?'+':e.type==='transfer'?'↗':'−';
@@ -832,7 +839,7 @@ function txDetailModal(id) {
       +'<div style="padding:0 16px 16px;display:grid;gap:6px">'
         +row('📅','วันที่', toThaiDateStr(e.date))
         +row('📂','หมวด', e.cat_name||'—')
-        +(acctName?'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">💳 บัญชี</span><span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)"><span style="width:10px;height:10px;border-radius:50%;background:'+acctColor+';display:inline-block"></span>'+acctName+'</span></div>':'')
+        +(acctName?'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">💳 บัญชี</span><span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)">'+(acctObj&&acctObj.logo_url?'<img src="'+acctObj.logo_url+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover">':'<span style="width:10px;height:10px;border-radius:50%;background:'+acctColor+';display:inline-block"></span>')+acctName+'</span></div>':'')
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">✅ สถานะ</span><span style="font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px;background:'+statusBg+';color:'+statusFg+'">'+statusLabel+'</span></div>'
         +splitHtml
         +(e.note?'<div style="padding:9px 14px;background:var(--surface2);border-radius:10px"><div style="font-size:12px;color:var(--ink3);margin-bottom:4px">📝 หมายเหตุ</div><div style="font-size:13px;color:var(--ink);font-style:italic">'+e.note+'</div></div>':'')

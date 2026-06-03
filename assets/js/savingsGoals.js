@@ -89,32 +89,52 @@ function renderSavingsGoals() {
     var pct      = calcGoalProgress(g);
     var monthly  = calcGoalMonthlyRequired(g);
     var remaining = Math.max(0, (g.target_amount || 0) - (g.current_amount || 0));
-    var barCls    = pct >= 100 ? '' : pct >= 60 ? '' : 'warn';
-    var accentCol = pct >= 100 ? 'var(--hf-green)' : pct >= 60 ? 'var(--hf-accent)' : 'var(--hf-amber)';
-    var dateStr   = g.target_date ? toThaiDateShort(g.target_date) : '—';
-    var isDone    = pct >= 100;
+    var dateStr  = g.target_date ? toThaiDateShort(g.target_date) : '—';
+    var isDone   = pct >= 100;
 
-    return '<div class="hf-card" style="margin-bottom:12px;border-left:3px solid ' + accentCol + '">' +
+    // สีแบบเดียวกับ รอรับ/รอจ่าย card บน Dashboard
+    var bg, bord, headerCol, amtCol, barBg;
+    if (isDone) {
+      bg = 'rgba(74,222,128,.10)'; bord = '1px solid rgba(74,222,128,.35)';
+      headerCol = '#15803d'; amtCol = '#4ade80'; barBg = '#4ade80';
+    } else if (pct >= 60) {
+      bg = 'rgba(96,165,250,.10)'; bord = '1px solid rgba(96,165,250,.35)';
+      headerCol = '#1d4ed8'; amtCol = '#60a5fa'; barBg = '#60a5fa';
+    } else {
+      bg = 'rgba(251,191,36,.10)'; bord = '1px solid rgba(251,191,36,.40)';
+      headerCol = '#b5600a'; amtCol = '#fbbf24'; barBg = '#fbbf24';
+    }
+
+    return '<div style="margin-bottom:14px;background:' + bg + ';border:' + bord + ';border-radius:14px;padding:14px 16px">' +
+      // ── header row
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
         '<div>' +
-          '<div style="font-size:14px;font-weight:700;color:var(--hf-ink)">' + (isDone ? '🎉 ' : '🎯 ') + g.name + '</div>' +
-          '<div style="font-size:11px;color:var(--hf-ink3);margin-top:2px">ครบกำหนด: ' + dateStr + '</div>' +
+          '<div style="font-size:10px;font-weight:700;color:' + headerCol + ';letter-spacing:.5px;margin-bottom:3px">' +
+            (isDone ? '🎉 สำเร็จแล้ว' : '🎯 เป้าหมายการออม') +
+          '</div>' +
+          '<div style="font-size:15px;font-weight:700;color:' + amtCol + ';font-family:monospace;letter-spacing:-0.5px">' +
+            fmtH(g.current_amount) +
+            '<span style="font-size:11px;font-weight:400;color:var(--ink3)"> / ' + fmtH(g.target_amount) + '</span>' +
+          '</div>' +
+          '<div style="font-size:10px;color:var(--ink3);margin-top:2px">' + g.name + ' · ครบ ' + dateStr + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px">' +
-          '<button onclick="depositToGoal(\'' + g.id + '\')" class="hf-btn hf-btn-primary" style="font-size:11px;padding:4px 10px">+ ฝาก</button>' +
-          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" class="hf-btn" style="font-size:11px;padding:4px 10px;color:var(--hf-red);border-color:var(--hf-red)"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button onclick="depositToGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid ' + amtCol + ';background:transparent;color:' + amtCol + ';cursor:pointer;font-family:Sarabun,sans-serif;font-weight:700">+ ฝาก</button>' +
+          '<button onclick="deleteSavingsGoal(\'' + g.id + '\')" style="font-size:11px;padding:4px 8px;border-radius:8px;border:1px solid rgba(248,113,113,.5);background:transparent;color:#f87171;cursor:pointer"><svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg></button>' +
         '</div>' +
       '</div>' +
-      '<div class="hf-prog" style="margin-bottom:8px"><div class="hf-prog-fill ' + barCls + '" style="width:' + pct + '%' + (isDone?';background:var(--hf-green)':'') + '"></div></div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--hf-ink2)">' +
-        '<span style="font-family:\'IBM Plex Mono\',monospace;font-weight:600">' + fmtH(g.current_amount) + ' / ' + fmtH(g.target_amount) + '</span>' +
-        '<span>' + pct + '%</span>' +
+      // ── progress bar
+      '<div style="background:rgba(255,255,255,.08);border-radius:6px;height:5px;margin-bottom:8px;overflow:hidden">' +
+        '<div style="height:100%;width:' + Math.min(pct, 100) + '%;border-radius:6px;transition:width .5s;background:' + barBg + '"></div>' +
       '</div>' +
-      (isDone ? '<div style="font-size:12px;color:var(--hf-green);font-weight:600;margin-top:6px">✅ ถึงเป้าหมายแล้ว!</div>' :
-        '<div style="font-size:11px;color:var(--hf-ink3);margin-top:4px">' +
-          'ยังขาด: <strong>' + fmtH(remaining) + '</strong>' +
-          (monthly > 0 ? ' · ควรออมเดือนละ: <strong style="color:var(--hf-accent)">' + fmtH(monthly) + '</strong>' : '') +
-        '</div>') +
+      // ── footer
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)">' +
+        '<span>' + (isDone ? '✅ ถึงเป้าหมายแล้ว!' :
+          'ยังขาด <strong style="color:' + amtCol + '">' + fmtH(remaining) + '</strong>' +
+          (monthly > 0 ? ' · ออมเดือนละ <strong style="color:' + amtCol + '">' + fmtH(monthly) + '</strong>' : '')) +
+        '</span>' +
+        '<span style="font-weight:700;color:' + amtCol + '">' + pct + '%</span>' +
+      '</div>' +
     '</div>';
   }).join('');
 }

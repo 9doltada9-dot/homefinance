@@ -52,10 +52,13 @@ function renderCatList(type){
     } else {
       delBtn = '<button class="btn btn-sm" disabled style="min-width:36px;min-height:36px;padding:4px;font-size:14px;opacity:.35" title="เฉพาะ Admin เท่านั้น">🔒</button>';
     }
-    return '<div class="settings-row">'+
+    // สี dot ตาม type (เหมือน dashboard รอรับ/รอจ่าย)
+    var dotCol  = type==='income' ? '#fbbf24' : '#f87171';
+    var dotBg   = type==='income' ? 'rgba(251,191,36,.15)' : 'rgba(248,113,113,.15)';
+    return '<div class="settings-row" style="border-left:3px solid '+dotCol+';background:'+dotBg+';border-radius:0 8px 8px 0;margin:2px 0">'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-weight:500;color:var(--ink)">'+c.name+'</div>'+
-        (type==='expense' ? '<div style="font-size:12px;margin-top:2px;color:'+(c.split_default?'var(--green)':'var(--ink3)')+'">'+
+        '<div style="font-weight:600;color:var(--ink)">'+c.name+'</div>'+
+        (type==='expense' ? '<div style="font-size:11px;margin-top:1px;color:'+(c.split_default?'var(--green)':'var(--ink3)')+'">'+
           (c.split_default ? '÷ ระบบหาร' : '● ส่วนตัว')+
         '</div>' : '')+
       '</div>'+

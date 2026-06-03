@@ -1,5 +1,14 @@
 /* HomeFinance · module: responsive.css · v3.1.0 */
 
+/* ─── Savings Goals layout ─── */
+.savings-layout{display:grid;grid-template-columns:280px 1fr;grid-template-areas:'form list';gap:16px;margin-top:16px;align-items:start}
+.savings-form-col{grid-area:form;position:sticky;top:16px}
+.savings-list-col{grid-area:list}
+@media(max-width:900px){
+  .savings-layout{grid-template-columns:1fr;grid-template-areas:'form''list'}
+  .savings-form-col{position:static}
+}
+
 /* ─── Settings groups: global (desktop + mobile) ─── */
 .stg-group-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;padding:10px 12px;max-width:700px}
 .stg-sect-head{display:flex;align-items:center;gap:10px;padding:12px 14px}

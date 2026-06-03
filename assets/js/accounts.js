@@ -68,44 +68,136 @@ function saveAccountsLocal() {
   localStorage.setItem('hf2_accounts', JSON.stringify(accountsData));
 }
 
-// ─── LOGO HELPERS ─────────────────────────────────────────
-var _acctLogoPending = { new: '', edit: '' };
+// ─── LOGO EDITOR (drag-to-position + canvas crop) ─────────
+var _logoState = {
+  new:  { src: '', posX: 0, posY: 0 },
+  edit: { src: '', posX: 0, posY: 0 }
+};
+var _logoDrag = { on: false, mode: '', sx: 0, sy: 0, ox: 0, oy: 0 };
 
-function onAcctLogoInput(mode, val) {
-  _acctLogoPending[mode] = val.trim();
-  _acctLogoPreview(mode, val.trim());
+// Global pointer listeners — registered once
+(function(){
+  function _move(e) {
+    if (!_logoDrag.on) return;
+    e.preventDefault();
+    var pt = e.touches ? e.touches[0] : e;
+    var st = _logoState[_logoDrag.mode];
+    st.posX = _logoDrag.ox + (pt.clientX - _logoDrag.sx);
+    st.posY = _logoDrag.oy + (pt.clientY - _logoDrag.sy);
+    _logoApplyTransform(_logoDrag.mode);
+  }
+  function _end() {
+    if (!_logoDrag.on) return;
+    _logoDrag.on = false;
+    var el = document.getElementById(_logoPrevId(_logoDrag.mode));
+    if (el) el.style.cursor = 'grab';
+  }
+  window.addEventListener('mousemove', _move);
+  window.addEventListener('touchmove', _move, { passive: false });
+  window.addEventListener('mouseup',   _end);
+  window.addEventListener('touchend',  _end);
+})();
+
+function _logoPrevId(mode) {
+  return (mode === 'new' ? 'newAcct' : 'editAcct') + 'LogoPreview';
+}
+function _logoApplyTransform(mode) {
+  var st  = _logoState[mode];
+  var img = document.getElementById(_logoPrevId(mode) + 'Img');
+  if (img) img.style.transform =
+    'translate(calc(-50% + '+st.posX+'px), calc(-50% + '+st.posY+'px))';
+}
+function logoDragStart(e, mode) {
+  if (!_logoState[mode].src) return;
+  e.preventDefault();
+  var st = _logoState[mode];
+  _logoDrag.on = true; _logoDrag.mode = mode;
+  _logoDrag.ox = st.posX; _logoDrag.oy = st.posY;
+  var pt = e.touches ? e.touches[0] : e;
+  _logoDrag.sx = pt.clientX; _logoDrag.sy = pt.clientY;
+  var el = document.getElementById(_logoPrevId(mode));
+  if (el) el.style.cursor = 'grabbing';
 }
 
+function _acctLogoPreview(mode, src) {
+  var pid = _logoPrevId(mode);
+  var el  = document.getElementById(pid);
+  var hint = document.getElementById(pid.replace('Preview','DragHint'));
+  if (!el) return;
+  if (src) {
+    var st = _logoState[mode];
+    el.style.border  = '2px solid var(--accent,#6366f1)';
+    el.style.cursor  = 'grab';
+    el.setAttribute('onmousedown', 'logoDragStart(event,"'+mode+'")');
+    el.setAttribute('ontouchstart', 'logoDragStart(event,"'+mode+'")');
+    el.innerHTML =
+      '<img id="'+pid+'Img" src="'+src+'" '
+      +'style="position:absolute;min-width:115%;min-height:115%;max-width:none;'
+      +'top:50%;left:50%;'
+      +'transform:translate(calc(-50% + '+st.posX+'px),calc(-50% + '+st.posY+'px));'
+      +'pointer-events:none;user-select:none;border-radius:0">';
+    if (hint) hint.style.display = 'block';
+  } else {
+    _logoState[mode].src = '';
+    _logoState[mode].posX = 0; _logoState[mode].posY = 0;
+    el.innerHTML = '🏦';
+    el.style.border  = '2px dashed var(--line)';
+    el.style.cursor  = 'default';
+    el.removeAttribute('onmousedown');
+    el.removeAttribute('ontouchstart');
+    if (hint) hint.style.display = 'none';
+  }
+}
+function _acctLogoSetSrc(mode, src) {
+  _logoState[mode].src  = src;
+  _logoState[mode].posX = 0;
+  _logoState[mode].posY = 0;
+  _acctLogoPreview(mode, src);
+}
+
+/** ตัด canvas 80×80 วงกลม ตามตำแหน่งที่ลาก (data URL เท่านั้น; URL ภายนอก → คืน as-is) */
+function _acctLogoGetCropped(mode, callback) {
+  var st = _logoState[mode];
+  if (!st.src) { callback(null); return; }
+  if (!st.src.startsWith('data:')) { callback(st.src); return; } // external URL — no crop needed
+  var S = 80;
+  var cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  var ctx = cv.getContext('2d');
+  ctx.beginPath(); ctx.arc(S/2, S/2, S/2, 0, Math.PI*2); ctx.clip();
+  var img = new Image();
+  img.onload = function() {
+    var sc = Math.max(S / img.naturalWidth, S / img.naturalHeight);
+    var dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+    ctx.drawImage(img, (S-dw)/2 + st.posX, (S-dh)/2 + st.posY, dw, dh);
+    try { callback(cv.toDataURL('image/png')); }
+    catch(ex) { callback(st.src); }
+  };
+  img.onerror = function() { callback(st.src); };
+  img.src = st.src;
+}
+
+// ── public handlers (called from HTML) ──
+function onAcctLogoInput(mode, val) {
+  _acctLogoSetSrc(mode, val.trim());
+}
 function onAcctLogoFile(mode, input) {
   var file = input.files[0];
   if (!file) return;
   var reader = new FileReader();
   reader.onload = function(e) {
-    _acctLogoPending[mode] = e.target.result;
-    _acctLogoPreview(mode, e.target.result);
     var urlEl = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoUrl');
     if (urlEl) urlEl.value = '';
+    _acctLogoSetSrc(mode, e.target.result);
   };
   reader.readAsDataURL(file);
 }
-
 function onAcctLogoClear(mode) {
-  _acctLogoPending[mode] = '';
+  ['LogoUrl','LogoFile'].forEach(function(s){
+    var el = document.getElementById((mode==='new'?'newAcct':'editAcct')+s);
+    if (el) el.value = '';
+  });
   _acctLogoPreview(mode, '');
-  var urlEl = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoUrl');
-  if (urlEl) urlEl.value = '';
-}
-
-function _acctLogoPreview(mode, src) {
-  var el = document.getElementById((mode==='new'?'newAcct':'editAcct')+'LogoPreview');
-  if (!el) return;
-  if (src) {
-    el.innerHTML = '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    el.style.border = '2px solid var(--accent)';
-  } else {
-    el.innerHTML = '🏦';
-    el.style.border = '2px dashed var(--line)';
-  }
 }
 
 /** คืน HTML icon/logo สำหรับ account — ใช้ใน render ทุกที่ */
@@ -113,10 +205,11 @@ function acctLogoHtml(acct, size) {
   size = size || 40;
   var TYPE_ICN = { bank:'🏦', cash:'💵', ewallet:'📱' };
   if (acct && acct.logo_url) {
-    return '<img src="'+acct.logo_url+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block">';
+    return '<img src="'+acct.logo_url+'" style="width:'+size+'px;height:'+size+'px;'
+      +'border-radius:50%;object-fit:cover;flex-shrink:0;display:block">';
   }
   var icon = TYPE_ICN[acct && acct.type] || '💳';
-  var col = (acct && acct.color) || '#1a4fa0';
+  var col  = (acct && acct.color) || '#1a4fa0';
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+col+'22;'
     +'border:2px solid '+col+'55;display:flex;align-items:center;justify-content:center;'
     +'font-size:'+(size*0.5)+'px;flex-shrink:0">'+icon+'</div>';
@@ -437,15 +530,13 @@ function openEditAccountModal(id) {
   document.getElementById('editAcctId').value = id;
   document.getElementById('editAcctName').value = acct.name;
   document.getElementById('editAcctType').value = acct.type || 'bank';
-  // โลโก้ปัจจุบัน
-  _acctLogoPending.edit = acct.logo_url || '';
   var urlEl = document.getElementById('editAcctLogoUrl');
   if (urlEl) urlEl.value = (acct.logo_url && !acct.logo_url.startsWith('data:')) ? acct.logo_url : '';
-  _acctLogoPreview('edit', acct.logo_url || '');
+  _acctLogoSetSrc('edit', acct.logo_url || '');
   _openModal('editAccountModal');
 }
 function closeEditAccountModal() {
-  _acctLogoPending.edit = '';
+  _acctLogoPreview('edit', '');
   _closeModal('editAccountModal');
 }
 function doEditAccount() {
@@ -453,12 +544,13 @@ function doEditAccount() {
   var name = (document.getElementById('editAcctName').value || '').trim();
   var type = document.getElementById('editAcctType').value;
   if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
-  var logoUrl = _acctLogoPending.edit || null;
-  updateAccount(id, { name: name, type: type, logo_url: logoUrl });
-  closeEditAccountModal();
-  renderAccountList();
-  renderAccountCards();
-  showCycleToast('แก้ไขบัญชีแล้ว');
+  _acctLogoGetCropped('edit', function(logoUrl) {
+    updateAccount(id, { name: name, type: type, logo_url: logoUrl });
+    closeEditAccountModal();
+    renderAccountList();
+    renderAccountCards();
+    showCycleToast('แก้ไขบัญชีแล้ว');
+  });
 }
 
 // ─── ADJUST BALANCE ───────────────────────────────────────
@@ -771,7 +863,6 @@ function openAddAccountModal() {
   setTimeout(function(){ if (nEl) nEl.focus(); }, 100);
 }
 function closeAddAccountModal() {
-  _acctLogoPending.new = '';
   _acctLogoPreview('new', '');
   _closeModal('addAccountModal');
 }
@@ -977,11 +1068,12 @@ function onAddAccount() {
   var bal  = parseFloat((document.getElementById('newAcctBalance') || {}).value) || 0;
   name = name.trim();
   if (!name) { showCycleToast('⚠️ ระบุชื่อบัญชี'); return; }
-  var logoUrl = _acctLogoPending.new || null;
-  addAccount(name, type, null, bal, logoUrl);
-  _acctLogoPending.new = '';
-  closeAddAccountModal();
-  renderAccountList();
-  fillAccountSelectors();
-  showCycleToast('เพิ่มบัญชี "' + name + '" แล้ว');
+  _acctLogoGetCropped('new', function(logoUrl) {
+    addAccount(name, type, null, bal, logoUrl);
+    _acctLogoPreview('new', '');
+    closeAddAccountModal();
+    renderAccountList();
+    fillAccountSelectors();
+    showCycleToast('เพิ่มบัญชี "' + name + '" แล้ว');
+  });
 }

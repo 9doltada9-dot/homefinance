@@ -181,6 +181,35 @@ function _closeModal(id, cb) {
   }, 180);
 }
 
+// ─── CLOSE MODAL ON BACKDROP CLICK ───────────────────────
+// คลิกนอก card (บน overlay) → ปิด modal อัตโนมัติ
+// deleteConfirmModal ไม่รวม (ป้องกัน dismiss โดยบังเอิญ)
+(function(){
+  var _map = {
+    'editOverlay':        'closeEdit',
+    'catOverlay':         'closeCatModal',
+    'splitGroupModal':    null,
+    'transferModal':      'closeTransferModal',
+    'recurringModal':     'closeRecurringModal',
+    'recurringDueModal':  'closeRecurringDueModal',
+    'depositModal':       'closeDepositModal',
+    'editAccountModal':   'closeEditAccountModal',
+    'accountLedgerModal': 'closeAccountLedger',
+    'adjustModal':        'closeAdjustModal',
+    // accountDetailModal มี onclick บน element อยู่แล้ว ไม่ต้องเพิ่ม
+    'addAccountModal':    'closeAddAccountModal',
+    'txDetailOverlay':    'closeTxDetailModal',
+  };
+  document.addEventListener('click', function(e) {
+    var id = e.target && e.target.id;
+    if (!id || !Object.prototype.hasOwnProperty.call(_map, id)) return;
+    if (e.target.style.display === 'none') return;
+    var fn = _map[id];
+    if (fn && typeof window[fn] === 'function') { window[fn](); }
+    else { _closeModal(id); }
+  });
+})();
+
 window.closeAllSwipe = function(except){
   var target = _swipeOpenSc;
   if(target && target !== except){

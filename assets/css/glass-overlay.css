@@ -441,11 +441,16 @@ html[data-theme="dark"] .ac-list,
 html[data-theme="dark"] #noteHistoryDrop{
   background:var(--g-strong) !important;
 }
-/* ── Body lock เมื่อ mf-dropdown เปิด ── */
+/* 1) ซ่อน scrollbar หน้าหลัก */
+html{ scrollbar-width:none; }
+html::-webkit-scrollbar{ display:none; }
+body{ scrollbar-width:none; }
+body::-webkit-scrollbar{ display:none; }
+
+/* 2) Body lock เมื่อ dropdown เปิด — ใช้ overflow:hidden เท่านั้น
+      ไม่ใช้ position:fixed เพราะทำให้ backdrop-filter ของ glass card เสีย */
 body.mf-body-lock{
   overflow:hidden !important;
-  position:fixed !important;
-  width:100% !important;
 }
 
 /* ── mf-dropdown: focus scroll ── */

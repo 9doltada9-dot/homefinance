@@ -121,16 +121,12 @@ function populateMFUser() {
 // ─── MULTI FILTER (portal rendering) ─────────────────────
 
 // lock/unlock body scroll เมื่อ dropdown เปิด/ปิด
+// ใช้ overflow:hidden เท่านั้น — ไม่ใช้ position:fixed (ทำให้ glass backdrop-filter เสีย)
 function _mfLockBody(){
-  var sb = window.scrollY || document.documentElement.scrollTop;
-  document.body.style.top = '-' + sb + 'px';
   document.body.classList.add('mf-body-lock');
 }
 function _mfUnlockBody(){
-  var top = parseInt(document.body.style.top || '0', 10);
   document.body.classList.remove('mf-body-lock');
-  document.body.style.top = '';
-  window.scrollTo(0, -top);
 }
 
 function _mfCloseAll(){

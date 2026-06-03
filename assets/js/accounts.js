@@ -802,19 +802,21 @@ function renderLedger() {
     _rowDmap[d].push(e);
   });
   var rows = entries.map(function(e) {
-    var debit  = 0;
-    var credit = 0;
+    var debit   = 0;
+    var credit  = 0;
+    var pending = 0; // pending amount (รอจ่าย = negative, รอรับ = positive)
     var typeLabel = '';
     var typeColor = 'var(--ink2)';
+    var isPending = e.status === 'pending';
 
     if (e.type === 'income') {
-      credit = e.amt; totalIn += e.amt;
-      if (e.status !== 'pending') running += e.amt;
       typeLabel = 'รายรับ'; typeColor = 'var(--green)';
+      if (isPending) { pending = e.amt; }
+      else           { credit = e.amt; running += e.amt; totalIn += e.amt; }
     } else if (e.type === 'expense') {
-      debit = e.amt; totalOut += e.amt;
-      if (e.status !== 'pending') running -= e.amt;
       typeLabel = 'รายจ่าย'; typeColor = 'var(--red)';
+      if (isPending) { pending = -e.amt; totalOut += e.amt; }
+      else           { debit = e.amt; running -= e.amt; totalOut += e.amt; }
     } else if (e.type === 'transfer') {
       if (e.transfer_direction === 'in') {
         credit = e.amt; running += e.amt; totalIn += e.amt;
@@ -825,10 +827,12 @@ function renderLedger() {
       }
     }
 
-    var balColor = running >= 0 ? 'var(--green)' : 'var(--red)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer" onclick="navToTxEntry(\''+e.id+'\',\''+e.date+'\')" title="คลิกเพื่อดูรายการนี้ในหน้ารายการ">' +
+    var balColor     = running >= 0 ? 'var(--green)' : 'var(--red)';
+    var pendingColor = pending > 0 ? '#f59e0b' : '#f59e0b'; // amber สำหรับทั้งรอรับและรอจ่าย
+    var pendingSign  = pending > 0 ? '+' : '−';
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer' + (isPending ? ';opacity:.75' : '') + '" onclick="navToTxEntry(\''+e.id+'\',\''+e.date+'\')" title="คลิกเพื่อดูรายการนี้ในหน้ารายการ">' +
 
-      '<td style="padding:8px 6px;max-width:180px">' +
+      '<td style="padding:8px 6px;max-width:160px">' +
         '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.desc || '—') + '</div>' +
         '<div style="font-size:11px;color:' + typeColor + ';font-weight:600">' + typeLabel + (e.cat_name ? ' · ' + e.cat_name : '') + '</div>' +
       '</td>' +
@@ -837,6 +841,9 @@ function renderLedger() {
       '</td>' +
       '<td style="text-align:right;font-family:monospace;font-size:13px;color:var(--green);padding:8px 6px;white-space:nowrap">' +
         (credit ? '+' + fmtH(credit) : '—') +
+      '</td>' +
+      '<td style="text-align:right;font-family:monospace;font-size:12px;color:' + pendingColor + ';padding:8px 6px;white-space:nowrap">' +
+        (pending ? pendingSign + fmtH(Math.abs(pending)) : '—') +
       '</td>' +
       '<td style="text-align:right;font-family:monospace;font-size:13px;font-weight:700;color:' + balColor + ';padding:8px 6px;white-space:nowrap">' +
         fmtH(running) +
@@ -848,7 +855,7 @@ function renderLedger() {
   var openLabel = selMonth ? 'ยอดยกมา ณ ต้นเดือน' : 'ยอดยกมา (Opening Balance)';
   var openRow = '<tr style="background:var(--surface2);font-size:12px">' +
     '<td style="padding:8px 6px;color:var(--ink3);font-style:italic">' + openLabel + '</td>' +
-    '<td></td><td></td>' +
+    '<td></td><td></td><td></td>' +
     '<td style="text-align:right;font-family:monospace;font-weight:700;padding:8px 6px">' + fmtH(openBal) + '</td>' +
   '</tr>';
 
@@ -864,12 +871,13 @@ function renderLedger() {
             '<th style="text-align:left;padding:6px 6px;font-weight:600">รายการ</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">รายจ่าย</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">รายรับ</th>' +
+            '<th style="text-align:right;padding:6px 6px;font-weight:600;color:#f59e0b">รอ</th>' +
             '<th style="text-align:right;padding:6px 6px;font-weight:600">ยอดคงเหลือ</th>' +
           '</tr></thead>' +
           '<tbody>' + (function(){
             var reversed = _rowGroups.slice().reverse();
             return reversed.map(function(g){
-              return '<tr style="background:var(--surface2)"><td colspan="4" style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+              return '<tr style="background:var(--surface2)"><td colspan="5" style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
                 g.rows.slice().reverse().map(function(e){ return _rowHtmlMap[String(e.id)]||''; }).join('');
             }).join('');
           })() + openRow + '</tbody>' +

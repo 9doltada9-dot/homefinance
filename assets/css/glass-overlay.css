@@ -632,6 +632,25 @@ body.view-mobile .layout{
 .nav::-webkit-scrollbar, .table-scroll::-webkit-scrollbar{ width:6px; height:6px; }
 .nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
 
+/* ── Scrollbar หน้ารายการทั้งหมด ─────────────────────────── */
+#txContent{
+  max-height: calc(100vh - 340px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,.55) rgba(255,255,255,.06);
+}
+#txContent::-webkit-scrollbar{ width:6px; }
+#txContent::-webkit-scrollbar-track{ background:rgba(255,255,255,.06); border-radius:6px; }
+#txContent::-webkit-scrollbar-thumb{
+  background:rgba(99,102,241,.55);
+  border-radius:6px;
+  min-height:32px;
+}
+#txContent::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.8); }
+@media(max-width:900px){
+  #txContent{ max-height: calc(100vh - 420px); }
+}
+
 /* ─────────────────────────────────────────────
    9) Modal overlays — ✦ Liquid Glass (ปรับตาม light/dark อัตโนมัติ)
    ───────────────────────────────────────────── */

@@ -295,7 +295,9 @@ function renderRecurringList() {
       + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
         + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
-          + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt) + ' ' + lastRun
+          + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt)
+          + (t.status === 'pending' ? ' · <span style="color:#f59e0b;font-weight:600">⏳ รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + '</span>' : '')
+          + ' ' + lastRun
         + '</div>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;margin-left:10px">'
@@ -440,6 +442,7 @@ function openRecurringModal() {
   var noteEl = document.getElementById('recNote');    if (noteEl) noteEl.value = '';
   var accEl  = document.getElementById('recAccount'); if (accEl)  accEl.value = '';
   var venEl  = document.getElementById('recVendor');  if (venEl)  venEl.value = '';
+  var stEl   = document.getElementById('recStatus');  if (stEl)   stEl.value = 'paid';
 
   _buildRecurringCatOptions('expense');
   _openModal('recurringModal');
@@ -483,12 +486,26 @@ function openEditRecurringModal(id) {
   if (acctEl) { _fillRecurringAccounts(); acctEl.value = t.account_id || ''; }
   var vendorEl  = document.getElementById('recVendor');
   if (vendorEl) { _fillRecurringVendors(t.type || 'expense'); vendorEl.value = t.vendor_id || ''; }
+  var statusEl  = document.getElementById('recStatus');
+  if (statusEl) { _fillRecurringStatus(t.type || 'expense'); statusEl.value = t.status || (t.type === 'income' ? 'received' : 'paid'); }
 
   _openModal('recurringModal');
 }
 
 function closeRecurringModal() {
   _closeModal('recurringModal', function() { _editingRecurringId = null; });
+}
+
+function _fillRecurringStatus(type) {
+  var sel = document.getElementById('recStatus');
+  var lbl = document.getElementById('recStatusLabel');
+  if (!sel) return;
+  if (type === 'income') {
+    sel.innerHTML = '<option value="received">✅ รับแล้ว</option><option value="pending">⏳ รอรับ</option>';
+  } else {
+    sel.innerHTML = '<option value="paid">✅ จ่ายแล้ว</option><option value="pending">⏳ รอจ่าย</option>';
+  }
+  if (lbl) lbl.textContent = 'สถานะเมื่อ "ทำทันที"';
 }
 
 function _buildRecurringCatOptions(type) {
@@ -501,6 +518,7 @@ function _buildRecurringCatOptions(type) {
   if (catSel.value) _fillRecurringDescByCat(catSel.value);
   _fillRecurringVendors(type);
   _fillRecurringAccounts();
+  _fillRecurringStatus(type);
 }
 
 function onRecurringTypeChange() {
@@ -522,6 +540,7 @@ function onSaveRecurring() {
   var note      = ((document.getElementById('recNote')    || {}).value || '').trim();
   var account_id = (document.getElementById('recAccount') || {}).value || null;
   var vendor_id  = (document.getElementById('recVendor')  || {}).value || null;
+  var status    = (document.getElementById('recStatus')  || {}).value || (type === 'income' ? 'received' : 'paid');
 
   if (!catId || !amt || day < 1 || day > 31) {
     if (typeof showCycleToast === 'function') showCycleToast('\u26a0\ufe0f กรุณากรอกข้อมูลให้ครบ');
@@ -540,7 +559,7 @@ function onSaveRecurring() {
     note:                 note,
     account_id:           account_id,
     vendor_id:            vendor_id,
-    status:               type === 'income' ? 'received' : 'paid',
+    status:               status,
   };
 
   if (_editingRecurringId) {

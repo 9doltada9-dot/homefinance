@@ -317,9 +317,9 @@ function renderRecurringList() {
     if (isDone) {
       doNowBtn = '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>';
     } else if (isPending) {
-      // มี transaction pending อยู่ → เปิดหน้าแก้ไขรายการนั้น
+      // มี transaction pending อยู่ → เปิดหน้าแก้ไข + auto-set status + highlight
       var payLabel = t.type === 'income' ? '💰 รับทันที' : '💳 จ่ายทันที';
-      doNowBtn = '<button onclick="openEdit(' + existingTx.id + ')" id="recNowBtn-' + t.id + '" '
+      doNowBtn = '<button onclick="openEditFromRecurring(' + existingTx.id + ')" id="recNowBtn-' + t.id + '" '
         + 'style="padding:5px 10px;background:#f97316;color:#fff;border:none;border-radius:8px;'
         + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
         + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">' + payLabel + '</button>';
@@ -379,6 +379,43 @@ async function payRecurringNow(txId, recurringId) {
   if (typeof renderAccountList  === 'function') renderAccountList();
   if (typeof showCycleToast     === 'function') showCycleToast('✅ อัปเดต "' + tx.desc + '" เป็น' + (tx.type === 'income' ? 'รับแล้ว' : 'จ่ายแล้ว'));
   renderRecurringList();
+}
+
+// ─── OPEN EDIT + AUTO-SET STATUS + HIGHLIGHT ──────────────
+function openEditFromRecurring(txId) {
+  openEdit(txId);
+  // รอให้ openEdit ตั้งค่า eStatus เสร็จก่อน แล้วค่อย override
+  setTimeout(function() {
+    var e = (typeof db !== 'undefined' && Array.isArray(db))
+      ? db.find(function(x) { return String(x.id) === String(txId); })
+      : null;
+    if (!e) return;
+    var sel = document.getElementById('eStatus');
+    if (!sel) return;
+
+    // auto-set เป็น paid/received
+    var doneVal = e.type === 'income' ? 'received' : 'paid';
+    sel.value = doneVal;
+
+    // highlight สีโฟกัส ตามประเภท
+    var color  = e.type === 'income' ? '#22c55e' : '#3b82f6';
+    var glow   = e.type === 'income' ? 'rgba(34,197,94,.3)' : 'rgba(59,130,246,.3)';
+    sel.style.outline     = '2.5px solid ' + color;
+    sel.style.outlineOffset = '2px';
+    sel.style.boxShadow   = '0 0 0 5px ' + glow;
+    sel.style.borderRadius = '8px';
+    sel.style.transition  = 'box-shadow .2s, outline .2s';
+
+    // scroll ให้มองเห็น + focus
+    sel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    sel.focus();
+
+    // ลบ highlight หลัง 3 วินาที
+    setTimeout(function() {
+      sel.style.outline   = '';
+      sel.style.boxShadow = '';
+    }, 3000);
+  }, 30);
 }
 
 // ─── EXECUTE NOW (บันทึกทันทีจาก template) ────────────────

@@ -534,7 +534,7 @@ function _fillRecurringVendors(type) {
   });
   sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'
     + list.map(function(v) {
-        return '<option value="' + v.id + '">' + v.name + '</option>';
+        return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + v.name + '</option>';
       }).join('');
   if (lbl) lbl.textContent = (t === 'income' ? 'แหล่งรายรับ' : 'ร้านค้า');
 }

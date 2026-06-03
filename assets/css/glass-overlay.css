@@ -632,9 +632,16 @@ body.view-mobile .layout{
 .nav::-webkit-scrollbar, .table-scroll::-webkit-scrollbar{ width:6px; height:6px; }
 .nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
 
-/* ── Scrollbar หน้ารายการทั้งหมด ─────────────────────────── */
+/* ── หน้ารายการทั้งหมด — flex column เต็มจอ ─────────────── */
+#page-transactions{
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px); /* main padding 32px × 2 */
+}
 #txContent{
-  /* desktop: ไม่จำกัด max-height — ให้ page scroll ตามปกติ */
+  flex: 1;
+  min-height: 0;        /* ให้ flex child หดได้ */
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(99,102,241,.55) rgba(255,255,255,.06);
 }
@@ -647,8 +654,10 @@ body.view-mobile .layout{
 }
 #txContent::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.8); }
 @media(max-width:900px){
-  /* mobile: ให้ page scroll ตามปกติเช่นกัน (bottomnav มี padding รองรับแล้ว) */
-  #txContent{ max-height: none; }
+  #page-transactions{
+    height: calc(100vh - 60px - 64px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+    /* topbar 60px + bottomnav ~64px */
+  }
 }
 
 /* ─────────────────────────────────────────────

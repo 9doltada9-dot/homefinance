@@ -124,8 +124,8 @@ function getAccountBalance(accountId) {
   var txBalance = _gaDb.filter(function(e) {
     return (e.account_id === accountId) && e.status !== 'cancelled';
   }).reduce(function(s, e) {
-    if (e.type === 'income' && e.status !== 'pending') return s + e.amt;
-    if (e.type === 'expense') return s - e.amt;
+    if (e.type === 'income'  && e.status !== 'pending') return s + e.amt;
+    if (e.type === 'expense' && e.status !== 'pending') return s - e.amt;
     if (e.type === 'transfer') {
       // handled by paired entries
       if (e.transfer_direction === 'out') return s - e.amt;
@@ -776,8 +776,8 @@ function renderLedger() {
     // รวมทุก transaction ก่อนหน้า period ที่เลือก เพื่อหา opening balance ของ period
     allEntries.filter(function(e){ return e.date.slice(0,7) < selMonth; })
       .forEach(function(e){
-        if (e.type === 'income')  openBal += e.amt;
-        else if (e.type === 'expense') openBal -= e.amt;
+        if (e.type === 'income'  && e.status !== 'pending') openBal += e.amt;
+        else if (e.type === 'expense' && e.status !== 'pending') openBal -= e.amt;
         else if (e.type === 'transfer') {
           if (e.transfer_direction === 'in')  openBal += e.amt;
           if (e.transfer_direction === 'out') openBal -= e.amt;
@@ -808,10 +808,12 @@ function renderLedger() {
     var typeColor = 'var(--ink2)';
 
     if (e.type === 'income') {
-      credit = e.amt; running += e.amt; totalIn += e.amt;
+      credit = e.amt; totalIn += e.amt;
+      if (e.status !== 'pending') running += e.amt;
       typeLabel = 'รายรับ'; typeColor = 'var(--green)';
     } else if (e.type === 'expense') {
-      debit = e.amt; running -= e.amt; totalOut += e.amt;
+      debit = e.amt; totalOut += e.amt;
+      if (e.status !== 'pending') running -= e.amt;
       typeLabel = 'รายจ่าย'; typeColor = 'var(--red)';
     } else if (e.type === 'transfer') {
       if (e.transfer_direction === 'in') {

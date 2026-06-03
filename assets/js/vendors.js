@@ -153,7 +153,7 @@ function vendorLogoHtml(v, size) {
   var bgs  = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
   var fgs  = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
   var bg = bgs[code%bgs.length], fg = fgs[code%fgs.length];
-  return '<span style="display:inline-flex;width:'+size+'px;height:'+size+'px;border-radius:50%;'
+  return '<span title="'+name.replace(/"/g,'&quot;')+'" style="display:inline-flex;width:'+size+'px;height:'+size+'px;border-radius:50%;'
     +'background:'+bg+';color:'+fg+';align-items:center;justify-content:center;'
     +'font-size:'+(size*0.55)+'px;font-weight:700;flex-shrink:0;vertical-align:middle">'+name.charAt(0)+'</span>';
 }

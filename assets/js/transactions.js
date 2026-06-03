@@ -678,7 +678,6 @@ function renderTx(){
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
 
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
-                    (e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn,e.vendor_id) : ''; })() : '')+
                     (_txShowAllUsers && (e.user_id||e.person) ? personPill(e.user_id||e.person) : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
@@ -777,9 +776,7 @@ function renderTx(){
               +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.type==='transfer'?_transferLogos(e,22):e.desc)+'</div>'
               +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
               +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
-              +    (e.cat_name&&(vendorName||_splitBadge(e))?' <span style="color:var(--line2)">·</span> ':'')
-              +    (vendorName?_vendorAvatar(vendorName,e.vendor_id):'')
-              +    (vendorName&&_splitBadge(e)?' ':'')
+              +    (e.cat_name&&_splitBadge(e)?' <span style="color:var(--line2)">·</span> ':'')
               +    _splitBadge(e)
               +    (_txShowAllUsers?' '+personPill(e.user_id||e.person):'')
               +  '</div>'

@@ -466,31 +466,26 @@ function _buildAcctPicker(selId) {
   var accts = accountsData.filter(function(a) { return a.is_active; });
   var selAcct = accts.find(function(a) { return a.id === sel.value; });
   picker.innerHTML =
-    // ── trigger button ──
-    '<button type="button" onclick="_toggleAcctPicker(\''+selId+'\')" '
-    +'style="width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;'
-    +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r);'
-    +'cursor:pointer;font-family:Sarabun,sans-serif;font-size:14px;color:var(--ink);text-align:left;min-height:44px">'
+    // ── trigger button — ใช้ class csd-btn เพื่อให้ glass style เหมือน dropdown อื่น ──
+    '<button type="button" class="csd-btn" onclick="_toggleAcctPicker(\''+selId+'\')" '
+    +'style="display:flex;align-items:center;gap:8px;text-align:left">'
     +(selAcct
-        ? acctLogoHtml(selAcct,24)+'<span style="flex:1;font-weight:500">'+selAcct.name+'</span>'
-        : '<span style="flex:1;color:var(--ink3)">-- ไม่ระบุ --</span>')
-    +'<span style="color:var(--ink3);font-size:11px;flex-shrink:0">▾</span>'
+        ? acctLogoHtml(selAcct,24)+'<span class="csd-lbl" style="font-weight:500">'+selAcct.name+'</span>'
+        : '<span class="csd-lbl" style="color:var(--ink3)">-- ไม่ระบุ --</span>')
+    +'<span class="csd-arrow">▾</span>'
     +'</button>'
-    // ── dropdown ──
-    +'<div id="'+pickerId+'_drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;'
-    +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'
-    +'box-shadow:0 6px 24px rgba(0,0,0,.18);z-index:500;max-height:240px;overflow-y:auto">'
+    // ── dropdown panel — ใช้ class csd-panel-opaque (opaque เพราะ position:absolute ทับ form) ──
+    +'<div id="'+pickerId+'_drop" class="csd-panel csd-panel-opaque" '
+    +'style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:500;max-height:240px;overflow-y:auto">'
     +(isTransfer ? '' :
-        '<div onclick="_selectAcctPicker(\''+selId+'\',\'\')" '
-        +'style="padding:10px 12px;cursor:pointer;color:var(--ink3);font-size:13px;'
-        +'border-bottom:1px solid var(--line)">-- ไม่ระบุ --</div>')
+        '<div class="csd-item" onclick="_selectAcctPicker(\''+selId+'\',\'\')" '
+        +'style="color:var(--ink3)">-- ไม่ระบุ --</div>')
     +accts.map(function(a){
       var active = sel.value === a.id;
-      return '<div onclick="_selectAcctPicker(\''+selId+'\',\''+a.id+'\')" '
-        +'style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;'
-        +(active?'background:var(--surface2)':'')+'">'
+      return '<div class="csd-item'+(active?' csd-sel':'')+'" onclick="_selectAcctPicker(\''+selId+'\',\''+a.id+'\')" '
+        +'style="display:flex;align-items:center;gap:10px">'
         +acctLogoHtml(a,28)
-        +'<div><div style="font-size:13px;font-weight:'+(active?'600':'500')+';color:var(--ink)">'+a.name+'</div>'
+        +'<div><div style="font-size:13px;font-weight:500;color:var(--ink)">'+a.name+'</div>'
         +'<div style="font-size:10px;color:var(--ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div></div>'
         +'</div>';
     }).join('')

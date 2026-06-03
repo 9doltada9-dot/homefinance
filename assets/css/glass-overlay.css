@@ -354,12 +354,15 @@ select.hf-chip, select.hf-pill-select {
   border-radius: 14px !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;
   padding: 5px;
-  scrollbar-width: none;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(99,102,241,.6) transparent;
   animation: glassDropIn .14s ease;
 }
 .csd-panel.open { display: block; }
-/* ซ่อน scrollbar ทุก browser */
-.csd-panel::-webkit-scrollbar { display: none; }
+.csd-panel::-webkit-scrollbar { width: 6px; }
+.csd-panel::-webkit-scrollbar-track { background: rgba(255,255,255,.08); border-radius: 6px; margin: 4px; }
+.csd-panel::-webkit-scrollbar-thumb { background: rgba(99,102,241,.6); border-radius: 6px; min-height: 32px; }
+.csd-panel::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,.85); }
 /* option items */
 .csd-item {
   padding: 9px 14px;

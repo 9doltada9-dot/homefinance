@@ -597,6 +597,35 @@ function renderTx(){
     '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7.25 4v4.31l2.97 1.71-.75 1.3L5.75 9.1V4h1.5z"/></svg>'+
   '</button>'; };
 
+  // helper: ดึง account object จาก accountsData
+  var _getAcct = function(id){ return id ? (typeof accountsData!=='undefined'?accountsData:[]).find(function(a){return a.id===id;}) : null; };
+
+  // helper: โลโก้/ชื่อสำหรับ transfer — คืน HTML "[from] → [to]"
+  var _transferLogos = function(e, logoSize) {
+    var fromAcct = _getAcct(e.account_id);
+    var pairEntry = (typeof db!=='undefined'?db:[]).find(function(x){ return x.id===e.transfer_pair_id; });
+    var toAcct = pairEntry ? _getAcct(pairEntry.account_id) : null;
+    var _logo = function(a, sz) {
+      if (!a) return '<span style="font-size:'+(sz*0.8)+'px">💳</span>';
+      if (a.logo_url) return '<img src="'+a.logo_url+'" title="'+(a.name||'')+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block">';
+      return '<span style="display:inline-flex;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+(a.color||'#1a4fa0')+'22;border:1.5px solid '+(a.color||'#1a4fa0')+'55;align-items:center;justify-content:center;font-size:'+(sz*0.55)+'px;flex-shrink:0">'+(a.name||'?').charAt(0)+'</span>';
+    };
+    return '<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">'
+      +_logo(fromAcct, logoSize||20)
+      +'<span style="color:var(--blue);font-size:'+(logoSize||20)*0.6+'px;font-weight:700">→</span>'
+      +_logo(toAcct, logoSize||20)
+      +'</span>';
+  };
+
+  // helper: icon circle สำหรับ transfer (แสดง from logo ใหญ่)
+  var _transferCircle = function(e, circleSize) {
+    var fromAcct = _getAcct(e.account_id);
+    if (fromAcct && fromAcct.logo_url) {
+      return '<img src="'+fromAcct.logo_url+'" style="width:'+circleSize+'px;height:'+circleSize+'px;border-radius:50%;object-fit:cover;flex-shrink:0">';
+    }
+    return null; // fallback ใช้ emoji เดิม
+  };
+
   // โลโก้/จุดสีธนาคาร: คืน logo เล็กๆ หรือ dot สีถ้าไม่มีโลโก้
   var _acctDot = function(e){
     if (!e.account_id) return '';
@@ -624,16 +653,19 @@ function renderTx(){
             return '<div id="txdate-'+g.date+'" style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
               g.items.map(function(e){
                 var _mIid=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
-                var _mIhtml=_mIid
+                var _txCircleOverride = e.type==='transfer' ? _transferCircle(e, 46) : null;
+                var _mIhtml=_txCircleOverride ? '' : (_mIid
                   ?'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><use href="#'+_mIid+'"></use></svg>'
-                  :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>';
-                var _mCircle='<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
+                  :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>');
+                var _mCircle=_txCircleOverride
+                  ?_txCircleOverride
+                  :'<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
                 return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
             '<div style="padding:12px 12px 10px">'+
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
                 _mCircle+
                 '<div style="flex:1;min-width:0">'+
-                  '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'+
+                  '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.type==='transfer'?_transferLogos(e,20):e.desc)+'</div>'+
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
 
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
@@ -707,9 +739,10 @@ function renderTx(){
             var amtPrefix = e.type==='transfer'?'↗ ':'';
             var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
             var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
-            var iconHtml = iconId
+            var _deskCircleOvr = e.type==='transfer' ? _transferCircle(e, 52) : null;
+            var iconHtml = _deskCircleOvr ? '' : (iconId
               ? '<svg width="28" height="28" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-              : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>';
+              : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>');
             var vendorName = e.vendor_id ? (((vendorsData||[]).find(function(v){return v.id===e.vendor_id;})||{}).name||'') : '';
             var statusBadge = e.type==='transfer'
               ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
@@ -724,12 +757,14 @@ function renderTx(){
               +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
 
               // icon circle
-              +'<div style="width:52px;height:52px;border-radius:50%;background:var(--surface2);'
-              +'display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>'
+              +(_deskCircleOvr
+                ?_deskCircleOvr
+                :'<div style="width:52px;height:52px;border-radius:50%;background:var(--surface2);'
+                +'display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>')
 
               // center: desc + meta
               +'<div style="flex:1;min-width:0">'
-              +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
+              +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.type==='transfer'?_transferLogos(e,22):e.desc)+'</div>'
               +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
               +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
               +    (e.cat_name&&(vendorName||_splitBadge(e))?' <span style="color:var(--line2)">·</span> ':'')

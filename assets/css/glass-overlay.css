@@ -634,8 +634,7 @@ body.view-mobile .layout{
 
 /* ── Scrollbar หน้ารายการทั้งหมด ─────────────────────────── */
 #txContent{
-  max-height: calc(100vh - 340px);
-  overflow-y: auto;
+  /* desktop: ไม่จำกัด max-height — ให้ page scroll ตามปกติ */
   scrollbar-width: thin;
   scrollbar-color: rgba(99,102,241,.55) rgba(255,255,255,.06);
 }
@@ -648,7 +647,8 @@ body.view-mobile .layout{
 }
 #txContent::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.8); }
 @media(max-width:900px){
-  #txContent{ max-height: calc(100vh - 420px); }
+  /* mobile: ให้ page scroll ตามปกติเช่นกัน (bottomnav มี padding รองรับแล้ว) */
+  #txContent{ max-height: none; }
 }
 
 /* ─────────────────────────────────────────────

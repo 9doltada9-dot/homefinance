@@ -340,7 +340,7 @@ function renderRecurringList() {
       doNowBtn = '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
         + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
         + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
-        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ ทำทันที</button>';
+        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ จ่ายทันที</button>';
     }
 
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">'
@@ -479,7 +479,7 @@ async function executeRecurringNow(id) {
 
   var _ok = await sbAdd(_entry);
   if (!_ok) {
-    if (btn) { btn.disabled = false; btn.textContent = '⚡ ทำทันที'; }
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ จ่ายทันที'; }
     return;
   }
   db.unshift(_entry);
@@ -622,7 +622,7 @@ function _fillRecurringStatus(type) {
   } else {
     sel.innerHTML = '<option value="paid">✅ จ่ายแล้ว</option><option value="pending">⏳ รอจ่าย</option>';
   }
-  if (lbl) lbl.textContent = 'สถานะเมื่อ "ทำทันที"';
+  if (lbl) lbl.textContent = 'สถานะเมื่อ "จ่ายทันที"';
 }
 
 function _buildRecurringCatOptions(type) {

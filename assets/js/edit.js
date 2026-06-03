@@ -216,6 +216,20 @@ function saveEdit(){
   e.account_id    = (document.getElementById('eAccount')||{}).value || null;
   save();
   sbUpdate(e);
+  // sync paired entry สำหรับ transfer — อัพ amt/date/desc/status/note/cycle_id ให้ตรงกัน
+  if (eType === 'transfer' && e.transfer_pair_id) {
+    var _paired = db.find(function(x){ return x.id === e.transfer_pair_id; });
+    if (_paired) {
+      _paired.amt      = amt;
+      _paired.date     = date;
+      _paired.desc     = desc;
+      _paired.status   = e.status;
+      _paired.note     = e.note;
+      _paired.cycle_id = e.cycle_id;
+      save();
+      sbUpdate(_paired);
+    }
+  }
   showMsg('editMsg','บันทึกการแก้ไขแล้ว','success');
   setTimeout(function(){
     closeEdit(); renderTx(); renderDash();

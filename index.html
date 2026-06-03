@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.70</title>
+<title>HomeFinance v3.18.71</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="assets/css/liquid-skin.css">
 <link rel="manifest" href="manifest.json">
 <style>
-/* ── AUTH STATE CLASSES ─────────────────────── */
+/* โ”€โ”€ AUTH STATE CLASSES โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ */
 body:not(.app-ready) .topbar,
 body:not(.app-ready) .bottomnav,
 body:not(.app-ready) .sidebar,
@@ -33,7 +33,7 @@ body.login-visible #page-login { display: flex !important; }
 body.app-ready #page-login { display: none !important; }
 .admin-only { display: none; }
 
-/* ── Split Groups UI ── */
+/* โ”€โ”€ Split Groups UI โ”€โ”€ */
 .sg-item {
   display:flex; align-items:center; gap:10px; padding:10px 12px;
   border:1px solid var(--line); border-radius:8px; margin-bottom:8px;
@@ -95,7 +95,7 @@ body.app-ready #page-login { display: none !important; }
 .sg-val-bar.ok  { background:var(--green-bg,#f0fdf4); color:var(--green,#166534); }
 .sg-val-bar.err { background:#fef2f2; color:#dc2626; }
 
-/* sg-item: ยกเป็น card style แทน border แบบเดิม */
+/* sg-item: เธขเธเน€เธเนเธ card style เนเธ—เธ border เนเธเธเน€เธ”เธดเธก */
 .sg-item {
   display:flex; align-items:center; gap:12px; padding:11px 14px;
   border-bottom:1px solid var(--line);
@@ -105,7 +105,7 @@ body.app-ready #page-login { display: none !important; }
 .sg-item:last-child { border-bottom:none; }
 .sg-item:hover { background:var(--surface2,#f9fafb); }
 
-/* badges สำหรับ type + active/inactive */
+/* badges เธชเธณเธซเธฃเธฑเธ type + active/inactive */
 .sg-badge {
   display:inline-flex; align-items:center;
   font-size:10px; font-weight:600; padding:2px 7px;
@@ -118,13 +118,13 @@ body.app-ready #page-login { display: none !important; }
 .sg-badge-active   { background:#eaf3de; color:#3b6d11; }
 .sg-badge-inactive { background:#f1efe8; color:#5f5e5a; }
 
-/* ── Phase 1: Sidebar shell overrides ── */
+/* โ”€โ”€ Phase 1: Sidebar shell overrides โ”€โ”€ */
 nav.sidebar.hf-side{position:fixed;height:100vh;z-index:100;width:240px;display:flex;flex-direction:column;}
 .hf-nav{flex:1;overflow-y:auto;scrollbar-width:none;}
 .hf-nav::-webkit-scrollbar{display:none;}
 .main{margin-left:240px;}
 
-/* ── Phase 2: Dashboard bento grid ── */
+/* โ”€โ”€ Phase 2: Dashboard bento grid โ”€โ”€ */
 .hf-dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:16px;}
 .hf-dash-grid .chart-tab{padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--hf-ink3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;transition:color .15s,border-color .15s;}
 .hf-dash-grid .chart-tab.active{color:var(--hf-accent);border-bottom-color:var(--hf-accent);}
@@ -135,7 +135,7 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
   #metrics{grid-template-columns:repeat(2,1fr) !important;}
 }
 
-/* ── Phase 3: Transactions ── */
+/* โ”€โ”€ Phase 3: Transactions โ”€โ”€ */
 .mf-label{cursor:pointer;}
 .mf-label.active{border-color:var(--hf-accent) !important;color:var(--hf-accent) !important;background:var(--hf-accent-soft) !important;}
 #txTotal{display:none;gap:20px;flex-wrap:wrap;padding:20px 22px;}
@@ -143,8 +143,8 @@ select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-rad
 /* salary cycle 4-metric row (responsive) */
 .salary-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
 @media(max-width:768px){.salary-metrics-grid{grid-template-columns:repeat(2,1fr);}}
-/* tx row highlight blink — 5 ครั้ง ครั้งละ 2 วิ (รวม 10 วิ) */
-/* กระพริบขอบ 2 ครั้งถี่ๆ — ไม่มีพื้นหลัง */
+/* tx row highlight blink โ€” 5 เธเธฃเธฑเนเธ เธเธฃเธฑเนเธเธฅเธฐ 2 เธงเธด (เธฃเธงเธก 10 เธงเธด) */
+/* เธเธฃเธฐเธเธฃเธดเธเธเธญเธ 2 เธเธฃเธฑเนเธเธ–เธตเนเน โ€” เนเธกเนเธกเธตเธเธทเนเธเธซเธฅเธฑเธ */
 @keyframes tx-blink-dark{
   0%   {box-shadow:0 0 0 3px rgba(250,204,21,1),0 0 20px rgba(250,204,21,.55)}
   17%  {box-shadow:none}
@@ -180,7 +180,7 @@ function hfSetTheme(t){
   var l=document.getElementById('hfBtnLight'),d=document.getElementById('hfBtnDark');
   if(l) l.className=t==='light'?'on':'';
   if(d) d.className=t==='dark'?'on':'';
-  // re-apply glass vars ให้ตรงกับ mode ใหม่ (card color คำนวณต่าง mode กัน)
+  // re-apply glass vars เนเธซเนเธ•เธฃเธเธเธฑเธ mode เนเธซเธกเน (card color เธเธณเธเธงเธ“เธ•เนเธฒเธ mode เธเธฑเธ)
   if(typeof glassApply==='function'&&typeof glassLoad==='function') glassApply(glassLoad());
 }
 function hfInitThemeBtns(){
@@ -216,9 +216,9 @@ function gcgToggle(e){
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <span id="topbarUser" style="font-size:11px;color:rgba(255,255,255,.75);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    <button id="topbarRefreshBtn" onclick="forceRefreshFromDB()" title="ดึงข้อมูลล่าสุดจาก Database" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:15px;cursor:pointer;min-height:32px;line-height:1;transition:opacity .2s">🔄</button>
-    <button id="logoutBtn" onclick="doLogout()" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px;white-space:nowrap">ออก</button>
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <button id="topbarRefreshBtn" onclick="forceRefreshFromDB()" title="เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”เธเธฒเธ Database" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:15px;cursor:pointer;min-height:32px;line-height:1;transition:opacity .2s">๐”</button>
+    <button id="logoutBtn" onclick="doLogout()" style="display:none;background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;min-height:32px;white-space:nowrap">เธญเธญเธ</button>
+    <button class="menu-btn" onclick="toggleSidebar()">โฐ</button>
   </div>
 </div>
 
@@ -226,11 +226,11 @@ function gcgToggle(e){
 <div class="bottomnav" id="bottomnav">
   <div class="bn-item active" id="bn-dashboard" onclick="nav('dashboard')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2V2zm9 0h7v7h-7V2zM2 11h7v7H2v-7zm9 0h7v7h-7v-7z"/></svg>
-    หน้าหลัก
+    เธซเธเนเธฒเธซเธฅเธฑเธ
   </div>
   <div class="bn-item" id="bn-transactions" onclick="nav('transactions')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4h16v2H2V4zm0 5h16v2H2V9zm0 5h12v2H2v-2z"/></svg>
-    รายการ
+    เธฃเธฒเธขเธเธฒเธฃ
   </div>
   <div class="bn-item" id="bn-add" onclick="nav('add')">
     <div class="bn-fab-ring">
@@ -239,11 +239,11 @@ function gcgToggle(e){
   </div>
   <div class="bn-item" id="bn-accounts" onclick="nav('accounts')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2 0v2h10V5H5zm0 5v5h10v-5H5zm2 1h4v2H7v-2z"/></svg>
-    บัญชี
+    เธเธฑเธเธเธต
   </div>
   <div class="bn-item" id="bn-settings" onclick="nav('settings')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a4 4 0 100 8 4 4 0 000-8zm0 1.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5zM8 1l-.5 2a6.5 6.5 0 00-1.7 1L4 3.4 2.4 5l1 2a6.5 6.5 0 00-.8 2L1 9.5V11l1.6.7c.2.7.5 1.4.9 2l-1 2 1.6 1.6 2-1c.6.4 1.2.7 1.9.9L8 19h2l.5-1.8a6.5 6.5 0 001.9-.9l2 1 1.6-1.6-1-2c.4-.6.7-1.3.9-2L18 11V9.5l-1.8-.5a6.5 6.5 0 00-.9-2l1-2L14.7 3.4 12.7 4.4a6.5 6.5 0 00-1.7-1L10.5 1H8z"/></svg>
-    ตั้งค่า
+    เธ•เธฑเนเธเธเนเธฒ
   </div>
 </div>
 
@@ -254,16 +254,16 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.70 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.71 ยท ยฉ 2025</div>
   </div>
   <div class="hf-user">
-    <div class="hf-avatar" id="sidebarAvatar">👤</div>
+    <div class="hf-avatar" id="sidebarAvatar">๐‘ค</div>
     <div style="flex:1;min-width:0">
-      <div class="hf-user-name" id="sidebarAuthName">—</div>
+      <div class="hf-user-name" id="sidebarAuthName">โ€”</div>
       <div class="hf-user-mail" id="sidebarAuthEmail"></div>
       <div class="hf-sync">
         <div class="hf-sync-dot" id="sidebarOnlineDot"></div>
-        <span id="sidebarOnlineTxt">กำลังตรวจสอบ...</span>
+        <span id="sidebarOnlineTxt">เธเธณเธฅเธฑเธเธ•เธฃเธงเธเธชเธญเธ...</span>
         <span id="sidebarAuthRole"></span>
       </div>
     </div>
@@ -275,11 +275,11 @@ function gcgToggle(e){
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('add')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 010 2H9v4a1 1 0 01-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
-      บันทึกรายการ
+      เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃ
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('transactions')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v2H1V3zm0 4h14v2H1V7zm0 4h10v2H1v-2z"/></svg>
-      รายการทั้งหมด
+      เธฃเธฒเธขเธเธฒเธฃเธ—เธฑเนเธเธซเธกเธ”
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('settlement')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
@@ -287,27 +287,27 @@ function gcgToggle(e){
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('monthly')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-2V1h-1.5v1h-5V1H4zm8 3H4v1H2.5V4H2v9.5h12V4h-.5v1H12V4z"/></svg>
-      สรุปรายเดือน
+      เธชเธฃเธธเธเธฃเธฒเธขเน€เธ”เธทเธญเธ
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('budget')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3zm0 3h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V6zm3 2v1h6V8H5zm0 2v1h4v-1H5z"/></svg>
-      งบประมาณ
+      เธเธเธเธฃเธฐเธกเธฒเธ“
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('accounts')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm1 0v2h10V4H3zm0 4v4h10V8H3zm2 1h3v1.5H5V9zm5 0h1v1.5h-1V9z"/></svg>
-      บัญชีธนาคาร
+      เธเธฑเธเธเธตเธเธเธฒเธเธฒเธฃ
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('savings')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 014.9 6H14a1 1 0 010 2h-1a1 1 0 01-1-1 4 4 0 10-4 4 1 1 0 010 2 6 6 0 110-12zm0 3a1 1 0 011 1v2.6l1.7 1.7-1.4 1.4-2-2A1 1 0 017 9V5a1 1 0 011-1zm-1 9h6v1.5H7V13zm2-2h4v1.5H9V11z"/></svg>
-      เป้าหมายออม
+      เน€เธเนเธฒเธซเธกเธฒเธขเธญเธญเธก
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('recurring')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 8A5.5 5.5 0 0113.4 5H11a1 1 0 000 2h4a1 1 0 001-1V2a1 1 0 00-2 0v1.338A7.5 7.5 0 100.503 8.665a1 1 0 001.994-.13A5.507 5.507 0 012.5 8zm5-2a1 1 0 011 1v1.586l1.207 1.207a1 1 0 01-1.414 1.414l-1.5-1.5A1 1 0 016.5 9V7a1 1 0 011-1z"/></svg>
-      รายการประจำ
+      เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณ
     </div>
     <div class="nav-item hf-nav-item" onclick="nav('settings')">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.4 1.6a5.5 5.5 0 00-1.4.8L3.1 2.9 1.4 4.6l.8 1.6a5.5 5.5 0 00-.6 1.7L0 8.5v2.5l1.6.6c.2.6.4 1.2.8 1.7l-.8 1.6 1.7 1.7 1.6-.8c.5.3 1.1.6 1.7.8l.4 1.4h2.5l.4-1.6c.6-.2 1.2-.5 1.7-.8l1.6.8 1.7-1.7-.8-1.6c.3-.5.6-1.1.8-1.7L16 11V8.5l-1.6-.6a5.5 5.5 0 00-.8-1.7l.8-1.6L12.7 3l-1.6.8a5.5 5.5 0 00-1.7-.8L9 1H6.5z"/></svg>
-      ตั้งค่า
+      เธ•เธฑเนเธเธเนเธฒ
     </div>
     <div class="nav-item hf-nav-item admin-only" onclick="nav('admin')" style="display:none">
       <svg class="nav-icon hf-ic" viewBox="0 0 16 16" fill="currentColor" style="color:var(--amber)"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.8l-3.7 1.8.7-4.1-3-2.9 4.2-.6z"/></svg>
@@ -316,7 +316,7 @@ function gcgToggle(e){
   </div>
   <div class="hf-side-foot">
     <div id="sidebarUserInfo" style="display:none"></div>
-    <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:rgba(255,255,255,.7);margin-bottom:8px">🚪 ออกจากระบบ</button>
+    <button onclick="doLogout()" style="width:100%;padding:7px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;color:rgba(255,255,255,.7);margin-bottom:8px">๐ช เธญเธญเธเธเธฒเธเธฃเธฐเธเธ</button>
   </div>
 </nav>
 
@@ -327,49 +327,49 @@ function gcgToggle(e){
 <div id="page-dashboard" class="page active">
   <div class="hf-head">
     <div>
-      <div class="hf-title">ภาพรวม</div>
-      <div class="hf-sub" id="dashSub">ภาพรวมการเงิน</div>
+      <div class="hf-title">เธ เธฒเธเธฃเธงเธก</div>
+      <div class="hf-sub" id="dashSub">เธ เธฒเธเธฃเธงเธกเธเธฒเธฃเน€เธเธดเธ</div>
     </div>
     <div class="hf-period-pills">
-      <select id="dashYear" onchange="onDashYearChange()" class="hf-pill-select"><option value="">ปี</option></select>
-      <select id="dashMonth" onchange="renderDash()" class="hf-pill-select"><option value="">เดือน</option></select>
+      <select id="dashYear" onchange="onDashYearChange()" class="hf-pill-select"><option value="">เธเธต</option></select>
+      <select id="dashMonth" onchange="renderDash()" class="hf-pill-select"><option value="">เน€เธ”เธทเธญเธ</option></select>
     </div>
   </div>
   <div class="hf-dash-grid">
-    <!-- Salary Cycle — span 12, row 1 -->
+    <!-- Salary Cycle โ€” span 12, row 1 -->
     <div id="salaryCycleCard" class="hf-cycle" style="display:none;grid-column:span 12">
       <div id="salaryCycleContent" style="flex:1"></div>
     </div>
-    <!-- Net Worth — span 5 -->
+    <!-- Net Worth โ€” span 5 -->
     <div id="networthCard" class="hf-card" style="grid-column:span 5;display:flex;flex-direction:column"></div>
-    <!-- Trend Chart — span 7 (ข้างมูลสุทธิรวม) -->
+    <!-- Trend Chart โ€” span 7 (เธเนเธฒเธเธกเธนเธฅเธชเธธเธ—เธเธดเธฃเธงเธก) -->
     <div class="hf-card" style="grid-column:span 7">
-      <div class="hf-card-title">แนวโน้ม 6 เดือน <span class="hf-link" onclick="nav('monthly')">รายงาน →</span></div>
+      <div class="hf-card-title">เนเธเธงเนเธเนเธก 6 เน€เธ”เธทเธญเธ <span class="hf-link" onclick="nav('monthly')">เธฃเธฒเธขเธเธฒเธ โ’</span></div>
       <div style="position:relative;height:170px"><canvas id="chartMain" role="img"></canvas></div>
       <div id="chartLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:4px 0 10px"></div>
       <!-- Item trend sub-chart -->
       <div id="itemTrendSection" style="margin-top:16px;display:none">
-        <div style="font-size:10px;font-weight:700;color:var(--hf-ink3);letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="flex:1;height:1px;background:var(--line);display:block"></span>รายการที่ติดตาม<span style="flex:1;height:1px;background:var(--line);display:block"></span></div>
+        <div style="font-size:10px;font-weight:700;color:var(--hf-ink3);letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="flex:1;height:1px;background:var(--line);display:block"></span>เธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธ•เธดเธ”เธ•เธฒเธก<span style="flex:1;height:1px;background:var(--line);display:block"></span></div>
         <div class="multi-filter" id="mfItemTrend" style="margin-bottom:10px">
-          <div class="mf-label hf-chip" id="itemTrendLabel" onclick="toggleMF('mfItemTrend')">เลือกรายการ ▾</div>
+          <div class="mf-label hf-chip" id="itemTrendLabel" onclick="toggleMF('mfItemTrend')">เน€เธฅเธทเธญเธเธฃเธฒเธขเธเธฒเธฃ โ–พ</div>
           <div class="mf-dropdown" id="itemTrendDrop" style="min-width:220px;max-height:300px;overflow-y:auto"></div>
         </div>
         <div style="position:relative;height:120px"><canvas id="chartItem" role="img"></canvas></div>
         <div id="chartItemLegend" style="font-size:11px;color:var(--hf-ink3);text-align:center;padding:3px 0 0"></div>
       </div>
     </div>
-    <!-- Metrics 4×1 — span 12 -->
+    <!-- Metrics 4ร—1 โ€” span 12 -->
     <div id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-content:start"></div>
-    <!-- Recent TX — span 7 -->
+    <!-- Recent TX โ€” span 7 -->
     <div class="hf-card" style="grid-column:span 7">
-      <div class="hf-card-title">รายการล่าสุด <span class="hf-link" onclick="nav('transactions')">ดูทั้งหมด →</span></div>
+      <div class="hf-card-title">เธฃเธฒเธขเธเธฒเธฃเธฅเนเธฒเธชเธธเธ” <span class="hf-link" onclick="nav('transactions')">เธ”เธนเธ—เธฑเนเธเธซเธกเธ” โ’</span></div>
       <div id="recentTx"></div>
     </div>
-    <!-- Budget Mini — span 5 -->
+    <!-- Budget Mini โ€” span 5 -->
     <div id="dashBudgetMini" class="hf-card" style="grid-column:span 5"></div>
-    <!-- Settlement Mini — span 3 -->
+    <!-- Settlement Mini โ€” span 3 -->
     <div id="dashSettleMini" class="hf-card" style="grid-column:span 3"></div>
-    <!-- Savings Goals Mini — span 4 -->
+    <!-- Savings Goals Mini โ€” span 4 -->
     <div id="dashSavingsMini" class="hf-card" style="grid-column:span 4"></div>
     <!-- Hidden: pendingTx (referenced by settlement mini) -->
     <div id="pendingTx" style="display:none"></div>
@@ -380,31 +380,31 @@ function gcgToggle(e){
 <div id="page-add" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">บันทึกรายการ</div>
-      <div class="hf-sub">เพิ่มรายรับหรือรายจ่ายใหม่</div>
+      <div class="hf-title">เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃ</div>
+      <div class="hf-sub">เน€เธเธดเนเธกเธฃเธฒเธขเธฃเธฑเธเธซเธฃเธทเธญเธฃเธฒเธขเธเนเธฒเธขเนเธซเธกเน</div>
     </div>
   </div>
   <div class="hf-dash-grid" style="align-items:start">
-    <!-- Form — span 8 -->
+    <!-- Form โ€” span 8 -->
     <div class="hf-card" style="grid-column:span 8">
       <div class="type-toggle">
         <button class="type-btn active-income" id="btnIncome" onclick="setType('income')">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>
-          รายรับ
+          เธฃเธฒเธขเธฃเธฑเธ
         </button>
         <button class="type-btn" id="btnExpense" onclick="setType('expense')">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>
-          รายจ่าย
+          เธฃเธฒเธขเธเนเธฒเธข
         </button>
         <button class="type-btn" id="btnTransfer" onclick="setType('transfer')">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>
-          โอน/ฝาก
+          เนเธญเธ/เธเธฒเธ
         </button>
       </div>
       <input type="hidden" id="fPerson" value="A">
       <div class="form-row full">
         <div class="field">
-          <label>วันที่</label>
+          <label>เธงเธฑเธเธ—เธตเน</label>
           <input type="date" id="fDate" onchange="updateThaiDate()">
           <div id="fDateThai" style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500"></div>
           <div id="fDateCycleWarn" style="display:none;font-size:11px;color:#b5600a;background:#fdf4e7;border:1px solid #f0c36a;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5"></div>
@@ -412,36 +412,36 @@ function gcgToggle(e){
       </div>
       <div class="form-row full" id="fCatRow">
         <div class="field">
-          <label>หมวดหมู่</label>
+          <label>เธซเธกเธงเธ”เธซเธกเธนเน</label>
           <div style="display:flex;gap:6px;align-items:center">
             <select id="fCat" onchange="onCatChange()" style="flex:1"></select>
-            <button id="fCatStar" onclick="toggleFavCat(document.getElementById('fCat').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+            <button id="fCatStar" onclick="toggleFavCat(document.getElementById('fCat').value)" title="เธ•เธฑเนเธเน€เธเนเธ favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">โ</button>
           </div>
         </div>
       </div>
       <div class="form-row full">
         <div class="field">
-          <label>รายการ</label>
+          <label>เธฃเธฒเธขเธเธฒเธฃ</label>
           <div style="display:flex;gap:6px;align-items:center">
             <select id="fDesc" style="flex:1" onchange="updateDescStar()"></select>
-            <button id="fDescStar" onclick="toggleFavItem(document.getElementById('fDesc').value)" title="ตั้งเป็น favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+            <button id="fDescStar" onclick="toggleFavItem(document.getElementById('fDesc').value)" title="เธ•เธฑเนเธเน€เธเนเธ favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">โ</button>
           </div>
         </div>
       </div>
       <div class="form-row full" style="margin-bottom:8px">
         <div class="field">
-          <label><span id="fVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+          <label><span id="fVendorLabel">เธฃเนเธฒเธเธเนเธฒ </span><span style="font-size:11px;color:var(--ink3)">(เนเธกเนเธเธฑเธเธเธฑเธ)</span></label>
           <div style="display:flex;align-items:center;gap:6px">
             <select id="fVendor" style="flex:1;font-size:15px !important">
-              <option value="">-- ไม่ระบุ --</option>
+              <option value="">-- เนเธกเนเธฃเธฐเธเธธ --</option>
             </select>
-            <button id="fVendorStar" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
-            <button onclick="toggleFVendorPanel()" id="fVendorPanelBtn" title="เพิ่ม/แก้ไข/ลบร้านค้า" style="background:none;border:1px solid var(--line);border-radius:6px;font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;touch-action:manipulation;color:var(--ink2)">⚙</button>
+            <button id="fVendorStar" title="เธ•เธฑเนเธ favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">โ</button>
+            <button onclick="toggleFVendorPanel()" id="fVendorPanelBtn" title="เน€เธเธดเนเธก/เนเธเนเนเธ/เธฅเธเธฃเนเธฒเธเธเนเธฒ" style="background:none;border:1px solid var(--line);border-radius:6px;font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;touch-action:manipulation;color:var(--ink2)">โ</button>
           </div>
           <div id="fVendorPanel" style="display:none;margin-top:8px;background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--line)">
             <div style="display:flex;gap:6px;margin-bottom:8px">
-              <input type="text" id="fVendorNewName" placeholder="ชื่อร้านค้าใหม่" style="flex:1;font-size:14px !important" onkeydown="if(event.key==='Enter') fVendorAdd()">
-              <button class="btn btn-primary" onclick="fVendorAdd()" style="padding:6px 12px;font-size:13px;min-height:36px;white-space:nowrap">+ เพิ่ม</button>
+              <input type="text" id="fVendorNewName" placeholder="เธเธทเนเธญเธฃเนเธฒเธเธเนเธฒเนเธซเธกเน" style="flex:1;font-size:14px !important" onkeydown="if(event.key==='Enter') fVendorAdd()">
+              <button class="btn btn-primary" onclick="fVendorAdd()" style="padding:6px 12px;font-size:13px;min-height:36px;white-space:nowrap">+ เน€เธเธดเนเธก</button>
             </div>
             <div id="fVendorPanelList" style="max-height:200px;overflow-y:auto"></div>
             <div id="fVendorPanelMsg" class="msg" style="margin-top:6px"></div>
@@ -450,34 +450,34 @@ function gcgToggle(e){
       </div>
       <div class="form-row full">
         <div class="field">
-          <label style="font-weight:600">จำนวนเงิน (฿)</label>
+          <label style="font-weight:600">เธเธณเธเธงเธเน€เธเธดเธ (เธฟ)</label>
           <input type="number" id="fAmt" placeholder="0" min="0" style="font-size:28px;font-weight:700;text-align:right;letter-spacing:0.5px">
         </div>
       </div>
       <div class="form-row">
         <div class="field">
-          <label>สถานะ</label>
+          <label>เธชเธ–เธฒเธเธฐ</label>
           <select id="fStatus">
-            <option value="pending">รอรับ</option>
-            <option value="paid">รับแล้ว</option>
+            <option value="pending">เธฃเธญเธฃเธฑเธ</option>
+            <option value="paid">เธฃเธฑเธเนเธฅเนเธง</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="field">
-          <label>บัญชี</label>
+          <label>เธเธฑเธเธเธต</label>
           <select id="fAccount" style="font-size:15px !important">
-            <option value="">-- เลือกบัญชี --</option>
+            <option value="">-- เน€เธฅเธทเธญเธเธเธฑเธเธเธต --</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="field">
-          <label>หมายเหตุ</label>
+          <label>เธซเธกเธฒเธขเน€เธซเธ•เธธ</label>
           <div id="noteWrap" style="position:relative">
             <div style="display:flex;gap:6px">
-              <input type="text" id="fNote" placeholder="(ไม่บังคับ)" style="flex:1">
-              <button onclick="toggleNoteHistory()" title="ประวัติหมายเหตุ" style="background:none;border:1px solid var(--line);border-radius:var(--r);padding:4px 8px;cursor:pointer;font-size:14px;min-width:36px;min-height:44px;touch-action:manipulation">🕐</button>
+              <input type="text" id="fNote" placeholder="(เนเธกเนเธเธฑเธเธเธฑเธ)" style="flex:1">
+              <button onclick="toggleNoteHistory()" title="เธเธฃเธฐเธงเธฑเธ•เธดเธซเธกเธฒเธขเน€เธซเธ•เธธ" style="background:none;border:1px solid var(--line);border-radius:var(--r);padding:4px 8px;cursor:pointer;font-size:14px;min-width:36px;min-height:44px;touch-action:manipulation">๐•</button>
             </div>
             <div id="noteHistoryDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:200;max-height:200px;overflow-y:auto">
               <div id="noteHistoryList"></div>
@@ -486,30 +486,30 @@ function gcgToggle(e){
         </div>
       </div>
       <div id="splitSection" style="margin-bottom:12px">
-        <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">รูปแบบการหาร</div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">เธฃเธนเธเนเธเธเธเธฒเธฃเธซเธฒเธฃ</div>
         <div id="splitBtnContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
-        <div id="splitDesc" style="font-size:12px;color:var(--ink3)">ค่าใช้จ่ายส่วนตัว ไม่นำมาหาร</div>
+        <div id="splitDesc" style="font-size:12px;color:var(--ink3)">เธเนเธฒเนเธเนเธเนเธฒเธขเธชเนเธงเธเธ•เธฑเธง เนเธกเนเธเธณเธกเธฒเธซเธฒเธฃ</div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="addEntry()">บันทึก</button>
-        <button class="btn btn-ghost" onclick="clearForm()">ล้างข้อมูล</button>
+        <button class="btn btn-primary" onclick="addEntry()">เธเธฑเธเธ—เธถเธ</button>
+        <button class="btn btn-ghost" onclick="clearForm()">เธฅเนเธฒเธเธเนเธญเธกเธนเธฅ</button>
       </div>
       <div id="formMsg" class="msg"></div>
     </div>
-    <!-- Sidebar — span 4 -->
+    <!-- Sidebar โ€” span 4 -->
     <div style="grid-column:span 4;display:flex;flex-direction:column;gap:16px;position:sticky;top:16px">
       <!-- Split Preview -->
       <div class="hf-card">
-        <div class="hf-card-title">การหาร</div>
+        <div class="hf-card-title">เธเธฒเธฃเธซเธฒเธฃ</div>
         <div id="splitPreviewRow" style="display:none">
-          <div style="font-size:11px;font-weight:600;color:var(--hf-ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Preview การหาร</div>
+          <div style="font-size:11px;font-weight:600;color:var(--hf-ink3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Preview เธเธฒเธฃเธซเธฒเธฃ</div>
           <div id="splitPreviewContent"></div>
         </div>
-        <div id="splitPreviewEmpty" style="font-size:13px;color:var(--hf-ink3);padding:8px 0">เลือกรูปแบบการหารด้านซ้าย</div>
+        <div id="splitPreviewEmpty" style="font-size:13px;color:var(--hf-ink3);padding:8px 0">เน€เธฅเธทเธญเธเธฃเธนเธเนเธเธเธเธฒเธฃเธซเธฒเธฃเธ”เนเธฒเธเธเนเธฒเธข</div>
       </div>
       <!-- Favorite categories -->
       <div class="hf-card">
-        <div class="hf-card-title">⭐ ใช้บ่อย</div>
+        <div class="hf-card-title">โญ เนเธเนเธเนเธญเธข</div>
         <div id="addFavCats" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
     </div>
@@ -520,100 +520,100 @@ function gcgToggle(e){
 <div id="page-transactions" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">รายการทั้งหมด</div>
+      <div class="hf-title">เธฃเธฒเธขเธเธฒเธฃเธ—เธฑเนเธเธซเธกเธ”</div>
     </div>
   </div>
   <div class="hf-card" style="padding:10px 14px;position:relative;z-index:10;margin-bottom:14px">
     <div class="hf-filter-row" style="gap:8px;flex-wrap:wrap">
 
-      <!-- year filter — custom glass dropdown -->
+      <!-- year filter โ€” custom glass dropdown -->
       <div class="multi-filter" id="mfYear">
-        <div class="mf-label hf-chip" id="fltYearLabel" onclick="toggleMF('mfYear')">ทุกปี ▾</div>
+        <div class="mf-label hf-chip" id="fltYearLabel" onclick="toggleMF('mfYear')">เธ—เธธเธเธเธต โ–พ</div>
         <div class="mf-dropdown" id="fltYearDrop" style="min-width:120px;max-height:260px;overflow-y:auto"></div>
       </div>
       <select id="fltYear" style="display:none"></select>
-      <!-- mode toggle: ปฏิทิน / รอบเงินเดือน -->
+      <!-- mode toggle: เธเธเธดเธ—เธดเธ / เธฃเธญเธเน€เธเธดเธเน€เธ”เธทเธญเธ -->
       <div style="display:inline-flex;border-radius:20px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">
         <button id="btnTxModeCalendar" onclick="setTxFilterMode('calendar')"
-          style="padding:5px 13px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--blue);color:#fff;font-family:Sarabun,sans-serif;touch-action:manipulation">📅 ปฏิทิน</button>
+          style="padding:5px 13px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--blue);color:#fff;font-family:Sarabun,sans-serif;touch-action:manipulation">๐“… เธเธเธดเธ—เธดเธ</button>
         <button id="btnTxModeSalary" onclick="setTxFilterMode('salary')"
-          style="padding:5px 13px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--ink2);font-family:Sarabun,sans-serif;touch-action:manipulation">💰 รอบ</button>
+          style="padding:5px 13px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--ink2);font-family:Sarabun,sans-serif;touch-action:manipulation">๐’ฐ เธฃเธญเธ</button>
       </div>
-      <!-- month filter — custom glass dropdown -->
+      <!-- month filter โ€” custom glass dropdown -->
       <div class="multi-filter" id="mfMonth">
-        <div class="mf-label hf-chip" id="fltMonthLabel" onclick="toggleMF('mfMonth')">ทุกเดือน ▾</div>
+        <div class="mf-label hf-chip" id="fltMonthLabel" onclick="toggleMF('mfMonth')">เธ—เธธเธเน€เธ”เธทเธญเธ โ–พ</div>
         <div class="mf-dropdown" id="fltMonthDrop" style="min-width:160px;max-height:320px;overflow-y:auto"></div>
       </div>
       <select id="fltMonth" style="display:none"></select>
       <select id="fltSalaryCycle" onchange="renderTx()" class="hf-chip" style="display:none;cursor:pointer;appearance:auto;min-width:155px">
-        <option value="">— รอบเงินเดือน —</option>
+        <option value="">โ€” เธฃเธญเธเน€เธเธดเธเน€เธ”เธทเธญเธ โ€”</option>
       </select>
 
-      <!-- ประเภท -->
+      <!-- เธเธฃเธฐเน€เธ เธ— -->
       <div class="multi-filter" id="mfType">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfType')">ประเภท ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfType')">เธเธฃเธฐเน€เธ เธ— โ–พ</div>
         <div class="mf-dropdown">
-          <input type="checkbox" value="income"   style="display:none" onchange="updateMFLabel('mfType','ประเภท');renderTx()">
-          <input type="checkbox" value="expense"  style="display:none" onchange="updateMFLabel('mfType','ประเภท');renderTx()">
-          <input type="checkbox" value="transfer" style="display:none" onchange="updateMFLabel('mfType','ประเภท');renderTx()">
+          <input type="checkbox" value="income"   style="display:none" onchange="updateMFLabel('mfType','เธเธฃเธฐเน€เธ เธ—');renderTx()">
+          <input type="checkbox" value="expense"  style="display:none" onchange="updateMFLabel('mfType','เธเธฃเธฐเน€เธ เธ—');renderTx()">
+          <input type="checkbox" value="transfer" style="display:none" onchange="updateMFLabel('mfType','เธเธฃเธฐเน€เธ เธ—');renderTx()">
           <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px">
-            <button class="tx-pill" data-val="income"   onclick="togglePill('mfType','income',this)"   style="--pc:var(--green);--pb:var(--green-bg)">+ รายรับ</button>
-            <button class="tx-pill" data-val="expense"  onclick="togglePill('mfType','expense',this)"  style="--pc:var(--red);--pb:var(--red-bg)">− รายจ่าย</button>
-            <button class="tx-pill" data-val="transfer" onclick="togglePill('mfType','transfer',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">↗ โอน</button>
+            <button class="tx-pill" data-val="income"   onclick="togglePill('mfType','income',this)"   style="--pc:var(--green);--pb:var(--green-bg)">+ เธฃเธฒเธขเธฃเธฑเธ</button>
+            <button class="tx-pill" data-val="expense"  onclick="togglePill('mfType','expense',this)"  style="--pc:var(--red);--pb:var(--red-bg)">โ’ เธฃเธฒเธขเธเนเธฒเธข</button>
+            <button class="tx-pill" data-val="transfer" onclick="togglePill('mfType','transfer',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">โ— เนเธญเธ</button>
           </div>
         </div>
       </div>
 
-      <!-- หมวด -->
+      <!-- เธซเธกเธงเธ” -->
       <div class="multi-filter" id="mfCat">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfCat')">หมวด ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfCat')">เธซเธกเธงเธ” โ–พ</div>
         <div class="mf-dropdown" style="min-width:220px"><div id="mfCatList" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px"></div></div>
       </div>
 
-      <!-- สถานะ -->
+      <!-- เธชเธ–เธฒเธเธฐ -->
       <div class="multi-filter" id="mfStatus">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfStatus')">สถานะ ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfStatus')">เธชเธ–เธฒเธเธฐ โ–พ</div>
         <div class="mf-dropdown">
-          <input type="checkbox" value="paid"     style="display:none" onchange="updateMFLabel('mfStatus','สถานะ');renderTx()">
-          <input type="checkbox" value="received" style="display:none" onchange="updateMFLabel('mfStatus','สถานะ');renderTx()">
-          <input type="checkbox" value="pending"  style="display:none" onchange="updateMFLabel('mfStatus','สถานะ');renderTx()">
+          <input type="checkbox" value="paid"     style="display:none" onchange="updateMFLabel('mfStatus','เธชเธ–เธฒเธเธฐ');renderTx()">
+          <input type="checkbox" value="received" style="display:none" onchange="updateMFLabel('mfStatus','เธชเธ–เธฒเธเธฐ');renderTx()">
+          <input type="checkbox" value="pending"  style="display:none" onchange="updateMFLabel('mfStatus','เธชเธ–เธฒเธเธฐ');renderTx()">
           <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px">
-            <button class="tx-pill" data-val="paid"     onclick="togglePill('mfStatus','paid',this)"     style="--pc:var(--green);--pb:var(--green-bg)">จ่ายแล้ว</button>
-            <button class="tx-pill" data-val="received" onclick="togglePill('mfStatus','received',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">รับแล้ว</button>
-            <button class="tx-pill" data-val="pending"  onclick="togglePill('mfStatus','pending',this)"  style="--pc:var(--amber,#d97706);--pb:var(--amber-bg,#fef3c7)">รอดำเนินการ</button>
+            <button class="tx-pill" data-val="paid"     onclick="togglePill('mfStatus','paid',this)"     style="--pc:var(--green);--pb:var(--green-bg)">เธเนเธฒเธขเนเธฅเนเธง</button>
+            <button class="tx-pill" data-val="received" onclick="togglePill('mfStatus','received',this)" style="--pc:var(--blue);--pb:var(--blue-bg)">เธฃเธฑเธเนเธฅเนเธง</button>
+            <button class="tx-pill" data-val="pending"  onclick="togglePill('mfStatus','pending',this)"  style="--pc:var(--amber,#d97706);--pb:var(--amber-bg,#fef3c7)">เธฃเธญเธ”เธณเน€เธเธดเธเธเธฒเธฃ</button>
           </div>
         </div>
       </div>
 
-      <!-- ร้านค้า -->
+      <!-- เธฃเนเธฒเธเธเนเธฒ -->
       <div class="multi-filter" id="mfVendor">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfVendor')">ร้านค้า ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfVendor')">เธฃเนเธฒเธเธเนเธฒ โ–พ</div>
         <div class="mf-dropdown" style="min-width:240px;max-height:220px;overflow-y:auto"><div id="mfVendorList" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px"></div></div>
       </div>
 
-      <!-- รายการ -->
+      <!-- เธฃเธฒเธขเธเธฒเธฃ -->
       <div class="multi-filter" id="mfItem">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfItem')">รายการ ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfItem')">เธฃเธฒเธขเธเธฒเธฃ โ–พ</div>
         <div class="mf-dropdown" style="min-width:240px;max-height:220px;overflow-y:auto"><div id="mfItemList" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px"></div></div>
       </div>
 
 
       <!-- Admin -->
       <div class="multi-filter" id="mfUser" style="display:none">
-        <div class="mf-label hf-chip" onclick="toggleMF('mfUser')">ผู้บันทึก ▾</div>
+        <div class="mf-label hf-chip" onclick="toggleMF('mfUser')">เธเธนเนเธเธฑเธเธ—เธถเธ โ–พ</div>
         <div class="mf-dropdown" id="mfUserList" style="max-height:200px;overflow-y:auto"></div>
       </div>
 
-      <button onclick="resetFilters()" class="hf-chip" style="touch-action:manipulation;margin-left:auto">↺ รีเซ็ต</button>
-      <button id="txAdminUnlockBtn" onclick="txAdminUnlockAll()" class="hf-chip" style="display:none;border-color:var(--hf-amber);color:var(--hf-amber);touch-action:manipulation;font-weight:600">👥 ดูทุก User</button>
-      <button id="txAdminLockBtn"   onclick="txAdminLockAll()"   class="hf-chip" style="display:none;border-color:var(--hf-red);color:var(--hf-red);touch-action:manipulation;font-weight:600">✕ กลับมาดูของฉัน</button>
+      <button onclick="resetFilters()" class="hf-chip" style="touch-action:manipulation;margin-left:auto">โบ เธฃเธตเน€เธเนเธ•</button>
+      <button id="txAdminUnlockBtn" onclick="txAdminUnlockAll()" class="hf-chip" style="display:none;border-color:var(--hf-amber);color:var(--hf-amber);touch-action:manipulation;font-weight:600">๐‘ฅ เธ”เธนเธ—เธธเธ User</button>
+      <button id="txAdminLockBtn"   onclick="txAdminLockAll()"   class="hf-chip" style="display:none;border-color:var(--hf-red);color:var(--hf-red);touch-action:manipulation;font-weight:600">โ• เธเธฅเธฑเธเธกเธฒเธ”เธนเธเธญเธเธเธฑเธ</button>
     </div>
   </div>
   <!-- Admin mode banner -->
   <div id="txAdminBanner" style="display:none;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);
     border-radius:12px;padding:8px 16px;margin-bottom:12px;font-size:12px;
     color:var(--hf-green);font-weight:600;align-items:center;gap:8px">
-    🛡 Admin Mode — กำลังแสดงรายการของทุก User
+    ๐ก Admin Mode โ€” เธเธณเธฅเธฑเธเนเธชเธ”เธเธฃเธฒเธขเธเธฒเธฃเธเธญเธเธ—เธธเธ User
   </div>
   <!-- Summary bar -->
   <div id="txTotal" class="hf-card"></div>
@@ -626,19 +626,19 @@ function gcgToggle(e){
   <div class="hf-head">
     <div>
       <div class="hf-title">Settlement</div>
-      <div class="hf-sub">สรุปค่าใช้จ่ายร่วม · คำนวณจาก split_snapshot</div>
+      <div class="hf-sub">เธชเธฃเธธเธเธเนเธฒเนเธเนเธเนเธฒเธขเธฃเนเธงเธก ยท เธเธณเธเธงเธ“เธเธฒเธ split_snapshot</div>
     </div>
   </div>
   <div class="hf-card" style="padding:10px 14px;position:relative;z-index:10;margin-bottom:14px">
     <div class="hf-filter-row" style="gap:8px;flex-wrap:wrap">
       <select id="settleMonth" onchange="renderSettle()" class="hf-chip" style="cursor:pointer;appearance:auto;min-width:130px">
-        <option value="">เลือกเดือน</option>
+        <option value="">เน€เธฅเธทเธญเธเน€เธ”เธทเธญเธ</option>
       </select>
       <select id="settleGroup" onchange="renderSettle()" class="hf-chip" style="cursor:pointer;appearance:auto;min-width:150px">
-        <option value="">ทุกกลุ่ม</option>
+        <option value="">เธ—เธธเธเธเธฅเธธเนเธก</option>
       </select>
       <button id="settlePersonalBtn" onclick="toggleSettlePersonal()" class="hf-chip" style="touch-action:manipulation">
-        👁 แสดงรายจ่ายส่วนตัว
+        ๐‘ เนเธชเธ”เธเธฃเธฒเธขเธเนเธฒเธขเธชเนเธงเธเธ•เธฑเธง
       </button>
     </div>
   </div>
@@ -649,10 +649,10 @@ function gcgToggle(e){
 <div id="page-monthly" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">สรุปรายเดือน</div>
+      <div class="hf-title">เธชเธฃเธธเธเธฃเธฒเธขเน€เธ”เธทเธญเธ</div>
     </div>
     <div class="hf-period-pills">
-      <select id="monthSel" onchange="renderMonthly()" class="hf-pill-select"><option value="">เลือกเดือน</option></select>
+      <select id="monthSel" onchange="renderMonthly()" class="hf-pill-select"><option value="">เน€เธฅเธทเธญเธเน€เธ”เธทเธญเธ</option></select>
     </div>
   </div>
   <div id="monthlyContent"></div>
@@ -663,74 +663,74 @@ function gcgToggle(e){
   <div style="background:var(--surface);border-radius:var(--r3);border:1px solid var(--line);width:100%;max-width:560px;padding:24px 26px;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div>
-        <div style="font-size:16px;font-weight:600">แก้ไขรายการ</div>
+        <div style="font-size:16px;font-weight:600">เนเธเนเนเธเธฃเธฒเธขเธเธฒเธฃ</div>
         <div style="font-size:12px;color:var(--ink3);margin-top:2px" id="editIdLabel"></div>
       </div>
-      <button type="button" onclick="closeEdit()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:4px">×</button>
+      <button type="button" onclick="closeEdit()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:4px">ร—</button>
     </div>
     <div class="type-toggle">
       <button class="type-btn" id="eBtnIncome" onclick="eSetType('income')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>รายรับ
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l4 4H9v6H7V6H4l4-4z"/></svg>เธฃเธฒเธขเธฃเธฑเธ
       </button>
       <button class="type-btn" id="eBtnExpense" onclick="eSetType('expense')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>รายจ่าย
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 14l-4-4h3V4h2v6h3l-4 4z"/></svg>เธฃเธฒเธขเธเนเธฒเธข
       </button>
       <button class="type-btn" id="eBtnTransfer" onclick="eSetType('transfer')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>โอน/ฝาก
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 5h10.5l-2-2 1-1 3.5 3.5L14 6l-3.5 3.5-1-1 2-2H1V5zm14 6H4.5l2 2-1 1L2 10.5 2 10l3.5-3.5 1 1-2 2H15v1z"/></svg>เนเธญเธ/เธเธฒเธ
       </button>
     </div>
     <input type="hidden" id="ePerson" value="A">
     <div class="form-row full">
-      <div class="field"><label>วันที่</label><input type="date" id="eDate"></div>
+      <div class="field"><label>เธงเธฑเธเธ—เธตเน</label><input type="date" id="eDate"></div>
     </div>
     <div class="form-row full" id="eCatRow">
-      <div class="field"><label>หมวดหมู่</label><select id="eCat"></select></div>
+      <div class="field"><label>เธซเธกเธงเธ”เธซเธกเธนเน</label><select id="eCat"></select></div>
     </div>
-    <div class="form-row full"><div class="field"><label>รายการ</label>
+    <div class="form-row full"><div class="field"><label>เธฃเธฒเธขเธเธฒเธฃ</label>
       <div class="ac-wrap">
         <select id="eDesc"></select>
         <div class="ac-list" id="acEdit" style="display:none"></div>
       </div>
     </div></div>
     <div class="form-row full">
-      <div class="field"><label><span id="eVendorLabel">ร้านค้า </span><span style="font-size:11px;color:var(--ink3)">(ไม่บังคับ)</span></label>
+      <div class="field"><label><span id="eVendorLabel">เธฃเนเธฒเธเธเนเธฒ </span><span style="font-size:11px;color:var(--ink3)">(เนเธกเนเธเธฑเธเธเธฑเธ)</span></label>
         <div style="display:flex;align-items:center;gap:6px">
-          <select id="eVendor" style="flex:1"><option value="">-- ไม่ระบุ --</option></select>
-          <button id="eVendorStar" title="ตั้ง favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">☆</button>
+          <select id="eVendor" style="flex:1"><option value="">-- เนเธกเนเธฃเธฐเธเธธ --</option></select>
+          <button id="eVendorStar" title="เธ•เธฑเนเธ favorite" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;min-width:32px;touch-action:manipulation">โ</button>
         </div>
       </div>
     </div>
     <div class="form-row full">
-      <div class="field"><label style="font-weight:600">จำนวนเงิน (฿)</label><input type="number" id="eAmt" min="0" oninput="eUpdateSplitPreview()" style="font-size:28px;font-weight:700;text-align:right"></div>
+      <div class="field"><label style="font-weight:600">เธเธณเธเธงเธเน€เธเธดเธ (เธฟ)</label><input type="number" id="eAmt" min="0" oninput="eUpdateSplitPreview()" style="font-size:28px;font-weight:700;text-align:right"></div>
     </div>
     <div class="form-row">
-      <div class="field"><label>สถานะ</label><select id="eStatus"><option value="pending">รอรับ</option><option value="paid">รับแล้ว</option></select></div>
+      <div class="field"><label>เธชเธ–เธฒเธเธฐ</label><select id="eStatus"><option value="pending">เธฃเธญเธฃเธฑเธ</option><option value="paid">เธฃเธฑเธเนเธฅเนเธง</option></select></div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>บัญชี</label>
+        <label>เธเธฑเธเธเธต</label>
         <select id="eAccount" style="font-size:14px !important">
-          <option value="">-- ไม่ระบุ --</option>
+          <option value="">-- เนเธกเนเธฃเธฐเธเธธ --</option>
         </select>
       </div>
     </div>
     <div class="form-row full">
-      <div class="field"><label>หมายเหตุ</label><input type="text" id="eNote"></div>
+      <div class="field"><label>เธซเธกเธฒเธขเน€เธซเธ•เธธ</label><input type="text" id="eNote"></div>
     </div>
     <div id="eSplitSection" style="margin-bottom:12px">
-      <label style="font-size:12px;font-weight:600;color:var(--ink3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">รูปแบบการหาร</label>
+      <label style="font-size:12px;font-weight:600;color:var(--ink3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">เธฃเธนเธเนเธเธเธเธฒเธฃเธซเธฒเธฃ</label>
       <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
         <div id="eSplitBtnContainer" style="display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0"></div>
         <div id="eSplitPreviewRow" style="display:none;flex:1;min-width:130px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px">
-          <div style="font-size:10px;font-weight:600;color:var(--ink3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">สมาชิก</div>
+          <div style="font-size:10px;font-weight:600;color:var(--ink3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">เธชเธกเธฒเธเธดเธ</div>
           <div id="eSplitPreviewContent"></div>
         </div>
       </div>
       <input type="hidden" id="eSplitGroup">
     </div>
     <div class="btn-row">
-      <button type="button" class="btn btn-primary" onclick="saveEdit()">บันทึกการแก้ไข</button>
-      <button type="button" class="btn btn-ghost" onclick="closeEdit()">ยกเลิก</button>
+      <button type="button" class="btn btn-primary" onclick="saveEdit()">เธเธฑเธเธ—เธถเธเธเธฒเธฃเนเธเนเนเธ</button>
+      <button type="button" class="btn btn-ghost" onclick="closeEdit()">เธขเธเน€เธฅเธดเธ</button>
     </div>
     <div id="editMsg" class="msg"></div>
   </div>
@@ -740,8 +740,8 @@ function gcgToggle(e){
 <div id="page-budget" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">งบประมาณ</div>
-      <div class="hf-sub">กำหนดและติดตามงบรายจ่ายแต่ละหมวด</div>
+      <div class="hf-title">เธเธเธเธฃเธฐเธกเธฒเธ“</div>
+      <div class="hf-sub">เธเธณเธซเธเธ”เนเธฅเธฐเธ•เธดเธ”เธ•เธฒเธกเธเธเธฃเธฒเธขเธเนเธฒเธขเนเธ•เนเธฅเธฐเธซเธกเธงเธ”</div>
     </div>
   </div>
 
@@ -752,119 +752,119 @@ function gcgToggle(e){
 <div id="page-settings" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">ตั้งค่า</div>
-      <div class="hf-sub">จัดการหมวดหมู่ · ผู้บันทึก · ระบบ</div>
+      <div class="hf-title">เธ•เธฑเนเธเธเนเธฒ</div>
+      <div class="hf-sub">เธเธฑเธ”เธเธฒเธฃเธซเธกเธงเธ”เธซเธกเธนเน ยท เธเธนเนเธเธฑเธเธ—เธถเธ ยท เธฃเธฐเธเธ</div>
     </div>
   </div>
 
-  <!-- ─── การแสดงผล ──────────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🖥 การแสดงผล <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธเธฒเธฃเนเธชเธ”เธเธเธฅ โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐–ฅ เธเธฒเธฃเนเธชเธ”เธเธเธฅ <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="view-mode-cards">
       <div class="vm-card" id="btnViewDesktop" onclick="setViewMode('desktop')">
-        <div class="vm-card-icon">🖥</div>
+        <div class="vm-card-icon">๐–ฅ</div>
         <div class="vm-card-label">Desktop</div>
       </div>
       <div class="vm-card" id="btnViewMobile" onclick="setViewMode('mobile')">
-        <div class="vm-card-icon">📱</div>
-        <div class="vm-card-label">มือถือ</div>
+        <div class="vm-card-icon">๐“ฑ</div>
+        <div class="vm-card-label">เธกเธทเธญเธ–เธทเธญ</div>
       </div>
     </div>
-    <div style="padding:0 16px 12px;font-size:11px;color:var(--ink3)" id="viewModeDesc">กำลังใช้: Desktop</div>
+    <div style="padding:0 16px 12px;font-size:11px;color:var(--ink3)" id="viewModeDesc">เธเธณเธฅเธฑเธเนเธเน: Desktop</div>
   </div>
   </div>
 
-  <!-- ─── ผู้ใช้งาน ──────────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">👤 ผู้ใช้งาน <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธเธนเนเนเธเนเธเธฒเธ โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐‘ค เธเธนเนเนเธเนเธเธฒเธ <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head" style="flex-wrap:wrap;gap:10px">
-      <span class="stg-icon" style="background:var(--blue-bg)">👤</span>
+      <span class="stg-icon" style="background:var(--blue-bg)">๐‘ค</span>
       <div style="flex:1;min-width:0">
-        <div class="stg-title" id="stgUserName">—</div>
-        <div class="stg-sub" id="stgUserEmail">—</div>
+        <div class="stg-title" id="stgUserName">โ€”</div>
+        <div class="stg-sub" id="stgUserEmail">โ€”</div>
       </div>
       <span id="stgUserRole" style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--surface2);color:var(--ink3);white-space:nowrap"></span>
-      <button onclick="refreshAuthProfile()" title="ดึง role/ชื่อใหม่จาก Supabase"
+      <button onclick="refreshAuthProfile()" title="เธ”เธถเธ role/เธเธทเนเธญเนเธซเธกเนเธเธฒเธ Supabase"
         style="background:none;border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:11px;color:var(--ink3);cursor:pointer;white-space:nowrap;font-family:Sarabun,sans-serif">
-        🔄 รีเฟรช
+        ๐” เธฃเธตเน€เธเธฃเธ
       </button>
     </div>
     <!-- edit name row -->
     <div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center">
-      <input type="text" id="stgNewName" placeholder="เปลี่ยนชื่อที่แสดง..." style="flex:1;font-size:14px !important">
-      <button class="btn btn-primary" onclick="doChangeName()" style="white-space:nowrap;min-height:40px;font-size:13px">บันทึกชื่อ</button>
+      <input type="text" id="stgNewName" placeholder="เน€เธเธฅเธตเนเธขเธเธเธทเนเธญเธ—เธตเนเนเธชเธ”เธ..." style="flex:1;font-size:14px !important">
+      <button class="btn btn-primary" onclick="doChangeName()" style="white-space:nowrap;min-height:40px;font-size:13px">เธเธฑเธเธ—เธถเธเธเธทเนเธญ</button>
     </div>
     <div id="changeNameMsg" style="padding:0 14px 10px;font-size:12px;display:none"></div>
 
     <!-- change password section -->
     <div style="border-top:1px solid var(--line);padding:14px 14px 6px">
-      <div style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">🔐 เปลี่ยนรหัสผ่าน</div>
+      <div style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">๐” เน€เธเธฅเธตเนเธขเธเธฃเธซเธฑเธชเธเนเธฒเธ</div>
       <div class="field" style="margin-bottom:10px">
-        <label style="font-size:12px">Password ปัจจุบัน</label>
-        <input type="password" id="stgCurrentPassword" placeholder="••••••••" autocomplete="current-password" style="width:100%;font-size:14px !important">
+        <label style="font-size:12px">Password เธเธฑเธเธเธธเธเธฑเธ</label>
+        <input type="password" id="stgCurrentPassword" placeholder="โ€ขโ€ขโ€ขโ€ขโ€ขโ€ขโ€ขโ€ข" autocomplete="current-password" style="width:100%;font-size:14px !important">
       </div>
       <div class="field" style="margin-bottom:10px">
-        <label style="font-size:12px">Password ใหม่</label>
-        <input type="password" id="stgNewPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" style="width:100%;font-size:14px !important">
+        <label style="font-size:12px">Password เนเธซเธกเน</label>
+        <input type="password" id="stgNewPassword" placeholder="เธญเธขเนเธฒเธเธเนเธญเธข 6 เธ•เธฑเธงเธญเธฑเธเธฉเธฃ" autocomplete="new-password" style="width:100%;font-size:14px !important">
       </div>
       <div class="field" style="margin-bottom:12px">
-        <label style="font-size:12px">ยืนยัน Password ใหม่</label>
-        <input type="password" id="stgConfirmPassword" placeholder="กรอก Password อีกครั้ง" autocomplete="new-password" style="width:100%;font-size:14px !important" onkeydown="if(event.key==='Enter') doChangePassword()">
+        <label style="font-size:12px">เธขเธทเธเธขเธฑเธ Password เนเธซเธกเน</label>
+        <input type="password" id="stgConfirmPassword" placeholder="เธเธฃเธญเธ Password เธญเธตเธเธเธฃเธฑเนเธ" autocomplete="new-password" style="width:100%;font-size:14px !important" onkeydown="if(event.key==='Enter') doChangePassword()">
       </div>
-      <button id="changePasswordBtn" class="btn btn-primary" onclick="doChangePassword()" style="width:100%;min-height:40px;font-size:13px">🔐 เปลี่ยน Password</button>
+      <button id="changePasswordBtn" class="btn btn-primary" onclick="doChangePassword()" style="width:100%;min-height:40px;font-size:13px">๐” เน€เธเธฅเธตเนเธขเธ Password</button>
       <div id="changePasswordMsg" style="margin-top:8px;font-size:12px;display:none;padding-bottom:4px"></div>
     </div>
   </div>
   </div>
 
-  <!-- ─── หมวดหมู่ ───────────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🗂 หมวดหมู่ <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธซเธกเธงเธ”เธซเธกเธนเน โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐— เธซเธกเธงเธ”เธซเธกเธนเน <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
 
-    <!-- รายรับ -->
+    <!-- เธฃเธฒเธขเธฃเธฑเธ -->
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#eef7f2">💰</span>
-      <div class="stg-title">หมวดรายรับ</div>
+      <span class="stg-icon" style="background:#eef7f2">๐’ฐ</span>
+      <div class="stg-title">เธซเธกเธงเธ”เธฃเธฒเธขเธฃเธฑเธ</div>
     </div>
     <div id="incomeCatList"></div>
     <div style="padding:6px 14px 12px">
-      <button class="btn btn-primary" onclick="showAddCatDialog('income')" style="width:100%;min-height:40px;font-size:13px">+ เพิ่มหมวดรายรับ</button>
+      <button class="btn btn-primary" onclick="showAddCatDialog('income')" style="width:100%;min-height:40px;font-size:13px">+ เน€เธเธดเนเธกเธซเธกเธงเธ”เธฃเธฒเธขเธฃเธฑเธ</button>
     </div>
 
     <div class="stg-divider"></div>
 
-    <!-- รายจ่าย -->
+    <!-- เธฃเธฒเธขเธเนเธฒเธข -->
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#fdf4e7">💸</span>
+      <span class="stg-icon" style="background:#fdf4e7">๐’ธ</span>
       <div>
-        <div class="stg-title">หมวดรายจ่าย</div>
-        <div class="stg-sub">ระบบป้องกันการลบหมวดที่มีรายการใช้อยู่</div>
+        <div class="stg-title">เธซเธกเธงเธ”เธฃเธฒเธขเธเนเธฒเธข</div>
+        <div class="stg-sub">เธฃเธฐเธเธเธเนเธญเธเธเธฑเธเธเธฒเธฃเธฅเธเธซเธกเธงเธ”เธ—เธตเนเธกเธตเธฃเธฒเธขเธเธฒเธฃเนเธเนเธญเธขเธนเน</div>
       </div>
     </div>
     <div id="expenseCatList"></div>
     <div style="padding:6px 14px 12px">
-      <button class="btn btn-primary" onclick="showAddCatDialog('expense')" style="width:100%;min-height:40px;font-size:13px">+ เพิ่มหมวดรายจ่าย</button>
+      <button class="btn btn-primary" onclick="showAddCatDialog('expense')" style="width:100%;min-height:40px;font-size:13px">+ เน€เธเธดเนเธกเธซเธกเธงเธ”เธฃเธฒเธขเธเนเธฒเธข</button>
     </div>
 
     <div class="stg-divider"></div>
 
-    <!-- รายการในหมวด -->
+    <!-- เธฃเธฒเธขเธเธฒเธฃเนเธเธซเธกเธงเธ” -->
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#edf2fc">📋</span>
+      <span class="stg-icon" style="background:#edf2fc">๐“</span>
       <div>
-        <div class="stg-title">รายการในแต่ละหมวด</div>
-        <div class="stg-sub">เลือกหมวด แล้วเพิ่ม / ลบรายการ</div>
+        <div class="stg-title">เธฃเธฒเธขเธเธฒเธฃเนเธเนเธ•เนเธฅเธฐเธซเธกเธงเธ”</div>
+        <div class="stg-sub">เน€เธฅเธทเธญเธเธซเธกเธงเธ” เนเธฅเนเธงเน€เธเธดเนเธก / เธฅเธเธฃเธฒเธขเธเธฒเธฃ</div>
       </div>
     </div>
     <div style="padding:0 14px 14px">
       <select id="itemCatSel" onchange="renderItemList()" style="width:100%;font-size:14px !important;margin-bottom:8px"></select>
       <div id="itemList" style="margin-bottom:8px"></div>
       <div style="display:flex;gap:8px">
-        <input type="text" id="newItemName" placeholder="ชื่อรายการ เช่น ค่าน้ำประปา" style="flex:1;font-size:16px !important">
-        <button class="btn btn-primary" onclick="addItem()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
+        <input type="text" id="newItemName" placeholder="เธเธทเนเธญเธฃเธฒเธขเธเธฒเธฃ เน€เธเนเธ เธเนเธฒเธเนเธณเธเธฃเธฐเธเธฒ" style="flex:1;font-size:16px !important">
+        <button class="btn btn-primary" onclick="addItem()" style="min-height:44px;white-space:nowrap">+ เน€เธเธดเนเธก</button>
       </div>
       <div id="itemMsg" class="msg" style="margin-top:8px"></div>
     </div>
@@ -873,15 +873,15 @@ function gcgToggle(e){
 
   <div id="settingsMsg" class="msg" style="margin:4px 0 8px;text-align:center"></div>
 
-  <!-- ─── รายการติดตามแนวโน้ม ──────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">📈 แนวโน้มรายจ่าย <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธฃเธฒเธขเธเธฒเธฃเธ•เธดเธ”เธ•เธฒเธกเนเธเธงเนเธเนเธก โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐“ เนเธเธงเนเธเนเธกเธฃเธฒเธขเธเนเธฒเธข <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#e8f5e9">📈</span>
+      <span class="stg-icon" style="background:#e8f5e9">๐“</span>
       <div>
-        <div class="stg-title">รายการที่ติดตาม</div>
-        <div class="stg-sub">เลือกรายการที่จะแสดงใน dropdown กรองแนวโน้มรายจ่าย</div>
+        <div class="stg-title">เธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธ•เธดเธ”เธ•เธฒเธก</div>
+        <div class="stg-sub">เน€เธฅเธทเธญเธเธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธเธฐเนเธชเธ”เธเนเธ dropdown เธเธฃเธญเธเนเธเธงเนเธเนเธกเธฃเธฒเธขเธเนเธฒเธข</div>
       </div>
     </div>
     <div style="padding:0 14px 14px">
@@ -890,166 +890,166 @@ function gcgToggle(e){
   </div>
   </div>
 
-  <!-- ─── ข้อมูลอ้างอิง ──────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">📦 ข้อมูลอ้างอิง <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธเนเธญเธกเธนเธฅเธญเนเธฒเธเธญเธดเธ โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐“ฆ เธเนเธญเธกเธนเธฅเธญเนเธฒเธเธญเธดเธ <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#fff3e8">🏪</span>
+      <span class="stg-icon" style="background:#fff3e8">๐ช</span>
       <div>
-        <div class="stg-title">ร้านค้า / แหล่งรายรับ</div>
-        <div class="stg-sub">จัดการรายชื่อร้านค้าและแหล่งรายรับ</div>
+        <div class="stg-title">เธฃเนเธฒเธเธเนเธฒ / เนเธซเธฅเนเธเธฃเธฒเธขเธฃเธฑเธ</div>
+        <div class="stg-sub">เธเธฑเธ”เธเธฒเธฃเธฃเธฒเธขเธเธทเนเธญเธฃเนเธฒเธเธเนเธฒเนเธฅเธฐเนเธซเธฅเนเธเธฃเธฒเธขเธฃเธฑเธ</div>
       </div>
     </div>
     <div style="padding:0 14px 14px">
       <div id="vendorList" style="margin-bottom:8px"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input type="text" id="newVendorName" placeholder="ชื่อร้านค้า / แหล่งรายรับ" style="flex:1;min-width:140px;font-size:16px !important">
+        <input type="text" id="newVendorName" placeholder="เธเธทเนเธญเธฃเนเธฒเธเธเนเธฒ / เนเธซเธฅเนเธเธฃเธฒเธขเธฃเธฑเธ" style="flex:1;min-width:140px;font-size:16px !important">
         <select id="newVendorType" style="font-size:14px !important">
-          <option value="expense">🛒 ร้านค้า (รายจ่าย)</option>
-          <option value="income">💰 แหล่งรายรับ</option>
-          <option value="both">🔄 ทั้งคู่</option>
+          <option value="expense">๐’ เธฃเนเธฒเธเธเนเธฒ (เธฃเธฒเธขเธเนเธฒเธข)</option>
+          <option value="income">๐’ฐ เนเธซเธฅเนเธเธฃเธฒเธขเธฃเธฑเธ</option>
+          <option value="both">๐” เธ—เธฑเนเธเธเธนเน</option>
         </select>
-        <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เพิ่ม</button>
+        <button class="btn btn-primary" onclick="addVendor()" style="min-height:44px;white-space:nowrap">+ เน€เธเธดเนเธก</button>
       </div>
       <div id="vendorMsg" class="msg" style="margin-top:8px"></div>
     </div>
   </div>
   </div>
 
-  <!-- ─── ระบบอัตโนมัติ ──────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">🤖 ระบบอัตโนมัติ <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธฃเธฐเธเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">๐ค– เธฃเธฐเธเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <div class="settings-section hf-card" style="padding:0">
 
-    <!-- รายการประจำ (ลิงก์ไปหน้าหลัก) -->
+    <!-- เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณ (เธฅเธดเธเธเนเนเธเธซเธเนเธฒเธซเธฅเธฑเธ) -->
     <div class="stg-sect-head" style="cursor:pointer" onclick="nav('recurring')">
-      <span class="stg-icon" style="background:#f0eef9">🔄</span>
+      <span class="stg-icon" style="background:#f0eef9">๐”</span>
       <div style="flex:1">
-        <div class="stg-title">รายการประจำเดือน</div>
-        <div class="stg-sub">จัดการรายการที่ทำซ้ำทุกเดือนอัตโนมัติ</div>
+        <div class="stg-title">เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ</div>
+        <div class="stg-sub">เธเธฑเธ”เธเธฒเธฃเธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธ—เธณเธเนเธณเธ—เธธเธเน€เธ”เธทเธญเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด</div>
       </div>
-      <span style="font-size:12px;color:var(--blue);font-weight:600;white-space:nowrap">ไปหน้านี้ →</span>
+      <span style="font-size:12px;color:var(--blue);font-weight:600;white-space:nowrap">เนเธเธซเธเนเธฒเธเธตเน โ’</span>
     </div>
 
     <div class="stg-divider"></div>
 
-    <!-- การแจ้งเตือน -->
+    <!-- เธเธฒเธฃเนเธเนเธเน€เธ•เธทเธญเธ -->
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:#f0eef9">🔔</span>
+      <span class="stg-icon" style="background:#f0eef9">๐””</span>
       <div>
-        <div class="stg-title">การแจ้งเตือน</div>
-        <div class="stg-sub">รายการประจำ · ยอดเงินต่ำ · สิ้นรอบเงินเดือน</div>
+        <div class="stg-title">เธเธฒเธฃเนเธเนเธเน€เธ•เธทเธญเธ</div>
+        <div class="stg-sub">เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณ ยท เธขเธญเธ”เน€เธเธดเธเธ•เนเธณ ยท เธชเธดเนเธเธฃเธญเธเน€เธเธดเธเน€เธ”เธทเธญเธ</div>
       </div>
     </div>
     <div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="requestNotificationPermission().then(function(){renderNotificationBadge();})" style="min-height:40px;font-size:13px">
-        🔔 เปิดการแจ้งเตือน
+        ๐”” เน€เธเธดเธ”เธเธฒเธฃเนเธเนเธเน€เธ•เธทเธญเธ
       </button>
       <button class="btn btn-ghost" onclick="runNotificationChecks()" style="min-height:40px;font-size:13px">
-        🔍 ตรวจสอบเดี๋ยวนี้
+        ๐” เธ•เธฃเธงเธเธชเธญเธเน€เธ”เธตเนเธขเธงเธเธตเน
       </button>
       <span id="notifStatusText" style="font-size:12px;color:var(--ink3)"></span>
     </div>
   </div>
   </div>
 
-  <!-- ─── ระบบ ───────────────────────────────── -->
-  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">☁️ ระบบ <span class="stg-caret">▾</span></div>
+  <!-- โ”€โ”€โ”€ เธฃเธฐเธเธ โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
+  <div class="stg-group-label stg-toggle" onclick="stgToggle(this)">โ๏ธ เธฃเธฐเธเธ <span class="stg-caret">โ–พ</span></div>
   <div class="stg-body" style="display:none">
   <!-- Sync Panel -->
   <div class="hf-card" style="padding:0">
     <div class="stg-sect-head" style="cursor:default">
-      <span class="stg-icon" style="background:var(--blue-bg)">🔄</span>
+      <span class="stg-icon" style="background:var(--blue-bg)">๐”</span>
       <div style="flex:1">
-        <div class="stg-title">ซิงก์ข้อมูล</div>
-        <div class="stg-sub">เปรียบเทียบและซิงก์ข้อมูลระหว่างเครื่องกับ Database</div>
+        <div class="stg-title">เธเธดเธเธเนเธเนเธญเธกเธนเธฅ</div>
+        <div class="stg-sub">เน€เธเธฃเธตเธขเธเน€เธ—เธตเธขเธเนเธฅเธฐเธเธดเธเธเนเธเนเธญเธกเธนเธฅเธฃเธฐเธซเธงเนเธฒเธเน€เธเธฃเธทเนเธญเธเธเธฑเธ Database</div>
       </div>
-      <button class="btn btn-ghost" onclick="refreshSyncStatus()" style="min-height:36px;font-size:12px;white-space:nowrap">🔍 ตรวจสอบ</button>
+      <button class="btn btn-ghost" onclick="refreshSyncStatus()" style="min-height:36px;font-size:12px;white-space:nowrap">๐” เธ•เธฃเธงเธเธชเธญเธ</button>
     </div>
     <div style="padding:0 14px 10px;display:flex;gap:20px;flex-wrap:wrap">
       <div style="background:var(--surface2);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;text-align:center">
-        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">ในเครื่อง</div>
-        <div id="syncLocalCount" style="font-size:20px;font-weight:700;font-family:monospace;margin-top:2px">—</div>
+        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">เนเธเน€เธเธฃเธทเนเธญเธ</div>
+        <div id="syncLocalCount" style="font-size:20px;font-weight:700;font-family:monospace;margin-top:2px">โ€”</div>
       </div>
       <div style="background:var(--blue-bg);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;text-align:center;border:1px solid #c5d8f8">
         <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Database</div>
-        <div id="syncDbCount" style="font-size:20px;font-weight:700;font-family:monospace;color:var(--blue);margin-top:2px">—</div>
+        <div id="syncDbCount" style="font-size:20px;font-weight:700;font-family:monospace;color:var(--blue);margin-top:2px">โ€”</div>
       </div>
     </div>
     <div id="syncStatusMsg" style="padding:0 14px 10px;font-size:12px;font-weight:500"></div>
     <div style="padding:0 14px 14px;display:flex;gap:8px;flex-wrap:wrap">
-      <button id="syncPushBtn" class="btn btn-primary" onclick="sbPushAllLocal()" style="flex:1;min-height:42px;font-size:13px">📤 อัปโหลดทั้งหมด</button>
-      <button id="syncPullBtn" class="btn btn-ghost"   onclick="sbPullAllFull()"  style="flex:1;min-height:42px;font-size:13px">📥 ดาวน์โหลดทั้งหมด</button>
+      <button id="syncPushBtn" class="btn btn-primary" onclick="sbPushAllLocal()" style="flex:1;min-height:42px;font-size:13px">๐“ค เธญเธฑเธเนเธซเธฅเธ”เธ—เธฑเนเธเธซเธกเธ”</button>
+      <button id="syncPullBtn" class="btn btn-ghost"   onclick="sbPullAllFull()"  style="flex:1;min-height:42px;font-size:13px">๐“ฅ เธ”เธฒเธงเธเนเนเธซเธฅเธ”เธ—เธฑเนเธเธซเธกเธ”</button>
     </div>
     <div style="padding:0 14px 12px;font-size:11px;color:var(--ink3);line-height:1.7">
-      📤 <strong>อัปโหลด</strong> — ส่งข้อมูลในเครื่องทั้งหมดขึ้น Database (ข้อมูลที่ซ้ำจะถูก merge)<br>
-      📥 <strong>ดาวน์โหลด</strong> — ดึงข้อมูลทั้งหมดจาก Database + รวมกับข้อมูลในเครื่อง
+      ๐“ค <strong>เธญเธฑเธเนเธซเธฅเธ”</strong> โ€” เธชเนเธเธเนเธญเธกเธนเธฅเนเธเน€เธเธฃเธทเนเธญเธเธ—เธฑเนเธเธซเธกเธ”เธเธถเนเธ Database (เธเนเธญเธกเธนเธฅเธ—เธตเนเธเนเธณเธเธฐเธ–เธนเธ merge)<br>
+      ๐“ฅ <strong>เธ”เธฒเธงเธเนเนเธซเธฅเธ”</strong> โ€” เธ”เธถเธเธเนเธญเธกเธนเธฅเธ—เธฑเนเธเธซเธกเธ”เธเธฒเธ Database + เธฃเธงเธกเธเธฑเธเธเนเธญเธกเธนเธฅเนเธเน€เธเธฃเธทเนเธญเธ
     </div>
   </div>
 
-  <!-- ─── Version History ──────────────────────── -->
+  <!-- โ”€โ”€โ”€ Version History โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€ -->
   <div class="hf-card">
-    <div class="hf-card-title">📜 Version History</div>
+    <div class="hf-card-title">๐“ Version History</div>
     <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">
-      <strong>major</strong> = โครงสร้าง/schema &nbsp;·&nbsp; <strong>minor</strong> = feature ใหม่ &nbsp;·&nbsp; <strong>patch</strong> = แก้ bug
+      <strong>major</strong> = เนเธเธฃเธเธชเธฃเนเธฒเธ/schema &nbsp;ยท&nbsp; <strong>minor</strong> = feature เนเธซเธกเน &nbsp;ยท&nbsp; <strong>patch</strong> = เนเธเน bug
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.18.70</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
-        <strong>v3.18.70</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
-        <strong>v3.18.64</strong> — ปุ่มทำทันที: ตรวจสถานะ db เดือนนี้ — รอจ่าย→ปุ่ม 💳 จ่ายทันที, ยังไม่มี→ปุ่ม ⚡ ทำทันที, จ่ายแล้ว→✅<br>
-        <strong>v3.18.62</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
-        <strong>v3.18.61</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
-        <strong>v3.15.6</strong> — หน้ารายการ: เรียงวันล่าสุดก่อน ภายในวันเดียวกันเรียงตามลำดับบันทึกล่าสุด<br><strong>v3.15.5</strong> — ปรับ logic early salary: ตรวจสอบเฉพาะวันที่ 25 ตรงเสาร์/อาทิตย์ ลบ EARLY_DAYS 2 วัน<br><strong>v3.15.4</strong> — แก้สถานะไม่รีเซ็ตเมื่อเปลี่ยนวันที่จาก 24 → 25 (รอรับ/รอจ่าย ค้าง)<br><strong>v3.15.3</strong> — บล็อกปุ่มบันทึก/เพิ่ม/แก้ไข/ลบทุกหน้าเมื่อ offline; แก้ badge “รอ sync” ค้างหลังเน็ตกลับ; เตือนก่อน logout เมื่อมีรายการค้าง sync; รายการ offline แสดงหลัง login ใหม่
-        <br><strong>v3.8.0</strong> — Admin/User role: Admin เห็น dashboard+รายการทุกคน + filter คน; แก้ sync bug เครื่อง B เห็นข้อมูลเก่า; Offline pending queue retry sbAdd ตอน reconnect
-        <br><strong>v3.4.1</strong> — Email confirmation redirect
-        <br><strong>v3.4.0</strong> — Email confirmation redirect: หลังกดลิงก์ยืนยัน email แอปจะ redirect กลับหน้า Login พร้อมข้อความ "ยืนยัน Email สำเร็จ", แก้ signup crash เมื่อ Supabase ต้องยืนยัน email ก่อน (null access_token), เพิ่ม redirect_to ใน signup URL
-        <br><strong>v3.2.1</strong> — แก้ HTTP 500 บันทึกชื่อ (เพิ่ม user_id ใน settings), แก้ข้อมูลหายหลัง login (sbGetHeaders + user_id filter), แก้ "ตรวจสอบ Database" แสดงผล error ถูกต้อง, getSbCreds fallback config.js defaults
+        <strong>v3.18.71</strong> โ€” เธเนเธฒเธขเธ—เธฑเธเธ—เธต: เน€เธเธดเธ” edit form + auto-set paid/received + highlight focus เธชเธตเนเธเธเธฑเธชเธ—เธตเน field เธชเธ–เธฒเธเธฐ<br>
+        <strong>v3.18.71</strong> โ€” เธ—เธณเธ—เธฑเธเธ—เธตโ’เน€เธเธดเธ”เธซเธเนเธฒเธเธฑเธเธ—เธถเธ pre-fill; เธเนเธฒเธขเธ—เธฑเธเธ—เธตโ’เน€เธเธดเธ” edit form pending tx; edit เธเธฑเธเธ—เธถเธ re-render recurring<br>
+        <strong>v3.18.64</strong> โ€” เธเธธเนเธกเธ—เธณเธ—เธฑเธเธ—เธต: เธ•เธฃเธงเธเธชเธ–เธฒเธเธฐ db เน€เธ”เธทเธญเธเธเธตเน โ€” เธฃเธญเธเนเธฒเธขโ’เธเธธเนเธก ๐’ณ เธเนเธฒเธขเธ—เธฑเธเธ—เธต, เธขเธฑเธเนเธกเนเธกเธตโ’เธเธธเนเธก โก เธ—เธณเธ—เธฑเธเธ—เธต, เธเนเธฒเธขเนเธฅเนเธงโ’โ…<br>
+        <strong>v3.18.62</strong> โ€” เธ—เธณเธ—เธฑเธเธ—เธต: เน€เธเธดเนเธก field เธชเธ–เธฒเธเธฐ (เธเนเธฒเธขเนเธฅเนเธง/เธฃเธญเธเนเธฒเธข/เธฃเธฑเธเนเธฅเนเธง/เธฃเธญเธฃเธฑเธ) เนเธเธเธญเธฃเนเธก recurring + เธเธฑเธเธ—เธถเธเธ•เธฒเธกเธชเธ–เธฒเธเธฐเธ—เธตเนเธ•เธฑเนเธเนเธงเน<br>
+        <strong>v3.18.61</strong> โ€” เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธเนเธขเธเน€เธเนเธเน€เธกเธเธนเธซเธฅเธฑเธ + เธเธธเนเธก โก เธ—เธณเธ—เธฑเธเธ—เธต เธเธฑเธเธ—เธถเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธดเธเธฒเธ template<br>
+        <strong>v3.15.6</strong> โ€” เธซเธเนเธฒเธฃเธฒเธขเธเธฒเธฃ: เน€เธฃเธตเธขเธเธงเธฑเธเธฅเนเธฒเธชเธธเธ”เธเนเธญเธ เธ เธฒเธขเนเธเธงเธฑเธเน€เธ”เธตเธขเธงเธเธฑเธเน€เธฃเธตเธขเธเธ•เธฒเธกเธฅเธณเธ”เธฑเธเธเธฑเธเธ—เธถเธเธฅเนเธฒเธชเธธเธ”<br><strong>v3.15.5</strong> โ€” เธเธฃเธฑเธ logic early salary: เธ•เธฃเธงเธเธชเธญเธเน€เธเธเธฒเธฐเธงเธฑเธเธ—เธตเน 25 เธ•เธฃเธเน€เธชเธฒเธฃเน/เธญเธฒเธ—เธดเธ•เธขเน เธฅเธ EARLY_DAYS 2 เธงเธฑเธ<br><strong>v3.15.4</strong> โ€” เนเธเนเธชเธ–เธฒเธเธฐเนเธกเนเธฃเธตเน€เธเนเธ•เน€เธกเธทเนเธญเน€เธเธฅเธตเนเธขเธเธงเธฑเธเธ—เธตเนเธเธฒเธ 24 โ’ 25 (เธฃเธญเธฃเธฑเธ/เธฃเธญเธเนเธฒเธข เธเนเธฒเธ)<br><strong>v3.15.3</strong> โ€” เธเธฅเนเธญเธเธเธธเนเธกเธเธฑเธเธ—เธถเธ/เน€เธเธดเนเธก/เนเธเนเนเธ/เธฅเธเธ—เธธเธเธซเธเนเธฒเน€เธกเธทเนเธญ offline; เนเธเน badge โ€เธฃเธญ syncโ€ เธเนเธฒเธเธซเธฅเธฑเธเน€เธเนเธ•เธเธฅเธฑเธ; เน€เธ•เธทเธญเธเธเนเธญเธ logout เน€เธกเธทเนเธญเธกเธตเธฃเธฒเธขเธเธฒเธฃเธเนเธฒเธ sync; เธฃเธฒเธขเธเธฒเธฃ offline เนเธชเธ”เธเธซเธฅเธฑเธ login เนเธซเธกเน
+        <br><strong>v3.8.0</strong> โ€” Admin/User role: Admin เน€เธซเนเธ dashboard+เธฃเธฒเธขเธเธฒเธฃเธ—เธธเธเธเธ + filter เธเธ; เนเธเน sync bug เน€เธเธฃเธทเนเธญเธ B เน€เธซเนเธเธเนเธญเธกเธนเธฅเน€เธเนเธฒ; Offline pending queue retry sbAdd เธ•เธญเธ reconnect
+        <br><strong>v3.4.1</strong> โ€” Email confirmation redirect
+        <br><strong>v3.4.0</strong> โ€” Email confirmation redirect: เธซเธฅเธฑเธเธเธ”เธฅเธดเธเธเนเธขเธทเธเธขเธฑเธ email เนเธญเธเธเธฐ redirect เธเธฅเธฑเธเธซเธเนเธฒ Login เธเธฃเนเธญเธกเธเนเธญเธเธงเธฒเธก "เธขเธทเธเธขเธฑเธ Email เธชเธณเน€เธฃเนเธ", เนเธเน signup crash เน€เธกเธทเนเธญ Supabase เธ•เนเธญเธเธขเธทเธเธขเธฑเธ email เธเนเธญเธ (null access_token), เน€เธเธดเนเธก redirect_to เนเธ signup URL
+        <br><strong>v3.2.1</strong> โ€” เนเธเน HTTP 500 เธเธฑเธเธ—เธถเธเธเธทเนเธญ (เน€เธเธดเนเธก user_id เนเธ settings), เนเธเนเธเนเธญเธกเธนเธฅเธซเธฒเธขเธซเธฅเธฑเธ login (sbGetHeaders + user_id filter), เนเธเน "เธ•เธฃเธงเธเธชเธญเธ Database" เนเธชเธ”เธเธเธฅ error เธ–เธนเธเธ•เนเธญเธ, getSbCreds fallback config.js defaults
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v3.0.0</strong> — รอบเงินเดือน (cycle_id), Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
+        <strong>v3.0.0</strong> โ€” เธฃเธญเธเน€เธเธดเธเน€เธ”เธทเธญเธ (cycle_id), Active/Pending balance, Burn Rate + Forecast, multi-account, savings goals, web push, budget-cycle mode, recurringEngine v3
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.3</strong> — sync ดาวขึ้น Supabase, ดาวร้านค้า = ดาวหมวด/รายการ, แก้ปุ่มยกเลิก
+        <strong>v2.9.3</strong> โ€” sync เธ”เธฒเธงเธเธถเนเธ Supabase, เธ”เธฒเธงเธฃเนเธฒเธเธเนเธฒ = เธ”เธฒเธงเธซเธกเธงเธ”/เธฃเธฒเธขเธเธฒเธฃ, เนเธเนเธเธธเนเธกเธขเธเน€เธฅเธดเธ
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.2</strong> — smart vendor ctx-fav, vendor inline edit, form reorder, dashboard month fix
+        <strong>v2.9.2</strong> โ€” smart vendor ctx-fav, vendor inline edit, form reorder, dashboard month fix
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.9.1</strong> — vendor star toggle, โหลด vendors จาก Supabase, SW force-reload
+        <strong>v2.9.1</strong> โ€” vendor star toggle, เนเธซเธฅเธ” vendors เธเธฒเธ Supabase, SW force-reload
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.7.0</strong> — แยก JS/CSS, รายการประจำเดือน, Unit Tests
+        <strong>v2.7.0</strong> โ€” เนเธขเธ JS/CSS, เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ, Unit Tests
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.1.0</strong> — รายการในหมวด, วันที่ไทย, นาฬิกาในแถบบน, ซ่อนยอดเงินเดือน
+        <strong>v2.1.0</strong> โ€” เธฃเธฒเธขเธเธฒเธฃเนเธเธซเธกเธงเธ”, เธงเธฑเธเธ—เธตเนเนเธ—เธข, เธเธฒเธฌเธดเธเธฒเนเธเนเธ–เธเธเธ, เธเนเธญเธเธขเธญเธ”เน€เธเธดเธเน€เธ”เธทเธญเธ
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v2.0.0</strong> — เปลี่ยนจาก Google Sheets เป็น Supabase, Realtime monitor
+        <strong>v2.0.0</strong> โ€” เน€เธเธฅเธตเนเธขเธเธเธฒเธ Google Sheets เน€เธเนเธ Supabase, Realtime monitor
       </div>
       <div style="padding:6px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--line)">
-        <strong>v1.0.0</strong> — เวอร์ชันเริ่มต้น: รายรับ/รายจ่าย, Settlement, Dashboard
+        <strong>v1.0.0</strong> โ€” เน€เธงเธญเธฃเนเธเธฑเธเน€เธฃเธดเนเธกเธ•เนเธ: เธฃเธฒเธขเธฃเธฑเธ/เธฃเธฒเธขเธเนเธฒเธข, Settlement, Dashboard
       </div>
     </div>
   </div>
-  </div><!-- /stg-body ระบบ -->
+  </div><!-- /stg-body เธฃเธฐเธเธ -->
 </div>
 
 <!-- RECURRING PAGE -->
 <div id="page-recurring" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">🔄 รายการประจำเดือน</div>
-      <div class="hf-sub">บันทึกรายการที่ทำซ้ำทุกเดือน · กด ⚡ ทำทันที เพื่อบันทึกอัตโนมัติ</div>
+      <div class="hf-title">๐” เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ</div>
+      <div class="hf-sub">เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเธ—เธตเนเธ—เธณเธเนเธณเธ—เธธเธเน€เธ”เธทเธญเธ ยท เธเธ” โก เธ—เธณเธ—เธฑเธเธ—เธต เน€เธเธทเนเธญเธเธฑเธเธ—เธถเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด</div>
     </div>
   </div>
   <div class="settings-section hf-card" style="padding:0">
     <div style="padding:12px 14px 14px">
       <div id="recurringList" style="margin-bottom:10px"></div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="checkRecurringDueNow()" style="flex:1;min-height:42px;font-size:13px">🔔 รายการถึงกำหนด</button>
-        <button class="btn btn-primary" onclick="openRecurringModal()" style="flex:1;min-height:42px;font-size:13px">+ เพิ่มรายการประจำ</button>
+        <button class="btn btn-ghost" onclick="checkRecurringDueNow()" style="flex:1;min-height:42px;font-size:13px">๐”” เธฃเธฒเธขเธเธฒเธฃเธ–เธถเธเธเธณเธซเธเธ”</button>
+        <button class="btn btn-primary" onclick="openRecurringModal()" style="flex:1;min-height:42px;font-size:13px">+ เน€เธเธดเนเธกเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณ</button>
       </div>
     </div>
   </div>
@@ -1058,21 +1058,21 @@ function gcgToggle(e){
 <!-- CAT MODAL -->
 <div id="catOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--r);width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-    <div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:16px" id="catModalTitle">เพิ่มหมวด</div>
+    <div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:16px" id="catModalTitle">เน€เธเธดเนเธกเธซเธกเธงเธ”</div>
     <div class="field" style="margin-bottom:12px">
-      <label>ชื่อหมวด</label>
-      <input type="text" id="catModalName" placeholder="เช่น ค่าไฟ, เงินเดือน" style="font-size:16px !important">
+      <label>เธเธทเนเธญเธซเธกเธงเธ”</label>
+      <input type="text" id="catModalName" placeholder="เน€เธเนเธ เธเนเธฒเนเธ, เน€เธเธดเธเน€เธ”เธทเธญเธ" style="font-size:16px !important">
     </div>
     <div id="catModalSplitRow" style="display:none;margin-bottom:16px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--ink)">
         <input type="checkbox" id="catModalSplit" style="width:18px;height:18px;cursor:pointer">
-        ระบบหาร (เลือกกลุ่มอัตโนมัติเมื่อบันทึก)
+        เธฃเธฐเธเธเธซเธฒเธฃ (เน€เธฅเธทเธญเธเธเธฅเธธเนเธกเธญเธฑเธ•เนเธเธกเธฑเธ•เธดเน€เธกเธทเนเธญเธเธฑเธเธ—เธถเธ)
       </label>
     </div>
     <div id="catModalMsg" class="msg" style="margin-bottom:10px"></div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" onclick="closeCatModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="saveCatModal()" style="flex:1;min-height:44px">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeCatModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="saveCatModal()" style="flex:1;min-height:44px">เธเธฑเธเธ—เธถเธ</button>
     </div>
   </div>
 </div>
@@ -1081,7 +1081,7 @@ function gcgToggle(e){
 <div id="page-supabase" class="page" style="display:none">
   <div class="page-header">
     <div class="page-title">Supabase</div>
-    <div class="page-sub">เชื่อมต่อฐานข้อมูล Real-time · ไม่มี CORS · ใช้ได้จากทุกที่</div>
+    <div class="page-sub">เน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅ Real-time ยท เนเธกเนเธกเธต CORS ยท เนเธเนเนเธ”เนเธเธฒเธเธ—เธธเธเธ—เธตเน</div>
   </div>
 
   <!-- CONNECTION CARD -->
@@ -1091,8 +1091,8 @@ function gcgToggle(e){
         <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4zm-1 3v4l3 2-1 1.5-3.5-2.5V7h1.5z"/></svg>
       </div>
       <div style="flex:1;min-width:0">
-        <div class="settings-header-text">การเชื่อมต่อ Supabase</div>
-        <div class="settings-header-sub" id="sbStatusText">ยังไม่ได้เชื่อมต่อ</div>
+        <div class="settings-header-text">เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ Supabase</div>
+        <div class="settings-header-sub" id="sbStatusText">เธขเธฑเธเนเธกเนเนเธ”เนเน€เธเธทเนเธญเธกเธ•เนเธญ</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
         <div id="rtDot" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8" title="Realtime"></div>
@@ -1113,21 +1113,21 @@ function gcgToggle(e){
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="testSupabase()" style="flex:1;justify-content:center;min-height:44px">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8a5 5 0 1010 0A5 5 0 003 8zm5-6a6 6 0 110 12A6 6 0 018 2zm.5 3v3.25l2.5 1.5-.75 1.25L7 9.25V5h1.5z"/></svg>
-          ทดสอบการเชื่อมต่อ
+          เธ—เธ”เธชเธญเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ
         </button>
         <button class="btn btn-ghost" onclick="sbPush()" style="flex:1;justify-content:center;min-height:44px">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 8a6 6 0 0110.7-3.7l-1.5 1.5H14V3l-1.5 1.5A7.5 7.5 0 001 8.5h1.5A6 6 0 012 8zm12-.5A6 6 0 014.8 12.2l1.5-1.5H3V14l1.5-1.5A7.5 7.5 0 0015 7.5h-1z"/></svg>
-          อัปโหลดข้อมูลขึ้น
+          เธญเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธถเนเธ
         </button>
         <button class="btn btn-ghost" onclick="sbPull()" style="flex:1;justify-content:center;min-height:44px">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 10.5l-4-4h2.5V2h3v4.5H12l-4 4zM2 13h12v1.5H2V13z"/></svg>
-          ดาวน์โหลดข้อมูล
+          เธ”เธฒเธงเธเนเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ
         </button>
       </div>
       <div id="sbMsg" class="msg"></div>
       <div style="display:flex;align-items:center;gap:8px;padding:8px 0 0;font-size:12px;color:var(--ink3)">
         <div id="rtDot2" style="width:8px;height:8px;border-radius:50%;background:#d4d1c8;flex-shrink:0"></div>
-        <span id="rtStatusText">สถานะ: กำลังตรวจสอบ...</span>
+        <span id="rtStatusText">เธชเธ–เธฒเธเธฐ: เธเธณเธฅเธฑเธเธ•เธฃเธงเธเธชเธญเธ...</span>
       </div>
     </div>
   </div>
@@ -1138,7 +1138,7 @@ function gcgToggle(e){
       <div class="settings-icon" style="background:#eef7f2">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="#1a7a4a"><path d="M10 13l-5-5h3V3h4v5h3l-5 5zM3 16h14v2H3v-2z"/></svg>
       </div>
-      <div><div class="settings-header-text">Export CSV</div><div class="settings-header-sub">สำรองข้อมูลออกไฟล์</div></div>
+      <div><div class="settings-header-text">Export CSV</div><div class="settings-header-sub">เธชเธณเธฃเธญเธเธเนเธญเธกเธนเธฅเธญเธญเธเนเธเธฅเน</div></div>
     </div>
     <div style="padding:0 16px 16px">
       <button class="btn btn-primary" onclick="exportCSV()" style="min-height:44px">
@@ -1151,20 +1151,20 @@ function gcgToggle(e){
 
   <!-- SETUP GUIDE -->
   <div class="card" style="">
-    <div class="card-title">วิธีตั้งค่า Supabase (3 ขั้นตอน)</div>
+    <div class="card-title">เธงเธดเธเธตเธ•เธฑเนเธเธเนเธฒ Supabase (3 เธเธฑเนเธเธ•เธญเธ)</div>
     <div style="font-size:13px;color:var(--ink2);line-height:1.9">
       <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
         <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">1</div>
         <div>
-          <strong>สร้างโปรเจกต์ที่ supabase.com</strong> (ฟรี) → กด <strong>New project</strong>
-          → ตั้งชื่อ เช่น <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:monospace">homefinance</code>
-          → จดรหัสผ่านฐานข้อมูลไว้
+          <strong>เธชเธฃเนเธฒเธเนเธเธฃเน€เธเธเธ•เนเธ—เธตเน supabase.com</strong> (เธเธฃเธต) โ’ เธเธ” <strong>New project</strong>
+          โ’ เธ•เธฑเนเธเธเธทเนเธญ เน€เธเนเธ <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:monospace">homefinance</code>
+          โ’ เธเธ”เธฃเธซเธฑเธชเธเนเธฒเธเธเธฒเธเธเนเธญเธกเธนเธฅเนเธงเน
         </div>
       </div>
       <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
         <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">2</div>
         <div>
-          <strong>สร้าง Table</strong> → เปิด <strong>SQL Editor</strong> → วาง SQL ด้านล่าง → Run
+          <strong>เธชเธฃเนเธฒเธ Table</strong> โ’ เน€เธเธดเธ” <strong>SQL Editor</strong> โ’ เธงเธฒเธ SQL เธ”เนเธฒเธเธฅเนเธฒเธ โ’ Run
           <div style="background:var(--ink);color:#a8d8a8;font-family:monospace;font-size:11px;padding:10px 12px;border-radius:var(--r);margin-top:8px;line-height:1.7;overflow-x:auto;white-space:pre">create table transactions (
   id        text primary key,
   date      text,
@@ -1186,9 +1186,9 @@ create policy "public write" on transactions for all using (true);</div>
       <div style="display:flex;gap:10px;padding:10px 0">
         <div style="width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">3</div>
         <div>
-          <strong>Copy credentials</strong> → ไปที่ <strong>Project Settings → API</strong>
-          → Copy <em>Project URL</em> และ <em>anon public key</em>
-          → วางในช่องด้านบน → กดทดสอบ ✓
+          <strong>Copy credentials</strong> โ’ เนเธเธ—เธตเน <strong>Project Settings โ’ API</strong>
+          โ’ Copy <em>Project URL</em> เนเธฅเธฐ <em>anon public key</em>
+          โ’ เธงเธฒเธเนเธเธเนเธญเธเธ”เนเธฒเธเธเธ โ’ เธเธ”เธ—เธ”เธชเธญเธ โ“
         </div>
       </div>
     </div>
@@ -1199,11 +1199,11 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="page-accounts" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">บัญชีธนาคาร</div>
-      <div class="hf-sub">จัดการหลายบัญชีและโอนเงินระหว่างบัญชี</div>
+      <div class="hf-title">เธเธฑเธเธเธตเธเธเธฒเธเธฒเธฃ</div>
+      <div class="hf-sub">เธเธฑเธ”เธเธฒเธฃเธซเธฅเธฒเธขเธเธฑเธเธเธตเนเธฅเธฐเนเธญเธเน€เธเธดเธเธฃเธฐเธซเธงเนเธฒเธเธเธฑเธเธเธต</div>
     </div>
     <div class="hf-period-pills">
-      <button class="hf-btn" onclick="openTransferModal()">⇄ โอนเงิน</button>
+      <button class="hf-btn" onclick="openTransferModal()">โ เนเธญเธเน€เธเธดเธ</button>
     </div>
   </div>
 
@@ -1214,43 +1214,43 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="addAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:400px;padding:24px;margin:auto;position:relative;overflow:hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:16px;font-weight:600;color:var(--ink)">+ เพิ่มบัญชีใหม่</div>
-      <button onclick="closeAddAccountModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);line-height:1;padding:4px">×</button>
+      <div style="font-size:16px;font-weight:600;color:var(--ink)">+ เน€เธเธดเนเธกเธเธฑเธเธเธตเนเธซเธกเน</div>
+      <button onclick="closeAddAccountModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);line-height:1;padding:4px">ร—</button>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>ชื่อบัญชี</label>
-        <input type="text" id="newAcctName" placeholder="เช่น กสิกรไทย, กระเป๋าเงิน" style="font-size:15px !important">
+        <label>เธเธทเนเธญเธเธฑเธเธเธต</label>
+        <input type="text" id="newAcctName" placeholder="เน€เธเนเธ เธเธชเธดเธเธฃเนเธ—เธข, เธเธฃเธฐเน€เธเนเธฒเน€เธเธดเธ" style="font-size:15px !important">
       </div>
       <div class="field">
-        <label>ประเภท</label>
+        <label>เธเธฃเธฐเน€เธ เธ—</label>
         <select id="newAcctType" style="font-size:15px !important">
-          <option value="bank">🏦 ธนาคาร</option>
-          <option value="cash">💵 เงินสด</option>
-          <option value="ewallet">📱 E-Wallet</option>
+          <option value="bank">๐ฆ เธเธเธฒเธเธฒเธฃ</option>
+          <option value="cash">๐’ต เน€เธเธดเธเธชเธ”</option>
+          <option value="ewallet">๐“ฑ E-Wallet</option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>ยอดเริ่มต้น (฿)</label>
+        <label>เธขเธญเธ”เน€เธฃเธดเนเธกเธ•เนเธ (เธฟ)</label>
         <input type="number" id="newAcctBalance" placeholder="0" min="0" style="font-size:20px !important;font-weight:600;text-align:right;font-family:monospace">
       </div>
       <div class="field">
-        <label>สี</label>
+        <label>เธชเธต</label>
         <select id="newAcctColor" style="font-size:15px !important">
-          <option value="#1a4fa0">🔵 น้ำเงิน</option>
-          <option value="#1a7a4a">🟢 เขียว</option>
-          <option value="#b5600a">🟠 ส้ม</option>
-          <option value="#7c3aed">🟣 ม่วง</option>
-          <option value="#dc2626">🔴 แดง</option>
-          <option value="#0369a1">🩵 ฟ้า</option>
+          <option value="#1a4fa0">๐”ต เธเนเธณเน€เธเธดเธ</option>
+          <option value="#1a7a4a">๐ข เน€เธเธตเธขเธง</option>
+          <option value="#b5600a">๐  เธชเนเธก</option>
+          <option value="#7c3aed">๐ฃ เธกเนเธงเธ</option>
+          <option value="#dc2626">๐”ด เนเธ”เธ</option>
+          <option value="#0369a1">๐ฉต เธเนเธฒ</option>
         </select>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-ghost" onclick="closeAddAccountModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="onAddAccount()" style="flex:1;min-height:44px">+ เพิ่มบัญชี</button>
+      <button class="btn btn-ghost" onclick="closeAddAccountModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="onAddAccount()" style="flex:1;min-height:44px">+ เน€เธเธดเนเธกเธเธฑเธเธเธต</button>
     </div>
     <div id="acctMsg" class="msg"></div>
   </div>
@@ -1260,48 +1260,48 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="page-savings" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">เป้าหมายการออม</div>
-      <div class="hf-sub">ติดตามเป้าหมายและคำนวณเงินออมรายเดือน</div>
+      <div class="hf-title">เน€เธเนเธฒเธซเธกเธฒเธขเธเธฒเธฃเธญเธญเธก</div>
+      <div class="hf-sub">เธ•เธดเธ”เธ•เธฒเธกเน€เธเนเธฒเธซเธกเธฒเธขเนเธฅเธฐเธเธณเธเธงเธ“เน€เธเธดเธเธญเธญเธกเธฃเธฒเธขเน€เธ”เธทเธญเธ</div>
     </div>
   </div>
   <div class="savings-layout">
-    <!-- Add form — top / right sticky -->
+    <!-- Add form โ€” top / right sticky -->
     <div class="savings-form-col">
       <div class="hf-card" style="padding:16px">
-        <div class="hf-card-title" style="margin-bottom:12px">+ เพิ่มเป้าหมายใหม่</div>
+        <div class="hf-card-title" style="margin-bottom:12px">+ เน€เธเธดเนเธกเน€เธเนเธฒเธซเธกเธฒเธขเนเธซเธกเน</div>
         <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
-            <label>ชื่อเป้าหมาย</label>
-            <input type="text" id="goalName" placeholder="เช่น ซื้อรถ, ท่องเที่ยว" style="font-size:15px !important">
+            <label>เธเธทเนเธญเน€เธเนเธฒเธซเธกเธฒเธข</label>
+            <input type="text" id="goalName" placeholder="เน€เธเนเธ เธเธทเนเธญเธฃเธ–, เธ—เนเธญเธเน€เธ—เธตเนเธขเธง" style="font-size:15px !important">
           </div>
         </div>
         <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
-            <label>เป้าหมาย (฿)</label>
+            <label>เน€เธเนเธฒเธซเธกเธฒเธข (เธฟ)</label>
             <input type="number" id="goalTarget" placeholder="0" min="0" style="font-size:20px !important;font-weight:700;text-align:right;font-family:monospace">
           </div>
         </div>
         <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
-            <label>มีอยู่แล้ว (฿)</label>
+            <label>เธกเธตเธญเธขเธนเนเนเธฅเนเธง (เธฟ)</label>
             <input type="number" id="goalCurrent" placeholder="0" min="0" style="font-size:16px !important;text-align:right;font-family:monospace">
           </div>
         </div>
         <div class="form-row full" style="margin-bottom:10px">
           <div class="field">
-            <label>วันกำหนด</label>
+            <label>เธงเธฑเธเธเธณเธซเธเธ”</label>
             <input type="date" id="goalDate" style="font-size:15px !important">
           </div>
         </div>
         <div class="form-row full" style="margin-bottom:12px">
           <div class="field">
-            <label>บัญชีที่ใช้ออม</label>
+            <label>เธเธฑเธเธเธตเธ—เธตเนเนเธเนเธญเธญเธก</label>
             <select id="newGoalAccount" style="font-size:15px !important">
-              <option value="">-- เลือกบัญชี --</option>
+              <option value="">-- เน€เธฅเธทเธญเธเธเธฑเธเธเธต --</option>
             </select>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="onAddSavingsGoal()" style="width:100%;min-height:44px">+ เพิ่มเป้าหมาย</button>
+        <button class="btn btn-primary" onclick="onAddSavingsGoal()" style="width:100%;min-height:44px">+ เน€เธเธดเนเธกเน€เธเนเธฒเธซเธกเธฒเธข</button>
         <div id="goalMsg" class="msg"></div>
       </div>
     </div>
@@ -1318,30 +1318,30 @@ create policy "public write" on transactions for all using (true);</div>
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:480px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.2);margin:auto">
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div id="sgModalTitle" style="font-size:16px;font-weight:700;color:var(--ink)">สร้างกลุ่มใหม่</div>
-      <button onclick="closeSplitGroupModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);padding:4px;line-height:1">×</button>
+      <div id="sgModalTitle" style="font-size:16px;font-weight:700;color:var(--ink)">เธชเธฃเนเธฒเธเธเธฅเธธเนเธกเนเธซเธกเน</div>
+      <button onclick="closeSplitGroupModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);padding:4px;line-height:1">ร—</button>
     </div>
 
     <!-- Group name -->
     <div class="field" style="margin-bottom:14px">
-      <label>ชื่อกลุ่ม</label>
-      <input type="text" id="sgName" placeholder="เช่น ค่าใช้จ่ายบ้าน, ค่าอาหาร" style="font-size:16px !important">
+      <label>เธเธทเนเธญเธเธฅเธธเนเธก</label>
+      <input type="text" id="sgName" placeholder="เน€เธเนเธ เธเนเธฒเนเธเนเธเนเธฒเธขเธเนเธฒเธ, เธเนเธฒเธญเธฒเธซเธฒเธฃ" style="font-size:16px !important">
     </div>
 
     <!-- Split type -->
     <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">รูปแบบการหาร</label>
+      <label style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">เธฃเธนเธเนเธเธเธเธฒเธฃเธซเธฒเธฃ</label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <button class="sg-type-btn" data-type="personal"  onclick="sgSelectType('personal')" >ส่วนตัว</button>
-        <button class="sg-type-btn" data-type="equal"     onclick="sgSelectType('equal')"    >หารเท่ากัน</button>
-        <button class="sg-type-btn" data-type="ratio"     onclick="sgSelectType('ratio')"    >ตามสัดส่วน %</button>
-        <button class="sg-type-btn" data-type="custom"    onclick="sgSelectType('custom')"   >เลือกคน</button>
+        <button class="sg-type-btn" data-type="personal"  onclick="sgSelectType('personal')" >เธชเนเธงเธเธ•เธฑเธง</button>
+        <button class="sg-type-btn" data-type="equal"     onclick="sgSelectType('equal')"    >เธซเธฒเธฃเน€เธ—เนเธฒเธเธฑเธ</button>
+        <button class="sg-type-btn" data-type="ratio"     onclick="sgSelectType('ratio')"    >เธ•เธฒเธกเธชเธฑเธ”เธชเนเธงเธ %</button>
+        <button class="sg-type-btn" data-type="custom"    onclick="sgSelectType('custom')"   >เน€เธฅเธทเธญเธเธเธ</button>
       </div>
     </div>
 
     <!-- Members -->
     <div>
-      <label style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">สมาชิก (คลิก toggle เพื่อเปิด/ปิด)</label>
+      <label style="font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">เธชเธกเธฒเธเธดเธ (เธเธฅเธดเธ toggle เน€เธเธทเนเธญเน€เธเธดเธ”/เธเธดเธ”)</label>
       <div id="sgMemberList"></div>
     </div>
 
@@ -1356,11 +1356,11 @@ create policy "public write" on transactions for all using (true);</div>
 
     <!-- Action buttons -->
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn btn-ghost" onclick="closeSplitGroupModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button id="sgSaveBtn" class="btn btn-primary" onclick="saveSplitGroupFromModal()" style="flex:1;min-height:44px">💾 บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeSplitGroupModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button id="sgSaveBtn" class="btn btn-primary" onclick="saveSplitGroupFromModal()" style="flex:1;min-height:44px">๐’พ เธเธฑเธเธ—เธถเธ</button>
     </div>
     <div id="sgDeleteBtn" style="text-align:center;margin-top:10px">
-      <button onclick="deleteSplitGroupConfirm()" style="background:none;border:1px solid #fca5a5;border-radius:7px;padding:6px 18px;color:#dc2626;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">🗑 ลบกลุ่มนี้</button>
+      <button onclick="deleteSplitGroupConfirm()" style="background:none;border:1px solid #fca5a5;border-radius:7px;padding:6px 18px;color:#dc2626;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">๐—‘ เธฅเธเธเธฅเธธเนเธกเธเธตเน</button>
     </div>
   </div>
 </div>
@@ -1368,33 +1368,33 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="transferModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:440px;padding:24px;margin:auto;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="font-size:16px;font-weight:600">⇄ โอนเงินระหว่างบัญชี</div>
-      <button onclick="closeTransferModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+      <div style="font-size:16px;font-weight:600">โ เนเธญเธเน€เธเธดเธเธฃเธฐเธซเธงเนเธฒเธเธเธฑเธเธเธต</div>
+      <button onclick="closeTransferModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">ร—</button>
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>จากบัญชี</label>
+      <label>เธเธฒเธเธเธฑเธเธเธต</label>
       <select id="transferFrom" style="font-size:16px !important"></select>
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>ไปบัญชี</label>
+      <label>เนเธเธเธฑเธเธเธต</label>
       <select id="transferTo" style="font-size:16px !important"></select>
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>จำนวนเงิน (฿)</label>
+      <label>เธเธณเธเธงเธเน€เธเธดเธ (เธฟ)</label>
       <input type="number" id="transferAmt" placeholder="0" min="0" style="font-size:28px !important;font-weight:700;text-align:right;font-family:monospace">
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>วันที่โอน</label>
+      <label>เธงเธฑเธเธ—เธตเนเนเธญเธ</label>
       <input type="date" id="transferDate" style="font-size:15px !important">
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>หมายเหตุ</label>
-      <input type="text" id="transferNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+      <label>เธซเธกเธฒเธขเน€เธซเธ•เธธ</label>
+      <input type="text" id="transferNote" placeholder="(เนเธกเนเธเธฑเธเธเธฑเธ)" style="font-size:15px !important">
     </div>
     <div id="transferMsg" class="msg" style="margin-bottom:8px"></div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeTransferModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="doTransfer()" style="flex:1;min-height:44px">⇄ โอนเงิน</button>
+      <button class="btn btn-ghost" onclick="closeTransferModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="doTransfer()" style="flex:1;min-height:44px">โ เนเธญเธเน€เธเธดเธ</button>
     </div>
   </div>
 </div>
@@ -1403,64 +1403,64 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="recurringModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:520px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div id="recurringModalTitle" style="font-size:16px;font-weight:600">รายการประจำเดือน</div>
-      <button onclick="closeRecurringModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+      <div id="recurringModalTitle" style="font-size:16px;font-weight:600">เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเน€เธ”เธทเธญเธ</div>
+      <button onclick="closeRecurringModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">ร—</button>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>ประเภท</label>
+        <label>เธเธฃเธฐเน€เธ เธ—</label>
         <select id="recType" onchange="onRecurringTypeChange()" style="font-size:15px !important">
-          <option value="expense">รายจ่าย</option>
-          <option value="income">รายรับ</option>
+          <option value="expense">เธฃเธฒเธขเธเนเธฒเธข</option>
+          <option value="income">เธฃเธฒเธขเธฃเธฑเธ</option>
         </select>
       </div>
       <div class="field">
-        <label>หมวดหมู่</label>
+        <label>เธซเธกเธงเธ”เธซเธกเธนเน</label>
         <select id="recCat" onchange="onRecurringCatChange()" style="font-size:15px !important"></select>
       </div>
     </div>
     <div class="form-row full">
       <div class="field">
-        <label>ชื่อรายการ / คำอธิบาย</label>
+        <label>เธเธทเนเธญเธฃเธฒเธขเธเธฒเธฃ / เธเธณเธญเธเธดเธเธฒเธข</label>
         <select id="recDesc" style="font-size:15px !important"></select>
       </div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>จำนวน (฿)</label>
+        <label>เธเธณเธเธงเธ (เธฟ)</label>
         <input type="number" id="recAmt" placeholder="0" min="0" style="font-size:22px !important;font-weight:700;text-align:right;font-family:monospace">
       </div>
       <div class="field">
-        <label>วันที่ตัดรายการ</label>
+        <label>เธงเธฑเธเธ—เธตเนเธ•เธฑเธ”เธฃเธฒเธขเธเธฒเธฃ</label>
         <input type="number" id="recDay" placeholder="1-31" min="1" max="31" style="font-size:22px !important;font-weight:700;text-align:center;font-family:monospace">
       </div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label>บัญชี</label>
+        <label>เธเธฑเธเธเธต</label>
         <select id="recAccount" style="font-size:15px !important"></select>
       </div>
       <div class="field">
-        <label id="recVendorLabel">ร้านค้า</label>
+        <label id="recVendorLabel">เธฃเนเธฒเธเธเนเธฒ</label>
         <select id="recVendor" style="font-size:15px !important"></select>
       </div>
     </div>
     <div class="form-row">
       <div class="field">
-        <label id="recStatusLabel">สถานะเมื่อ "ทำทันที"</label>
+        <label id="recStatusLabel">เธชเธ–เธฒเธเธฐเน€เธกเธทเนเธญ "เธ—เธณเธ—เธฑเธเธ—เธต"</label>
         <select id="recStatus" style="font-size:15px !important">
-          <option value="paid">✅ จ่ายแล้ว</option>
-          <option value="pending">⏳ รอจ่าย</option>
+          <option value="paid">โ… เธเนเธฒเธขเนเธฅเนเธง</option>
+          <option value="pending">โณ เธฃเธญเธเนเธฒเธข</option>
         </select>
       </div>
       <div class="field">
-        <label>หมายเหตุ</label>
-        <input type="text" id="recNote" placeholder="(ไม่บังคับ)" style="font-size:15px !important">
+        <label>เธซเธกเธฒเธขเน€เธซเธ•เธธ</label>
+        <input type="text" id="recNote" placeholder="(เนเธกเนเธเธฑเธเธเธฑเธ)" style="font-size:15px !important">
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeRecurringModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="onSaveRecurring()" style="flex:1;min-height:44px">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeRecurringModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="onSaveRecurring()" style="flex:1;min-height:44px">เธเธฑเธเธ—เธถเธ</button>
     </div>
   </div>
 </div>
@@ -1470,8 +1470,8 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="recurringDueModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
   <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:520px;padding:20px 20px 32px;max-height:80vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.2)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:15px;font-weight:600">🔔 รายการประจำที่ถึงกำหนด</div>
-      <button onclick="closeRecurringDueModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+      <div style="font-size:15px;font-weight:600">๐”” เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเธเธณเธ—เธตเนเธ–เธถเธเธเธณเธซเธเธ”</div>
+      <button onclick="closeRecurringDueModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">ร—</button>
     </div>
     <div id="recurringDueList"></div>
   </div>
@@ -1480,23 +1480,23 @@ create policy "public write" on transactions for all using (true);</div>
 <!-- DEPOSIT MODAL -->
 <div id="depositModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
-    <div style="font-size:16px;font-weight:600;margin-bottom:16px">💰 ฝากเงิน</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px">๐’ฐ เธเธฒเธเน€เธเธดเธ</div>
     <input type="hidden" id="depositAccountId">
     <div class="field" style="margin-bottom:12px">
-      <label>จำนวนเงิน (฿)</label>
+      <label>เธเธณเธเธงเธเน€เธเธดเธ (เธฟ)</label>
       <input type="number" id="depositAmt" placeholder="0" min="0" style="font-size:24px !important;font-weight:700;text-align:right;font-family:monospace">
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>วันที่</label>
+      <label>เธงเธฑเธเธ—เธตเน</label>
       <input type="date" id="depositDate">
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>หมายเหตุ</label>
-      <input type="text" id="depositNote" placeholder="(ไม่บังคับ)">
+      <label>เธซเธกเธฒเธขเน€เธซเธ•เธธ</label>
+      <input type="text" id="depositNote" placeholder="(เนเธกเนเธเธฑเธเธเธฑเธ)">
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeDepositModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="doDeposit()" style="flex:1;min-height:44px">ฝากเงิน</button>
+      <button class="btn btn-ghost" onclick="closeDepositModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="doDeposit()" style="flex:1;min-height:44px">เธเธฒเธเน€เธเธดเธ</button>
     </div>
   </div>
 </div>
@@ -1504,23 +1504,23 @@ create policy "public write" on transactions for all using (true);</div>
 <!-- EDIT ACCOUNT MODAL -->
 <div id="editAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
-    <div style="font-size:16px;font-weight:600;margin-bottom:16px">✏️ แก้ไขบัญชี</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px">โ๏ธ เนเธเนเนเธเธเธฑเธเธเธต</div>
     <input type="hidden" id="editAcctId">
     <div class="field" style="margin-bottom:12px">
-      <label>ชื่อบัญชี</label>
+      <label>เธเธทเนเธญเธเธฑเธเธเธต</label>
       <input type="text" id="editAcctName" style="font-size:15px !important">
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>ประเภท</label>
+      <label>เธเธฃเธฐเน€เธ เธ—</label>
       <select id="editAcctType" style="font-size:15px !important">
-        <option value="bank">ธนาคาร</option>
-        <option value="cash">เงินสด</option>
+        <option value="bank">เธเธเธฒเธเธฒเธฃ</option>
+        <option value="cash">เน€เธเธดเธเธชเธ”</option>
         <option value="ewallet">E-Wallet</option>
       </select>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeEditAccountModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="doEditAccount()" style="flex:1;min-height:44px">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeEditAccountModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="doEditAccount()" style="flex:1;min-height:44px">เธเธฑเธเธ—เธถเธ</button>
     </div>
   </div>
 </div>
@@ -1529,29 +1529,29 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="accountDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto" onclick="closeAccountDetailModal(event)">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div style="font-size:14px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายละเอียดบัญชี</div>
-      <button onclick="_closeModal('accountDetailModal',function(){_currentDetailAcctId=null})" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">×</button>
+      <div style="font-size:14px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">เธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธเธฑเธเธเธต</div>
+      <button onclick="_closeModal('accountDetailModal',function(){_currentDetailAcctId=null})" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">ร—</button>
     </div>
     <div id="acctDetailHeader"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openAccountLedger(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px">📋 รายการ</button>
-      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openDepositModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px;color:var(--green);border-color:var(--green)">+ ฝาก</button>
-      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openAdjustModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px;color:#d97706;border-color:#d97706">⚖️ ปรับยอด</button>
-      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openEditAccountModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px">✏️ แก้ไข</button>
+      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openAccountLedger(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px">๐“ เธฃเธฒเธขเธเธฒเธฃ</button>
+      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openDepositModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px;color:var(--green);border-color:var(--green)">+ เธเธฒเธ</button>
+      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openAdjustModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px;color:#d97706;border-color:#d97706">โ–๏ธ เธเธฃเธฑเธเธขเธญเธ”</button>
+      <button onclick="(function(){var id=_currentDetailAcctId;_closeModal('accountDetailModal',function(){_currentDetailAcctId=null;openEditAccountModal(id)})})()" class="btn btn-ghost" style="min-height:44px;font-size:13px">โ๏ธ เนเธเนเนเธ</button>
     </div>
-    <button id="acctDetailDeleteBtn" onclick="deleteAccountFromDetail(_currentDetailAcctId)" style="width:100%;margin-top:10px;background:none;border:1px solid #fca5a5;border-radius:var(--r2);padding:10px;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">🗑 ลบบัญชีนี้</button>
+    <button id="acctDetailDeleteBtn" onclick="deleteAccountFromDetail(_currentDetailAcctId)" style="width:100%;margin-top:10px;background:none;border:1px solid #fca5a5;border-radius:var(--r2);padding:10px;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">๐—‘ เธฅเธเธเธฑเธเธเธตเธเธตเน</button>
   </div>
 </div>
 
 <!-- DELETE CONFIRM MODAL -->
 <div id="deleteConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:340px;padding:24px">
-    <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px">🗑 ยืนยันการลบ</div>
-    <div id="delConfirmDesc" style="font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:6px">—</div>
+    <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px">๐—‘ เธขเธทเธเธขเธฑเธเธเธฒเธฃเธฅเธ</div>
+    <div id="delConfirmDesc" style="font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:6px">โ€”</div>
     <div id="delConfirmNote" style="font-size:12px;color:var(--ink3);margin-bottom:18px"></div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeDeleteConfirmModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button id="delConfirmBtn" class="btn" onclick="execDeleteConfirmed()" style="flex:1;min-height:44px;background:var(--red);color:#fff;border-color:var(--red)">ลบถาวร</button>
+      <button class="btn btn-ghost" onclick="closeDeleteConfirmModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button id="delConfirmBtn" class="btn" onclick="execDeleteConfirmed()" style="flex:1;min-height:44px;background:var(--red);color:#fff;border-color:var(--red)">เธฅเธเธ–เธฒเธงเธฃ</button>
     </div>
   </div>
 </div>
@@ -1564,18 +1564,18 @@ create policy "public write" on transactions for all using (true);</div>
         <div id="ledgerAcctName" style="font-size:16px;font-weight:700"></div>
         <div id="ledgerAcctSub"  style="font-size:12px;color:var(--ink3);margin-top:2px"></div>
       </div>
-      <button onclick="closeAccountLedger()" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">×</button>
+      <button onclick="closeAccountLedger()" style="background:none;border:none;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:4px">ร—</button>
     </div>
     <div style="padding:14px 20px;display:flex;gap:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:flex-end">
       <div style="flex:1;min-width:0">
-        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">กรองเดือน</div>
+        <div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">เธเธฃเธญเธเน€เธ”เธทเธญเธ</div>
         <select id="ledgerMonthFilter" onchange="renderLedger()" class="hf-chip" style="width:100%;max-width:180px">
-          <option value="">ทุกเดือน</option>
+          <option value="">เธ—เธธเธเน€เธ”เธทเธญเธ</option>
         </select>
       </div>
-      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">ยอดคงเหลือ</div><div id="ledgerBalance" style="font-size:20px;font-weight:700;font-family:monospace">0.00</div></div>
-      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายรับรวม (เดือนที่เลือก)</div><div id="ledgerTotalIn" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--green)">0.00</div></div>
-      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">รายจ่ายรวม (เดือนที่เลือก)</div><div id="ledgerTotalOut" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--red)">0.00</div></div>
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">เธขเธญเธ”เธเธเน€เธซเธฅเธทเธญ</div><div id="ledgerBalance" style="font-size:20px;font-weight:700;font-family:monospace">0.00</div></div>
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">เธฃเธฒเธขเธฃเธฑเธเธฃเธงเธก (เน€เธ”เธทเธญเธเธ—เธตเนเน€เธฅเธทเธญเธ)</div><div id="ledgerTotalIn" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--green)">0.00</div></div>
+      <div><div style="font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">เธฃเธฒเธขเธเนเธฒเธขเธฃเธงเธก (เน€เธ”เธทเธญเธเธ—เธตเนเน€เธฅเธทเธญเธ)</div><div id="ledgerTotalOut" style="font-size:16px;font-weight:600;font-family:monospace;color:var(--red)">0.00</div></div>
     </div>
     <div id="ledgerTableWrap" style="overflow-x:auto;padding:0 20px 20px"></div>
   </div>
@@ -1584,31 +1584,31 @@ create policy "public write" on transactions for all using (true);</div>
 <!-- ADJUST BALANCE MODAL -->
 <div id="adjustModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
-    <div style="font-size:16px;font-weight:600;margin-bottom:4px">⚖️ ปรับยอดบัญชี</div>
-    <div style="font-size:12px;color:var(--ink3);margin-bottom:16px">บันทึกรายการปรับยอด เพื่อให้ยอดตรงกับความเป็นจริง</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px">โ–๏ธ เธเธฃเธฑเธเธขเธญเธ”เธเธฑเธเธเธต</div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:16px">เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฑเธเธขเธญเธ” เน€เธเธทเนเธญเนเธซเนเธขเธญเธ”เธ•เธฃเธเธเธฑเธเธเธงเธฒเธกเน€เธเนเธเธเธฃเธดเธ</div>
     <input type="hidden" id="adjustAcctId">
     <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:16px">
-      <div style="font-size:11px;color:var(--ink3)">ยอดปัจจุบัน (ตามระบบ)</div>
+      <div style="font-size:11px;color:var(--ink3)">เธขเธญเธ”เธเธฑเธเธเธธเธเธฑเธ (เธ•เธฒเธกเธฃเธฐเธเธ)</div>
       <div id="adjustCurrentBal" style="font-size:20px;font-weight:700;font-family:monospace;color:var(--blue);margin-top:2px">0.00</div>
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>ยอดที่ถูกต้อง (จริง)</label>
+      <label>เธขเธญเธ”เธ—เธตเนเธ–เธนเธเธ•เนเธญเธ (เธเธฃเธดเธ)</label>
       <input type="number" id="adjustTargetAmt" placeholder="0.00" step="0.01" style="font-size:15px !important" oninput="updateAdjustDiff()">
     </div>
     <div id="adjustDiffBox" style="display:none;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:13px">
       <span id="adjustDiffLabel"></span>
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>วันที่ปรับยอด</label>
+      <label>เธงเธฑเธเธ—เธตเนเธเธฃเธฑเธเธขเธญเธ”</label>
       <input type="date" id="adjustDate" style="font-size:15px !important">
     </div>
     <div class="field" style="margin-bottom:16px">
-      <label>หมายเหตุ (ถ้ามี)</label>
-      <input type="text" id="adjustNote" placeholder="เช่น ตรวจสอบยอดคงเหลือจริง" style="font-size:15px !important">
+      <label>เธซเธกเธฒเธขเน€เธซเธ•เธธ (เธ–เนเธฒเธกเธต)</label>
+      <input type="text" id="adjustNote" placeholder="เน€เธเนเธ เธ•เธฃเธงเธเธชเธญเธเธขเธญเธ”เธเธเน€เธซเธฅเธทเธญเธเธฃเธดเธ" style="font-size:15px !important">
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeAdjustModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="doAdjustBalance()" style="flex:1;min-height:44px">บันทึกปรับยอด</button>
+      <button class="btn btn-ghost" onclick="closeAdjustModal()" style="flex:1;min-height:44px">เธขเธเน€เธฅเธดเธ</button>
+      <button class="btn btn-primary" onclick="doAdjustBalance()" style="flex:1;min-height:44px">เธเธฑเธเธ—เธถเธเธเธฃเธฑเธเธขเธญเธ”</button>
     </div>
   </div>
 </div>
@@ -1617,47 +1617,47 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="page-admin" class="page" style="display:none">
   <div class="hf-head">
     <div>
-      <div class="hf-title">🛡 Admin</div>
-      <div class="hf-sub">จัดการผู้ใช้ · รายงาน Settlement</div>
+      <div class="hf-title">๐ก Admin</div>
+      <div class="hf-sub">เธเธฑเธ”เธเธฒเธฃเธเธนเนเนเธเน ยท เธฃเธฒเธขเธเธฒเธ Settlement</div>
     </div>
   </div>
 
-  <!-- ผู้ใช้งานทั้งหมด -->
+  <!-- เธเธนเนเนเธเนเธเธฒเธเธ—เธฑเนเธเธซเธกเธ” -->
   <div class="stg-group-label stg-group-row">
-    <span>👥 ผู้ใช้งานทั้งหมด</span>
-    <button onclick="renderAdminUserList()" class="btn btn-ghost stg-action-btn">🔄 รีเฟรช</button>
+    <span>๐‘ฅ เธเธนเนเนเธเนเธเธฒเธเธ—เธฑเนเธเธซเธกเธ”</span>
+    <button onclick="renderAdminUserList()" class="btn btn-ghost stg-action-btn">๐” เธฃเธตเน€เธเธฃเธ</button>
   </div>
   <div class="settings-section hf-card" style="padding:0">
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:linear-gradient(135deg,#dbeafe,#ede9fe)">👥</span>
+      <span class="stg-icon" style="background:linear-gradient(135deg,#dbeafe,#ede9fe)">๐‘ฅ</span>
       <div>
-        <div class="stg-title">รายชื่อผู้ใช้</div>
-        <div class="stg-sub">กดปุ่ม → Admin / → User เพื่อเปลี่ยนสิทธิ์</div>
+        <div class="stg-title">เธฃเธฒเธขเธเธทเนเธญเธเธนเนเนเธเน</div>
+        <div class="stg-sub">เธเธ”เธเธธเนเธก โ’ Admin / โ’ User เน€เธเธทเนเธญเน€เธเธฅเธตเนเธขเธเธชเธดเธ—เธเธดเน</div>
       </div>
     </div>
     <div style="padding:0 14px 14px">
-      <div id="adminUserList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">กำลังโหลด...</div></div>
+      <div id="adminUserList"><div style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">เธเธณเธฅเธฑเธเนเธซเธฅเธ”...</div></div>
     </div>
   </div>
 
   <!-- Settlement Groups (Admin) -->
   <div class="stg-group-label stg-group-row" style="flex-wrap:wrap;gap:6px">
-    <span>🏠 Settlement Groups</span>
+    <span>๐  Settlement Groups</span>
     <div style="display:flex;gap:6px">
-      <button onclick="adminPushSplitGroups()" class="btn btn-ghost stg-action-btn">💾 Push ขึ้น Supabase</button>
-      <button onclick="openSplitGroupModal(null)" class="btn btn-primary stg-action-btn">+ สร้างกลุ่ม</button>
+      <button onclick="adminPushSplitGroups()" class="btn btn-ghost stg-action-btn">๐’พ Push เธเธถเนเธ Supabase</button>
+      <button onclick="openSplitGroupModal(null)" class="btn btn-primary stg-action-btn">+ เธชเธฃเนเธฒเธเธเธฅเธธเนเธก</button>
     </div>
   </div>
   <div class="settings-section hf-card" style="padding:0;overflow:hidden">
     <div class="stg-sect-head">
-      <span class="stg-icon" style="background:linear-gradient(135deg,#fef3c7,#d1fae5)">🏠</span>
+      <span class="stg-icon" style="background:linear-gradient(135deg,#fef3c7,#d1fae5)">๐ </span>
       <div>
-        <div class="stg-title">กลุ่ม Settlement</div>
-        <div class="stg-sub">จัดการกลุ่มและสมาชิกที่ใช้คำนวณ Settlement</div>
+        <div class="stg-title">เธเธฅเธธเนเธก Settlement</div>
+        <div class="stg-sub">เธเธฑเธ”เธเธฒเธฃเธเธฅเธธเนเธกเนเธฅเธฐเธชเธกเธฒเธเธดเธเธ—เธตเนเนเธเนเธเธณเธเธงเธ“ Settlement</div>
       </div>
     </div>
     <div id="splitGroupsList">
-      <div style="color:var(--ink3);font-size:13px;text-align:center;padding:20px">กำลังโหลด...</div>
+      <div style="color:var(--ink3);font-size:13px;text-align:center;padding:20px">เธเธณเธฅเธฑเธเนเธซเธฅเธ”...</div>
     </div>
   </div>
   <div id="adminMsg" class="msg" style="text-align:center;margin:4px 0"></div>
@@ -1671,14 +1671,14 @@ create policy "public write" on transactions for all using (true);</div>
 <div id="page-login" style="position:fixed;inset:0;background:var(--surface);z-index:2000;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
   <div style="width:100%;max-width:380px;margin:auto">
     <div style="text-align:center;margin-bottom:32px">
-      <div style="font-size:48px;margin-bottom:12px">💰</div>
+      <div style="font-size:48px;margin-bottom:12px">๐’ฐ</div>
       <div style="font-size:22px;font-weight:700;color:var(--ink)">HomeFinance</div>
-      <div style="font-size:13px;color:var(--ink3);margin-top:4px">บันทึกรายรับ-รายจ่ายส่วนตัว</div>
+      <div style="font-size:13px;color:var(--ink3);margin-top:4px">เธเธฑเธเธ—เธถเธเธฃเธฒเธขเธฃเธฑเธ-เธฃเธฒเธขเธเนเธฒเธขเธชเนเธงเธเธ•เธฑเธง</div>
     </div>
     <!-- TAB switcher -->
     <div id="authTabRow" style="display:flex;border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;margin-bottom:14px">
-      <button id="tabLoginBtn" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">เข้าสู่ระบบ</button>
-      <button id="tabSignupBtn" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;background:var(--surface2);color:var(--ink2);font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">สมัครสมาชิก</button>
+      <button id="tabLoginBtn" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ</button>
+      <button id="tabSignupBtn" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;background:var(--surface2);color:var(--ink2);font-size:14px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">เธชเธกเธฑเธเธฃเธชเธกเธฒเธเธดเธ</button>
     </div>
 
     <!-- LOGIN FORM -->
@@ -1687,79 +1687,79 @@ create policy "public write" on transactions for all using (true);</div>
       <div id="recentAccountsList" style="display:none;margin-bottom:16px"></div>
 
       <div class="field" style="margin-bottom:14px">
-        <label>📧 Email</label>
+        <label>๐“ง Email</label>
         <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()">
       </div>
       <div class="field" style="margin-bottom:8px">
-        <label>🔒 Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doLogin()">
+        <label>๐”’ Password</label>
+        <input type="password" id="loginPassword" placeholder="โ€ขโ€ขโ€ขโ€ขโ€ขโ€ขโ€ขโ€ข" autocomplete="current-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doLogin()">
       </div>
-      <!-- Remember me + ลืมรหัสผ่าน -->
+      <!-- Remember me + เธฅเธทเธกเธฃเธซเธฑเธชเธเนเธฒเธ -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--ink2);user-select:none">
           <input type="checkbox" id="rememberMeChk" style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue)">
-          จดจำรหัสผ่าน
+          เธเธ”เธเธณเธฃเธซเธฑเธชเธเนเธฒเธ
         </label>
-        <button onclick="showForgotForm(true)" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;padding:0">ลืมรหัสผ่าน?</button>
+        <button onclick="showForgotForm(true)" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:Sarabun,sans-serif;padding:0">เธฅเธทเธกเธฃเธซเธฑเธชเธเนเธฒเธ?</button>
       </div>
-      <button id="loginBtn" class="btn btn-primary" onclick="doLogin()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">เข้าสู่ระบบ</button>
+      <button id="loginBtn" class="btn btn-primary" onclick="doLogin()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ</button>
       <div id="loginMsg" class="msg" style="margin-top:12px;text-align:center"></div>
     </div>
 
     <!-- FORGOT PASSWORD FORM -->
     <div id="forgotForm" class="card" style="padding:24px;display:none">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <button onclick="showForgotForm(false)" style="background:none;border:none;color:var(--ink3);font-size:18px;cursor:pointer;padding:0;line-height:1">←</button>
-        <div style="font-size:15px;font-weight:700;color:var(--ink)">ลืมรหัสผ่าน</div>
+        <button onclick="showForgotForm(false)" style="background:none;border:none;color:var(--ink3);font-size:18px;cursor:pointer;padding:0;line-height:1">โ</button>
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">เธฅเธทเธกเธฃเธซเธฑเธชเธเนเธฒเธ</div>
       </div>
-      <div style="font-size:13px;color:var(--ink2);margin-bottom:14px">กรอก Email ที่ลงทะเบียนไว้ ระบบจะส่งลิงก์รีเซ็ต Password ให้</div>
+      <div style="font-size:13px;color:var(--ink2);margin-bottom:14px">เธเธฃเธญเธ Email เธ—เธตเนเธฅเธเธ—เธฐเน€เธเธตเธขเธเนเธงเน เธฃเธฐเธเธเธเธฐเธชเนเธเธฅเธดเธเธเนเธฃเธตเน€เธเนเธ• Password เนเธซเน</div>
       <div class="field" style="margin-bottom:16px">
-        <label>📧 Email</label>
+        <label>๐“ง Email</label>
         <input type="email" id="forgotEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doForgotPassword()">
       </div>
-      <button id="forgotBtn" class="btn btn-primary" onclick="doForgotPassword()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">📨 ส่ง Email รีเซ็ต Password</button>
+      <button id="forgotBtn" class="btn btn-primary" onclick="doForgotPassword()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">๐“จ เธชเนเธ Email เธฃเธตเน€เธเนเธ• Password</button>
       <div id="forgotMsg" class="msg" style="margin-top:12px;text-align:center"></div>
     </div>
 
-    <!-- RESET PASSWORD FORM (หลังคลิก link ใน email) -->
+    <!-- RESET PASSWORD FORM (เธซเธฅเธฑเธเธเธฅเธดเธ link เนเธ email) -->
     <div id="resetPasswordForm" class="card" style="padding:24px;display:none">
       <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:32px;margin-bottom:8px">🔐</div>
-        <div style="font-size:15px;font-weight:700;color:var(--ink)">ตั้ง Password ใหม่</div>
+        <div style="font-size:32px;margin-bottom:8px">๐”</div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">เธ•เธฑเนเธ Password เนเธซเธกเน</div>
       </div>
       <div class="field" style="margin-bottom:14px">
-        <label>🔒 Password ใหม่</label>
-        <input type="password" id="resetNewPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('resetConfirmPassword').focus()">
+        <label>๐”’ Password เนเธซเธกเน</label>
+        <input type="password" id="resetNewPassword" placeholder="เธญเธขเนเธฒเธเธเนเธญเธข 6 เธ•เธฑเธงเธญเธฑเธเธฉเธฃ" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('resetConfirmPassword').focus()">
       </div>
       <div class="field" style="margin-bottom:20px">
-        <label>🔒 ยืนยัน Password ใหม่</label>
-        <input type="password" id="resetConfirmPassword" placeholder="กรอก Password อีกครั้ง" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doResetPassword()">
+        <label>๐”’ เธขเธทเธเธขเธฑเธ Password เนเธซเธกเน</label>
+        <input type="password" id="resetConfirmPassword" placeholder="เธเธฃเธญเธ Password เธญเธตเธเธเธฃเธฑเนเธ" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doResetPassword()">
       </div>
-      <button id="resetPasswordBtn" class="btn btn-primary" onclick="doResetPassword()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">🔐 บันทึก Password ใหม่</button>
+      <button id="resetPasswordBtn" class="btn btn-primary" onclick="doResetPassword()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">๐” เธเธฑเธเธ—เธถเธ Password เนเธซเธกเน</button>
       <div id="resetPasswordMsg" class="msg" style="margin-top:12px;text-align:center"></div>
     </div>
 
     <!-- SIGNUP FORM -->
     <div id="signupForm" class="card" style="padding:24px;display:none">
       <div class="field" style="margin-bottom:14px">
-        <label>👤 ชื่อที่แสดง</label>
-        <input type="text" id="signupName" placeholder="เช่น สมชาย" autocomplete="name" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()">
+        <label>๐‘ค เธเธทเนเธญเธ—เธตเนเนเธชเธ”เธ</label>
+        <input type="text" id="signupName" placeholder="เน€เธเนเธ เธชเธกเธเธฒเธข" autocomplete="name" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()">
       </div>
       <div class="field" style="margin-bottom:14px">
-        <label>📧 Email</label>
+        <label>๐“ง Email</label>
         <input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') document.getElementById('signupPassword').focus()">
       </div>
       <div class="field" style="margin-bottom:20px">
-        <label>🔒 Password</label>
-        <input type="password" id="signupPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doSignup()">
+        <label>๐”’ Password</label>
+        <input type="password" id="signupPassword" placeholder="เธญเธขเนเธฒเธเธเนเธญเธข 6 เธ•เธฑเธงเธญเธฑเธเธฉเธฃ" autocomplete="new-password" style="width:100%;font-size:16px !important" onkeydown="if(event.key==='Enter') doSignup()">
       </div>
-      <button id="signupBtn" class="btn btn-primary" onclick="doSignup()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">สมัครสมาชิก</button>
+      <button id="signupBtn" class="btn btn-primary" onclick="doSignup()" style="width:100%;min-height:48px;font-size:15px;font-weight:600">เธชเธกเธฑเธเธฃเธชเธกเธฒเธเธดเธ</button>
       <div id="signupMsg" class="msg" style="margin-top:12px;text-align:center"></div>
     </div>
 
-    <!-- hidden DB setup panel — เปิดด้วยการแตะ version 5 ครั้ง -->
+    <!-- hidden DB setup panel โ€” เน€เธเธดเธ”เธ”เนเธงเธขเธเธฒเธฃเนเธ•เธฐ version 5 เธเธฃเธฑเนเธ -->
     <div id="loginDbPanel" style="display:none;margin-top:12px;background:var(--surface2);border-radius:var(--r2);padding:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">⚙️ การเชื่อมต่อ Supabase</div>
+      <div style="font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em">โ๏ธ เธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ Supabase</div>
       <div class="field" style="margin-bottom:10px">
         <label style="font-size:12px">Project URL</label>
         <input type="url" id="loginSbUrl" placeholder="https://xxxx.supabase.co" style="width:100%;font-size:13px !important">
@@ -1768,10 +1768,10 @@ create policy "public write" on transactions for all using (true);</div>
         <label style="font-size:12px">Anon / Public Key</label>
         <input type="text" id="loginSbKey" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:100%;font-size:13px !important">
       </div>
-      <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
+      <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">๐’พ เธเธฑเธเธ—เธถเธเนเธฅเธฐเธ—เธ”เธชเธญเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.70</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.71</div>
   </div>
 </div>
 
@@ -1823,7 +1823,7 @@ create policy "public write" on transactions for all using (true);</div>
   pointer-events:none;line-height:1.6;
 "></div>
 <script>
-  // ปิด tooltip เมื่อคลิกที่อื่น
+  // เธเธดเธ” tooltip เน€เธกเธทเนเธญเธเธฅเธดเธเธ—เธตเนเธญเธทเนเธ
   document.addEventListener('click', function(ev){
     if (!ev.target.closest || !ev.target.closest('.badge-split')){
       if (typeof _hideSplitTip === 'function') _hideSplitTip();
@@ -1835,29 +1835,29 @@ create policy "public write" on transactions for all using (true);</div>
 <!-- Icon SVG Library (Categories, Vendors, Status) -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="icon-library">
 
-<!-- ═══════════════════ CATEGORIES ICONS ═══════════════════ -->
+<!-- โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• CATEGORIES ICONS โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• -->
 
-<!-- 🏠 ค่าบ้าน -->
+<!-- ๐  เธเนเธฒเธเนเธฒเธ -->
 <symbol id="icon-cat-house" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M4 12 L12 5 L20 12 L20 19 Q20 20 19 20 L5 20 Q4 20 4 19 Z" stroke="#DC2626" stroke-width="2" fill="none" stroke-linejoin="round"/>
   <rect x="9" y="12" width="6" height="8" fill="none" stroke="#DC2626" stroke-width="1.5"/>
 </symbol>
 
-<!-- 💧 ค่าน้ำ -->
+<!-- ๐’ง เธเนเธฒเธเนเธณ -->
 <symbol id="icon-cat-water" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M12 5 Q12 5 12 9 Q10 13 8 16 Q6 18 8 20 Q10 22 12 22 Q14 22 16 20 Q18 18 16 16 Q14 13 12 9 Z" fill="#3B82F6" opacity="0.8"/>
 </symbol>
 
-<!-- ⚡ ค่าไฟ -->
+<!-- โก เธเนเธฒเนเธ -->
 <symbol id="icon-cat-electricity" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M13 3 L7 13 L12 13 L11 21 L17 11 L12 11 Z" fill="#FBBF24" opacity="0.9"/>
   <path d="M13 3 L7 13 L12 13 L11 21 L17 11 L12 11 Z" stroke="#FCD34D" stroke-width="1" fill="none"/>
 </symbol>
 
-<!-- 📡 ค่าเน็ต -->
+<!-- ๐“ก เธเนเธฒเน€เธเนเธ• -->
 <symbol id="icon-cat-internet" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M12 20 L12 20" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/>
@@ -1866,14 +1866,14 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M2 8 Q7 3 12 3 Q17 3 22 8" stroke="#8B5CF6" stroke-width="2" fill="none" stroke-linecap="round"/>
 </symbol>
 
-<!-- 📞 ค่าโทรศัพท์ -->
+<!-- ๐“ เธเนเธฒเนเธ—เธฃเธจเธฑเธเธ—เน -->
 <symbol id="icon-cat-phone" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="6" y="3" width="12" height="18" rx="2" fill="none" stroke="#06B6D4" stroke-width="2"/>
   <circle cx="12" cy="19.5" r="0.8" fill="#06B6D4"/>
 </symbol>
 
-<!-- 🏢 ค่าส่วนกลาง -->
+<!-- ๐ข เธเนเธฒเธชเนเธงเธเธเธฅเธฒเธ -->
 <symbol id="icon-cat-commonarea" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="5" y="4" width="14" height="14" fill="none" stroke="#6366F1" stroke-width="2" rx="1"/>
@@ -1883,7 +1883,7 @@ create policy "public write" on transactions for all using (true);</div>
   <line x1="5" y1="9" x2="19" y2="9" stroke="#6366F1" stroke-width="1" opacity="0.6"/>
 </symbol>
 
-<!-- 👨‍👩‍👧 ส่งให้พ่อแม่ -->
+<!-- ๐‘จโ€๐‘ฉโ€๐‘ง เธชเนเธเนเธซเนเธเนเธญเนเธกเน -->
 <symbol id="icon-cat-family" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="8" cy="8" r="2" fill="#EC4899"/>
@@ -1892,7 +1892,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M8 10 L8 15 M16 10 L16 15 M12 15 L12 20" stroke="#EC4899" stroke-width="1.5" stroke-linecap="round"/>
 </symbol>
 
-<!-- 🍽️ ค่าอาหารลูก -->
+<!-- ๐ฝ๏ธ เธเนเธฒเธญเธฒเธซเธฒเธฃเธฅเธนเธ -->
 <symbol id="icon-cat-food" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M5 10 L5 15 Q5 18 9 18 L15 18 Q19 18 19 15 L19 10" stroke="#F97316" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -1902,7 +1902,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M15 12 L15 15" stroke="#F97316" stroke-width="1" opacity="0.7"/>
 </symbol>
 
-<!-- 🧺 ค่าของใช้ครัวเรือน -->
+<!-- ๐งบ เธเนเธฒเธเธญเธเนเธเนเธเธฃเธฑเธงเน€เธฃเธทเธญเธ -->
 <symbol id="icon-cat-household" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="4" y="6" width="6" height="12" fill="none" stroke="#10B981" stroke-width="1.5" rx="1"/>
@@ -1912,7 +1912,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M12 14 L16 14" stroke="#10B981" stroke-width="1.5"/>
 </symbol>
 
-<!-- 👕 ค่าของใช้ส่วนตัว -->
+<!-- ๐‘• เธเนเธฒเธเธญเธเนเธเนเธชเนเธงเธเธ•เธฑเธง -->
 <symbol id="icon-cat-personal" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M9 6 L8 10 L9 13 L15 13 L16 10 L15 6 Z" fill="none" stroke="#A855F7" stroke-width="2" stroke-linejoin="round"/>
@@ -1920,7 +1920,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="12" cy="5" r="1.5" fill="#A855F7" opacity="0.6"/>
 </symbol>
 
-<!-- 🎁 อื่นๆ -->
+<!-- ๐ เธญเธทเนเธเน -->
 <symbol id="icon-cat-other" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="5" y="8" width="14" height="10" fill="none" stroke="#64748B" stroke-width="2" rx="1"/>
@@ -1929,21 +1929,21 @@ create policy "public write" on transactions for all using (true);</div>
   <line x1="5" y1="10" x2="19" y2="10" stroke="#64748B" stroke-width="1" opacity="0.6"/>
 </symbol>
 
-<!-- 💰 เงินเดือน -->
+<!-- ๐’ฐ เน€เธเธดเธเน€เธ”เธทเธญเธ -->
 <symbol id="icon-cat-salary" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="4" y="7" width="16" height="10" fill="none" stroke="#22C55E" stroke-width="2" rx="1"/>
   <circle cx="12" cy="12" r="2" fill="none" stroke="#22C55E" stroke-width="1.5"/>
-  <text x="12" y="13.5" font-size="6" fill="#22C55E" text-anchor="middle" font-weight="bold">฿</text>
+  <text x="12" y="13.5" font-size="6" fill="#22C55E" text-anchor="middle" font-weight="bold">เธฟ</text>
 </symbol>
 
-<!-- 🎊 โบนัส/ผลพิเศษ -->
+<!-- ๐ เนเธเธเธฑเธช/เธเธฅเธเธดเน€เธจเธฉ -->
 <symbol id="icon-cat-bonus" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M12 4 L14.5 11 L22 11.5 L17 16.5 L19 24 L12 20.5 L5 24 L7 16.5 L2 11.5 L9.5 11 Z" fill="#FBBF24" opacity="0.8"/>
 </symbol>
 
-<!-- 📊 ผ่อน/ผลตอบแทน -->
+<!-- ๐“ เธเนเธญเธ/เธเธฅเธ•เธญเธเนเธ—เธ -->
 <symbol id="icon-cat-return" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M4 14 L8 10 L12 12 L16 8 L20 12" stroke="#0EA5E9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1951,7 +1951,7 @@ create policy "public write" on transactions for all using (true);</div>
   <line x1="4" y1="18" x2="20" y2="18" stroke="#0EA5E9" stroke-width="1" opacity="0.5"/>
 </symbol>
 
-<!-- 🎯 รายได้อื่นๆ -->
+<!-- ๐ฏ เธฃเธฒเธขเนเธ”เนเธญเธทเนเธเน -->
 <symbol id="icon-cat-otherincome" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="12" cy="12" r="8" fill="none" stroke="#10B981" stroke-width="2"/>
@@ -1959,16 +1959,16 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="12" cy="12" r="2" fill="#10B981"/>
 </symbol>
 
-<!-- ═══════════════════ VENDORS ICONS ═══════════════════ -->
+<!-- โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• VENDORS ICONS โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• -->
 
-<!-- 🛒 MAKRO -->
+<!-- ๐’ MAKRO -->
 <symbol id="icon-makro" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="12" cy="12" r="10" fill="#C41E3A" opacity="0.9"/>
   <path d="M8 16 L12 8 L16 16" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </symbol>
 
-<!-- 🏬 TESCO -->
+<!-- ๐ฌ TESCO -->
 <symbol id="icon-tesco" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="4" y="6" width="16" height="14" fill="#1E3A8A" rx="1"/>
@@ -1977,14 +1977,14 @@ create policy "public write" on transactions for all using (true);</div>
   <rect x="15" y="8" width="3" height="10" fill="white" opacity="0.8"/>
 </symbol>
 
-<!-- 🟥 BIG C -->
+<!-- ๐ฅ BIG C -->
 <symbol id="icon-bigc" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="12" cy="12" r="9" fill="none" stroke="#EF4444" stroke-width="3"/>
   <path d="M15 9 A 4 4 0 0 0 9 12 A 4 4 0 0 0 15 15" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
 </symbol>
 
-<!-- 🟠 7-ELEVEN -->
+<!-- ๐  7-ELEVEN -->
 <symbol id="icon-7eleven" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="3" y="4" width="18" height="16" fill="#FF6600" rx="2"/>
@@ -1992,7 +1992,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="15.5" cy="12" r="2.5" fill="white"/>
 </symbol>
 
-<!-- 💛 FAMILY MART -->
+<!-- ๐’ FAMILY MART -->
 <symbol id="icon-familymart" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M12 4 C14 4 16 6 16 8 C16 12 12 16 12 16 C12 16 8 12 8 8 C8 6 10 4 12 4" fill="#F59E0B"/>
@@ -2000,7 +2000,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="13.5" cy="9" r="1.2" fill="white"/>
 </symbol>
 
-<!-- 💙 LAWSON -->
+<!-- ๐’ LAWSON -->
 <symbol id="icon-lawson" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="5" y="7" width="14" height="11" fill="#2563EB" rx="1"/>
@@ -2009,7 +2009,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M15 10 L15 16" stroke="white" stroke-width="1.5" opacity="0.7"/>
 </symbol>
 
-<!-- 🏪 ร้านสะดวก -->
+<!-- ๐ช เธฃเนเธฒเธเธชเธฐเธ”เธงเธ -->
 <symbol id="icon-convenience" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="4" y="8" width="16" height="10" fill="#9333EA" rx="1"/>
@@ -2020,7 +2020,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M8 6 L16 6 L16 8 L8 8 Z" fill="#9333EA" opacity="0.7"/>
 </symbol>
 
-<!-- 🏠 ตลาด -->
+<!-- ๐  เธ•เธฅเธฒเธ” -->
 <symbol id="icon-market" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M4 14 L12 6 L20 14" stroke="#D97706" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -2030,7 +2030,7 @@ create policy "public write" on transactions for all using (true);</div>
   <line x1="16" y1="14" x2="16" y2="22" stroke="white" stroke-width="1" opacity="0.5"/>
 </symbol>
 
-<!-- 🛍️ ร้านนวม/ห้างสรรพสินค้า -->
+<!-- ๐๏ธ เธฃเนเธฒเธเธเธงเธก/เธซเนเธฒเธเธชเธฃเธฃเธเธชเธดเธเธเนเธฒ -->
 <symbol id="icon-mall" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M7 18 L8 8 L16 8 L17 18 Z" fill="#EC4899" opacity="0.8"/>
@@ -2040,7 +2040,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="13" cy="13" r="0.8" fill="white" opacity="0.6"/>
 </symbol>
 
-<!-- 🍕 ร้านอาหาร -->
+<!-- ๐• เธฃเนเธฒเธเธญเธฒเธซเธฒเธฃ -->
 <symbol id="icon-restaurant" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M6 8 L6 18" stroke="#F97316" stroke-width="2" stroke-linecap="round"/>
@@ -2051,7 +2051,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="18" cy="5" r="1.5" fill="#F97316"/>
 </symbol>
 
-<!-- 💊 ร้านยา -->
+<!-- ๐’ เธฃเนเธฒเธเธขเธฒ -->
 <symbol id="icon-pharmacy" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="5" y="5" width="14" height="14" fill="#10B981" rx="2"/>
@@ -2059,7 +2059,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M9 12 L15 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
 </symbol>
 
-<!-- 🏦 ธนาคาร -->
+<!-- ๐ฆ เธเธเธฒเธเธฒเธฃ -->
 <symbol id="icon-bank" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M4 18 L20 18 L18 10 L6 10 Z" fill="#1E40AF" opacity="0.8"/>
@@ -2069,7 +2069,7 @@ create policy "public write" on transactions for all using (true);</div>
   <rect x="15" y="11" width="2" height="7" fill="white" opacity="0.6"/>
 </symbol>
 
-<!-- 🎓 โรงเรียน -->
+<!-- ๐“ เนเธฃเธเน€เธฃเธตเธขเธ -->
 <symbol id="icon-school" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M8 18 L16 18 L15 14 L9 14 Z" fill="#6366F1" opacity="0.8"/>
@@ -2078,7 +2078,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="11" cy="10" r="0.8" fill="white" opacity="0.7"/>
 </symbol>
 
-<!-- 🏨 โรงแรม -->
+<!-- ๐จ เนเธฃเธเนเธฃเธก -->
 <symbol id="icon-hotel" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="4" y="6" width="16" height="12" fill="#8B5CF6" rx="1"/>
@@ -2092,7 +2092,7 @@ create policy "public write" on transactions for all using (true);</div>
   <rect x="15" y="11" width="2" height="2" fill="white" opacity="0.7"/>
 </symbol>
 
-<!-- ☕ คาเฟ่ -->
+<!-- โ• เธเธฒเน€เธเน -->
 <symbol id="icon-cafe" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M5 8 L6 16 Q6 18 8 18 L14 18 Q16 18 16 16 L17 8 Z" fill="#92400E" opacity="0.8"/>
@@ -2101,7 +2101,7 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="12" cy="12" r="1.5" fill="#FBBF24" opacity="0.6"/>
 </symbol>
 
-<!-- 🥤 ร้านน้ำ/ชาไข่มุก -->
+<!-- ๐ฅค เธฃเนเธฒเธเธเนเธณ/เธเธฒเนเธเนเธกเธธเธ -->
 <symbol id="icon-drinks" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M7 7 L8 17 Q8 18 9 18 L15 18 Q16 18 16 17 L17 7 Z" fill="#06B6D4" opacity="0.8"/>
@@ -2112,7 +2112,7 @@ create policy "public write" on transactions for all using (true);</div>
   <path d="M17.5 9 Q19 8 19 10 L19 16 Q19 17 18 17" fill="none" stroke="#06B6D4" stroke-width="1"/>
 </symbol>
 
-<!-- 🚗 ปั๊มน้ำมัน -->
+<!-- ๐— เธเธฑเนเธกเธเนเธณเธกเธฑเธ -->
 <symbol id="icon-gasstation" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <rect x="5" y="6" width="6" height="10" fill="#FBBF24" rx="1"/>
@@ -2121,16 +2121,16 @@ create policy "public write" on transactions for all using (true);</div>
   <circle cx="16" cy="9" r="1" fill="#64748B"/>
 </symbol>
 
-<!-- ═══════════════════ STATUS ICONS ═══════════════════ -->
+<!-- โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• STATUS ICONS โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ• -->
 
-<!-- ✅ Paid -->
+<!-- โ… Paid -->
 <symbol id="icon-status-paid" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="12" cy="12" r="10" fill="#22C55E" opacity="0.2"/>
   <path d="M8 12 L11 15 L16 9" stroke="#22C55E" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </symbol>
 
-<!-- ⏳ Pending -->
+<!-- โณ Pending -->
 <symbol id="icon-status-pending" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <circle cx="12" cy="12" r="10" fill="#FBBF24" opacity="0.2" stroke="#FBBF24" stroke-width="2"/>
@@ -2138,7 +2138,7 @@ create policy "public write" on transactions for all using (true);</div>
   <line x1="12" y1="12" x2="15" y2="12" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/>
 </symbol>
 
-<!-- 🔄 Transfer -->
+<!-- ๐” Transfer -->
 <symbol id="icon-status-transfer" viewBox="0 0 24 24">
   <rect width="24" height="24" fill="none"/>
   <path d="M6 9 L10 5 L10 9 Z" fill="#0EA5E9"/>
@@ -2148,16 +2148,16 @@ create policy "public write" on transactions for all using (true);</div>
 
 </svg>
 
-<!-- Glass Settings FAB — Expandable pill -->
+<!-- Glass Settings FAB โ€” Expandable pill -->
 <div id="glassControlGroup" style="position:fixed;top:16px;right:16px;z-index:8888;display:flex;align-items:center;border-radius:99px;background:var(--g-strong);backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));-webkit-backdrop-filter:blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));border:1px solid var(--g-brd);box-shadow:var(--g-ring),var(--g-shadow);cursor:grab;user-select:none">
   <button id="gcgToggle" onclick="gcgToggle(event)" style="background:none;border:none;border-radius:99px;cursor:pointer;color:var(--ink);font-family:Sarabun,sans-serif;touch-action:manipulation;padding:0"><svg id="gcgIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <div id="gcgContent">
     <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
-    <button id="hfBtnLight" onclick="hfSetTheme('light')" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;transition:color .15s,background .15s;touch-action:manipulation">☀︎ สว่าง</button>
+    <button id="hfBtnLight" onclick="hfSetTheme('light')" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;transition:color .15s,background .15s;touch-action:manipulation">โ€๏ธ เธชเธงเนเธฒเธ</button>
     <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
-    <button id="hfBtnDark" onclick="hfSetTheme('dark')" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;transition:color .15s,background .15s;touch-action:manipulation">☾ มืด</button>
+    <button id="hfBtnDark" onclick="hfSetTheme('dark')" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2);font-family:Sarabun,sans-serif;white-space:nowrap;transition:color .15s,background .15s;touch-action:manipulation">โพ เธกเธทเธ”</button>
     <div style="width:1px;height:16px;background:var(--line2);flex-shrink:0"></div>
-    <button onclick="glassTogglePanel()" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--accent);font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">✦ ปรับแต่ง</button>
+    <button onclick="glassTogglePanel()" style="background:none;border:none;padding:0 10px;height:40px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;color:var(--accent);font-family:Sarabun,sans-serif;white-space:nowrap;touch-action:manipulation">โฆ เธเธฃเธฑเธเนเธ•เนเธ</button>
   </div>
 </div>
 <script>
@@ -2211,7 +2211,7 @@ create policy "public write" on transactions for all using (true);</div>
     el.style.cursor='grab'; el.style.transition='';
     if(didDrag){
       localStorage.setItem('hf_grp_pos',JSON.stringify({x:parseInt(el.style.left),y:parseInt(el.style.top)}));
-      // ป้องกัน click ของปุ่มหลัง drag
+      // เธเนเธญเธเธเธฑเธ click เธเธญเธเธเธธเนเธกเธซเธฅเธฑเธ drag
       el.addEventListener('click',eatClick,true);
       setTimeout(function(){el.removeEventListener('click',eatClick,true);},300);
     }

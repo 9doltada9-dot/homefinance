@@ -878,7 +878,12 @@ function renderLedger() {
           '<tbody>' + (function(){
             var reversed = _rowGroups.slice().reverse();
             return reversed.map(function(g){
-              return '<tr style="background:var(--surface2)"><td colspan="5" style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--ink2);border-top:2px solid var(--line)">'+toThaiDateStr(g.date)+'</td></tr>'+
+              return '<tr style="background:linear-gradient(90deg,rgba(99,102,241,.12) 0%,transparent 75%)">'
+                +'<td colspan="5" style="padding:6px 10px;font-size:11px;font-weight:700;'
+                +'color:var(--hf-accent,#818cf8);'
+                +'border-top:1px solid rgba(99,102,241,.22);'
+                +'text-shadow:0 0 10px rgba(99,102,241,.55),0 0 20px rgba(99,102,241,.25)">'
+                +toThaiDateStr(g.date)+'</td></tr>'+
                 g.rows.slice().reverse().map(function(e){ return _rowHtmlMap[String(e.id)]||''; }).join('');
             }).join('');
           })() + openRow + '</tbody>' +

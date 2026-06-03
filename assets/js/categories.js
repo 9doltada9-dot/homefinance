@@ -14,6 +14,9 @@ function applySettingsFromMap(map){
   if(map.expense_cats) { cats.expense.length=0; map.expense_cats.forEach(function(c){cats.expense.push(c);}); localStorage.setItem('hf2_expense_cats',JSON.stringify(cats.expense)); }
   if(map.no_split)     { NO_SPLIT = map.no_split; localStorage.setItem('hf2_no_split',JSON.stringify(NO_SPLIT)); }
   if(map.viewmode)     { viewMode = map.viewmode; localStorage.setItem('hf2_viewmode', viewMode); }
+  if(map.recurring_due_notif !== undefined && typeof setRecurringDueNotif === 'function'){
+    setRecurringDueNotif(map.recurring_due_notif !== false && map.recurring_due_notif !== 'false');
+  }
   // sync favorites จาก DB — ใช้ saveFavsLocal เพื่อไม่ push กลับ
   if(map.favs && typeof map.favs === 'object'){
     var f = map.favs;

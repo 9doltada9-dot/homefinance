@@ -12,6 +12,15 @@ function renderSettings(){
   renderTrackedItemSettings();
   // v3: รายการประจำเดือน
   if (typeof renderRecurringList === 'function') renderRecurringList();
+  // sync recurring due notif toggle state
+  var rdToggle = document.getElementById('recurringDueNotifToggle');
+  if (rdToggle) {
+    if (typeof recurringDueNotifEnabled !== 'undefined' && !recurringDueNotifEnabled) {
+      rdToggle.classList.remove('on');
+    } else {
+      rdToggle.classList.add('on');
+    }
+  }
   // v3: notification permission status + balance check
   var notifStatus = document.getElementById('notifStatusText');
   if (notifStatus && 'Notification' in window) {

@@ -4,6 +4,18 @@
  * - Due modal shows urgency: overdue (red) / today (orange) / upcoming (amber)
  */
 
+// ─── SETTING: recurring due notification toggle ───────────
+var recurringDueNotifEnabled = (localStorage.getItem('hf2_recurring_due_notif') !== 'false');
+
+function setRecurringDueNotif(enabled) {
+  recurringDueNotifEnabled = !!enabled;
+  localStorage.setItem('hf2_recurring_due_notif', enabled ? 'true' : 'false');
+  if (typeof sbSaveSetting === 'function') sbSaveSetting('recurring_due_notif', enabled);
+  // อัพ toggle UI
+  var el = document.getElementById('recurringDueNotifToggle');
+  if (el) { if (enabled) el.classList.add('on'); else el.classList.remove('on'); }
+}
+
 // ─── STORAGE (per Supabase UID — never falls back to person ID) ───
 function _recurringKey() {
   // getAuthUserId() returns Supabase UUID unique per email account.
@@ -91,7 +103,7 @@ function processRecurring() {
     }
   });
 
-  if (dueList.length > 0 || upcomingList.length > 0) {
+  if ((dueList.length > 0 || upcomingList.length > 0) && recurringDueNotifEnabled) {
     showRecurringDueModal(dueList, upcomingList);
   }
 

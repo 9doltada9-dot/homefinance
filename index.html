@@ -942,7 +942,17 @@ function gcgToggle(e){
         <div class="stg-sub">รายการประจำ · ยอดเงินต่ำ · สิ้นรอบเงินเดือน</div>
       </div>
     </div>
-    <div style="padding:0 16px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <!-- toggle: recurring due notification -->
+    <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line)">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--ink)">แจ้งเตือนรายการประจำถึงกำหนด</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px">แสดง popup เมื่อมีรายการถึง/ใกล้ถึงกำหนด</div>
+      </div>
+      <div id="recurringDueNotifToggle" class="toggle on" onclick="setRecurringDueNotif(!this.classList.contains('on'))" style="flex-shrink:0">
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+    <div style="padding:10px 16px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="requestNotificationPermission().then(function(){renderNotificationBadge();})" style="min-height:40px;font-size:13px">
         🔔 เปิดการแจ้งเตือน
       </button>

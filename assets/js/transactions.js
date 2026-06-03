@@ -559,24 +559,24 @@ function renderTx(){
     return Number(b.id) - Number(a.id);
   });
 
-  // Total bar
-  var totalEl = document.getElementById('txTotal');
-  if(totalEl && list.length){
+  // Total bar — render เป็น element แรกใน txContent ให้ scroll ขึ้นพร้อมรายการ
+  var _totalHtml = '';
+  if(list.length){
     var inc  = list.filter(function(e){return e.type==='income' &&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
     var exp  = list.filter(function(e){return e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);
     var pendIn  = list.filter(function(e){return e.status==='pending'&&e.type==='income';}).reduce(function(s,e){return s+e.amt;},0);
     var pendOut = list.filter(function(e){return e.status==='pending'&&e.type==='expense';}).reduce(function(s,e){return s+e.amt;},0);
-    var pend = pendIn - pendOut; // net: รอรับ − รอจ่าย
-    totalEl.classList.add('shown');
+    var pend = pendIn - pendOut;
     var incCnt=list.filter(function(e){return e.type==='income'&&isPaid(e);}).length;
     var expCnt=list.filter(function(e){return e.type==='expense'&&isPaid(e);}).length;
     var pendCnt=list.filter(function(e){return e.status==='pending';}).length;
-    totalEl.innerHTML=
-      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายรับ ('+incCnt+')</div><div class="hf-metric-val g">'+fmtH(inc)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายจ่าย ('+expCnt+')</div><div class="hf-metric-val r">'+fmtH(exp)+'</div></div>'+
-      '<div style="flex:1;min-width:110px"><div class="hf-metric-label">รอดำเนินการ ('+pendCnt+')</div><div class="hf-metric-val a">'+fmtH(pend)+'</div></div>'+
-      '<div style="flex:1;min-width:110px;margin-left:auto;text-align:right"><div class="hf-metric-label">สุทธิ ('+list.length+' รายการ)</div><div class="hf-metric-val '+(inc-exp>=0?'g':'r')+'">'+fmtH(inc-exp)+'</div></div>';
-  } else if(totalEl){ totalEl.classList.remove('shown'); }
+    _totalHtml = '<div class="hf-card" style="display:flex;gap:20px;flex-wrap:wrap;padding:20px 22px;margin-bottom:14px">'
+      +'<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายรับ ('+incCnt+')</div><div class="hf-metric-val g">'+fmtH(inc)+'</div></div>'
+      +'<div style="flex:1;min-width:110px"><div class="hf-metric-label">รายจ่าย ('+expCnt+')</div><div class="hf-metric-val r">'+fmtH(exp)+'</div></div>'
+      +'<div style="flex:1;min-width:110px"><div class="hf-metric-label">รอดำเนินการ ('+pendCnt+')</div><div class="hf-metric-val a">'+fmtH(pend)+'</div></div>'
+      +'<div style="flex:1;min-width:110px;margin-left:auto;text-align:right"><div class="hf-metric-label">สุทธิ ('+list.length+' รายการ)</div><div class="hf-metric-val '+(inc-exp>=0?'g':'r')+'">'+fmtH(inc-exp)+'</div></div>'
+      +'</div>';
+  }
 
   var isMobile = window.innerWidth <= 900;
 
@@ -608,7 +608,7 @@ function renderTx(){
   };
 
   if(isMobile){
-    document.getElementById('txContent').innerHTML = list.length
+    document.getElementById('txContent').innerHTML = _totalHtml + (list.length
       ? (function(){
           var _groups=[], _dmap={};
           list.forEach(function(e){
@@ -669,7 +669,7 @@ function renderTx(){
         '</div>';}).join('');
           }).join('');
         })()
-      : '<div class="empty">ไม่พบรายการ</div>';
+      : '<div class="empty">ไม่พบรายการ</div>');
 
     // Mobile tap-to-detail (swipe removed v3.16.24)
 
@@ -682,7 +682,7 @@ function renderTx(){
       _dmap[d].push(e);
     });
 
-    document.getElementById('txContent').innerHTML = list.length ? _groups.map(function(g){
+    document.getElementById('txContent').innerHTML = _totalHtml + (list.length ? _groups.map(function(g){
       // ── day total ──
       var dayIn=0, dayOut=0;
       g.items.forEach(function(e){ if(e.type==='income') dayIn+=e.amt; else if(e.type==='expense') dayOut+=e.amt; });
@@ -749,7 +749,7 @@ function renderTx(){
             +'</div>';
           }).join('')
       +'</div>';
-    }).join('') : '<div class="empty">ไม่พบรายการ</div>';
+    }).join('') : '<div class="empty">ไม่พบรายการ</div>');
   }
 }
 

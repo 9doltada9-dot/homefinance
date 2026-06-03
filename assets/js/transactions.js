@@ -581,8 +581,16 @@ function renderTx(){
   var isMobile = window.innerWidth <= 900;
 
   // ─── VENDOR AVATAR: วงกลมตัวอักษรแรก ─────────────────────
-  var _vendorAvatar = function(name) {
+  var _vendorAvatar = function(name, vendorId) {
     if (!name || name === '—') return '';
+    // ถ้ามีโลโก้ → แสดง logo circle + ชื่อ
+    var vobj = vendorId ? (typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===vendorId;}) : null;
+    if (!vobj && name) vobj = (typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.name===name;});
+    if (vobj && vobj.logo_url) {
+      return '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 3px;border-radius:20px;'
+        +'background:var(--surface2);font-size:11px;font-weight:600;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;font-family:Sarabun,sans-serif">'
+        +'<img src="'+vobj.logo_url+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0">'+name+'</span>';
+    }
     var code = 0; for(var _ci=0;_ci<name.length;_ci++) code = (code*31 + name.charCodeAt(_ci)) & 0xffff;
     var palette = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
     var textPal = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
@@ -669,7 +677,7 @@ function renderTx(){
                   '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
 
                     '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
-                    (e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn) : ''; })() : '')+
+                    (e.vendor_id ? (function(){ var _vn=(((vendorsData.find(function(v){return v.id===e.vendor_id;}))||{}).name||''); return _vn ? _vendorAvatar(_vn,e.vendor_id) : ''; })() : '')+
                     (_txShowAllUsers && (e.user_id||e.person) ? personPill(e.user_id||e.person) : '')+
                   '</div>'+
                   (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
@@ -768,7 +776,7 @@ function renderTx(){
               +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
               +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
               +    (e.cat_name&&(vendorName||_splitBadge(e))?' <span style="color:var(--line2)">·</span> ':'')
-              +    (vendorName?_vendorAvatar(vendorName):'')
+              +    (vendorName?_vendorAvatar(vendorName,e.vendor_id):'')
               +    (vendorName&&_splitBadge(e)?' ':'')
               +    _splitBadge(e)
               +    (_txShowAllUsers?' '+personPill(e.user_id||e.person):'')

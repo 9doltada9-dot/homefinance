@@ -275,6 +275,18 @@ async function sbUpdateVendor(id, newName, vendorType){
   } catch(_){}
 }
 
+async function sbUpdateVendorLogo(id, logoUrl){
+  var creds = getSbCreds();
+  if(!creds.ok) return;
+  try {
+    await fetchWithTimeout(
+      creds.url+'/rest/v1/vendors?id=eq.'+encodeURIComponent(id),
+      { method:'PATCH', headers:sbHeadersFrom(creds.key),
+        body: JSON.stringify({ logo_url: logoUrl || null }) }, 8000
+    );
+  } catch(_){}
+}
+
 async function sbDeleteVendor(id){
   var creds = getSbCreds();
   if(!creds.ok) return;

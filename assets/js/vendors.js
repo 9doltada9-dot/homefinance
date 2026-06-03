@@ -31,7 +31,7 @@ function fillVendors(txType) {
   var sorted = _sortedVendors(list);
 
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
 
   // คืนค่าเดิมถ้ายังอยู่ในลิสต์ปัจจุบัน
@@ -78,7 +78,7 @@ function _rebuildVendorOptions(sel, txType) {
   var list   = _filterVendorsByType(txType);
   var sorted = _sortedVendors(list);
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
   sel.value = curId;
 }
@@ -92,7 +92,7 @@ function fillEditVendors(txType) {
   var sorted = _sortedVendors(list);
 
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
 
   if (prevVal !== undefined) sel.value = prevVal;
@@ -130,7 +130,7 @@ function _rebuildEditVendorOptions(sel, txType) {
   var list   = _filterVendorsByType(txType);
   var sorted = _sortedVendors(list);
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
   sel.value = curId;
 }

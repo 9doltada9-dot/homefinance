@@ -105,6 +105,19 @@
     }
   }
 
+  // ── Logo icon จาก data-logo attribute บน <option> ──────────
+  function _optIcon(o, sz){
+    var logo = o && o.getAttribute ? o.getAttribute('data-logo') : null;
+    if(logo === null || logo === undefined) return '';
+    if(logo) return '<img src="'+logo+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;flex-shrink:0">';
+    var name = (o.text||'').replace(/^⭐\s*/,'').trim();
+    if(!name) return '';
+    var code=0; for(var _oi=0;_oi<name.length;_oi++) code=(code*31+name.charCodeAt(_oi))&0xffff;
+    var bgs=['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
+    var fgs=['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
+    return '<span style="display:inline-flex;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+bgs[code%8]+';color:'+fgs[code%8]+';align-items:center;justify-content:center;font-size:'+(sz*0.5)+'px;font-weight:700;flex-shrink:0">'+name.charAt(0)+'</span>';
+  }
+
   // ── Wrap one <select> ───────────────────────────────────────
   function wrapSelect(sel){
     if(sel._csd) return;
@@ -171,7 +184,14 @@
       var el = d.createElement('div');
       el.className = 'csd-item'+(o.value===sel.value?' csd-sel':'')+(o.disabled?' csd-dis':'');
       el.dataset.v = o.value;
-      el.textContent = o.text || o.label || '';
+      var icon = _optIcon(o, 22);
+      if(icon){
+        el.style.cssText += ';display:flex;align-items:center;gap:8px';
+        var safeTxt = (o.text||o.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        el.innerHTML = icon+'<span style="overflow:hidden;text-overflow:ellipsis">'+safeTxt+'</span>';
+      } else {
+        el.textContent = o.text || o.label || '';
+      }
       if(!o.disabled){
         el.addEventListener('click', function(e){
           e.stopPropagation();
@@ -186,7 +206,15 @@
 
     function syncLabel(){
       var o = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
-      lbl.textContent = o ? (o.text || '') : '—';
+      var icon = _optIcon(o, 18);
+      if(icon){
+        var safeTxt = (o ? (o.text||'') : '—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        lbl.style.cssText = 'display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden';
+        lbl.innerHTML = icon+'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+safeTxt+'</span>';
+      } else {
+        lbl.style.cssText = '';
+        lbl.textContent = o ? (o.text||'') : '—';
+      }
       panel.querySelectorAll('.csd-item').forEach(function(el){
         el.classList.toggle('csd-sel', el.dataset.v === sel.value);
       });

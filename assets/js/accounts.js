@@ -436,7 +436,7 @@ function fillAccountSelectors() {
     // ยังคงเติม <select> ไว้สำหรับ read value ด้วย .value (hidden ด้วย CSS)
     sel.innerHTML = (isTransfer ? '' : '<option value="">-- ไม่ระบุ --</option>') +
       accountsData.filter(function(a) { return a.is_active; }).map(function(a) {
-        return '<option value="' + a.id + '">' + a.name + '</option>';
+        return '<option value="' + a.id + '" data-logo="' + (a.logo_url||'').replace(/"/g,'&quot;') + '">' + a.name + '</option>';
       }).join('');
     if (cur) {
       sel.value = cur;

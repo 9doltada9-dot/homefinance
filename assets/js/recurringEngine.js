@@ -598,7 +598,7 @@ function _fillRecurringAccounts() {
   var list = (typeof accountsData !== 'undefined') ? accountsData : [];
   sel.innerHTML = '<option value="">-- ไม่ระบุ --</option>'
     + list.map(function(a) {
-        return '<option value="' + a.id + '">' + a.name + '</option>';
+        return '<option value="' + a.id + '" data-logo="' + (a.logo_url||'').replace(/"/g,'&quot;') + '">' + a.name + '</option>';
       }).join('');
 }
 

@@ -333,17 +333,37 @@ function renderSettle(){
       +'<div style="font-size:12px;color:var(--green,#166534);margin-top:4px">ทุกคนจ่ายเป็นสัดส่วนที่ถูกต้องแล้ว</div>'
     +'</div>';
   } else {
+    // ── Transfer arrow cards: วงกลม A ──amount──▶ วงกลม B ──
     transferHtml = transfers.map(function(t){
-      return '<div style="background:var(--surface2);border:1.5px solid var(--orange,#f97316);border-radius:12px;padding:14px 16px">'
-        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
-          +'<span style="font-size:16px">💸</span>'
-          +'<span style="font-size:11px;font-weight:700;color:var(--orange,#ea580c);text-transform:uppercase;letter-spacing:.5px">ต้องโอนเงิน</span>'
+      var fromInit = (t.from||'?').charAt(0).toUpperCase();
+      var toInit   = (t.to  ||'?').charAt(0).toUpperCase();
+      return '<div style="background:var(--g-card,var(--surface2));backdrop-filter:blur(16px) saturate(150%);'
+        +'border:1.5px solid var(--g-brd,rgba(255,255,255,.2));border-radius:20px;padding:20px 24px;'
+        +'display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        // FROM circle
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);'
+            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
+            +'box-shadow:0 4px 16px rgba(220,38,38,.4)">'+fromInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:var(--ink);max-width:80px;text-align:center;'
+            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.from+'</span>'
         +'</div>'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-          +'<span style="font-size:14px;font-weight:700;color:var(--red,#dc2626);background:var(--red-bg,#fef2f2);padding:4px 10px;border-radius:20px">'+t.from+'</span>'
-          +'<span style="font-size:12px;color:var(--ink3)">ต้องโอนให้</span>'
-          +'<span style="font-size:14px;font-weight:700;color:var(--green,#16a34a);background:var(--green-bg,#f0fdf4);padding:4px 10px;border-radius:20px">'+t.to+'</span>'
-          +'<span style="margin-left:auto;font-family:monospace;font-size:18px;font-weight:700;color:var(--orange,#ea580c)">'+fmtH(t.amount)+'</span>'
+        // arrow + amount
+        +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+          +'<span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--orange,#ea580c)">'+fmtH(t.amount)+'</span>'
+          +'<div style="display:flex;align-items:center;width:100%;gap:0">'
+            +'<div style="flex:1;height:2px;background:linear-gradient(90deg,var(--red,#dc2626),var(--orange,#ea580c),var(--green,#16a34a))"></div>'
+            +'<span style="font-size:20px;color:var(--green,#16a34a);line-height:1">▶</span>'
+          +'</div>'
+          +'<span style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.5px;text-transform:uppercase">โอนให้</span>'
+        +'</div>'
+        // TO circle
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#22c55e);'
+            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
+            +'box-shadow:0 4px 16px rgba(22,163,74,.4)">'+toInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:var(--ink);max-width:80px;text-align:center;'
+            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.to+'</span>'
         +'</div>'
       +'</div>';
     }).join('');
@@ -491,10 +511,17 @@ function renderSettle(){
             return '<span style="font-size:10px;padding:1px 6px;border-radius:20px;background:'+c.bg+';color:'+c.cl+';white-space:nowrap">'
               +(nameMap[uid]||uid)+' '+fmtH(amt)+(isPayer?' ✓':'')+'</span>';
           }).join('') : '';
-          var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
-          var iconHtml = iconId
-            ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-            : '<span style="font-size:14px">💳</span>';
+          // vendor logo → icon → fallback emoji
+          var _vobj = e.vendor_id ? (typeof vendorsData!=='undefined'?vendorsData:[]).find(function(x){return x.id===e.vendor_id;}) : null;
+          var iconHtml;
+          if (_vobj && _vobj.logo_url) {
+            iconHtml = '<img src="'+_vobj.logo_url+'" style="width:20px;height:20px;border-radius:4px;object-fit:contain;background:transparent">';
+          } else {
+            var iconId = typeof getDescriptionIconId==='function' ? getDescriptionIconId(e.desc) : null;
+            iconHtml = iconId
+              ? '<svg width="18" height="18" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
+              : '<span style="font-size:14px">💳</span>';
+          }
           var noteText = (e.note||'').trim();
           return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
             +'style="display:flex;align-items:center;gap:10px;padding:10px 22px 10px 16px;cursor:pointer;'

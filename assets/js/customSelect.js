@@ -109,7 +109,7 @@
   function _optIcon(o, sz){
     var logo = o && o.getAttribute ? o.getAttribute('data-logo') : null;
     if(logo === null || logo === undefined) return '';
-    if(logo) return '<img src="'+logo+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;flex-shrink:0">';
+    if(logo) return '<img src="'+logo+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:4px;object-fit:contain;background:transparent;flex-shrink:0">';
     var name = (o.text||'').replace(/^⭐\s*/,'').trim();
     if(!name) return '';
     var code=0; for(var _oi=0;_oi<name.length;_oi++) code=(code*31+name.charCodeAt(_oi))&0xffff;

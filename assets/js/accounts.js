@@ -265,6 +265,7 @@ function addAccount(name, type, color, initialBalance, logoUrl) {
     type: type || 'bank',
     color: color || ACCOUNT_COLORS[accountsData.length % ACCOUNT_COLORS.length],
     initial_balance: Number(initialBalance) || 0,
+    sort_order: accountsData.length,
     is_active: true,
     user_id: (typeof getAuthUserId === 'function' ? getAuthUserId() : null) || null,
     logo_url: logoUrl || null,
@@ -417,7 +418,7 @@ async function sbLoadAccounts() {
   try {
     var uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
     var filter = uid ? '&user_id=eq.' + encodeURIComponent(uid) : '';
-    var r = await fetch(creds.url + '/rest/v1/accounts?select=*&order=created_at' + filter, {
+    var r = await fetch(creds.url + '/rest/v1/accounts?select=*&order=sort_order,created_at' + filter, {
       headers: sbHeadersFrom(creds.key)
     });
     if (!r.ok) return null;
@@ -841,30 +842,33 @@ function renderAccountList() {
 
     var cardsHtml = list.map(function(a){
       var bal = getAccountBalance(a.id);
-      var icon = TYPE_ICON[a.type] || '💳';
       var _ruid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
       var hasUsage = db.some(function(e){ return e.account_id === a.id && (!_ruid || e.user_id === _ruid); });
       var cantDel  = hasUsage || accountsData.filter(function(x){ return x.is_active !== false; }).length <= 1;
-      // horizontal card row: คลิกทั้งการ์ด = เปิด ledger
-      return '<div onclick="openAccountLedger(\''+a.id+'\')" '
-        +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;'
+      return '<div class="acct-drag-item" draggable="true" data-id="'+a.id+'" data-group="'+g.key+'" '
+        +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;'
         +'background:var(--surface2);border-radius:var(--r2);border:1px solid var(--line);'
-        +'transition:background .12s">'
-        // icon / logo
-        +acctLogoHtml(a, 40)
-        // name + type
-        +'<div style="flex:1;min-width:0">'
+        +'transition:background .12s,opacity .15s,box-shadow .15s;cursor:default">'
+        // drag handle
+        +'<div class="acct-drag-handle" onclick="event.stopPropagation()" '
+          +'style="cursor:grab;color:var(--ink3);font-size:16px;flex-shrink:0;padding:0 2px;user-select:none;touch-action:none">⠿</div>'
+        // icon / logo (คลิก = เปิด ledger)
+        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="cursor:pointer;flex-shrink:0">'
+          +acctLogoHtml(a, 40)
+        +'</div>'
+        // name + type (คลิก = เปิด ledger)
+        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="flex:1;min-width:0;cursor:pointer">'
           +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
           +'<div style="font-size:11px;color:var(--hf-ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
         +'</div>'
         // balance
-        +'<div style="text-align:right;flex-shrink:0;margin-right:8px">'
+        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="text-align:right;flex-shrink:0;margin-right:8px;cursor:pointer">'
           +'<div style="font-size:16px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
             +(bal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(bal)+'</div>'
           +'<div style="font-size:10px;color:var(--ink3)">บาท</div>'
         +'</div>'
-        // action buttons (stopPropagation เพื่อไม่ให้ trigger openAccountLedger)
-        +'<div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">'
+        // action buttons
+        +'<div style="display:flex;gap:4px;flex-shrink:0">'
           +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation;white-space:nowrap">+ฝาก</button>'
           +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
           +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
@@ -879,7 +883,7 @@ function renderAccountList() {
         + '<span style="font-size:14px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
         + (groupTotal>=0?'var(--hf-green)':'var(--hf-red)') + '">' + fmtH(groupTotal) + ' ฿</span>'
       + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<div class="acct-drag-list" data-group="'+g.key+'" style="display:flex;flex-direction:column;gap:8px">'
       + cardsHtml
       + '</div>'
       + '</div>';
@@ -893,6 +897,142 @@ function renderAccountList() {
     + '</div>';
 
   el.innerHTML = groupsHtml + addCardHtml;
+  _initAcctDrag();
+}
+
+// ─── DRAG-AND-DROP REORDER ───────────────────────────────
+var _acctDragSrc = null;
+var _acctDragPlaceholder = null;
+
+function _initAcctDrag() {
+  var items = document.querySelectorAll('.acct-drag-item');
+  items.forEach(function(el) {
+    // Desktop: drag events via handle
+    var handle = el.querySelector('.acct-drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', function() {
+        el.setAttribute('draggable', 'true');
+      });
+    }
+    el.addEventListener('dragstart', function(e) {
+      _acctDragSrc = el;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', el.dataset.id);
+      setTimeout(function(){ el.style.opacity = '0.35'; }, 0);
+    });
+    el.addEventListener('dragend', function() {
+      el.style.opacity = '';
+      el.style.boxShadow = '';
+      document.querySelectorAll('.acct-drag-item').forEach(function(d){
+        d.style.borderTop = ''; d.style.borderBottom = '';
+      });
+      _acctDragSrc = null;
+    });
+    el.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (!_acctDragSrc || _acctDragSrc === el) return;
+      if (_acctDragSrc.dataset.group !== el.dataset.group) return;
+      // แสดง indicator
+      document.querySelectorAll('.acct-drag-item').forEach(function(d){ d.style.borderTop=''; d.style.borderBottom=''; });
+      var rect = el.getBoundingClientRect();
+      var mid  = rect.top + rect.height / 2;
+      if (e.clientY < mid) el.style.borderTop    = '2px solid var(--accent)';
+      else                  el.style.borderBottom = '2px solid var(--accent)';
+    });
+    el.addEventListener('dragleave', function() {
+      el.style.borderTop = ''; el.style.borderBottom = '';
+    });
+    el.addEventListener('drop', function(e) {
+      e.preventDefault();
+      el.style.borderTop = ''; el.style.borderBottom = '';
+      if (!_acctDragSrc || _acctDragSrc === el) return;
+      if (_acctDragSrc.dataset.group !== el.dataset.group) return;
+      var rect = el.getBoundingClientRect();
+      var before = e.clientY < rect.top + rect.height / 2;
+      _acctReorder(_acctDragSrc.dataset.id, el.dataset.id, before);
+    });
+
+    // Mobile: touch events
+    _initAcctTouchDrag(el);
+  });
+}
+
+function _initAcctTouchDrag(el) {
+  var handle = el.querySelector('.acct-drag-handle');
+  if (!handle) return;
+  var touchStartY = 0, isDragging = false, clone = null;
+
+  handle.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+    isDragging = false;
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', function(e) {
+    if (!isDragging) {
+      if (Math.abs(e.touches[0].clientY - touchStartY) < 5) return;
+      isDragging = true;
+      el.style.opacity = '0.35';
+      clone = el.cloneNode(true);
+      clone.style.cssText = 'position:fixed;left:'+el.getBoundingClientRect().left+'px;'
+        +'width:'+el.offsetWidth+'px;opacity:.85;pointer-events:none;z-index:9999;'
+        +'background:var(--surface);border-radius:var(--r2);border:2px solid var(--accent);'
+        +'box-shadow:0 8px 32px rgba(0,0,0,.25)';
+      document.body.appendChild(clone);
+    }
+    if (!clone) return;
+    e.preventDefault();
+    clone.style.top = (e.touches[0].clientY - clone.offsetHeight/2) + 'px';
+
+    // หา target
+    document.querySelectorAll('.acct-drag-item').forEach(function(d){ d.style.borderTop=''; d.style.borderBottom=''; });
+    var els = document.querySelectorAll('.acct-drag-item[data-group="'+el.dataset.group+'"]');
+    els.forEach(function(d) {
+      if (d === el) return;
+      var r = d.getBoundingClientRect();
+      if (e.touches[0].clientY >= r.top && e.touches[0].clientY <= r.bottom) {
+        if (e.touches[0].clientY < r.top + r.height/2) d.style.borderTop='2px solid var(--accent)';
+        else d.style.borderBottom = '2px solid var(--accent)';
+      }
+    });
+  }, { passive: false });
+
+  handle.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
+    el.style.opacity = '';
+    if (clone) { clone.remove(); clone = null; }
+    document.querySelectorAll('.acct-drag-item').forEach(function(d){ d.style.borderTop=''; d.style.borderBottom=''; });
+
+    var tx = e.changedTouches[0];
+    var targets = document.querySelectorAll('.acct-drag-item[data-group="'+el.dataset.group+'"]');
+    targets.forEach(function(d) {
+      if (d === el) return;
+      var r = d.getBoundingClientRect();
+      if (tx.clientY >= r.top && tx.clientY <= r.bottom) {
+        var before = tx.clientY < r.top + r.height/2;
+        _acctReorder(el.dataset.id, d.dataset.id, before);
+      }
+    });
+    isDragging = false;
+  });
+}
+
+function _acctReorder(draggedId, targetId, insertBefore) {
+  var dragIdx  = accountsData.findIndex(function(a){ return a.id === draggedId; });
+  var targetIdx= accountsData.findIndex(function(a){ return a.id === targetId; });
+  if (dragIdx === -1 || targetIdx === -1 || dragIdx === targetIdx) return;
+
+  var item = accountsData.splice(dragIdx, 1)[0];
+  var newIdx = accountsData.findIndex(function(a){ return a.id === targetId; });
+  accountsData.splice(insertBefore ? newIdx : newIdx + 1, 0, item);
+
+  // อัปเดต sort_order
+  accountsData.forEach(function(a, i){ a.sort_order = i; });
+  saveAccountsLocal();
+  // sync แบบ batch (ส่งเฉพาะ sort_order)
+  accountsData.forEach(function(a){ sbSyncAccount(a, 'update'); });
+
+  renderAccountList();
+  renderAccountCards();
 }
 
 function openAccountDetailModal(id) {

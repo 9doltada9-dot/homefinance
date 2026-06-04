@@ -537,7 +537,7 @@ function renderSettle(){
             memberCirclesHtml = memberUids.slice(0,4).map(function(uid){
               var mc = _uidColorMap[uid] || {bg:'var(--surface2)',cl:'var(--ink2)'};
               var mi = (nameMap[uid]||uid).charAt(0).toUpperCase();
-              var mAmt = fmtH(snap[uid].amount||0);
+              var mAmt = (typeof fmt === 'function' ? fmt : String)(snap[uid].amount||0);
               return '<div title="'+(nameMap[uid]||uid)+' '+mAmt+'" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;'
                 +'background:'+mc.bg+';color:'+mc.cl+';display:flex;align-items:center;'
                 +'justify-content:center;font-size:11px;font-weight:700;border:1.5px solid '+mc.cl+'">'+mi+'</div>';

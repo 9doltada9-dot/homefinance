@@ -1,59 +1,10 @@
 /* HomeFinance · module: dashboard.js · v3.0.0 */
 
 // ─── DASHBOARD ───────────────────────────────────────────
-function populateDashYears(){
-  var selY = document.getElementById('dashYear');
-  if(!selY) return;
-  var now = new Date();
-  var thisY = now.getFullYear();
-  var years = Array.from(new Set(db.map(function(e){return Number(e.date.slice(0,4));}))).sort().reverse();
-  if(years.indexOf(thisY)===-1) years.unshift(thisY);
-  var curY = selY.value ? Number(selY.value) : thisY;
-  selY.innerHTML = years.map(function(y){return '<option value="'+y+'" '+(y===curY?'selected':'')+'>'+(y+543)+'</option>';}).join('');
-  selY.value = curY;
-}
-
-function populateDashMonthsByYear(year){
-  var selM = document.getElementById('dashMonth');
-  if(!selM) return;
-  var now = new Date();
-  var thisM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var curM = selM.value;
-  // months that have data for this year
-  var months = Array.from(new Set(
-    db.filter(function(e){return e.date.startsWith(String(year)+'-');}).map(function(e){return e.date.slice(0,7);})
-  )).sort().reverse();
-  // add current month if current year
-  if(year===now.getFullYear() && months.indexOf(thisM)===-1) months.unshift(thisM);
-  selM.innerHTML = months.map(function(m){
-    var mo = Number(m.split('-')[1]);
-    return '<option value="'+m+'" '+(m===curM?'selected':'')+'>'+SHORT_M[mo-1]+'</option>';
-  }).join('');
-  // คงค่าที่ผู้ใช้เลือกไว้ถ้ายังมีในรายการ มิฉะนั้นใช้เดือนปัจจุบัน/แรกสุด
-  if(curM && months.indexOf(curM) !== -1) selM.value = curM;
-  else if(year===now.getFullYear()) selM.value = thisM;
-  else if(months.length) selM.value = months[0];
-}
-
-function onDashYearChange(){
-  var year = Number(document.getElementById('dashYear').value);
-  populateDashMonthsByYear(year);
-  renderDash();
-}
-
 function renderDash(){
-  var selM = document.getElementById('dashMonth');
-  var savedMonth = selM ? selM.value : '';
-  populateDashYears();
-  var yearVal = document.getElementById('dashYear')?.value;
-  if(yearVal) populateDashMonthsByYear(Number(yearVal));
-  // คืนค่าเดือนที่ user เลือกไว้ (กันไม่ให้ populateDashMonthsByYear reset)
-  if(savedMonth && selM && selM.querySelector('option[value="'+savedMonth+'"]')) selM.value = savedMonth;
-
-  var sel = document.getElementById('dashMonth');
   var now = new Date();
   var thisM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var curM = (sel && sel.value) || thisM;
+  var curM = thisM;
   var parts = curM.split('-').map(Number);
   var y=parts[0], mo=parts[1];
 
@@ -273,7 +224,7 @@ function switchChart(type, passedMonth){
 
   var now = new Date();
   var thisM = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var curMonth = passedMonth || document.getElementById('dashMonth')?.value || thisM;
+  var curMonth = passedMonth || thisM;
   var _myUidC = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var _chartDb = _myUidC ? db.filter(function(e){ return (e.user_id||e.person) === _myUidC; }) : db;
   var me = _chartDb.filter(function(e){return e.date.startsWith(curMonth);});

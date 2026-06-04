@@ -846,8 +846,19 @@ function txDetailModal(id) {
   var heroLogoHtml = '';
   var _vobj2 = e.vendor_id ? (vendorsData||[]).find(function(v){ return v.id===e.vendor_id; }) : null;
   if (e.type === 'transfer') {
-    heroLogoHtml = '<div style="width:80px;height:80px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.15)">'
-      + _transferLogos(e, 34) + '</div>';
+    var _fromAcctH = e.account_id ? (typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }) : null;
+    var _pairH = (typeof db!=='undefined'?db:[]).find(function(x){ return x.id===e.transfer_pair_id; });
+    var _toAcctH = _pairH ? ((typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===_pairH.account_id; })||null) : null;
+    var _tLogo = function(a, sz) {
+      if (!a) return '<span style="font-size:'+(sz*.8)+'px">💳</span>';
+      if (a.logo_url) return '<img src="'+a.logo_url+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;box-shadow:0 2px 10px rgba(0,0,0,.18)">';
+      return '<span style="display:inline-flex;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+(a.color||'#1a4fa0')+'22;border:2px solid '+(a.color||'#1a4fa0')+'55;align-items:center;justify-content:center;font-size:'+(sz*.5)+'px;font-weight:700">'+(a.name||'?').charAt(0)+'</span>';
+    };
+    heroLogoHtml = '<div style="display:flex;align-items:center;justify-content:center;gap:10px">'
+      + _tLogo(_fromAcctH, 46)
+      + '<span style="color:var(--blue);font-size:24px;font-weight:800">→</span>'
+      + _tLogo(_toAcctH, 46)
+      + '</div>';
   } else if (_vobj2 && _vobj2.logo_url) {
     heroLogoHtml = '<img src="'+_vobj2.logo_url+'" title="'+((_vobj2.name||'').replace(/"/g,'&quot;'))+'" '
       +'style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.18)">';

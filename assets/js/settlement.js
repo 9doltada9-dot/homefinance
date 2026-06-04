@@ -523,18 +523,52 @@ function renderSettle(){
               : '<span style="font-size:14px">💳</span>';
           }
           var noteText = (e.note||'').trim();
+
+          // ── วงกลม payer → member circles (แทน chip ชื่อ) ─────
+          var payerInit = (payerName||'?').charAt(0).toUpperCase();
+          var payerCircle = '<div title="'+payerName+'" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;'
+            +'background:'+payerColor.bg+';color:'+payerColor.cl+';display:flex;align-items:center;'
+            +'justify-content:center;font-size:15px;font-weight:800;border:2px solid '+payerColor.cl+';'
+            +'box-shadow:0 2px 8px rgba(0,0,0,.15)">'+payerInit+'</div>';
+
+          var memberCirclesHtml = '';
+          if (snap) {
+            var memberUids = Object.keys(snap).filter(function(uid){ return uid !== payerU; });
+            memberCirclesHtml = memberUids.slice(0,4).map(function(uid){
+              var mc = _uidColorMap[uid] || {bg:'var(--surface2)',cl:'var(--ink2)'};
+              var mi = (nameMap[uid]||uid).charAt(0).toUpperCase();
+              var mAmt = fmtH(snap[uid].amount||0);
+              return '<div title="'+(nameMap[uid]||uid)+' '+mAmt+'" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;'
+                +'background:'+mc.bg+';color:'+mc.cl+';display:flex;align-items:center;'
+                +'justify-content:center;font-size:11px;font-weight:700;border:1.5px solid '+mc.cl+'">'+mi+'</div>';
+            }).join('');
+            if (memberUids.length > 4) {
+              memberCirclesHtml += '<div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);'
+                +'color:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">+'+(memberUids.length-4)+'</div>';
+            }
+          }
+
+          var arrowFlow = '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">'
+            + payerCircle
+            + '<span style="font-size:14px;color:var(--ink3);flex-shrink:0">→</span>'
+            + '<div style="display:flex;gap:2px;align-items:center">'+memberCirclesHtml+'</div>'
+            +'</div>';
+
+          // vendor logo/icon (ขนาดเล็กหน้า desc)
+          var descPrefix = _vobj && _vobj.logo_url
+            ? '<img src="'+_vobj.logo_url+'" style="width:14px;height:14px;border-radius:3px;object-fit:contain;vertical-align:middle;margin-right:4px"> '
+            : '';
+
           return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')" '
-            +'style="display:flex;align-items:center;gap:10px;padding:10px 22px 10px 16px;cursor:pointer;'
+            +'style="display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;'
             +(idx>0?'border-top:1px solid var(--line);':'')
             +'">'
-            +'<div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>'
+            + arrowFlow
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
-              +'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;align-items:center">'
-                +'<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:'+payerColor.bg+';color:'+payerColor.cl+';white-space:nowrap">'+payerName+'</span>'
-                +(vendor?'<span style="font-size:11px;color:var(--ink3)"> · 🏪 '+vendor+'</span>':'')
-                +(noteText?'<span style="font-size:11px;color:var(--ink3)"> '+noteText+'</span>':'')
-                +(memberChips?memberChips:'')
+              +'<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+descPrefix+e.desc+'</div>'
+              +'<div style="font-size:11px;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+                +(vendor?'🏪 '+vendor:'')
+                +(noteText?(vendor?' · ':'')+noteText:'')
               +'</div>'
             +'</div>'
             +'<div style="flex-shrink:0;text-align:right">'

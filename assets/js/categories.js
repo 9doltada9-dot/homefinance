@@ -34,6 +34,19 @@ function applySettingsFromMap(map){
       localStorage.setItem('hf2_split_groups', JSON.stringify(map.split_groups));
     }
   }
+  // sync recurring_templates จาก Supabase → localStorage (per-user key)
+  if(map.recurring_templates && Array.isArray(map.recurring_templates)){
+    var _uid = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+    var _rKey = _uid ? 'hf2_recurring_' + _uid : null;
+    if(_rKey){
+      var _localRec = [];
+      try { _localRec = JSON.parse(localStorage.getItem(_rKey) || '[]'); } catch(_){}
+      // Supabase ชนะเมื่อมีข้อมูล หรือ local ยังว่างอยู่
+      if(map.recurring_templates.length > 0 || _localRec.length === 0){
+        localStorage.setItem(_rKey, JSON.stringify(map.recurring_templates));
+      }
+    }
+  }
 }
 
 function renderCatList(type){

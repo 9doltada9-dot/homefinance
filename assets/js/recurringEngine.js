@@ -34,6 +34,10 @@ function saveRecurringList(list) {
   var k = _recurringKey();
   if (!k) return; // no authenticated user — refuse to write
   localStorage.setItem(k, JSON.stringify(list));
+  // sync ขึ้น Supabase เพื่อให้มือถือ/device อื่นโหลดได้
+  if (typeof sbSaveSetting === 'function') {
+    sbSaveSetting('recurring_templates', list);
+  }
 }
 
 // ─── CRUD ─────────────────────────────────────────────────

@@ -2,7 +2,7 @@
 
 // ─── ADMIN "SHOW ALL USERS" TOGGLE ───────────────────────
 var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin)
-var _txFilterMode = 'calendar'; // 'calendar' | 'salary'
+var _txFilterMode = 'salary'; // 'calendar' | 'salary'
 
 function _updateTxModeUI() {
   var mode = _txFilterMode;
@@ -641,11 +641,11 @@ function renderTx(){
     if (!acct) return '';
     if (acct.logo_url) {
       return '<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" '
-        +'style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
+        +'style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
     }
     var col  = acct.color || '#1a4fa0';
     var name = (acct.name || '').replace(/"/g,'&quot;');
-    return '<span title="'+name+'" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
+    return '<span title="'+name+'" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
   };
 
   if(isMobile){
@@ -789,8 +789,8 @@ function renderTx(){
               +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:4px">'
               +    statusBadge
               +    (acct?(acct.logo_url
-                  ?'<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle">'
-                  :'<span title="'+(acct.name||'')+'" style="width:8px;height:8px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>')
+                  ?'<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle">'
+                  :'<span title="'+(acct.name||'')+'" style="width:10px;height:10px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>')
                 :'')
               +  '</div>'
               +'</div>'
@@ -842,55 +842,111 @@ function txDetailModal(id) {
     }
   }
 
-  // vendor name chip (detail modal)
-  var bigAvatar = '';
-  if (vendorName) {
-    var c2=0; for(var _ci2=0;_ci2<vendorName.length;_ci2++) c2=(c2*31+vendorName.charCodeAt(_ci2))&0xffff;
-    var p2=['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
-    var t2=['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
-    bigAvatar='<span style="display:inline-flex;align-items:center;padding:4px 14px;border-radius:20px;background:'+p2[c2%p2.length]+';color:'+t2[c2%t2.length]+';font-size:14px;font-weight:600;font-family:Sarabun,sans-serif">'+vendorName+'</span>';
+  // ── Hero logo (vendor > account > type emoji) ───────────────
+  var heroLogoHtml = '';
+  var _vobj2 = e.vendor_id ? (vendorsData||[]).find(function(v){ return v.id===e.vendor_id; }) : null;
+  if (e.type === 'transfer') {
+    heroLogoHtml = '<div style="width:80px;height:80px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.15)">'
+      + _transferLogos(e, 34) + '</div>';
+  } else if (_vobj2 && _vobj2.logo_url) {
+    heroLogoHtml = '<img src="'+_vobj2.logo_url+'" title="'+((_vobj2.name||'').replace(/"/g,'&quot;'))+'" '
+      +'style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.18)">';
+  } else if (_vobj2) {
+    heroLogoHtml = (typeof vendorLogoHtml==='function') ? vendorLogoHtml(_vobj2, 80) : '';
+  } else if (acctObj && acctObj.logo_url) {
+    heroLogoHtml = '<img src="'+acctObj.logo_url+'" title="'+(acctName.replace(/"/g,'&quot;'))+'" '
+      +'style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.18)">';
+  } else {
+    var _heroEmoji = e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳';
+    heroLogoHtml = '<div style="width:80px;height:80px;border-radius:50%;background:'+typeColor+'22;border:2px solid '+typeColor+'44;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0">'+_heroEmoji+'</div>';
   }
 
-  function row(icon, label, val, valStyle) {
-    if (!val) return '';
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px">'
-      +'<span style="font-size:12px;color:var(--ink3)">'+icon+' '+label+'</span>'
-      +'<span style="font-size:13px;font-weight:500;color:var(--ink);'+(valStyle||'')+'">'+val+'</span>'
-    +'</div>';
+  // hero background tint
+  var heroBg = e.type==='income'
+    ? 'linear-gradient(160deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 100%)'
+    : e.type==='expense'
+    ? 'linear-gradient(160deg,rgba(248,113,113,.12) 0%,rgba(248,113,113,.04) 100%)'
+    : 'linear-gradient(160deg,rgba(96,165,250,.12) 0%,rgba(96,165,250,.04) 100%)';
+
+  // info row helper (icon box + label + value)
+  function infoRow(icon, label, valueHtml) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border-radius:14px">'
+      +'<div style="width:38px;height:38px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+icon+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +  '<div style="font-size:10px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.07em">'+label+'</div>'
+      +  '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">'+valueHtml+'</div>'
+      +'</div>'
+      +'</div>';
+  }
+
+  // account info row (with logo)
+  var acctRowHtml = '';
+  if (acctName) {
+    var _acctLogoHtml2 = acctObj && acctObj.logo_url
+      ? '<img src="'+acctObj.logo_url+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px">'
+      : '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+acctColor+';vertical-align:middle;margin-right:5px"></span>';
+    acctRowHtml = infoRow('💳','บัญชี', _acctLogoHtml2+acctName);
   }
 
   wrap.innerHTML =
     '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-end;justify-content:center">'
-    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0)">'
+    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:520px;display:flex;flex-direction:column;max-height:90vh;padding-bottom:env(safe-area-inset-bottom,0)">'
 
-      // drag handle + header
-      +'<div style="display:flex;justify-content:center;padding:10px 0 0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px">'
-        +'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+typeColor+';color:#fff;letter-spacing:.3px">'+typeLabel+'</span>'
-        +'<button onclick="closeTxDetailModal()" style="background:none;border:none;padding:4px 8px;font-size:20px;color:var(--ink3);cursor:pointer;line-height:1">×</button>'
+      // drag handle
+      +'<div style="display:flex;justify-content:center;padding:10px 0 0;flex-shrink:0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
+
+      // scrollable body
+      +'<div style="overflow-y:auto;flex:1;overscroll-behavior:contain">'
+
+        // HERO — gradient bg, logo large, amount, desc, status
+        +'<div style="padding:14px 20px 20px;background:'+heroBg+';border-bottom:1px solid var(--line)">'
+
+          // top bar: type badge + close
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+          +  '<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:'+typeColor+';color:#fff;letter-spacing:.4px">'+typeLabel+'</span>'
+          +  '<button onclick="closeTxDetailModal()" style="background:none;border:none;padding:4px 8px;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1">×</button>'
+          +'</div>'
+
+          // logo centered
+          +'<div style="display:flex;justify-content:center;margin-bottom:14px">'+heroLogoHtml+'</div>'
+
+          // amount
+          +'<div style="text-align:center;font-size:42px;font-weight:800;font-family:monospace;color:'+typeColor+';letter-spacing:-1.5px;line-height:1">'+amtSign+' '+fmtH(e.amt)+'</div>'
+
+          // description
+          +'<div style="text-align:center;font-size:16px;font-weight:600;color:var(--ink);margin-top:8px;padding:0 8px">'+e.desc+'</div>'
+
+          // vendor subtitle (if different)
+          +(vendorName && vendorName !== e.desc
+            ? '<div style="text-align:center;font-size:13px;color:var(--ink3);margin-top:4px">'+vendorName+'</div>'
+            : '')
+
+          // status badge centered
+          +'<div style="display:flex;justify-content:center;margin-top:14px">'
+          +  '<span style="font-size:13px;font-weight:700;padding:6px 20px;border-radius:20px;background:'+statusBg+';color:'+statusFg+';letter-spacing:.3px">'+statusLabel+'</span>'
+          +'</div>'
+
+        +'</div>'
+
+        // INFO rows
+        +'<div style="padding:14px 16px 6px;display:grid;gap:8px">'
+          +infoRow('📅','วันที่', toThaiDateStr(e.date))
+          +acctRowHtml
+          +(e.cat_name ? infoRow('📂','หมวด', e.cat_name) : '')
+          +(e.note ? infoRow('📝','หมายเหตุ', '<span style="font-style:italic;color:var(--ink2)">'+e.note+'</span>') : '')
+          +(splitHtml ? '<div style="background:var(--surface2);border-radius:14px;overflow:hidden">'+splitHtml+'</div>' : '')
+        +'</div>'
+
       +'</div>'
 
-      // amount hero
-      +'<div style="text-align:center;padding:8px 16px 16px">'
-        +'<div style="font-size:38px;font-weight:800;font-family:monospace;color:'+typeColor+';letter-spacing:-1px">'+amtSign+' '+fmtH(e.amt)+'</div>'
-        +'<div style="font-size:15px;font-weight:600;color:var(--ink);margin-top:4px">'+e.desc+'</div>'
-        +(vendorName?'<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:8px">'+bigAvatar+'<span style="font-size:13px;color:var(--ink2)">'+vendorName+'</span></div>':'')
-      +'</div>'
-
-      // detail rows
-      +'<div style="padding:0 16px 16px;display:grid;gap:6px">'
-        +row('📅','วันที่', toThaiDateStr(e.date))
-        +row('📂','หมวด', e.cat_name||'—')
-        +(acctName?'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">💳 บัญชี</span><span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)">'+(acctObj&&acctObj.logo_url?'<img src="'+acctObj.logo_url+'" style="width:18px;height:18px;border-radius:50%;object-fit:cover">':'<span style="width:10px;height:10px;border-radius:50%;background:'+acctColor+';display:inline-block"></span>')+acctName+'</span></div>':'')
-        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:var(--surface2);border-radius:10px"><span style="font-size:12px;color:var(--ink3)">✅ สถานะ</span><span style="font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px;background:'+statusBg+';color:'+statusFg+'">'+statusLabel+'</span></div>'
-        +splitHtml
-        +(e.note?'<div style="padding:9px 14px;background:var(--surface2);border-radius:10px"><div style="font-size:12px;color:var(--ink3);margin-bottom:4px">📝 หมายเหตุ</div><div style="font-size:13px;color:var(--ink);font-style:italic">'+e.note+'</div></div>':'')
-      +'</div>'
-
-      // action buttons
-      +'<div style="padding:0 16px 20px;display:flex;gap:10px">'
-        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:13px;border-radius:12px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>ลบ</button>'
-        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:13px;border-radius:12px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>แก้ไข</button>'
+      // action buttons (sticky at bottom)
+      +'<div style="padding:12px 16px 18px;display:flex;gap:10px;flex-shrink:0;border-top:1px solid var(--line)">'
+        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:13px;border-radius:14px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">'
+        +  '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:5px"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>ลบ'
+        +'</button>'
+        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:13px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">'
+        +  '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:5px"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>แก้ไข'
+        +'</button>'
       +'</div>'
     +'</div>'
   +'</div>';

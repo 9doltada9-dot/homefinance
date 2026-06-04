@@ -678,11 +678,44 @@ html.tx-fullscreen body{ overflow:hidden; }
     /* mobile: topbar 60px + bottomnav จริง 52px */
     height: calc(100vh - 60px - 52px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
   }
+  /* filter bar sticky ใต้ topbar บนมือถือ */
+  #txFilterBar{
+    top: calc(52px + env(safe-area-inset-top,0px));
+  }
 }
 
 /* ─────────────────────────────────────────────
    9) Modal overlays — ✦ Liquid Glass (ปรับตาม light/dark อัตโนมัติ)
    ───────────────────────────────────────────── */
+/* ── Dashboard drag-to-reorder ───────────────────────────── */
+/* Drag handle: จุด 2×3 ที่มุมบนขวา — ปรากฏเมื่อ hover */
+[data-dash-id]{
+  position: relative;
+  transition: opacity .2s, outline .15s;
+}
+[data-dash-id]::after{
+  content: '⠿';
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 16px;
+  color: rgba(255,255,255,.18);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity .2s, color .15s;
+  z-index: 5;
+  pointer-events: none;
+  user-select: none;
+}
+[data-dash-id]:hover::after{
+  opacity: 1;
+}
+/* drag-over highlight */
+[data-dash-id].dd-over{
+  outline: 2px dashed var(--accent) !important;
+  outline-offset: 2px;
+}
+
 /* overlay backdrop — tint เข้มพอ + เบลอเบาๆ เพื่อ frame modal */
 #editOverlay, #catOverlay, #splitGroupModal, #transferModal,
 #recurringModal, #recurringDueModal, #depositModal,

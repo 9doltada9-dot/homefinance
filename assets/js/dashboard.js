@@ -48,6 +48,7 @@ function renderDash(){
   renderDashBudgetMini();
   renderDashSettleMini(pend);
   renderDashSavingsMini();
+  initDashDrag(); // drag-to-reorder (idempotent)
 }
 
 function renderSalaryCycleCard(){
@@ -631,5 +632,107 @@ function renderAddFavCats() {
       +'style="padding:6px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;display:inline-block">'
       +c.name+'</span>';
   }).join('');
+}
+
+// ─── DASHBOARD DRAG-TO-REORDER ────────────────────────────
+var _dashDragInit = false;
+var _dashDragSrc  = null;
+
+function initDashDrag() {
+  var grid = document.querySelector('#page-dashboard .hf-dash-grid');
+  if (!grid || _dashDragInit) return;
+  _dashDragInit = true;
+
+  // Restore saved order
+  _dashRestoreOrder(grid);
+
+  // Init each draggable card
+  Array.from(grid.querySelectorAll('[data-dash-id]')).forEach(function(card) {
+    _dashInitCard(card, grid);
+  });
+}
+
+function _dashRestoreOrder(grid) {
+  var saved = [];
+  try { saved = JSON.parse(localStorage.getItem('hf2_dash_order') || '[]'); } catch(_) {}
+  if (!saved.length) return;
+  // Move cards in saved order (append to grid in sequence)
+  saved.forEach(function(id) {
+    var el = grid.querySelector('[data-dash-id="'+id+'"]');
+    if (el) grid.appendChild(el);
+  });
+}
+
+function _dashSaveOrder(grid) {
+  var order = Array.from(grid.querySelectorAll('[data-dash-id]')).map(function(c) {
+    return c.dataset.dashId;
+  });
+  localStorage.setItem('hf2_dash_order', JSON.stringify(order));
+}
+
+function _dashInitCard(card, grid) {
+  card.setAttribute('draggable', 'true');
+
+  card.addEventListener('dragstart', function(e) {
+    _dashDragSrc = card;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', card.dataset.dashId);
+    setTimeout(function() {
+      card.style.opacity = '0.45';
+      card.style.outline = '2px dashed var(--accent)';
+    }, 0);
+  });
+
+  card.addEventListener('dragend', function() {
+    card.style.opacity = '';
+    card.style.outline = '';
+    _dashDragSrc = null;
+    grid.querySelectorAll('[data-dash-id]').forEach(function(c) {
+      c.classList.remove('dd-over');
+    });
+    _dashSaveOrder(grid);
+  });
+
+  card.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  });
+
+  card.addEventListener('dragenter', function(e) {
+    e.preventDefault();
+    if (_dashDragSrc && card !== _dashDragSrc) card.classList.add('dd-over');
+  });
+
+  card.addEventListener('dragleave', function(e) {
+    // ตรวจว่า mouse ออกจาก card จริงๆ (ไม่ใช่ child element)
+    if (!card.contains(e.relatedTarget)) card.classList.remove('dd-over');
+  });
+
+  card.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    card.classList.remove('dd-over');
+    if (!_dashDragSrc || card === _dashDragSrc) return;
+    // วางก่อนหรือหลัง card ปลายทาง โดยดูจากตำแหน่ง mouse
+    var rect = card.getBoundingClientRect();
+    var midY = rect.top + rect.height / 2;
+    var midX = rect.left + rect.width / 2;
+    var after = e.clientY > midY || (e.clientY === midY && e.clientX > midX);
+    if (after) {
+      grid.insertBefore(_dashDragSrc, card.nextSibling);
+    } else {
+      grid.insertBefore(_dashDragSrc, card);
+    }
+    _dashSaveOrder(grid);
+    return false;
+  });
+}
+
+/** รีเซ็ต order กลับค่าเริ่มต้น */
+function resetDashOrder() {
+  localStorage.removeItem('hf2_dash_order');
+  _dashDragInit = false;
+  location.reload();
 }
 

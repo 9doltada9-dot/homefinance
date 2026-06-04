@@ -31,7 +31,7 @@ function fillVendors(txType) {
   var sorted = _sortedVendors(list);
 
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + v.name + (isFavVendor(v.name) ? ' ★' : '') + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
 
   // คืนค่าเดิมถ้ายังอยู่ในลิสต์ปัจจุบัน
@@ -59,14 +59,14 @@ function _bindVendorStar(sel, btn, txType) {
   if (!btn) return;
   var curId = sel.value;
   var n = (vendorsData.find(function(v) { return v.id === curId; }) || {}).name || '';
-  btn.textContent = (n && isFavVendor(n)) ? '⭐' : '☆';
+  btn.innerHTML = _starBtnHtml(n && isFavVendor(n));
   btn.title = (n && isFavVendor(n)) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
   btn.onclick = function() {
     if (!n) return;
     var f = getFavs(); if (!f.vendor) f.vendor = {};
     f.vendor[n] = !f.vendor[n]; saveFavs(f);
     _rebuildVendorOptions(sel, txType);
-    btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+    btn.innerHTML = _starBtnHtml(isFavVendor(n));
     btn.title = isFavVendor(n) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
     var eVendorStar = document.getElementById('eVendorStar');
     if (eVendorStar) { var eV = document.getElementById('eVendor'); if (eV) _bindEditVendorStar(eV, eVendorStar); }
@@ -78,7 +78,7 @@ function _rebuildVendorOptions(sel, txType) {
   var list   = _filterVendorsByType(txType);
   var sorted = _sortedVendors(list);
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + v.name + (isFavVendor(v.name) ? ' ★' : '') + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
   sel.value = curId;
 }
@@ -92,7 +92,7 @@ function fillEditVendors(txType) {
   var sorted = _sortedVendors(list);
 
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + v.name + (isFavVendor(v.name) ? ' ★' : '') + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
 
   if (prevVal !== undefined) sel.value = prevVal;
@@ -110,14 +110,14 @@ function _bindEditVendorStar(sel, btn, txType) {
   if (!btn) return;
   var curId = sel.value;
   var n = (vendorsData.find(function(v) { return v.id === curId; }) || {}).name || '';
-  btn.textContent = (n && isFavVendor(n)) ? '⭐' : '☆';
+  btn.innerHTML = _starBtnHtml(n && isFavVendor(n));
   btn.title = (n && isFavVendor(n)) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
   btn.onclick = function() {
     if (!n) return;
     var f = getFavs(); if (!f.vendor) f.vendor = {};
     f.vendor[n] = !f.vendor[n]; saveFavs(f);
     _rebuildEditVendorOptions(sel, txType);
-    btn.textContent = isFavVendor(n) ? '⭐' : '☆';
+    btn.innerHTML = _starBtnHtml(isFavVendor(n));
     btn.title = isFavVendor(n) ? 'ยกเลิก favorite' : 'ตั้ง favorite';
     var fSel = document.getElementById('fVendor');
     var fBtn = document.getElementById('fVendorStar');
@@ -130,7 +130,7 @@ function _rebuildEditVendorOptions(sel, txType) {
   var list   = _filterVendorsByType(txType);
   var sorted = _sortedVendors(list);
   sel.innerHTML = sorted.map(function(v) {
-    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + (isFavVendor(v.name) ? '⭐ ' : '') + v.name + '</option>';
+    return '<option value="' + v.id + '" data-logo="' + (v.logo_url||'').replace(/"/g,'&quot;') + '">' + v.name + (isFavVendor(v.name) ? ' ★' : '') + '</option>';
   }).join('') + '<option value="">-- ไม่ระบุ --</option>';
   sel.value = curId;
 }

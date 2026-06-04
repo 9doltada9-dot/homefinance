@@ -108,7 +108,7 @@ function fillCats(){
   var prevCat = sel.value;  // เก็บค่าเดิมก่อน rebuild
   var catsByType = categories.filter(function(c){return c.type === cType;});
   var sorted = catsByType.slice().sort(function(a,b){return (isFavCat(b.id)?1:0)-(isFavCat(a.id)?1:0);});
-  sel.innerHTML = sorted.map(function(c){return '<option value="'+c.id+'">'+(isFavCat(c.id)?'⭐ ':'')+c.name+'</option>';}).join('');
+  sel.innerHTML = sorted.map(function(c){return '<option value="'+c.id+'">'+c.name+(isFavCat(c.id)?' ★':'')+'</option>';}).join('');
   // คืนค่าเดิมถ้ายังอยู่ในลิสต์ ไม่ดึงดาวขึ้นมาบัง
   var stillValid = sorted.find(function(c){ return c.id === prevCat; });
   if(stillValid){
@@ -126,7 +126,7 @@ function fillCats(){
 function updateCatStar(){
   var btn = document.getElementById('fCatStar');
   var catId = document.getElementById('fCat')?.value;
-  if(btn) btn.textContent = isFavCat(catId) ? '⭐' : '☆';
+  if(btn) btn.innerHTML = _starBtnHtml(isFavCat(catId));
 }
 
 function onCatChange(){
@@ -145,7 +145,7 @@ function fillDescByCat(catId){
   var saved = (itemsData[catId]||[]).map(function(x){return x.name;});
   var sorted = saved.slice().sort(function(a,b){return (isFavItem(b)?1:0)-(isFavItem(a)?1:0);});
   sel.innerHTML = sorted.length
-    ? sorted.map(function(d){return '<option value="'+d+'">'+(isFavItem(d)?'⭐ ':'')+d+'</option>';}).join('')
+    ? sorted.map(function(d){return '<option value="'+d+'">'+d+(isFavItem(d)?' ★':'')+'</option>';}).join('')
     : '<option value="">-- ยังไม่มีรายการ (เพิ่มที่หน้าตั้งค่า) --</option>';
   // คืนค่าเดิมถ้ายังอยู่ในลิสต์ ไม่ดึงดาวขึ้นมาบัง
   if(prevDesc && sorted.indexOf(prevDesc) !== -1){
@@ -162,7 +162,7 @@ function fillDescByCat(catId){
 function updateDescStar(){
   var btn = document.getElementById('fDescStar');
   var desc = document.getElementById('fDesc')?.value;
-  if(btn) btn.textContent = isFavItem(desc) ? '⭐' : '☆';
+  if(btn) btn.innerHTML = _starBtnHtml(isFavItem(desc));
 }
 
 // ─── SPLIT TYPE (v3.10) ──────────────────────────────────

@@ -6,6 +6,12 @@
 
 function getFavs(){ return JSON.parse(localStorage.getItem('hf2_favs')||'{"cat":{},"item":{},"vendor":{}}'); }
 
+function _starBtnHtml(selected) {
+  return selected
+    ? '<span style="color:#facc15;filter:drop-shadow(0 0 5px rgba(250,204,21,.85));font-size:18px;line-height:1">★</span>'
+    : '<span style="color:rgba(150,160,200,.35);font-size:18px;line-height:1">☆</span>';
+}
+
 // เขียน localStorage เท่านั้น (ใช้ตอน apply จาก DB เพื่อไม่ loop กลับ)
 function saveFavsLocal(f){ localStorage.setItem('hf2_favs', JSON.stringify(f)); }
 

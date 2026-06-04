@@ -861,12 +861,12 @@ function txDetailModal(id) {
       + '</div>';
   } else if (_vobj2 && _vobj2.logo_url) {
     heroLogoHtml = '<img src="'+_vobj2.logo_url+'" title="'+((_vobj2.name||'').replace(/"/g,'&quot;'))+'" '
-      +'style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.18)">';
+      +'style="max-width:90px;max-height:90px;width:auto;height:auto;border-radius:14px;object-fit:contain;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.15)">';
   } else if (_vobj2) {
     heroLogoHtml = (typeof vendorLogoHtml==='function') ? vendorLogoHtml(_vobj2, 80) : '';
   } else if (acctObj && acctObj.logo_url) {
     heroLogoHtml = '<img src="'+acctObj.logo_url+'" title="'+(acctName.replace(/"/g,'&quot;'))+'" '
-      +'style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.18)">';
+      +'style="max-width:90px;max-height:90px;width:auto;height:auto;border-radius:14px;object-fit:contain;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.15)">';
   } else {
     var _heroEmoji = e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳';
     heroLogoHtml = '<div style="width:80px;height:80px;border-radius:50%;background:'+typeColor+'22;border:2px solid '+typeColor+'44;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0">'+_heroEmoji+'</div>';
@@ -927,10 +927,6 @@ function txDetailModal(id) {
           // description
           +'<div style="text-align:center;font-size:16px;font-weight:600;color:var(--ink);margin-top:8px;padding:0 8px">'+e.desc+'</div>'
 
-          // vendor subtitle (if different)
-          +(vendorName && vendorName !== e.desc
-            ? '<div style="text-align:center;font-size:13px;color:var(--ink3);margin-top:4px">'+vendorName+'</div>'
-            : '')
 
           // status badge centered
           +'<div style="display:flex;justify-content:center;margin-top:14px">'

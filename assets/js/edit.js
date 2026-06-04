@@ -89,12 +89,21 @@ function openEdit(id){
   document.getElementById('eAmt').value = e.amt;
   document.getElementById('eStatus').value = e.status;
   document.getElementById('eNote').value = e.note||'';
-  // populate vendors (with smart sort via fillEditVendors) — filter by tx type
+  // populate vendors + always set correct value (incl. empty = -- ไม่ระบุ --)
   fillEditVendors(e.type);
-  if(e.vendor_id) document.getElementById('eVendor').value = e.vendor_id;
+  var _eVendorEl = document.getElementById('eVendor');
+  if (_eVendorEl) {
+    _eVendorEl.value = e.vendor_id || '';
+    var _eVStarEl = document.getElementById('eVendorStar');
+    if (typeof _bindEditVendorStar === 'function') _bindEditVendorStar(_eVendorEl, _eVStarEl, e.type);
+  }
+  // fill accounts + restore correct account (rebuild picker after setting value)
   if(typeof fillAccountSelectors === 'function') fillAccountSelectors();
   var eAcct = document.getElementById('eAccount');
-  if(eAcct && e.account_id) eAcct.value = e.account_id;
+  if(eAcct && e.account_id) {
+    eAcct.value = e.account_id;
+    if (typeof _buildAcctPicker === 'function') _buildAcctPicker('eAccount');
+  }
   eSetType(e.type, false);
   setTimeout(function(){
     var catVal = e.cat_id || ((categories.find(function(c){return c.name === e.cat_name;})||{}).id) || '';
@@ -112,6 +121,8 @@ function openEdit(id){
     }
     ePopulateGroups(e.split_group_id || '');
     eUpdateSplitPreview();
+    eUpdateCatStar();
+    eUpdateDescStar();
   },10);
 }
 
@@ -122,13 +133,53 @@ function closeEdit(){
 function eUpdateDescByCat(catId){
   var sel = document.getElementById('eDesc');
   if(!sel) return;
-  // only items from items table — no DB history
   var saved = (itemsData[catId]||[]).map(function(x){return x.name;});
+  var sorted = saved.slice().sort(function(a,b){ return (isFavItem(b)?1:0)-(isFavItem(a)?1:0); });
   var cur = sel.value;
-  sel.innerHTML = saved.length
-    ? saved.map(function(d){return '<option value="'+d+'">'+(isFavItem(d)?'⭐ ':'')+d+'</option>';}).join('')
+  sel.innerHTML = sorted.length
+    ? sorted.map(function(d){return '<option value="'+d+'">'+d+(isFavItem(d)?' ★':'')+'</option>';}).join('')
     : '<option value="">-- ยังไม่มีรายการ --</option>';
-  if(cur && saved.indexOf(cur)>-1) sel.value = cur;
+  if(cur && sorted.indexOf(cur)>-1) sel.value = cur;
+  eUpdateDescStar();
+}
+
+function eUpdateCatStar(){
+  var btn = document.getElementById('eCatStar');
+  var catId = (document.getElementById('eCat')||{}).value;
+  if(btn) btn.innerHTML = (typeof _starBtnHtml==='function') ? _starBtnHtml(isFavCat(catId)) : (isFavCat(catId)?'⭐':'☆');
+}
+
+function eUpdateDescStar(){
+  var btn = document.getElementById('eDescStar');
+  var desc = (document.getElementById('eDesc')||{}).value;
+  if(btn) btn.innerHTML = (typeof _starBtnHtml==='function') ? _starBtnHtml(isFavItem(desc)) : (isFavItem(desc)?'⭐':'☆');
+}
+
+function eToggleFavCat(){
+  var catId = (document.getElementById('eCat')||{}).value;
+  if(!catId) return;
+  var f = getFavs(); if(!f.cat) f.cat={};
+  f.cat[catId] = !f.cat[catId];
+  saveFavs(f);
+  var sel = document.getElementById('eCat');
+  if(sel){
+    var cur = sel.value;
+    var catsByType = categories.filter(function(c){ return c.type===eType; });
+    var sorted2 = catsByType.slice().sort(function(a,b){ return (isFavCat(b.id)?1:0)-(isFavCat(a.id)?1:0); });
+    sel.innerHTML = sorted2.map(function(c){return '<option value="'+c.id+'">'+c.name+(isFavCat(c.id)?' ★':'')+'</option>';}).join('');
+    sel.value = cur;
+  }
+  eUpdateCatStar();
+}
+
+function eToggleFavItem(){
+  var desc = (document.getElementById('eDesc')||{}).value;
+  if(!desc) return;
+  var f = getFavs(); if(!f.item) f.item={};
+  f.item[desc] = !f.item[desc];
+  saveFavs(f);
+  eUpdateDescByCat((document.getElementById('eCat')||{}).value);
+  eUpdateDescStar();
 }
 
 function eSetType(t, autoS){
@@ -156,19 +207,17 @@ function eSetType(t, autoS){
   }
   var sel = document.getElementById('eCat');
   var catsByType = categories.filter(function(c){return c.type === t;});
-  sel.innerHTML = catsByType.map(function(c){return '<option value="'+c.id+'">'+c.name+'</option>';}).join('');
-  if(autoS && catsByType.length>0){
-    sel.value = catsByType[0].id;
-    var cat = catMap[sel.value];
+  var catSorted = catsByType.slice().sort(function(a,b){ return (isFavCat(b.id)?1:0)-(isFavCat(a.id)?1:0); });
+  sel.innerHTML = catSorted.map(function(c){return '<option value="'+c.id+'">'+c.name+(isFavCat(c.id)?' ★':'')+'</option>';}).join('');
+  if(autoS && catSorted.length>0){
+    sel.value = catSorted[0].id;
     ePopulateGroups('');
   }
   fillEditVendors(t);
+  eUpdateCatStar();
   sel.onchange = function(){
-    if(t==='expense'){
-      var cat2 = catMap[sel.value];
-    }
-    // update eDesc based on category
     eUpdateDescByCat(sel.value);
+    eUpdateCatStar();
   };
 }
 

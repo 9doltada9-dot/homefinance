@@ -146,7 +146,7 @@ function vendorLogoHtml(v, size) {
   var name = v.name || '?';
   if (v.logo_url) {
     return '<img src="'+v.logo_url+'" title="'+name.replace(/"/g,'&quot;')+'" '
-      +'style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
+      +'style="width:'+size+'px;height:'+size+'px;border-radius:6px;object-fit:contain;background:transparent;flex-shrink:0;display:inline-block;vertical-align:middle">';
   }
   // fallback: ตัวอักษรแรก + สีเฉพาะ
   var code = 0; for(var _i=0;_i<name.length;_i++) code = (code*31+name.charCodeAt(_i))&0xffff;
@@ -174,7 +174,6 @@ function renderVendorList() {
           + '</div>'
           + '<div style="font-size:10px;color:' + vtColor + ';font-weight:600;margin-top:2px">' + (_VTYPE_LABELS[vt] || vt) + '</div>'
           + '<div style="display:flex;gap:4px;justify-content:flex-end;margin-top:6px">'
-          +   '<button onclick="openVendorLogoModal(\''+v.id+'\')" class="stg-cat-card-btn" title="โลโก้">🖼</button>'
           +   '<button onclick="startEditVendor(\'' + v.id + '\')" class="stg-cat-card-btn" title="แก้ไข">✎</button>'
           +   '<button onclick="deleteVendor(\'' + v.id + '\')" class="stg-cat-card-btn" style="color:#f87171">×</button>'
           + '</div>'

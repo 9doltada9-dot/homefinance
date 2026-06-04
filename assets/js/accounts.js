@@ -248,7 +248,7 @@ function acctLogoHtml(acct, size) {
   var TYPE_ICN = { bank:'🏦', cash:'💵', ewallet:'📱' };
   if (acct && acct.logo_url) {
     return '<img src="'+acct.logo_url+'" style="width:'+size+'px;height:'+size+'px;'
-      +'border-radius:50%;object-fit:cover;flex-shrink:0;display:block">';
+      +'border-radius:6px;object-fit:contain;background:transparent;flex-shrink:0;display:block">';
   }
   var icon = TYPE_ICN[acct && acct.type] || '💳';
   var col  = (acct && acct.color) || '#1a4fa0';
@@ -620,7 +620,7 @@ function renderAccountCards() {
           var TYPE_ICN = { bank:'🏦', cash:'💵', ewallet:'📱' };
           var icon = TYPE_ICN[a.type] || '💳';
           var logoHdr = a.logo_url
-            ? '<img src="'+a.logo_url+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px"> '
+            ? '<img src="'+a.logo_url+'" style="width:20px;height:20px;border-radius:4px;object-fit:contain;background:transparent;vertical-align:middle;margin-right:4px"> '
             : icon + ' ';
           return '<div onclick="nav(\'accounts\')" style="flex-shrink:0;min-width:130px;cursor:pointer;'
             +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);'

@@ -84,14 +84,14 @@ function markRecurringDone(id) {
   }
 }
 
-// ─── PROCESS (find due + upcoming, show modal) ────────────
+// ─── PROCESS (find due + upcoming) ────────────────────────
 function processRecurring() {
   var today    = new Date();
   var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
   var todayDay = today.getDate();
   var list     = getRecurringList();
-  var dueList      = []; // today >= dueDay (must record now)
-  var upcomingList = []; // dueDay within next 7 days
+  var dueList      = []; // today >= dueDay → auto-create pending
+  var upcomingList = []; // dueDay within next 7 days → show warning
 
   list.forEach(function(t) {
     if (t.last_run_yyyymm === yyyymm) return;
@@ -103,11 +103,91 @@ function processRecurring() {
     }
   });
 
-  if ((dueList.length > 0 || upcomingList.length > 0) && recurringDueNotifEnabled) {
-    showRecurringDueModal(dueList, upcomingList);
+  // auto-create pending transactions for due items
+  if (dueList.length > 0) {
+    _autoCreatePendingRecurring(dueList, yyyymm);
+  }
+
+  // แสดง modal เฉพาะ upcoming (ยังไม่ถึงกำหนด) + due ที่ยังไม่ได้ auto-create
+  if (upcomingList.length > 0 && recurringDueNotifEnabled) {
+    showRecurringDueModal([], upcomingList);
   }
 
   return dueList.length;
+}
+
+/** สร้าง pending transaction อัตโนมัติสำหรับรายการที่ถึงกำหนด */
+async function _autoCreatePendingRecurring(dueList, yyyymm) {
+  // ป้องกัน double-run ในเดือนเดียวกัน
+  var doneKey = 'hf2_auto_pending_' + yyyymm;
+  var donePrev = [];
+  try { donePrev = JSON.parse(localStorage.getItem(doneKey) || '[]'); } catch(_) {}
+
+  var created = 0;
+  for (var i = 0; i < dueList.length; i++) {
+    var t = dueList[i];
+    if (donePrev.indexOf(t.id) > -1) continue; // ทำแล้วเดือนนี้
+
+    // ตรวจว่ามี pending entry สำหรับ recurring_id นี้เดือนนี้อยู่แล้วหรือไม่
+    var alreadyExists = (typeof db !== 'undefined') && db.some(function(e) {
+      return e._recurring_id === t.id
+        && e.date && e.date.slice(0,7) === yyyymm
+        && e.status === 'pending';
+    });
+    if (alreadyExists) {
+      donePrev.push(t.id);
+      continue;
+    }
+
+    var today2    = new Date();
+    var dueDay    = t.day_of_month || 1;
+    var entryDate = yyyymm + '-' + String(dueDay).padStart(2,'0');
+    var cycle_id  = (typeof cycleIdFromDate === 'function') ? cycleIdFromDate(entryDate) : null;
+    var uid       = (typeof getAuthUserId === 'function') ? getAuthUserId() : null;
+    var person    = t.person || (typeof getCurrentPerson === 'function' ? getCurrentPerson() : null);
+    var _pendStatus = t.type === 'income' ? 'pending' : 'pending';
+
+    var _entry = {
+      id:             Date.now() + i,
+      date:           entryDate,
+      type:           t.type || 'expense',
+      cat_id:         t.cat_id,
+      cat_name:       t.cat_name || '',
+      desc:           t.desc || t.cat_name || '',
+      amt:            t.amt,
+      person:         person,
+      user_id:        uid || person,
+      split:          false, split_type:'personal', split_members:[], split_ratios:{},
+      split_group_id: null, split_snapshot: null,
+      status:         _pendStatus,
+      note:           t.note || '',
+      item_id:        null,
+      vendor_id:      t.vendor_id || null,
+      _salary_cycle:  null,
+      cycle_id:       cycle_id,
+      account_id:     t.account_id || null,
+      _recurring_id:  t.id,
+    };
+
+    var _ok = await (typeof sbAdd === 'function' ? sbAdd(_entry) : Promise.resolve(false));
+    if (_ok) {
+      if (typeof db !== 'undefined') db.unshift(_entry);
+      if (typeof save === 'function') save();
+      markRecurringRun(t.id);
+      donePrev.push(t.id);
+      created++;
+    }
+  }
+  localStorage.setItem(doneKey, JSON.stringify(donePrev));
+
+  if (created > 0) {
+    if (typeof renderDash         === 'function') renderDash();
+    if (typeof renderAccountCards === 'function') renderAccountCards();
+    if (typeof renderRecurringList=== 'function') renderRecurringList();
+    if (typeof showCycleToast     === 'function') {
+      showCycleToast('📋 สร้าง ' + created + ' รายการรอจ่ายอัตโนมัติแล้ว');
+    }
+  }
 }
 
 // ─── DUE MODAL (urgency colors) ───────────────────────────

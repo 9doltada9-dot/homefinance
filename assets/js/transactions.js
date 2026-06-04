@@ -594,7 +594,7 @@ function renderTx(){
     if (vobj && vobj.logo_url) {
       return '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 3px;border-radius:20px;'
         +'background:var(--surface2);font-size:11px;font-weight:600;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;font-family:Sarabun,sans-serif">'
-        +'<img src="'+vobj.logo_url+'" style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0">'+name+'</span>';
+        +'<img src="'+vobj.logo_url+'" style="width:16px;height:16px;border-radius:3px;object-fit:contain;background:transparent;flex-shrink:0">'+name+'</span>';
     }
     var code = 0; for(var _ci=0;_ci<name.length;_ci++) code = (code*31 + name.charCodeAt(_ci)) & 0xffff;
     var palette = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
@@ -870,51 +870,90 @@ function txDetailModal(id) {
     heroLogoHtml = '<img src="'+_vobj2.logo_url+'" title="'+((_vobj2.name||'').replace(/"/g,'&quot;'))+'" '
       +'style="max-width:64px;max-height:64px;width:auto;height:auto;border-radius:12px;object-fit:contain;flex-shrink:0;box-shadow:0 3px 14px rgba(0,0,0,.13)">';
   } else if (_vobj2) {
-    heroLogoHtml = (typeof vendorLogoHtml==='function') ? vendorLogoHtml(_vobj2, 56) : '';
+    heroLogoHtml = (typeof vendorLogoHtml==='function') ? vendorLogoHtml(_vobj2, 72) : '';
   } else if (acctObj && acctObj.logo_url) {
     heroLogoHtml = '<img src="'+acctObj.logo_url+'" title="'+(acctName.replace(/"/g,'&quot;'))+'" '
-      +'style="max-width:64px;max-height:64px;width:auto;height:auto;border-radius:12px;object-fit:contain;flex-shrink:0;box-shadow:0 3px 14px rgba(0,0,0,.13)">';
+      +'style="max-width:72px;max-height:72px;width:auto;height:auto;border-radius:14px;object-fit:contain;box-shadow:0 4px 18px rgba(0,0,0,.18)">';
   } else {
     var _heroEmoji = e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳';
-    heroLogoHtml = '<div style="width:56px;height:56px;border-radius:50%;background:'+typeColor+'22;border:2px solid '+typeColor+'44;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">'+_heroEmoji+'</div>';
+    heroLogoHtml = '<div style="width:72px;height:72px;border-radius:50%;background:'+typeColor+'22;border:2px solid '+typeColor+'44;display:flex;align-items:center;justify-content:center;font-size:32px">'+_heroEmoji+'</div>';
   }
 
-  // hero background tint
   var heroBg = e.type==='income'
     ? 'linear-gradient(160deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 100%)'
     : e.type==='expense'
     ? 'linear-gradient(160deg,rgba(248,113,113,.12) 0%,rgba(248,113,113,.04) 100%)'
     : 'linear-gradient(160deg,rgba(96,165,250,.12) 0%,rgba(96,165,250,.04) 100%)';
 
-  // compact info row
-  function infoRow(icon, label, valueHtml) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:12px">'
-      +'<div style="width:32px;height:32px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+icon+'</div>'
-      +'<div style="flex:1;min-width:0">'
-      +  '<div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.07em">'+label+'</div>'
-      +  '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-top:1px">'+valueHtml+'</div>'
-      +'</div>'
+  var _timeStr = _fmtTime(e.created_at);
+
+  // ── Transfer logo helper (independent of renderTx scope) ──
+  var _tLogoD = function(a, sz) {
+    if (!a) return '<span style="font-size:'+(sz*.7)+'px;line-height:1">💳</span>';
+    if (a.logo_url) return '<img src="'+a.logo_url+'" style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;box-shadow:0 3px 12px rgba(0,0,0,.2)">';
+    var c = a.color||'#1a4fa0';
+    return '<span style="display:inline-flex;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+c+'22;border:2px solid '+c+'55;align-items:center;justify-content:center;font-size:'+(sz*.42)+'px;font-weight:800;color:'+c+'">'+(a.name||'?').charAt(0)+'</span>';
+  };
+
+  // ── Mini card helper ──
+  function miniCard(iconHtml, val, sub, dim) {
+    return '<div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;'
+      +'padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center'
+      +(dim?';opacity:.35':'')
+      +'">'
+      +  iconHtml
+      +  '<div style="font-size:11px;font-weight:700;color:var(--ink);line-height:1.3;word-break:break-word">'+val+'</div>'
+      +  '<div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.06em">'+sub+'</div>'
       +'</div>';
   }
 
-  // account info row (with logo)
-  var acctRowHtml = '';
-  if (acctName) {
-    var _acctLogoHtml2 = acctObj && acctObj.logo_url
-      ? '<img src="'+acctObj.logo_url+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px">'
-      : '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+acctColor+';vertical-align:middle;margin-right:5px"></span>';
-    acctRowHtml = infoRow('💳','บัญชี', _acctLogoHtml2+acctName);
-  }
+  // ── Card icon builders ──
+  // Account card
+  var _acctCardIcon = acctObj && acctObj.logo_url
+    ? '<img src="'+acctObj.logo_url+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover">'
+    : '<div style="width:32px;height:32px;border-radius:50%;background:'+acctColor+'22;border:1.5px solid '+acctColor+'55;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:'+acctColor+'">'+(acctName||'?').charAt(0)+'</div>';
 
-  var _timeStr = _fmtTime(e.created_at);
+  // Category card
+  var _catName3 = e.cat_name || '—';
+  var _cc3 = 0; for(var _i3=0;_i3<_catName3.length;_i3++) _cc3=(_cc3*31+_catName3.charCodeAt(_i3))&0xffff;
+  var _cBg3=['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe'];
+  var _cFg3=['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e'];
+  var _catCardIcon = e.cat_name
+    ? '<div style="width:32px;height:32px;border-radius:50%;background:'+_cBg3[_cc3%_cBg3.length]+';color:'+_cFg3[_cc3%_cFg3.length]+';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">'+_catName3.charAt(0)+'</div>'
+    : '<div style="font-size:20px;line-height:1">—</div>';
+
+  // Split card
+  var _splitIcons3 = {personal:'💼',equal:'👥',ratio:'📊',custom:'🎯'};
+  var _splitLabel3 = 'ส่วนตัว', _splitIcon3 = '💼', _splitDim3 = false;
+  if (e.type === 'expense') {
+    if (e.split_group_id) {
+      var _grps3 = (typeof getSplitGroups==='function') ? getSplitGroups() : [];
+      var _grp3 = _grps3.find(function(g){ return g.id===e.split_group_id; });
+      _splitLabel3 = _grp3 ? _grp3.name : 'กลุ่ม';
+      _splitIcon3 = _splitIcons3[e.split_type] || '👥';
+    }
+  } else {
+    _splitDim3 = true; _splitLabel3 = '—'; _splitIcon3 = '';
+  }
+  var _splitCardIcon = '<div style="font-size:22px;line-height:1">'+(_splitIcon3||'💼')+'</div>';
+
+  // Transfer cards (from/to accounts)
+  var _fromAcctH2 = null, _toAcctH2 = null;
+  if (e.type === 'transfer') {
+    _fromAcctH2 = e.account_id ? (typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }) : null;
+    var _pairH2 = (typeof db!=='undefined'?db:[]).find(function(x){ return x.id===e.transfer_pair_id; });
+    _toAcctH2 = _pairH2 ? ((typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===_pairH2.account_id; })||null) : null;
+  }
 
   wrap.innerHTML =
     '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-end;justify-content:center">'
     +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:520px;display:flex;flex-direction:column;max-height:88vh;padding-bottom:env(safe-area-inset-bottom,0)">'
 
-      // drag handle + top bar (same line level)
+      // drag handle
       +'<div style="display:flex;justify-content:center;padding:8px 0 0;flex-shrink:0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 4px;flex-shrink:0">'
+
+      // top bar
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 0;flex-shrink:0">'
       +  '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+typeColor+';color:#fff;letter-spacing:.4px">'+typeLabel+'</span>'
       +  '<button onclick="closeTxDetailModal()" style="background:none;border:none;padding:4px 8px;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1">×</button>'
       +'</div>'
@@ -922,42 +961,65 @@ function txDetailModal(id) {
       // scrollable body
       +'<div style="overflow-y:auto;flex:1;overscroll-behavior:contain">'
 
-        // HERO compact — horizontal layout
-        +'<div style="display:flex;align-items:center;gap:14px;padding:10px 16px 14px;background:'+heroBg+';border-bottom:1px solid var(--line)">'
+        // ── HERO centered ──
+        +'<div style="padding:16px 20px 18px;text-align:center;background:'+heroBg+';border-bottom:1px solid var(--line)">'
 
-          // logo (left)
-          +'<div style="flex-shrink:0">'+heroLogoHtml+'</div>'
+          // logo / transfer logos
+          +(e.type==='transfer'
+            ? '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px">'
+              +'<div style="display:flex;flex-direction:column;align-items:center;gap:3px">'
+              +  _tLogoD(_fromAcctH2, 52)
+              +  '<span style="font-size:9px;color:var(--ink3);font-weight:600">ต้นทาง</span>'
+              +'</div>'
+              +'<span style="font-size:26px;font-weight:800;color:'+typeColor+'">→</span>'
+              +'<div style="display:flex;flex-direction:column;align-items:center;gap:3px">'
+              +  _tLogoD(_toAcctH2, 52)
+              +  '<span style="font-size:9px;color:var(--ink3);font-weight:600">ปลายทาง</span>'
+              +'</div>'
+              +'</div>'
+            : '<div style="display:flex;justify-content:center;margin-bottom:14px">'+heroLogoHtml+'</div>'
+          )
 
-          // text block (right)
-          +'<div style="flex:1;min-width:0">'
-          +  '<div style="font-size:30px;font-weight:800;font-family:monospace;color:'+typeColor+';letter-spacing:-1px;line-height:1.05">'+amtSign+' '+fmtH(e.amt)+'</div>'
-          +  '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.desc+'</div>'
-          +  '<div style="margin-top:6px">'
-          +    '<span style="font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;background:'+statusBg+';color:'+statusFg+'">'+statusLabel+'</span>'
-          +  '</div>'
+          // amount
+          +'<div style="font-size:36px;font-weight:800;font-family:monospace;color:'+typeColor+';letter-spacing:-1.5px;line-height:1">'+amtSign+' '+fmtH(e.amt)+'</div>'
+
+          // description
+          +'<div style="font-size:15px;font-weight:600;color:var(--ink);margin-top:7px">'+e.desc+'</div>'
+
+          // status badge
+          +'<div style="display:flex;justify-content:center;margin-top:9px">'
+          +  '<span style="font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;background:'+statusBg+';color:'+statusFg+';letter-spacing:.3px">'+statusLabel+'</span>'
+          +'</div>'
+
+          // date + time
+          +'<div style="font-size:12px;color:var(--ink3);font-weight:500;margin-top:7px">'
+          +  toThaiDateStr(e.date)+(_timeStr?' · <span style="font-family:monospace">'+_timeStr+'</span>':'')
           +'</div>'
 
         +'</div>'
 
-        // INFO rows compact
-        +'<div style="padding:10px 14px 6px;display:grid;gap:6px">'
-          +infoRow('📅','วันที่', toThaiDateStr(e.date)+(_timeStr?' <span style="color:var(--ink3);font-size:11px;font-weight:500">'+_timeStr+'</span>':''))
-          +acctRowHtml
-          +(e.cat_name ? infoRow('📂','หมวด', e.cat_name) : '')
-          +(e.note ? infoRow('📝','หมายเหตุ', '<span style="font-style:italic;color:var(--ink2)">'+e.note+'</span>') : '')
-          +(splitHtml ? '<div style="background:var(--surface2);border-radius:12px;overflow:hidden">'+splitHtml+'</div>' : '')
+        // ── 3 CARDS (or 2 for transfer) ──
+        +'<div style="display:grid;grid-template-columns:'+(e.type==='transfer'?'1fr 1fr':'1fr 1fr 1fr')+';gap:8px;padding:12px 14px">'
+          +(e.type==='transfer'
+            ? miniCard(_tLogoD(_fromAcctH2, 32), (_fromAcctH2?_fromAcctH2.name:'—'), 'ต้นทาง', false)
+            + miniCard(_tLogoD(_toAcctH2, 32),   (_toAcctH2?_toAcctH2.name:'—'),     'ปลายทาง', false)
+            : miniCard(_acctCardIcon, acctName||'—', 'บัญชี', !acctName)
+            + miniCard(_catCardIcon, _catName3, 'หมวด', !e.cat_name)
+            + miniCard(_splitCardIcon, _splitLabel3, 'การหาร', _splitDim3)
+          )
         +'</div>'
+
+        // note
+        +(e.note
+          ? '<div style="margin:0 14px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--ink2);font-style:italic">📝 '+e.note+'</div>'
+          : '')
 
       +'</div>'
 
       // action buttons
       +'<div style="padding:10px 14px 16px;display:flex;gap:10px;flex-shrink:0;border-top:1px solid var(--line)">'
-        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:12px;border-radius:14px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">'
-        +  '<svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M6 2l1-1h6l1 1h4v2H2V2h4zm1 4h2v9H7V6zm4 0h2v9h-2V6zM3 5h14l-1 13H4L3 5z"/></svg>ลบ'
-        +'</button>'
-        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:12px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">'
-        +  '<svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.314.485.485-3.314 9.9-9.9z"/></svg>แก้ไข'
-        +'</button>'
+        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:12px;border-radius:14px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">🗑 ลบ</button>'
+        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:12px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">✏ แก้ไข</button>'
       +'</div>'
     +'</div>'
   +'</div>';

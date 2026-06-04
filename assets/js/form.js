@@ -456,7 +456,11 @@ async function addEntry(){
     cycle_id:cycle_id, account_id:account_id||null};
 
   var _ok = await sbAdd(_entry);
-  if(!_ok) return;
+  if(!_ok){
+    // sbAdd แสดง toast แล้ว แต่เพิ่ม error ใน form message ด้วย
+    showMsg('formMsg','❌ บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วกดบันทึกอีกครั้ง','error');
+    return;
+  }
   db.unshift(_entry);
   save();
   // refresh all affected panels immediately

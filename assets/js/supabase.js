@@ -33,6 +33,7 @@ function mapSbRow(e) {
     split_type:     e.split_type||null,
     split_snapshot: e.split_snapshot||null,
     user_id:        e.user_id||null,
+    created_at:     e.created_at||null,
   };
 }
 

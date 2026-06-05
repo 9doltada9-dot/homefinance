@@ -813,4 +813,17 @@ function initRecurringEngine() {
   if (_recurringIntervalId) { clearInterval(_recurringIntervalId); _recurringIntervalId = null; }
 
   // ── Migration guard: push localStorage → Supabase ──────
-  // ข้อมูล recurring อาจถูกสร้�
+  // ข้อมูล recurring อาจถูกสร้างก่อนที่ Supabase sync จะทำงาน
+  // (หรือ push ล้มเหลวโดยไม่มี error ปรากฏ)
+  // ทุกครั้งที่ app start: ถ้า localStorage มีข้อมูลอยู่ → push ขึ้น Supabase
+  // เพื่อให้ mobile / device อื่น โหลดได้ผ่าน applySettingsFromMap
+  var _migList = getRecurringList();
+  if (_migList.length > 0 && typeof sbSaveSetting === 'function') {
+    sbSaveSetting('recurring_templates', _migList);
+  }
+
+  processRecurring();
+  _recurringIntervalId = setInterval(function() {
+    try { processRecurring(); } catch(_) {}
+  }, 60 * 60 * 1000);
+}

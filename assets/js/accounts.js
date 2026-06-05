@@ -846,7 +846,7 @@ function renderAccountList() {
       var hasUsage = db.some(function(e){ return e.account_id === a.id && (!_ruid || e.user_id === _ruid); });
       var cantDel  = hasUsage || accountsData.filter(function(x){ return x.is_active !== false; }).length <= 1;
       return '<div class="acct-drag-item" draggable="true" data-id="'+a.id+'" data-group="'+g.key+'" '
-        +'style="display:flex;align-items:center;gap:12px;padding:12px 14px;'
+        +'style="display:flex;align-items:center;gap:8px;padding:10px 12px;'
         +'background:var(--surface2);border-radius:var(--r2);border:1px solid var(--line);'
         +'transition:background .12s,opacity .15s,box-shadow .15s;cursor:default">'
         // drag handle
@@ -854,25 +854,25 @@ function renderAccountList() {
           +'style="cursor:grab;color:var(--ink3);font-size:16px;flex-shrink:0;padding:0 2px;user-select:none;touch-action:none">⠿</div>'
         // icon / logo (คลิก = เปิด ledger)
         +'<div onclick="openAccountLedger(\''+a.id+'\')" style="cursor:pointer;flex-shrink:0">'
-          +acctLogoHtml(a, 40)
+          +acctLogoHtml(a, 36)
         +'</div>'
         // name + type (คลิก = เปิด ledger)
-        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="flex:1;min-width:0;cursor:pointer">'
-          +'<div style="font-size:14px;font-weight:600;color:var(--ink)">'+a.name+'</div>'
-          +'<div style="font-size:11px;color:var(--hf-ink3)">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
+        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="flex:1;min-width:0;cursor:pointer;overflow:hidden">'
+          +'<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+a.name+'</div>'
+          +'<div style="font-size:11px;color:var(--hf-ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(ACCOUNT_TYPES[a.type]||a.type)+'</div>'
         +'</div>'
         // balance
-        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="text-align:right;flex-shrink:0;margin-right:8px;cursor:pointer">'
-          +'<div style="font-size:16px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
+        +'<div onclick="openAccountLedger(\''+a.id+'\')" style="text-align:right;flex-shrink:0;margin-right:4px;cursor:pointer">'
+          +'<div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:'
             +(bal>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(bal)+'</div>'
           +'<div style="font-size:10px;color:var(--ink3)">บาท</div>'
         +'</div>'
         // action buttons
-        +'<div style="display:flex;gap:4px;flex-shrink:0">'
-          +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation;white-space:nowrap">+ฝาก</button>'
-          +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
-          +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
-          +(cantDel?'':'<button onclick="deleteAccountInline(\''+a.id+'\')" title="ลบ" style="background:var(--surface);border:1px solid #fca5a5;border-radius:6px;padding:7px 9px;font-size:13px;cursor:pointer;color:var(--red);font-family:Sarabun,sans-serif;touch-action:manipulation">🗑</button>')
+        +'<div style="display:flex;gap:3px;flex-shrink:0">'
+          +'<button onclick="openDepositModal(\''+a.id+'\')" title="ฝากเงิน" style="background:var(--surface);border:1px solid var(--green);border-radius:6px;padding:6px 8px;font-size:12px;cursor:pointer;color:var(--green);font-family:Sarabun,sans-serif;touch-action:manipulation;white-space:nowrap">+ฝาก</button>'
+          +'<button onclick="openAdjustModal(\''+a.id+'\')" title="ปรับยอด" style="background:var(--surface);border:1px solid #d97706;border-radius:6px;padding:6px 7px;font-size:13px;cursor:pointer;color:#d97706;font-family:Sarabun,sans-serif;touch-action:manipulation">⚖️</button>'
+          +'<button onclick="openEditAccountModal(\''+a.id+'\')" title="แก้ไข" style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 7px;font-size:13px;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏️</button>'
+          +(cantDel?'':'<button onclick="deleteAccountInline(\''+a.id+'\')" title="ลบ" style="background:var(--surface);border:1px solid #fca5a5;border-radius:6px;padding:6px 7px;font-size:13px;cursor:pointer;color:var(--red);font-family:Sarabun,sans-serif;touch-action:manipulation">🗑</button>')
         +'</div>'
       +'</div>';
     }).join('');

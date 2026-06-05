@@ -739,22 +739,44 @@ function renderSettle(){
     })).replace(/'/g, '&#39;');
 
     if (_isLocked) {
-      // ล็อกแล้ว → แสดง status + ปุ่มอัปเดต (ถ้ากลางเดือน) + ปุ่มยกเลิก
-      var relock = _isCurMth
+      // ตรวจสถานะ records ของเดือนนี้
+      var _monthRecs  = _spRecords.filter(function(r){ return r.month === m; });
+      var _allPaid    = _monthRecs.length > 0 && _monthRecs.every(function(r){ return r.status === 'paid'; });
+      var _anyPartial = _monthRecs.some(function(r){ return r.status === 'partial'; });
+
+      // ปุ่ม 🔄 อัปเดต (เฉพาะเดือนปัจจุบัน + ยังไม่ paid ครบ)
+      var relock = (_isCurMth && !_allPaid)
         ? '<button onclick="lockSettlement(\''+m+'\','+_transfersForLock.replace(/"/g,'\'')+');renderSettle()" '
             +'style="padding:3px 9px;background:rgba(0,245,255,.10);color:#00F5FF;'
             +'border:1px solid rgba(0,245,255,.30);border-radius:7px;font-size:10px;'
             +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
             +'🔄 อัปเดตยอด</button>'
         : '';
-      lockBtn = '<div style="display:flex;align-items:center;gap:6px">'
-        +'<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>'
-        + relock
-        +'<button onclick="unlockSettlement(\''+m+'\')" '
+
+      // ปุ่ม ↩ ยกเลิก:
+      //   paid ทั้งหมด  → ซ่อน (บล็อก)
+      //   partial       → แสดง สีส้ม พร้อม warning icon
+      //   unpaid        → แสดงปกติ
+      var unlockBtn = '';
+      if (_allPaid) {
+        unlockBtn = '<span style="font-size:10px;color:var(--ink3)">🔒 ชำระครบแล้ว</span>';
+      } else if (_anyPartial) {
+        unlockBtn = '<button onclick="unlockSettlement(\''+m+'\')" '
+          +'style="padding:3px 9px;background:rgba(255,200,87,.10);color:#FFC857;'
+          +'border:1px solid rgba(255,200,87,.40);border-radius:7px;font-size:10px;'
+          +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+          +'⚠️ ยกเลิก</button>';
+      } else {
+        unlockBtn = '<button onclick="unlockSettlement(\''+m+'\')" '
           +'style="padding:3px 9px;background:rgba(255,77,109,.10);color:#FF4D6D;'
           +'border:1px solid rgba(255,77,109,.35);border-radius:7px;font-size:10px;'
           +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
-          +'↩ ยกเลิก</button>'
+          +'↩ ยกเลิก</button>';
+      }
+
+      lockBtn = '<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>'
+        + relock + unlockBtn
         +'</div>';
     } else {
       // ยังไม่ล็อก → ปุ่มล็อก + คำเตือนถ้ากลางเดือน

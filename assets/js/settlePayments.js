@@ -158,16 +158,49 @@ function deleteSettleRecord(recordId) {
 
 // ─── UNLOCK SETTLEMENT (ยกเลิกล็อกทั้งเดือน) ────────────
 function unlockSettlement(month) {
-  var list   = getSettlePayments();
+  var list     = getSettlePayments();
   var toRemove = list.filter(function(r) { return r.month === month; });
   if (!toRemove.length) return;
 
-  // ถ้ามีบางรายการชำระแล้ว → เตือนก่อน
-  var hasPaid = toRemove.some(function(r) { return r.amount_paid > 0; });
-  var msg = hasPaid
-    ? 'เดือน ' + month + ' มีรายการที่ชำระแล้วบางส่วน\nยืนยันยกเลิกล็อกและลบข้อมูลการชำระทั้งหมด?'
-    : 'ยกเลิกล็อก Settlement เดือน ' + month + '?';
-  if (!confirm(msg)) return;
+  var _fmt = typeof fmtH === 'function' ? fmtH : function(v){ return '฿'+v; };
+
+  // ── 🚫 paid ทั้งหมด → บล็อก ────────────────────────────
+  var allPaid = toRemove.every(function(r) { return r.status === 'paid'; });
+  if (allPaid) {
+    alert(
+      '🚫 ไม่สามารถปลดล็อกได้\n\n'
+      + 'Settlement เดือน ' + month + ' ชำระครบแล้วทุกรายการ\n'
+      + 'Record ที่ปิดแล้วไม่ควรแก้ไข\n\n'
+      + 'ถ้าบันทึกผิด → ลบ payment entry แต่ละรายการแทน'
+    );
+    return;
+  }
+
+  // ── ⚠️ partial → เตือนหนัก ระบุรายละเอียด ────────────
+  var anyPartial = toRemove.some(function(r) { return r.status === 'partial'; });
+  if (anyPartial) {
+    var lines = toRemove
+      .filter(function(r) { return r.status === 'partial'; })
+      .map(function(r) {
+        var remaining = r.amount_owed - r.amount_paid;
+        return '• ' + (r.from_name||r.from_uid) + ' → ' + (r.to_name||r.to_uid)
+          + '\n    จ่ายแล้ว ' + _fmt(r.amount_paid)
+          + '  ยังค้าง ' + _fmt(remaining) + ' (จะหาย)';
+      }).join('\n');
+    if (!confirm(
+      '⚠️ มีรายการที่ชำระบางส่วนแล้ว\n\n'
+      + lines + '\n\n'
+      + 'ถ้าปลดล็อก:\n'
+      + '  • ประวัติการชำระจะหายถาวร\n'
+      + '  • ยอดค้างจะไม่ถูก carry-forward ไปเดือนหน้า\n\n'
+      + 'แนะนำ: กด "💳 จ่าย" เพื่อบันทึกยอดที่เหลือแทน\n\n'
+      + 'ยืนยันปลดล็อกและยอมรับความเสี่ยง?'
+    )) return;
+
+  } else {
+    // ── ✅ unpaid ทั้งหมด → confirm ธรรมดา ───────────────
+    if (!confirm('ยกเลิกล็อก Settlement เดือน ' + month + '?')) return;
+  }
 
   var newList = list.filter(function(r) { return r.month !== month; });
   _saveSettlePayments(newList);

@@ -693,7 +693,7 @@ function renderTx(){
           g.items.map(function(e){
             var _mIid=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
             var _mVobj = e.vendor_id ? ((typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===e.vendor_id;})||null) : null;
-            var _txCircleOverride = e.type==='transfer' ? _transferCircle(e, 46) : (_mVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_mVobj, 46) : null);
+            var _txCircleOverride = e.type==='transfer' ? _transferCircle(e, 46) : (_mVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_mVobj, 38) : null);
             var _mIhtml=_txCircleOverride ? '' : (_mIid
               ?'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><use href="#'+_mIid+'"></use></svg>'
               :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?(_txLoanDir(e)==='in'?'📥':_txLoanDir(e)==='out'?'📤':'↗️'):'💳')+'</span>');
@@ -774,9 +774,9 @@ function renderTx(){
           +'<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--hf-line);margin-bottom:8px">'
           +  '<div style="font-size:13px;font-weight:700;color:var(--hf-accent)">'+toThaiDateStr(g.date)+' <span style="color:var(--hf-ink3);font-weight:500">· '+g.items.length+' รายการ</span></div>'
           +  '<span style="font-size:12px;font-family:monospace">'
-          +    (dayIn?'<span style="color:#4ade80;font-weight:600">'+fmtH(dayIn)+'</span>':'')+
+          +    (dayIn?'<span style="color:#4ade80;font-weight:600;text-shadow:0 0 8px #4ade8088">'+fmtH(dayIn)+'</span>':'')+
                (dayIn&&dayOut?' <span style="color:var(--hf-ink3)">·</span> ':'')+
-               (dayOut?'<span style="color:#f87171;font-weight:600">'+fmtH(dayOut)+'</span>':'')
+               (dayOut?'<span style="color:#f87171;font-weight:600;text-shadow:0 0 8px #f8717188">'+fmtH(dayOut)+'</span>':'')
           +  '</span>'
           +'</div>'
           + g.items.map(function(e){
@@ -786,7 +786,7 @@ function renderTx(){
               var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
               var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
               var _dVobj = e.vendor_id ? ((typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===e.vendor_id;})||null) : null;
-              var _deskCircleOvr = e.type==='transfer' ? _transferCircle(e, 52) : (_dVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_dVobj, 52) : null);
+              var _deskCircleOvr = e.type==='transfer' ? _transferCircle(e, 52) : (_dVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_dVobj, 44) : null);
               var iconHtml = _deskCircleOvr ? '' : (iconId
                 ? '<svg width="28" height="28" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
                 : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?(_txLoanDir(e)==='in'?'📥':_txLoanDir(e)==='out'?'📤':'↗️'):'💳')+'</span>');

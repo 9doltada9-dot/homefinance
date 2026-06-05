@@ -1,11 +1,11 @@
-﻿/* HomeFinance · Service Worker · v3.18.125
+﻿/* HomeFinance · Service Worker · v3.18.126
  * เธเธฅเธขเธธเธ—เธเน:
  *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first โ’ เนเธเนเธเธฒเธ offline เนเธ”เน
  *   - Supabase API call: network-first โ’ เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”เน€เธชเธกเธญ เธ–เนเธฒเนเธกเนเธกเธต net เนเธเนเธเธญเธเน€เธเนเธฒ
  *
  * NOTE: เน€เธเธฅเธตเนเธขเธ CACHE_VERSION เธ—เธธเธเธเธฃเธฑเนเธเธ—เธตเน deploy เนเธซเธกเน เน€เธเธทเนเธญเนเธซเน user เนเธ”เนเธเธญเธเนเธซเธกเน
  */
-const CACHE_VERSION = 'hf-v3.18.125';
+const CACHE_VERSION = 'hf-v3.18.126';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [

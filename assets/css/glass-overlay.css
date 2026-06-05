@@ -740,11 +740,12 @@ body.view-mobile .layout{
   background: rgba(0,245,255,.25); border-radius: 3px;
 }
 
-/* ── Transactions page — scrollable container (filter scrolls with content) ── */
+/* ── Transactions page — flex column, full-page scroll (filter scrolls with content) ── */
 html.tx-fullscreen,
 html.tx-fullscreen body{ overflow: hidden; }
 
 #page-transactions{
+  display: flex; flex-direction: column;
   overflow-y: auto;
   height: calc(100vh - 32px);
   scrollbar-width: thin;
@@ -756,6 +757,9 @@ html.tx-fullscreen body{ overflow: hidden; }
   background: rgba(0,245,255,.40); border-radius: 6px; min-height: 32px;
 }
 #page-transactions::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+/* children ต้องไม่ shrink เพื่อให้ parent scroll แทน */
+#txFilterBar{ flex-shrink: 0; }
+#txContent{ flex-shrink: 0; }
 
 /* Pending zone divider */
 .tx-pending-header{

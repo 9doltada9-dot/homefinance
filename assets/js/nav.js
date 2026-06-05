@@ -80,6 +80,7 @@ function nav(page){
     if (_settleM) _settleM.value = '';
     populateMths('settleMonth');
     renderSettle();
+    if(typeof renderLoanList === 'function') renderLoanList();
   }
   if(page==='monthly'){ populateMths('monthSel'); renderMonthly(); }
   if(page==='add'){ initForm(); }

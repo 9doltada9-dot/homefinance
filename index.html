@@ -637,6 +637,21 @@ function gcgToggle(e){
     </div>
   </div>
   <div id="settleContent"></div>
+
+  <!-- Loan section ใน settlement page -->
+  <div class="hf-card" style="padding:0;margin-top:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">💰 บัญชีกู้ยืม</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:1px">ติดตามยอดให้ยืม / ยืมส่วนตัว</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="openLoanModal('lend')" class="btn btn-primary" style="min-height:36px;font-size:12px;padding:5px 12px">📤 ให้ยืม</button>
+        <button onclick="openLoanModal('borrow')" class="btn btn-ghost" style="min-height:36px;font-size:12px;padding:5px 12px">💸 ยืม</button>
+      </div>
+    </div>
+    <div style="padding:6px 14px 12px" id="loanList"></div>
+  </div>
 </div>
 
 <!-- MONTHLY -->
@@ -1532,6 +1547,89 @@ create policy "public write" on transactions for all using (true);</div>
   </div>
 </div>
 
+<!-- SETTLE PAY MODAL -->
+<div id="settlePayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
+    <div style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">💳 บันทึกชำระ Settlement</div>
+    <div id="spInfo"></div>
+    <div class="field" style="margin-bottom:12px">
+      <label>จำนวนที่จ่าย (฿)</label>
+      <input type="number" id="spAmt" placeholder="0" min="0" style="font-size:20px !important;font-weight:700;text-align:right;font-family:monospace">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>วันที่จ่าย</label>
+      <input type="date" id="spDate">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>หมายเหตุ</label>
+      <input type="text" id="spNote" placeholder="(ไม่บังคับ)">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeSettlePayModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitSettlePayment()" style="flex:1;min-height:44px">✅ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAN MODAL (ให้ยืม / ยืม) -->
+<div id="loanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
+    <div id="loanModalTitle" style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">📤 ให้ยืมเงิน</div>
+    <div class="field" style="margin-bottom:12px">
+      <label id="loanCounterpartLabel">ชื่อผู้ยืม</label>
+      <input type="text" id="loanCounterpart" placeholder="เช่น นายก, แม่, เพื่อน">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>จำนวนเงิน (฿)</label>
+      <input type="number" id="loanAmt" placeholder="0" min="0" style="font-size:20px !important;font-weight:700;text-align:right;font-family:monospace">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>วันที่</label>
+      <input type="date" id="loanDate">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>บัญชีต้นทาง</label>
+      <select id="loanFromAccount"></select>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>หมายเหตุ</label>
+      <input type="text" id="loanNote" placeholder="(ไม่บังคับ)">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeLoanModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitLoanModal()" style="flex:1;min-height:44px">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAN REPAY MODAL (รับคืน / คืนเงิน) -->
+<div id="loanRepayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
+    <div id="loanRepayTitle" style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">📥 บันทึกรับคืน</div>
+    <div id="loanRepayInfo"></div>
+    <div class="field" style="margin-bottom:12px">
+      <label>จำนวนเงิน (฿)</label>
+      <input type="number" id="loanRepayAmt" placeholder="0" min="0" style="font-size:20px !important;font-weight:700;text-align:right;font-family:monospace">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>วันที่</label>
+      <input type="date" id="loanRepayDate">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>บัญชีปลายทาง</label>
+      <select id="loanRepayToAccount"></select>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>หมายเหตุ</label>
+      <input type="text" id="loanRepayNote" placeholder="(ไม่บังคับ)">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="closeLoanRepayModal()" style="flex:1;min-height:44px">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitLoanRepay()" style="flex:1;min-height:44px">✅ บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT ACCOUNT MODAL -->
 <div id="editAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
   <div style="background:var(--surface);border-radius:var(--r3);width:100%;max-width:360px;padding:24px;margin:auto;position:relative">
@@ -1884,6 +1982,8 @@ create policy "public write" on transactions for all using (true);</div>
 <script src="assets/js/savingsGoals.js"></script>
 <script src="assets/js/notificationEngine.js"></script>
 <script src="assets/js/recurringEngine.js"></script>
+<script src="assets/js/settlePayments.js"></script>
+<script src="assets/js/loanEngine.js"></script>
 <script src="assets/js/splitGroups.js"></script>
 <script src="assets/js/features.js"></script>
 <script src="assets/js/glassEffects.js"></script>

@@ -289,6 +289,18 @@ function renderSettle(){
   var balances = {};
   allUids.forEach(function(uid){ balances[uid] = (paid[uid]||0) - (owed[uid]||0); });
 
+  // ── Carry-forward จากเดือนก่อนที่ยังค้างชำระ ────────────
+  var _carryFwd = {};
+  if (typeof getCarryForwardBalances === 'function') {
+    _carryFwd = getCarryForwardBalances(m);
+    Object.keys(_carryFwd).forEach(function(uid) {
+      if (_carryFwd[uid] === 0) return;
+      if (!nameMap[uid]) return;      // skip unknown uid
+      balances[uid] = (balances[uid] || 0) + _carryFwd[uid];
+      if (allUids.indexOf(uid) === -1) allUids.push(uid);
+    });
+  }
+
   var transfers  = _computeTransfers(Object.assign({}, balances), nameMap);
   var totalSplit = splitExp.reduce(function(s,e){ return s+e.amt; }, 0);
 
@@ -333,46 +345,7 @@ function renderSettle(){
       +'<div style="font-size:15px;font-weight:700;color:var(--green,#166534)">✅ ไม่มียอดค้างชำระ</div>'
       +'<div style="font-size:12px;color:var(--green,#166534);margin-top:4px">ทุกคนจ่ายเป็นสัดส่วนที่ถูกต้องแล้ว</div>'
     +'</div>';
-  } else {
-    // ── Transfer arrow cards: วงกลม A ──amount──▶ วงกลม B ──
-    transferHtml = transfers.map(function(t){
-      var fromInit = (t.from||'?').charAt(0).toUpperCase();
-      var toInit   = (t.to  ||'?').charAt(0).toUpperCase();
-      var fromIdx  = allUids.indexOf(t.fromUid); if(fromIdx<0) fromIdx=0;
-      var toIdx    = allUids.indexOf(t.toUid);   if(toIdx<0)   toIdx=1;
-      var fpc = PERSON_COLORS[fromIdx % PERSON_COLORS.length];
-      var tpc = PERSON_COLORS[toIdx   % PERSON_COLORS.length];
-      return '<div style="background:var(--g-card,var(--surface2));backdrop-filter:blur(16px) saturate(150%);'
-        +'border:1.5px solid var(--g-brd,rgba(255,255,255,.2));border-radius:20px;padding:20px 24px;'
-        +'display:flex;align-items:center;justify-content:space-between;gap:8px">'
-        // FROM circle
-        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
-          +'<div style="width:64px;height:64px;border-radius:50%;background:'+fpc.gradient+';'
-            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
-            +'box-shadow:0 4px 16px '+fpc.glow+'">'+fromInit+'</div>'
-          +'<span style="font-size:12px;font-weight:700;color:'+fpc.pillText+';max-width:80px;text-align:center;'
-            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.from+'</span>'
-        +'</div>'
-        // arrow + amount
-        +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
-          +'<span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--ink)">'+fmtH(t.amount)+'</span>'
-          +'<div style="display:flex;align-items:center;width:100%;gap:0">'
-            +'<div style="flex:1;height:2px;background:linear-gradient(90deg,'+fpc.pillText+','+tpc.pillText+')"></div>'
-            +'<span style="font-size:20px;color:'+tpc.pillText+';line-height:1">▶</span>'
-          +'</div>'
-          +'<span style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.5px;text-transform:uppercase">โอนให้</span>'
-        +'</div>'
-        // TO circle
-        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
-          +'<div style="width:64px;height:64px;border-radius:50%;background:'+tpc.gradient+';'
-            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
-            +'box-shadow:0 4px 16px '+tpc.glow+'">'+toInit+'</div>'
-          +'<span style="font-size:12px;font-weight:700;color:'+tpc.pillText+';max-width:80px;text-align:center;'
-            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.to+'</span>'
-        +'</div>'
-      +'</div>';
-    }).join('');
-  }
+  } // transferHtml = ✅ ไม่มียอดค้าง (ใช้สำหรับกรณี transfers.length === 0 เท่านั้น)
 
   // ── Detail rows — dynamic columns per member ─────────────
   // รวบรวม uid ทุกคนที่ปรากฏใน snapshot (เรียง: payers ก่อน แล้ว members)
@@ -675,6 +648,100 @@ function renderSettle(){
     }
   }
 
+  // ── Transfer arrow cards + pay buttons ────────────────────
+  var _isLocked = typeof getSettlePayments === 'function'
+    && getSettlePayments().some(function(r) { return r.month === m; });
+
+  // เพิ่มปุ่ม Pay ให้แต่ละ transfer arrow card
+  var _spRecords = typeof getSettlePayments === 'function' ? getSettlePayments() : [];
+  var transferHtmlWithPay = transfers.map(function(t, ti) {
+    var spRec = _spRecords.find(function(r) {
+      return r.month === m && r.from_uid === t.fromUid && r.to_uid === t.toUid;
+    });
+    var payBadge = '';
+    if (spRec) {
+      if (spRec.status === 'paid') {
+        payBadge = '<div style="margin-top:10px;text-align:center">'
+          +'<span style="background:rgba(0,255,136,.16);color:#00FF88;border:1px solid rgba(0,255,136,.45);'
+          +'border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700">✅ ชำระแล้ว</span>'
+          +'</div>';
+      } else {
+        var remaining = spRec.amount_owed - spRec.amount_paid;
+        payBadge = '<div style="margin-top:10px;display:flex;justify-content:center;gap:8px">'
+          +'<span style="font-size:11px;color:var(--amber);align-self:center">'
+            +(spRec.status === 'partial' ? 'ค้าง '+fmtH(remaining) : '')
+          +'</span>'
+          +'<button onclick="openSettlePayModal(\''+spRec.id+'\')" '
+          +'style="padding:6px 16px;background:linear-gradient(135deg,#00F5FF,#009DFF);color:#050505;border:none;'
+          +'border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
+          +'touch-action:manipulation">💳 บันทึกชำระ</button>'
+          +'</div>';
+      }
+    }
+    // ฝัง payBadge ต่อท้าย transfer card HTML
+    var fromInit = (t.from||'?').charAt(0).toUpperCase();
+    var toInit   = (t.to  ||'?').charAt(0).toUpperCase();
+    var fromIdx  = allUids.indexOf(t.fromUid); if(fromIdx<0) fromIdx=0;
+    var toIdx    = allUids.indexOf(t.toUid);   if(toIdx<0)   toIdx=1;
+    var fpc = PERSON_COLORS[fromIdx % PERSON_COLORS.length];
+    var tpc = PERSON_COLORS[toIdx   % PERSON_COLORS.length];
+    return '<div style="background:var(--g-card,var(--surface2));backdrop-filter:blur(16px) saturate(150%);'
+      +'border:1.5px solid var(--g-brd,rgba(255,255,255,.2));border-radius:20px;padding:20px 24px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        // FROM
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:'+fpc.gradient+';'
+            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
+            +'box-shadow:0 4px 16px '+fpc.glow+'">'+fromInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:'+fpc.pillText+';max-width:80px;text-align:center;'
+            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.from+'</span>'
+        +'</div>'
+        // arrow + amount
+        +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+          +'<span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--ink)">'+fmtH(t.amount)+'</span>'
+          +'<div style="display:flex;align-items:center;width:100%;gap:0">'
+            +'<div style="flex:1;height:2px;background:linear-gradient(90deg,'+fpc.pillText+','+tpc.pillText+')"></div>'
+            +'<span style="font-size:20px;color:'+tpc.pillText+';line-height:1">▶</span>'
+          +'</div>'
+          +'<span style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.5px;text-transform:uppercase">โอนให้</span>'
+        +'</div>'
+        // TO
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:'+tpc.gradient+';'
+            +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
+            +'box-shadow:0 4px 16px '+tpc.glow+'">'+toInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:'+tpc.pillText+';max-width:80px;text-align:center;'
+            +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.to+'</span>'
+        +'</div>'
+      +'</div>'
+      +payBadge
+    +'</div>';
+  }).join('');
+
+  // ถ้าไม่มี transfer แต่ก่อนล็อก → ใช้ transferHtml เดิม (✅ ไม่มียอดค้าง)
+  var finalTransferHtml = transfers.length ? transferHtmlWithPay : transferHtml;
+
+  // ── Carry-forward banner ────────────────────────────────
+  var carryBanner = typeof buildCarryForwardBanner === 'function'
+    ? buildCarryForwardBanner(m) : '';
+
+  // ── Lock settlement button ──────────────────────────────
+  var lockBtn = '';
+  if (transfers.length) {
+    if (_isLocked) {
+      lockBtn = '<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>';
+    } else {
+      var _transfersForLock = JSON.stringify(transfers.map(function(t) {
+        return { fromUid: t.fromUid, toUid: t.toUid, amount: t.amount,
+                 fromName: t.from, toName: t.to };
+      })).replace(/'/g, '&#39;');
+      lockBtn = '<button onclick="lockSettlement(\'' + m + '\',' + _transfersForLock.replace(/"/g,'\'') + ');renderSettle()" '
+        +'style="padding:5px 12px;background:rgba(255,200,87,.12);color:#FFC857;border:1px solid rgba(255,200,87,.45);'
+        +'border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+        +'🔒 ล็อก Settlement</button>';
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────
   out.innerHTML =
     // summary bar
@@ -683,10 +750,15 @@ function renderSettle(){
     +'</div>'
     // person cards
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">'+personCards+'</div>'
+    // carry-forward banner (ยอดค้างจากเดือนก่อน)
+    + carryBanner
     // transfer section
     +'<div style="margin-bottom:16px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💸 สรุปการโอนเงิน</div>'
-      +'<div style="display:flex;flex-direction:column;gap:8px">'+transferHtml+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+        +'<span style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">💸 สรุปการโอนเงิน</span>'
+        + lockBtn
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'+finalTransferHtml+'</div>'
     +'</div>'
     // detail section
     +'<div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">'

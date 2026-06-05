@@ -758,7 +758,7 @@ html.tx-fullscreen body{ overflow: hidden; }
 #recurringModal, #recurringDueModal, #depositModal,
 #editAccountModal, #deleteConfirmModal, #accountLedgerModal,
 #adjustModal, #accountDetailModal, #addAccountModal,
-#txDetailOverlay{
+#txDetailOverlay, #settlePayModal, #loanModal, #loanRepayModal{
   background: rgba(3,3,5,.85) !important;
   -webkit-backdrop-filter: blur(var(--modal-blur,14px));
   backdrop-filter:         blur(var(--modal-blur,14px));
@@ -770,7 +770,8 @@ html.tx-fullscreen body{ overflow: hidden; }
 #editAccountModal > div, #deleteConfirmModal > div,
 #accountLedgerModal > div, #adjustModal > div,
 #accountDetailModal > div, #addAccountModal > div,
-#txDetailOverlay > div{
+#txDetailOverlay > div,
+#settlePayModal > div, #loanModal > div, #loanRepayModal > div{
   background: var(--g-strong) !important;
   -webkit-backdrop-filter: blur(var(--g-blur,28px)) saturate(var(--g-sat,160%));
   backdrop-filter:         blur(var(--g-blur,28px)) saturate(var(--g-sat,160%));

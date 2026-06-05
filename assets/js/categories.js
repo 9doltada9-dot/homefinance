@@ -47,6 +47,12 @@ function applySettingsFromMap(map){
       }
     }
   }
+  // sync settle_pay_v1 จาก Supabase
+  if(map.settle_pay_v1 && Array.isArray(map.settle_pay_v1)){
+    if(typeof applySettlePaymentsFromMap === 'function'){
+      applySettlePaymentsFromMap(map.settle_pay_v1);
+    }
+  }
 }
 
 function renderCatList(type){

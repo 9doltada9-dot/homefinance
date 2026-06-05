@@ -417,8 +417,7 @@ function buildPaymentHistorySection() {
 
     return '<details style="border-bottom:1px solid var(--line)">'
       + '<summary style="display:flex;align-items:center;justify-content:space-between;'
-        + 'padding:9px 14px;cursor:pointer;list-style:none;gap:8px;user-select:none" '
-        + 'onclick="this.parentElement.open=!this.parentElement.open">'
+        + 'padding:9px 14px;cursor:pointer;list-style:none;gap:8px;user-select:none">'
         + '<div style="flex:1;min-width:0">'
           + '<div style="font-size:12px;font-weight:600;color:var(--ink)">'
             + (r.from_name||r.from_uid) + ' → ' + (r.to_name||r.to_uid)
@@ -450,8 +449,7 @@ function buildPaymentHistorySection() {
   return '<details style="margin-top:16px" id="settleHistoryDetails">'
     + '<summary style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;'
       + 'background:var(--surface2);border-radius:12px;list-style:none;user-select:none;'
-      + 'border:1px solid var(--line)" '
-      + 'onclick="this.parentElement.open=!this.parentElement.open">'
+      + 'border:1px solid var(--line)">'
       + '<span style="font-size:12px;font-weight:700;color:var(--ink2)">📋 ประวัติการชำระ Settlement</span>'
       + '<span style="font-size:11px;color:var(--ink3);margin-left:auto">'
         + records.length + ' รายการ</span>'

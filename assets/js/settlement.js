@@ -303,7 +303,7 @@ function renderSettle(){
   }
 
   // ── Summary cards per person ───────────────────────────────
-  var personCards = allUids.map(function(uid){
+  var personCards = allUids.map(function(uid, uidIdx){
     var name = nameMap[uid] || uid;
     var p    = paid[uid]||0;
     var o    = owed[uid]||0;
@@ -311,10 +311,11 @@ function renderSettle(){
     var balColor = bal > 0.5 ? 'var(--green)' : (bal < -0.5 ? 'var(--red,#dc2626)' : 'var(--ink3)');
     var balLabel = bal > 0.5 ? '↑ ได้รับคืน' : (bal < -0.5 ? '↓ ต้องโอน' : '✓ เรียบร้อย');
     var initials = name.charAt(0).toUpperCase();
-    return '<div style="flex:1;min-width:150px;background:var(--surface);backdrop-filter:blur(16px) saturate(150%);border:1px solid var(--g-brd);border-radius:16px;padding:14px 16px;box-shadow:var(--g-shadow)">'
+    var pc = PERSON_COLORS[uidIdx % PERSON_COLORS.length];
+    return '<div style="flex:1;min-width:150px;background:var(--surface);backdrop-filter:blur(16px) saturate(150%);border:1px solid '+pc.pillBorder+';border-radius:16px;padding:14px 16px;box-shadow:var(--g-shadow),0 0 16px '+pc.glow.replace('.45)','.12)').replace('.4)','.10)')+'">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
-        +'<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">'+initials+'</div>'
-        +'<span style="font-size:14px;font-weight:700;color:var(--ink)">'+name+'</span>'
+        +'<div style="width:36px;height:36px;border-radius:50%;background:'+pc.gradient+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;box-shadow:0 2px 10px '+pc.glow+'">'+initials+'</div>'
+        +'<span style="font-size:14px;font-weight:700;color:'+pc.pillText+'">'+name+'</span>'
       +'</div>'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:3px"><span>จ่ายจริง</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(p)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:8px"><span>ควรจ่าย</span><span style="font-family:monospace;font-weight:600;color:var(--ink)">'+fmtH(o)+'</span></div>'
@@ -337,32 +338,36 @@ function renderSettle(){
     transferHtml = transfers.map(function(t){
       var fromInit = (t.from||'?').charAt(0).toUpperCase();
       var toInit   = (t.to  ||'?').charAt(0).toUpperCase();
+      var fromIdx  = allUids.indexOf(t.fromUid); if(fromIdx<0) fromIdx=0;
+      var toIdx    = allUids.indexOf(t.toUid);   if(toIdx<0)   toIdx=1;
+      var fpc = PERSON_COLORS[fromIdx % PERSON_COLORS.length];
+      var tpc = PERSON_COLORS[toIdx   % PERSON_COLORS.length];
       return '<div style="background:var(--g-card,var(--surface2));backdrop-filter:blur(16px) saturate(150%);'
         +'border:1.5px solid var(--g-brd,rgba(255,255,255,.2));border-radius:20px;padding:20px 24px;'
         +'display:flex;align-items:center;justify-content:space-between;gap:8px">'
         // FROM circle
         +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
-          +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#f97316);'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:'+fpc.gradient+';'
             +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
-            +'box-shadow:0 4px 16px rgba(220,38,38,.4)">'+fromInit+'</div>'
-          +'<span style="font-size:12px;font-weight:700;color:var(--ink);max-width:80px;text-align:center;'
+            +'box-shadow:0 4px 16px '+fpc.glow+'">'+fromInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:'+fpc.pillText+';max-width:80px;text-align:center;'
             +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.from+'</span>'
         +'</div>'
         // arrow + amount
         +'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
-          +'<span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--orange,#ea580c)">'+fmtH(t.amount)+'</span>'
+          +'<span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--ink)">'+fmtH(t.amount)+'</span>'
           +'<div style="display:flex;align-items:center;width:100%;gap:0">'
-            +'<div style="flex:1;height:2px;background:linear-gradient(90deg,var(--red,#dc2626),var(--orange,#ea580c),var(--green,#16a34a))"></div>'
-            +'<span style="font-size:20px;color:var(--green,#16a34a);line-height:1">▶</span>'
+            +'<div style="flex:1;height:2px;background:linear-gradient(90deg,'+fpc.pillText+','+tpc.pillText+')"></div>'
+            +'<span style="font-size:20px;color:'+tpc.pillText+';line-height:1">▶</span>'
           +'</div>'
           +'<span style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.5px;text-transform:uppercase">โอนให้</span>'
         +'</div>'
         // TO circle
         +'<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">'
-          +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#22c55e);'
+          +'<div style="width:64px;height:64px;border-radius:50%;background:'+tpc.gradient+';'
             +'display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;'
-            +'box-shadow:0 4px 16px rgba(22,163,74,.4)">'+toInit+'</div>'
-          +'<span style="font-size:12px;font-weight:700;color:var(--ink);max-width:80px;text-align:center;'
+            +'box-shadow:0 4px 16px '+tpc.glow+'">'+toInit+'</div>'
+          +'<span style="font-size:12px;font-weight:700;color:'+tpc.pillText+';max-width:80px;text-align:center;'
             +'overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.to+'</span>'
         +'</div>'
       +'</div>';
@@ -418,24 +423,18 @@ function renderSettle(){
   }).join('');
 
   // ── Desktop: dynamic table ──────────────────────────────────
-  // color palette ต่อ uid (เหมือน personPill)
-  var _SETTLE_COLORS = [
-    { bg:'#ebf0fe', cl:'#1a4fa0' },
-    { bg:'#fef8e7', cl:'#b5600a' },
-    { bg:'#eef7f2', cl:'#1a7a4a' },
-    { bg:'#f0eef9', cl:'#4a3a9a' },
-    { bg:'#fff0f0', cl:'#b91c1c' },
-    { bg:'#e8faf4', cl:'#0e7354' },
-  ];
+  // color palette ต่อ uid — ใช้ PERSON_COLORS global (neon-glass theme)
   var _uidColorMap = {};
-  detailUids.forEach(function(uid, i){
-    _uidColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
+  detailUids.forEach(function(uid){
+    var i = allUids.indexOf(uid); if(i<0) i=0;
+    var pc = PERSON_COLORS[i % PERSON_COLORS.length];
+    _uidColorMap[uid] = { bg: pc.pillBg, cl: pc.pillText, border: pc.pillBorder };
   });
 
   var thCells = '<th>รายการ</th><th style="white-space:nowrap">ร้านค้า</th><th style="white-space:nowrap">หมายเหตุ</th><th style="white-space:nowrap">ผู้จ่าย</th><th style="text-align:right;white-space:nowrap">รวม</th>'
     + detailUids.map(function(uid){
-        var c = _uidColorMap[uid] || { bg:'var(--surface2)', cl:'var(--ink)' };
-        return '<th style="text-align:right;white-space:nowrap;background:'+c.bg+';color:'+c.cl+';border-radius:6px;padding:6px 10px">'+( nameMap[uid]||uid)+'</th>';
+        var c = _uidColorMap[uid] || { bg:'var(--surface2)', cl:'var(--ink)', border:'transparent' };
+        return '<th style="text-align:right;white-space:nowrap;background:'+c.bg+';color:'+c.cl+';border:1px solid '+(c.border||'transparent')+';border-radius:6px;padding:6px 10px;font-weight:700">'+( nameMap[uid]||uid)+'</th>';
       }).join('');
   var totalCols = {}; detailUids.forEach(function(u){ totalCols[u]=0; });
   var _sGrp=[], _sDm={};
@@ -593,8 +592,10 @@ function renderSettle(){
       if (pu && persUids.indexOf(pu) === -1) persUids.push(pu);
     });
     var _persColorMap = {};
-    persUids.forEach(function(uid, i){
-      _persColorMap[uid] = _SETTLE_COLORS[i % _SETTLE_COLORS.length];
+    persUids.forEach(function(uid){
+      var i = allUids.indexOf(uid); if(i<0) i=0;
+      var pc = PERSON_COLORS[i % PERSON_COLORS.length];
+      _persColorMap[uid] = { bg: pc.pillBg, cl: pc.pillText };
     });
 
     if (true) {  // unified card layout
@@ -789,17 +790,12 @@ function exportSettleHTML(month, groupId) {
   allUids.forEach(function(uid){ balances[uid]=(paid[uid]||0)-(owed[uid]||0); });
   var transfers = _computeTransfers(Object.assign({},balances), nameMap);
 
-  // ── Color palette ต่อ uid (เหมือน personPill) ─────────────
-  var _PDF_COLORS = [
-    { bg:'#ebf0fe', cl:'#1a4fa0' },
-    { bg:'#fef8e7', cl:'#b5600a' },
-    { bg:'#eef7f2', cl:'#1a7a4a' },
-    { bg:'#f0eef9', cl:'#4a3a9a' },
-    { bg:'#fee2e2', cl:'#c0392b' },
-    { bg:'#e8faf4', cl:'#0e7354' },
-  ];
+  // ── Color palette ต่อ uid — ใช้ PERSON_COLORS (pdfBg/pdfText สำหรับ white-bg context) ──
   var pdfUidColorMap = {};
-  allUids.forEach(function(uid, i){ pdfUidColorMap[uid] = _PDF_COLORS[i % _PDF_COLORS.length]; });
+  allUids.forEach(function(uid, i){
+    var pc = PERSON_COLORS[i % PERSON_COLORS.length];
+    pdfUidColorMap[uid] = { bg: pc.pdfBg, cl: pc.pdfText };
+  });
 
   // ── Thai date ─────────────────────────────────────────────
   var mp = month.split('-').map(Number);
@@ -827,13 +823,15 @@ function exportSettleHTML(month, groupId) {
         +'<div style="font-size:12px;color:#1a7a4a;font-weight:600">✅ ไม่มียอดค้างชำระ</div>'
       +'</div>'
     : transfers.map(function(t){
-        return '<div style="background:#fdf4e7;border:1.5px solid #b5600a;border-radius:6px;padding:8px 10px;margin-bottom:5px">'
-          +'<div style="font-size:9px;font-weight:700;color:#b5600a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">💸 ต้องโอนเงิน</div>'
+        var fc = pdfUidColorMap[t.fromUid] || { bg:'#fee2e2', cl:'#991b1b' };
+        var tc = pdfUidColorMap[t.toUid]   || { bg:'#dbeafe', cl:'#1e3a8a' };
+        return '<div style="background:#fafafa;border:1.5px solid #ccc;border-radius:6px;padding:8px 10px;margin-bottom:5px">'
+          +'<div style="font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">💸 ต้องโอนเงิน</div>'
           +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-            +'<span style="font-size:11px;font-weight:700;color:#c0392b;background:#fee2e2;padding:2px 8px;border-radius:20px">'+t.from+'</span>'
+            +'<span style="font-size:11px;font-weight:700;color:'+fc.cl+';background:'+fc.bg+';padding:2px 8px;border-radius:20px">'+t.from+'</span>'
             +'<span style="font-size:10px;color:#666">ต้องโอนให้</span>'
-            +'<span style="font-size:11px;font-weight:700;color:#1a7a4a;background:#d1fae5;padding:2px 8px;border-radius:20px">'+t.to+'</span>'
-            +'<span style="margin-left:auto;font-size:13px;font-weight:700;color:#b5600a;font-family:monospace">'+fmtH(t.amount)+'</span>'
+            +'<span style="font-size:11px;font-weight:700;color:'+tc.cl+';background:'+tc.bg+';padding:2px 8px;border-radius:20px">'+t.to+'</span>'
+            +'<span style="margin-left:auto;font-size:13px;font-weight:700;color:#333;font-family:monospace">'+fmtH(t.amount)+'</span>'
           +'</div>'
         +'</div>';
       }).join('');
@@ -864,7 +862,8 @@ function exportSettleHTML(month, groupId) {
   pdfUids.forEach(function(uid){
     if (!pdfUidColorMap[uid]) {
       var i = Object.keys(pdfUidColorMap).length;
-      pdfUidColorMap[uid] = _PDF_COLORS[i % _PDF_COLORS.length];
+      var pc = PERSON_COLORS[i % PERSON_COLORS.length];
+      pdfUidColorMap[uid] = { bg: pc.pdfBg, cl: pc.pdfText };
     }
   });
 

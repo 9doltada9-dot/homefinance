@@ -18,6 +18,41 @@ var itemsData = {};   // { catId: [{id, name, sort_order}] }
 
 var viewMode = localStorage.getItem('hf2_viewmode') || 'desktop';
 
+// ─── PERSON COLOR PALETTE (neon-glass theme) ──────────────
+// ใช้ index เดียวกับ persons array / _allProfiles order
+// .gradient  → circle avatar (dark bg)
+// .glow      → box-shadow rgba
+// .pillBg    → small pill background (rgba, glass)
+// .pillText  → pill text / small avatar text
+// .pdfBg     → opaque bg สำหรับ PDF export (white bg)
+// .pdfText   → text สำหรับ PDF export
+var PERSON_COLORS = [
+  { gradient:'linear-gradient(135deg,#007ACC,#00F5FF)', glow:'rgba(0,245,255,.45)',
+    pillBg:'rgba(0,245,255,.15)', pillText:'#00E8FF', pillBorder:'rgba(0,245,255,.35)',
+    pdfBg:'#dbeafe', pdfText:'#1e3a8a' },
+  { gradient:'linear-gradient(135deg,#7B10CC,#C026FF)', glow:'rgba(192,38,255,.45)',
+    pillBg:'rgba(192,38,255,.15)', pillText:'#D464FF', pillBorder:'rgba(192,38,255,.35)',
+    pdfBg:'#f3e8ff', pdfText:'#6b21a8' },
+  { gradient:'linear-gradient(135deg,#059669,#00FF88)', glow:'rgba(0,255,136,.4)',
+    pillBg:'rgba(0,255,136,.12)', pillText:'#00CC6A', pillBorder:'rgba(0,255,136,.3)',
+    pdfBg:'#dcfce7', pdfText:'#166534' },
+  { gradient:'linear-gradient(135deg,#DC2626,#FF4D6D)', glow:'rgba(255,77,109,.4)',
+    pillBg:'rgba(255,77,109,.12)', pillText:'#FF6080', pillBorder:'rgba(255,77,109,.3)',
+    pdfBg:'#fee2e2', pdfText:'#991b1b' },
+];
+/** หา PERSON_COLORS index จาก pid (UUID หรือ A/B) */
+function personColorIndex(pid){
+  var idx = persons.findIndex(function(x){ return x.id===pid || x.user_id===pid; });
+  if(idx===-1 && window._allProfiles){
+    idx = window._allProfiles.findIndex(function(x){ return x.id===pid; });
+  }
+  return Math.max(0, idx);
+}
+/** คืน PERSON_COLORS entry จาก pid */
+function personColor(pid){
+  return PERSON_COLORS[personColorIndex(pid) % PERSON_COLORS.length];
+}
+
 // ─── FORMATTERS ───────────────────────────────────────────
 function fmt(n){
   // ปัดเศษทศนิยมสูงสุด 2 ตำแหน่ง — ถ้าไม่มีเศษให้แสดงเป็นจำนวนเต็ม
@@ -55,15 +90,8 @@ function names(){
 }
 function personPill(pid){
   var displayName=nm(pid);
-  var colors=['#ebf0fe:#1a4fa0','#fef8e7:#b5600a','#eef7f2:#1a7a4a','#f0eef9:#4a3a9a','#fdf4e7:#b5600a'];
-  // try persons array first, then _allProfiles
-  var idx=persons.findIndex(function(x){return x.id===pid;});
-  if(idx===-1 && window._allProfiles){
-    idx=window._allProfiles.findIndex(function(x){return x.id===pid;});
-  }
-  var parts=(colors[Math.max(0,idx)]||colors[0]).split(':');
-  var bg=parts[0], cl=parts[1];
-  return '<span style="background:'+bg+';color:'+cl+';font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500">'+displayName+'</span>';
+  var c=personColor(pid);
+  return '<span style="background:'+c.pillBg+';color:'+c.pillText+';font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;border:1px solid '+c.pillBorder+'">'+displayName+'</span>';
 }
 
 // ─── THAI DATE/TIME helpers ───────────────────────────────

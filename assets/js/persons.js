@@ -27,9 +27,9 @@ function populatePersonSelects(){
 function renderPersonList(){
   var el=document.getElementById('personList');
   if(!el) return;
-  var colors=[['#ebf0fe','#1a4fa0'],['#fef8e7','#b5600a'],['#eef7f2','#1a7a4a'],['#f0eef9','#4a3a9a'],['#fce8f3','#9a1a6a']];
   el.innerHTML=persons.map(function(p,i){
-    var pair=colors[i%5]; var bg=pair[0], cl=pair[1];
+    var pc=PERSON_COLORS[i%PERSON_COLORS.length];
+    var bg=pc.gradient, cl='#fff';
     var isLinked = !!p.user_id;
     var badge = isLinked
       ? '<span style="font-size:10px;font-weight:600;background:#eef7f2;color:#1a7a4a;padding:2px 8px;border-radius:10px;border:1px solid #b2dfcc">\U0001f517 บัญชีแอป</span>'

@@ -1,25 +1,25 @@
-/* HomeFinance · glassSettings.js v2 — liquid-skin.css compatible */
+/* HomeFinance · glassSettings.js v3 — Neon Black Design System */
 
-// ─── DEFAULTS (match liquid-skin.css tokens) ──────────────
+// ─── DEFAULTS — Neon Black (dark-first) ───────────────────
 var GLASS_DEFAULTS = {
-  gBlur: 40, gSat: 220, gCardOpacity: 66,
-  orbOpacity: 90, orbBlur: 30,
-  bgBase: '#e9edfb',
-  orb1: '#9db8ff', orb2: '#ffc2e2', orb3: '#aef0ff', orb4: '#cdc4ff',
-  accent: '#3f6fe0',
-  modalDark: 45, modalBlur: 24,
+  gBlur: 28, gSat: 160, gCardOpacity: 88,
+  orbOpacity: 22, orbBlur: 56,
+  bgBase: '#07070a',
+  orb1: '#00c8f0', orb2: '#8c10cc', orb3: '#0030aa', orb4: '#006644',
+  accent: '#00F5FF',
+  modalDark: 88, modalBlur: 14,
 };
 
 var GLASS_DARK_PRESET = {
-  gBlur: 40, gSat: 220, gCardOpacity: 55,
-  orbOpacity: 55, orbBlur: 34,
-  bgBase: '#0d111b',
-  orb1: '#3f63c8', orb2: '#b5407f', orb3: '#1f8fb0', orb4: '#5848c0',
-  accent: '#5c8dff',
-  modalDark: 45, modalBlur: 24,
+  gBlur: 28, gSat: 160, gCardOpacity: 90,
+  orbOpacity: 26, orbBlur: 56,
+  bgBase: '#050505',
+  orb1: '#00b8e0', orb2: '#7808b0', orb3: '#002a77', orb4: '#005533',
+  accent: '#00F5FF',
+  modalDark: 88, modalBlur: 14,
 };
 
-var GLASS_KEY = 'hf_glass_v2';
+var GLASS_KEY = 'hf_glass_v3'; // bumped: force new Neon Black defaults
 
 // ─── LOAD / SAVE ──────────────────────────────────────────
 function glassLoad() {
@@ -47,12 +47,12 @@ function glassApply(s) {
   r.style.setProperty('--g-blur', s.gBlur + 'px');
   r.style.setProperty('--g-sat',  s.gSat  + '%');
 
-  // card surfaces — base color ต่างกันตาม mode
-  var base = dark ? '44,52,88' : '255,255,255';
+  // card surfaces — Neon Black base (near-black glass)
+  var base = dark ? '11,11,15' : '17,17,22';
   var card    = 'rgba(' + base + ',' + op  + ')';
   var strong  = dark
-    ? 'rgba(56,64,104,' + Math.min((+op + .18), 1).toFixed(2) + ')'
-    : 'rgba(255,255,255,' + Math.min((+op + .16), 1).toFixed(2) + ')';
+    ? 'rgba(16,16,22,' + Math.min((+op + .07), 1).toFixed(2) + ')'
+    : 'rgba(22,22,30,' + Math.min((+op + .07), 1).toFixed(2) + ')';
   var surf2   = 'rgba(' + base + ',' + op2 + ')';
 
   r.style.setProperty('--g-card',     card);

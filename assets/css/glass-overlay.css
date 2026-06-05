@@ -1,757 +1,801 @@
 /* ╔══════════════════════════════════════════════════════════════╗
-   ║  HomeFinance · LIQUID GLASS overlay                            ║
-   ║  วางไฟล์นี้เป็น <link> สุดท้าย ต่อจาก responsive.css           ║
-   ║  ไม่ต้องแก้ HTML / JS — แค่ครอบทับ class & ตัวแปรเดิม          ║
-   ║                                                                ║
-   ║  โหมดมืด:  <html data-theme="dark">  (หรือ "light" เพื่อล็อก)  ║
-   ║  ถ้าไม่ใส่ → ตามระบบ (prefers-color-scheme) อัตโนมัติ          ║
+   ║  HomeFinance · NEON BLACK Design System                        ║
+   ║  Dark Mode First · Neon Cyan #00F5FF / Purple #C026FF          ║
+   ║  Glassmorphism · Fintech AI Dashboard                          ║
    ╚══════════════════════════════════════════════════════════════╝ */
 
 /* ─────────────────────────────────────────────
-   1) RE-MAP ตัวแปรเดิม → โทนกระจก (LIGHT)
-   หมายเหตุ: ไม่แตะ --ink (ใช้เป็นทั้งสีตัวอักษร + พื้น sidebar/ปุ่ม)
+   1) NEON BLACK — Global Color Tokens
+   Default = dark-first neon (light mode = softer neon dark)
    ───────────────────────────────────────────── */
 :root{
-  --paper:transparent;
-  --surface:rgba(255,255,255,.72);
-  --surface2:rgba(255,255,255,.55);
-  --line:rgba(92,104,158,.14);
-  --line2:rgba(92,104,158,.26);
+  --paper: transparent;
 
-  --accent:#6366f1;
-  --accent-2:#8b5cf6;
-  --accent-soft:rgba(99,102,241,.16);
+  /* ── Surfaces ── */
+  --surface:  rgba(20, 20, 26, 0.88);
+  --surface2: rgba(28, 28, 36, 0.72);
+  --line:     rgba(0, 245, 255, 0.10);
+  --line2:    rgba(0, 245, 255, 0.20);
 
-  /* กระจก */
-  --g-blur:24px;
-  --g-sat:200%;
-  --g-card:rgba(255,255,255,.80);
-  --g-strong:rgba(255,255,255,.90);
-  --g-brd:rgba(230,232,255,.65);
-  --g-sheen:rgba(255,255,255,.80);
-  --g-shadow:0 24px 64px -16px rgba(40,46,96,.30), 0 8px 24px -6px rgba(40,46,96,.20), 0 1px 4px rgba(40,46,96,.10);
-  --g-ring:inset 0 1.5px 0 rgba(255,255,255,.90);
+  /* ── Neon Accents ── */
+  --accent:      #00F5FF;
+  --accent-2:    #C026FF;
+  --accent-soft: rgba(0, 245, 255, 0.12);
 
-  /* พื้นหลัง mesh — สว่างและเห็นชัด */
-  --bg-base:#e8eaf6;
-  --orb-1:#c4b5fd; --orb-2:#fbcfe8; --orb-3:#bae6fd; --orb-4:#bbf7d0;
-  --orb-opacity:.85; --orb-blur:36px;
-  --modal-dark:.82; --modal-blur:12px;
+  /* ── Glass tokens ── */
+  --g-blur:   28px;
+  --g-sat:    160%;
+  --g-card:   rgba(17, 17, 22, 0.86);
+  --g-strong: rgba(22, 22, 30, 0.96);
+  --g-brd:    rgba(0, 245, 255, 0.14);
+  --g-sheen:  rgba(0, 245, 255, 0.07);
+  --g-shadow:
+    0 32px 80px -20px rgba(0,0,0,.88),
+    0 8px  28px -8px  rgba(0,0,0,.70),
+    0 0 0 1px rgba(0,245,255,.06);
+  --g-ring: inset 0 1px 0 rgba(0,245,255,.10);
 
-  /* สีตัวอักษรบน sidebar/topbar กระจกเข้ม */
-  --on-dark:#f3f4ff;
+  /* ── Mesh Background ── */
+  --bg-base:    #07070a;
+  --orb-1:      #00c8f0;
+  --orb-2:      #8c10cc;
+  --orb-3:      #0030aa;
+  --orb-4:      #006644;
+  --orb-opacity: 0.22;
+  --orb-blur:   56px;
 
-  --r:13px; --r2:20px; --r3:26px;
+  /* ── Modal ── */
+  --modal-dark: 0.88;
+  --modal-blur: 14px;
+
+  /* ── Semantic (Neon) ── */
+  --green:      #00FF88;
+  --green-bg:   rgba(0,255,136,.10);
+  --red:        #FF4D6D;
+  --red-bg:     rgba(255,77,109,.10);
+  --amber:      #FFC857;
+  --amber-bg:   rgba(255,200,87,.10);
+  --blue:       #00E5FF;
+  --blue-bg:    rgba(0,229,255,.10);
+  --violet:     #C026FF;
+  --violet-bg:  rgba(192,38,255,.10);
+
+  /* ── Typography ── */
+  --ink:    #F0F4FF;
+  --ink2:   #9AA0C0;
+  --ink3:   #58607A;
+  --on-dark:#F0F4FF;
+
+  /* ── Radius ── */
+  --r: 13px; --r2: 20px; --r3: 26px;
 }
 
-/* ── DARK (force ผ่าน data-theme="dark") ── */
+/* ── DARK MODE — Pure Neon Black #050505 ── */
 html[data-theme="dark"]{
-  --ink:#f2f3ff; --ink2:#b6bce0; --ink3:#838ab0;
-  --surface:rgba(40,46,80,.50);
-  --surface2:rgba(40,46,80,.34);
-  --line:rgba(255,255,255,.10);
-  --line2:rgba(255,255,255,.18);
-
-  --green-bg:rgba(52,211,153,.16); --green:#34d399;
-  --red-bg:rgba(255,122,102,.16);  --red:#ff8a76;
-  --amber-bg:rgba(251,191,36,.16); --amber:#fbbf24;
-  --blue-bg:rgba(96,165,250,.16);  --blue:#7fb1ff;
-  --violet-bg:rgba(167,139,250,.18);--violet:#b69bff;
-
-  --accent:#818cf8; --accent-2:#a78bfa; --accent-soft:rgba(129,140,248,.22);
-  --g-card:rgba(46,53,90,.55);
-  --g-strong:rgba(58,66,108,.7);
-  --g-brd:rgba(255,255,255,.16);
-  --g-sheen:rgba(255,255,255,.14);
-  --g-shadow:0 28px 60px -26px rgba(0,0,0,.7), 0 6px 18px -10px rgba(0,0,0,.5);
-  --g-ring:inset 0 1px 0 rgba(255,255,255,.14);
-
-  --bg-base:#0a0d1f;
-  --orb-1:#4f3bd6; --orb-2:#b5337f; --orb-3:#1f6fd4; --orb-4:#107a5a;
+  --ink: #FFFFFF; --ink2: #A0A8C0; --ink3: #606880;
+  --surface:  rgba(14,14,18,.90);
+  --surface2: rgba(20,20,26,.72);
+  --line:  rgba(0,245,255,.09);
+  --line2: rgba(0,245,255,.20);
+  --accent:      #00F5FF;
+  --accent-2:    #C026FF;
+  --accent-soft: rgba(0,245,255,.12);
+  --g-card:   rgba(11,11,15,.92);
+  --g-strong: rgba(17,17,23,.97);
+  --g-brd:    rgba(0,245,255,.13);
+  --g-shadow:
+    0 32px 80px -20px rgba(0,0,0,.96),
+    0 8px  28px -8px  rgba(0,0,0,.80),
+    0 0 0 1px rgba(0,245,255,.05);
+  --g-ring: inset 0 1px 0 rgba(0,245,255,.10);
+  --bg-base: #050505;
+  --orb-1: #00b8e0; --orb-2: #7808b0;
+  --orb-3: #002a77; --orb-4: #005533;
+  --orb-opacity: 0.28;
+  --green:#00FF88; --green-bg:rgba(0,255,136,.10);
+  --red:#FF4D6D;   --red-bg:rgba(255,77,109,.10);
+  --amber:#FFC857; --amber-bg:rgba(255,200,87,.10);
+  --blue:#00D8FF;  --blue-bg:rgba(0,216,255,.10);
+  --violet:#C026FF;--violet-bg:rgba(192,38,255,.10);
 }
 
-/* ── DARK (auto ตามระบบ ถ้าไม่ได้ล็อกธีม) ── */
-@media (prefers-color-scheme: dark){
+/* ── AUTO DARK (system) ── */
+@media(prefers-color-scheme:dark){
   html:not([data-theme="light"]):not([data-theme="dark"]){
-    --ink:#f2f3ff; --ink2:#b6bce0; --ink3:#838ab0;
-    --surface:rgba(40,46,80,.50); --surface2:rgba(40,46,80,.34);
-    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
-    --green-bg:rgba(52,211,153,.16); --green:#34d399;
-    --red-bg:rgba(255,122,102,.16); --red:#ff8a76;
-    --amber-bg:rgba(251,191,36,.16); --amber:#fbbf24;
-    --blue-bg:rgba(96,165,250,.16); --blue:#7fb1ff;
-    --violet-bg:rgba(167,139,250,.18); --violet:#b69bff;
-    --accent:#818cf8; --accent-2:#a78bfa; --accent-soft:rgba(129,140,248,.22);
-    --g-card:rgba(46,53,90,.55); --g-strong:rgba(58,66,108,.7); --csd-panel-bg:rgba(22,28,58,.97);
-    --g-brd:rgba(255,255,255,.16); --g-sheen:rgba(255,255,255,.14);
-    --g-shadow:0 28px 60px -26px rgba(0,0,0,.7), 0 6px 18px -10px rgba(0,0,0,.5);
-    --g-ring:inset 0 1px 0 rgba(255,255,255,.14);
-    --bg-base:#0a0d1f;
-    --orb-1:#4f3bd6; --orb-2:#b5337f; --orb-3:#1f6fd4; --orb-4:#107a5a;
+    --ink:#FFFFFF; --ink2:#A0A8C0; --ink3:#606880;
+    --surface:rgba(14,14,18,.90); --surface2:rgba(20,20,26,.72);
+    --line:rgba(0,245,255,.09);   --line2:rgba(0,245,255,.20);
+    --accent:#00F5FF; --accent-2:#C026FF;
+    --accent-soft:rgba(0,245,255,.12);
+    --g-card:rgba(11,11,15,.92); --g-strong:rgba(17,17,23,.97);
+    --g-brd:rgba(0,245,255,.13);
+    --g-shadow: 0 32px 80px -20px rgba(0,0,0,.96), 0 8px 28px -8px rgba(0,0,0,.80), 0 0 0 1px rgba(0,245,255,.05);
+    --g-ring:inset 0 1px 0 rgba(0,245,255,.10);
+    --bg-base:#050505;
+    --orb-1:#00b8e0; --orb-2:#7808b0; --orb-3:#002a77; --orb-4:#005533;
+    --orb-opacity:0.28;
+    --green:#00FF88; --green-bg:rgba(0,255,136,.10);
+    --red:#FF4D6D;   --red-bg:rgba(255,77,109,.10);
+    --amber:#FFC857; --amber-bg:rgba(255,200,87,.10);
+    --blue:#00D8FF;  --blue-bg:rgba(0,216,255,.10);
+    --violet:#C026FF;--violet-bg:rgba(192,38,255,.10);
   }
 }
 
 /* ─────────────────────────────────────────────
-   2) พื้นหลัง mesh เคลื่อนไหว (orbs + grain)
+   2) Neon Mesh Background + Tech Grid
    ───────────────────────────────────────────── */
-body{ background:var(--bg-base) !important; transition:background .5s ease; }
+body{
+  background: var(--bg-base) !important;
+  transition: background .5s ease;
+}
+/* Animated neon orbs */
 body::before{
   content:''; position:fixed; inset:-10vh -10vw; z-index:-2; pointer-events:none;
   background:
-    radial-gradient(38vw 38vw at 12% 6%,  var(--orb-1) 0%, transparent 60%),
-    radial-gradient(34vw 34vw at 88% 10%, var(--orb-2) 0%, transparent 60%),
-    radial-gradient(40vw 40vw at 24% 96%, var(--orb-3) 0%, transparent 62%),
-    radial-gradient(30vw 30vw at 92% 90%, var(--orb-4) 0%, transparent 60%);
-  filter:blur(var(--orb-blur)); opacity:var(--orb-opacity);
-  animation:gMesh 26s ease-in-out infinite alternate;
+    radial-gradient(40vw 40vw at 10%  8%,  var(--orb-1) 0%, transparent 58%),
+    radial-gradient(36vw 36vw at 90% 12%,  var(--orb-2) 0%, transparent 58%),
+    radial-gradient(44vw 44vw at 20% 96%,  var(--orb-3) 0%, transparent 60%),
+    radial-gradient(32vw 32vw at 94% 92%,  var(--orb-4) 0%, transparent 58%);
+  filter: blur(var(--orb-blur));
+  opacity: var(--orb-opacity);
+  animation: nbMesh 30s ease-in-out infinite alternate;
 }
+/* Subtle tech grid overlay */
 body::after{
   content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
-  background-image:radial-gradient(rgba(255,255,255,.4) .5px, transparent .5px);
-  background-size:4px 4px; mix-blend-mode:overlay; opacity:.12;
+  background-image:
+    linear-gradient(rgba(0,245,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,.025) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 1;
 }
-html[data-theme="dark"] body::before{ opacity:.35; }
-html[data-theme="dark"] body::after{ opacity:.08; }
-@keyframes gMesh{ 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(2vw,-2vh) scale(1.08)} }
-@media (prefers-reduced-motion:reduce){ body::before{ animation:none } }
+@keyframes nbMesh{
+  0%   { transform: translate(0,0)    scale(1);    }
+  50%  { transform: translate(1vw,-1vh)  scale(1.04); }
+  100% { transform: translate(2vw,-2vh) scale(1.08); }
+}
+@media(prefers-reduced-motion:reduce){ body::before{ animation:none; } }
 
 /* ─────────────────────────────────────────────
-   3) การ์ด & เมตริก = กระจก
+   3) Cards & Metrics — Dark Glass + Neon Border
    ───────────────────────────────────────────── */
 .card,
 .metric,
 .settings-section{
-  background:var(--g-card) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border:1px solid var(--g-brd) !important;
-  border-radius:var(--r2) !important;
-  box-shadow:var(--g-shadow), var(--g-ring);
-  position:relative;
+  background: var(--g-card) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: var(--r2) !important;
+  box-shadow: var(--g-shadow), var(--g-ring);
+  position: relative;
 }
-.card{ padding:22px 24px; }
-.metric{ transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s; }
-.metric:hover{ transform:translateY(-3px); box-shadow:var(--g-shadow), var(--g-ring), 0 0 0 1px var(--accent-soft); }
-.metric-val{ font-size:20px; }
+.card{ padding: 22px 24px; }
 
-/* การ์ดที่ตั้ง border-left accent ไว้ (salary cycle) → ทำเป็น glass + accent rim */
-#salaryCycleCard{ border-left:none !important;
-  box-shadow:var(--g-shadow), var(--g-ring), inset 4px 0 0 var(--accent) !important; }
+.metric{
+  transition: transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s, border-color .2s;
+}
+.metric:hover{
+  transform: translateY(-3px);
+  border-color: rgba(0,245,255,.32) !important;
+  box-shadow:
+    var(--g-shadow),
+    var(--g-ring),
+    0 0 24px rgba(0,245,255,.12);
+}
+.metric-val{ font-size: 20px; font-weight: 700; }
+
+/* Salary cycle card — cyan left rim */
+#salaryCycleCard{
+  border-left: none !important;
+  box-shadow: var(--g-shadow), var(--g-ring), inset 4px 0 0 var(--accent) !important;
+}
 
 /* ─────────────────────────────────────────────
-   4) SIDEBAR / TOPBAR / BOTTOMNAV = กระจกเข้ม
+   4) Sidebar / Topbar / BottomNav
    ───────────────────────────────────────────── */
 .sidebar{
-  background:linear-gradient(180deg, rgba(28,32,60,.72), rgba(20,23,46,.66)) !important;
-  -webkit-backdrop-filter:blur(26px) saturate(160%);
-  backdrop-filter:blur(26px) saturate(160%);
-  border-right:1px solid rgba(255,255,255,.12);
-  box-shadow:0 0 60px -10px rgba(0,0,0,.4);
+  background: linear-gradient(180deg, rgba(6,6,10,.96), rgba(4,4,8,.98)) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  backdrop-filter:         blur(32px) saturate(140%);
+  border-right: 1px solid rgba(0,245,255,.10);
+  box-shadow: 0 0 60px -10px rgba(0,0,0,.6),
+              inset -1px 0 0 rgba(0,245,255,.07);
 }
 .topbar, .bottomnav{
-  background:linear-gradient(180deg, rgba(28,32,60,.78), rgba(20,23,46,.62)) !important;
-  -webkit-backdrop-filter:blur(22px) saturate(160%);
-  backdrop-filter:blur(22px) saturate(160%);
-  border-bottom:1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(5,5,8,.96), rgba(4,4,7,.94)) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter:         blur(28px) saturate(140%);
+  border-bottom: 1px solid rgba(0,245,255,.08);
 }
 .bottomnav{
-  border-top:1px solid rgba(255,255,255,.10);
-  border-bottom:none;
-  overflow:visible !important;
-  align-items:flex-end;
-  padding-bottom:max(env(safe-area-inset-bottom), 6px);
+  border-top: 1px solid rgba(0,245,255,.10);
+  border-bottom: none;
+  overflow: visible !important;
+  align-items: flex-end;
+  padding-bottom: max(env(safe-area-inset-bottom), 6px);
 }
 
-/* ── FAB center button ── */
+/* ── FAB center button — Neon Cyan ── */
 #bn-add{
-  flex:1.4;
-  padding:0;
-  gap:0;
-  min-height:0;
-  align-items:center;
-  justify-content:flex-end;
+  flex: 1.4; padding: 0; gap: 0; min-height: 0;
+  align-items: center; justify-content: flex-end;
 }
 .bn-fab-ring{
-  width:62px;
-  height:62px;
-  border-radius:50%;
-  background:linear-gradient(145deg, #a78bfa 0%, #818cf8 50%, #6366f1 100%);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  width: 62px; height: 62px; border-radius: 50%;
+  background: linear-gradient(145deg, #00F5FF 0%, #009DFF 55%, #0055EE 100%);
+  display: flex; align-items: center; justify-content: center;
   box-shadow:
-    0 -2px 0 0 rgba(255,255,255,.18) inset,
-    0 6px 24px rgba(99,102,241,.7),
-    0 0 0 5px rgba(12,14,36,.96);
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
-  flex-shrink:0;
-  transform:translateY(-16px);
+    inset 0 -2px 0 0 rgba(0,0,0,.22),
+    inset 0 1px 0 0 rgba(255,255,255,.25),
+    0 6px 28px rgba(0,245,255,.45),
+    0 0 0 5px rgba(3,3,6,.98);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  flex-shrink: 0;
+  transform: translateY(-16px);
 }
 #bn-add:active .bn-fab-ring{
-  transform:translateY(-16px) scale(.90);
+  transform: translateY(-16px) scale(.90);
   box-shadow:
-    0 -2px 0 0 rgba(255,255,255,.12) inset,
-    0 3px 12px rgba(99,102,241,.45),
-    0 0 0 5px rgba(12,14,36,.96);
+    inset 0 -2px 0 0 rgba(0,0,0,.18),
+    0 3px 14px rgba(0,245,255,.28),
+    0 0 0 5px rgba(3,3,6,.98);
 }
 #bn-add.active .bn-fab-ring{
   box-shadow:
-    0 -2px 0 0 rgba(255,255,255,.22) inset,
-    0 8px 28px rgba(99,102,241,.85),
-    0 0 0 5px rgba(12,14,36,.96),
-    0 0 0 8px rgba(129,140,248,.22);
+    inset 0 -2px 0 0 rgba(0,0,0,.22),
+    inset 0 1px 0 0 rgba(255,255,255,.25),
+    0 8px 32px rgba(0,245,255,.60),
+    0 0 0 5px rgba(3,3,6,.98),
+    0 0 0 9px rgba(0,245,255,.16);
 }
 .bn-fab-icon{
-  width:32px;
-  height:32px;
-  color:#fff;
-  flex-shrink:0;
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));
+  width: 32px; height: 32px; color: #fff; flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.30));
 }
 
-.nav-item{ margin:2px 10px; border-radius:12px; border-left:none !important; padding:10px 14px; }
-.nav-item:hover{ background:rgba(255,255,255,.08) !important; }
+/* ── Sidebar nav items ── */
+.nav-item{
+  margin: 2px 10px; border-radius: 11px;
+  border-left: none !important; padding: 10px 14px;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.nav-item:hover{
+  background: rgba(0,245,255,.07) !important;
+  color: var(--accent) !important;
+}
 .nav-item.active{
-  background:linear-gradient(135deg, rgba(129,140,248,.32), rgba(139,92,246,.12)) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+  background: linear-gradient(90deg, rgba(0,245,255,.14) 0%, rgba(0,245,255,.04) 100%) !important;
+  box-shadow: inset 3px 0 0 var(--accent) !important;
+  color: var(--accent) !important;
 }
-.bn-item.active{ color:var(--accent-2); }
+.nav-item.active .nav-icon{ opacity: 1; filter: drop-shadow(0 0 4px rgba(0,245,255,.5)); }
+
+/* ── Bottom nav active ── */
+.bn-item.active{ color: var(--accent) !important; }
+.bn-item.active .bn-icon{
+  filter: drop-shadow(0 0 6px rgba(0,245,255,.55));
+}
 
 /* ─────────────────────────────────────────────
-   5) ปุ่ม
+   5) Buttons — Neon Primary
    ───────────────────────────────────────────── */
-.btn{ border-radius:11px; transition:transform .15s, filter .15s, background .15s; }
+.btn{
+  border-radius: 11px;
+  transition: transform .15s, filter .15s, background .15s, box-shadow .15s;
+}
 .btn-primary{
-  background:linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
-  border-color:transparent !important; color:#fff !important;
-  box-shadow:0 12px 26px -12px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,.4);
+  background: linear-gradient(135deg, #00F5FF, #009DFF) !important;
+  border-color: transparent !important;
+  color: #050505 !important;
+  font-weight: 700 !important;
+  box-shadow:
+    0 12px 28px -12px rgba(0,245,255,.45),
+    inset 0 1px 0 rgba(255,255,255,.40);
 }
-.btn-primary:hover{ filter:brightness(1.07); transform:translateY(-1px); }
+.btn-primary:hover{
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px -10px rgba(0,245,255,.55),
+    inset 0 1px 0 rgba(255,255,255,.40);
+}
 .btn-ghost{
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
-  border-color:var(--g-brd) !important;
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-color: var(--g-brd) !important;
+  color: var(--ink) !important;
 }
-.btn-ghost:hover{ background:var(--g-strong) !important; }
+.btn-ghost:hover{
+  background: var(--g-strong) !important;
+  border-color: rgba(0,245,255,.28) !important;
+}
 
 /* ─────────────────────────────────────────────
-   6) ฟอร์ม / select / dropdown / autocomplete
-   blur ใช้ var(--g-blur) เดียวกับ glass card
+   6) Forms / Inputs / Dropdowns — Dark Neon
    ───────────────────────────────────────────── */
 .field input, .field select, .field textarea,
 .filter-row select, .name-input,
-select, input[type="date"], input[type="month"] {
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border:1px solid var(--g-brd) !important;
-  border-radius:11px !important;
-  color:var(--ink) !important;
+select, input[type="date"], input[type="month"]{
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: 11px !important;
+  color: var(--ink) !important;
 }
 .field input:focus, .field select:focus, .field textarea:focus,
-.filter-row select:focus, select:focus, input[type="date"]:focus, input[type="month"]:focus{
-  border-color:var(--accent) !important;
-  box-shadow:0 0 0 4px var(--accent-soft);
-  outline:none;
+.filter-row select:focus, select:focus,
+input[type="date"]:focus, input[type="month"]:focus{
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(0,245,255,.16);
+  outline: none;
 }
 
-/* ── Uniform <select> sizing (fallback for unwrapped selects) ── */
-select {
+/* ── Uniform <select> sizing ── */
+select{
   padding: 10px 14px !important;
   min-height: 46px !important;
-  font-family: 'Sarabun', sans-serif !important;
+  font-family: 'Sarabun',sans-serif !important;
   font-size: 14px !important;
   cursor: pointer !important;
   line-height: 1.4 !important;
 }
-select.hf-chip, select.hf-pill-select {
+select.hf-chip, select.hf-pill-select{
   padding: 7px 11px !important;
   min-height: 36px !important;
   font-size: 13px !important;
 }
 
-/* chip-selects + pill-selects glass */
-select.hf-chip, select.hf-pill-select {
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border:1px solid var(--g-brd) !important;
-  border-radius:11px !important;
-  color:var(--ink2) !important;
+/* chip-selects glass */
+select.hf-chip, select.hf-pill-select{
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: 11px !important;
+  color: var(--ink2) !important;
 }
 
 /* ═══════════════════════════════════════════════════
    CUSTOM SELECT DROPDOWN (.csd-*)
-   แทนที่ native <select> ด้วย glass dropdown
    ═══════════════════════════════════════════════════ */
-.csd-wrap {
-  position: relative;
-  display: block;
+.csd-wrap{ position: relative; display: block; }
+.csd-wrap.csd-chip .csd-btn{
+  min-height: 36px !important; padding: 7px 32px 7px 12px !important; font-size: 13px !important;
 }
-.csd-wrap.csd-chip .csd-btn {
-  min-height: 36px !important;
-  padding: 7px 32px 7px 12px !important;
-  font-size: 13px !important;
-}
-/* trigger button */
-.csd-btn {
-  width: 100%;
-  min-height: 46px;
-  padding: 10px 36px 10px 14px;
+.csd-btn{
+  width: 100%; min-height: 46px; padding: 10px 36px 10px 14px;
   background: var(--surface) !important;
   -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
   border: 1px solid var(--g-brd) !important;
   border-radius: 11px !important;
   color: var(--ink) !important;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  font-family: 'Sarabun',sans-serif; font-size: 14px;
+  cursor: pointer; text-align: left;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px; line-height: 1.4; position: relative; box-sizing: border-box;
   transition: border-color .15s, box-shadow .15s;
-  line-height: 1.4;
-  position: relative;
-  box-sizing: border-box;
 }
-.csd-btn:hover {
-  border-color: var(--accent-soft, rgba(26,122,74,.4)) !important;
-}
-.csd-btn.open,
-.csd-btn:focus {
+.csd-btn:hover{ border-color: rgba(0,245,255,.30) !important; }
+.csd-btn.open, .csd-btn:focus{
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 3px rgba(0,245,255,.16);
   outline: none;
 }
-.csd-lbl {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.csd-lbl{
+  flex: 1; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
 }
-.csd-arrow {
-  font-size: 11px;
-  color: var(--ink3);
-  flex-shrink: 0;
-  transition: transform .15s;
-}
-.csd-btn.open .csd-arrow {
-  transform: rotate(180deg);
-}
+.csd-arrow{ font-size: 11px; color: var(--ink3); flex-shrink: 0; transition: transform .15s; }
+.csd-btn.open .csd-arrow{ transform: rotate(180deg); }
+
 /* dropdown panel */
-.csd-panel {
-  /* position/top/left/z-index ถูก set โดย JS (portal ต่อที่ body) */
-  display: none;
-  overflow-y: auto;
+.csd-panel{
+  display: none; overflow-y: auto;
   background: var(--g-strong) !important;
   -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
   border: 1px solid var(--g-brd) !important;
   border-radius: 14px !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;
   padding: 5px;
   scrollbar-width: auto;
-  scrollbar-color: rgba(99,102,241,.6) transparent;
-  animation: glassDropIn .14s ease;
+  scrollbar-color: rgba(0,245,255,.45) transparent;
+  animation: nbDropIn .14s ease;
 }
-.csd-panel.open { display: block; }
-.csd-panel::-webkit-scrollbar { width: 6px; }
-.csd-panel::-webkit-scrollbar-track { background: rgba(255,255,255,.08); border-radius: 6px; margin: 4px; }
-.csd-panel::-webkit-scrollbar-thumb { background: rgba(99,102,241,.6); border-radius: 6px; min-height: 32px; }
-.csd-panel::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,.85); }
-/* dropdown บัญชี — พื้นหลัง opaque เพื่อปิดบัง form content ด้านหลัง */
+.csd-panel.open{ display: block; }
+.csd-panel::-webkit-scrollbar{ width: 6px; }
+.csd-panel::-webkit-scrollbar-track{ background: rgba(0,245,255,.04); border-radius: 6px; margin: 4px; }
+.csd-panel::-webkit-scrollbar-thumb{ background: rgba(0,245,255,.40); border-radius: 6px; min-height: 32px; }
+.csd-panel::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+
+/* opaque panel variant */
 .csd-panel-opaque{
-  background:rgba(255,255,255,.97) !important;
-  -webkit-backdrop-filter:blur(8px) saturate(120%) !important;
-  backdrop-filter:blur(8px) saturate(120%) !important;
+  background: rgba(14,14,18,.97) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  backdrop-filter:         blur(8px) saturate(120%) !important;
 }
 html[data-theme="dark"] .csd-panel-opaque,
 html:not([data-theme="light"]):is([data-theme="dark"]) .csd-panel-opaque{
-  background:rgba(22,28,58,.97) !important;
+  background: rgba(10,10,14,.98) !important;
 }
 @media(prefers-color-scheme:dark){
   html:not([data-theme="light"]):not([data-theme="dark"]) .csd-panel-opaque{
-    background:rgba(22,28,58,.97) !important;
+    background: rgba(10,10,14,.98) !important;
   }
 }
+
 /* option items */
-.csd-item {
-  padding: 9px 14px;
-  border-radius: 9px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 14px;
-  color: var(--ink);
-  cursor: pointer;
+.csd-item{
+  padding: 9px 14px; border-radius: 9px;
+  font-family: 'Sarabun',sans-serif; font-size: 14px;
+  color: var(--ink); cursor: pointer;
   transition: background .12s, color .12s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   user-select: none;
 }
-.csd-item:hover {
-  background: var(--accent-soft) !important;
+.csd-item:hover{
+  background: rgba(0,245,255,.10) !important;
   color: var(--accent) !important;
 }
-.csd-item.csd-sel {
-  background: var(--accent-soft) !important;
+.csd-item.csd-sel{
+  background: rgba(0,245,255,.12) !important;
   color: var(--accent) !important;
   font-weight: 700;
 }
-.csd-item.csd-sel:hover {
-  filter: brightness(1.1);
-}
-.csd-item.csd-dis {
-  color: var(--ink3);
-  cursor: default;
-  pointer-events: none;
-}
-/* chip variant item size */
-.csd-chip .csd-item {
-  font-size: 13px !important;
-  padding: 7px 12px !important;
-}
-/* optgroup label */
-.csd-group {
-  padding: 6px 14px 3px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ink3);
-  text-transform: uppercase;
-  letter-spacing: .6px;
+.csd-item.csd-sel:hover{ filter: brightness(1.1); }
+.csd-item.csd-dis{ color: var(--ink3); cursor: default; pointer-events: none; }
+.csd-chip .csd-item{ font-size: 13px !important; padding: 7px 12px !important; }
+.csd-group{
+  padding: 6px 14px 3px; font-size: 10px; font-weight: 700;
+  color: var(--ink3); text-transform: uppercase; letter-spacing: .6px;
 }
 
-/* hf-chip buttons — ให้ blur ตาม card */
-.hf-chip {
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat)) !important;
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat)) !important;
-  border-color:var(--g-brd) !important;
-  color:var(--ink2) !important;
+/* hf-chip buttons */
+.hf-chip{
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat)) !important;
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat)) !important;
+  border-color: var(--g-brd) !important;
+  color: var(--ink2) !important;
 }
-.hf-chip.on { border-color:var(--accent) !important; color:var(--accent) !important; background:var(--accent-soft) !important; }
+.hf-chip.on{
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(0,245,255,.10) !important;
+}
 
-/* mf-label trigger button */
+/* mf-label */
 .mf-label{
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border:1px solid var(--g-brd) !important;
-  border-radius:11px;
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: 11px;
+  color: var(--ink) !important;
 }
 /* dropdown panels + autocomplete + note history */
 .mf-dropdown, .ac-list, #noteHistoryDrop{
-  background:var(--g-strong) !important;
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border:1px solid var(--g-brd) !important;
-  border-radius:var(--r2,22px) !important;
-  box-shadow:var(--g-ring),var(--g-shadow) !important;
-}
-html[data-theme="dark"] .mf-dropdown,
-html[data-theme="dark"] .ac-list,
-html[data-theme="dark"] #noteHistoryDrop{
-  background:var(--g-strong) !important;
-}
-/* 1) ซ่อน scrollbar หน้าหลัก */
-html{ scrollbar-width:none; }
-html::-webkit-scrollbar{ display:none; }
-body{ scrollbar-width:none; }
-body::-webkit-scrollbar{ display:none; }
-
-/* 2) Body lock เมื่อ dropdown เปิด — ใช้ overflow:hidden เท่านั้น
-      ไม่ใช้ position:fixed เพราะทำให้ backdrop-filter ของ glass card เสีย */
-body.mf-body-lock{
-  overflow:hidden !important;
+  background: var(--g-strong) !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border: 1px solid var(--g-brd) !important;
+  border-radius: var(--r2,22px) !important;
+  box-shadow: var(--g-ring), var(--g-shadow) !important;
 }
 
-/* ── mf-dropdown: focus scroll ── */
-.mf-dropdown.open{ animation:glassDropIn .14s ease; }
+/* ── Scrollbar ── */
+html{ scrollbar-width: none; }
+html::-webkit-scrollbar{ display: none; }
+body{ scrollbar-width: none; }
+body::-webkit-scrollbar{ display: none; }
+
+body.mf-body-lock{ overflow: hidden !important; }
+
+.mf-dropdown.open{ animation: nbDropIn .14s ease; }
 .mf-dropdown{
-  scrollbar-width:auto;
-  scrollbar-color:rgba(99,102,241,.55) transparent;
-  max-width:min(360px,calc(100vw - 24px));
-  overflow-y:auto !important;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-y;
-  scroll-behavior:smooth;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(0,245,255,.40) transparent;
+  max-width: min(360px, calc(100vw - 24px));
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scroll-behavior: smooth;
 }
-.mf-dropdown::-webkit-scrollbar{ width:6px; }
-.mf-dropdown::-webkit-scrollbar-track{ background:rgba(255,255,255,.08); border-radius:6px; margin:4px; }
-.mf-dropdown::-webkit-scrollbar-thumb{
-  background:rgba(99,102,241,.6);
-  border-radius:6px;
-  min-height:32px;
-}
-.mf-dropdown::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.85); }
-@keyframes glassDropIn{
-  from{opacity:0;transform:translateY(-4px) scale(.98)}
-  to{opacity:1;transform:none}
+.mf-dropdown::-webkit-scrollbar{ width: 6px; }
+.mf-dropdown::-webkit-scrollbar-track{ background: rgba(0,245,255,.04); border-radius: 6px; margin: 4px; }
+.mf-dropdown::-webkit-scrollbar-thumb{ background: rgba(0,245,255,.40); border-radius: 6px; min-height: 32px; }
+.mf-dropdown::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+
+@keyframes nbDropIn{
+  from{ opacity:0; transform:translateY(-4px) scale(.98); }
+  to{   opacity:1; transform:none; }
 }
 
-/* type-toggle (รับ/จ่าย/โอน) */
+/* type-toggle */
 .type-toggle{
-  background:var(--surface2) !important;
-  border:1px solid var(--g-brd) !important;
-  border-radius:13px; padding:4px; gap:3px;
+  background: var(--surface2) !important;
+  border: 1px solid var(--g-brd) !important;
+  border-radius: 13px; padding: 4px; gap: 3px;
 }
-.type-btn{ border-radius:10px; }
-.type-btn.active-income{ background:var(--green-bg) !important; box-shadow:var(--g-ring); }
-.type-btn.active-expense{ background:var(--red-bg) !important; box-shadow:var(--g-ring); }
-.type-btn.active-transfer{ background:var(--blue-bg) !important; box-shadow:var(--g-ring); }
+.type-btn{ border-radius: 10px; }
+.type-btn.active-income{  background: var(--green-bg)  !important; box-shadow: var(--g-ring); }
+.type-btn.active-expense{ background: var(--red-bg)    !important; box-shadow: var(--g-ring); }
+.type-btn.active-transfer{background: var(--blue-bg)   !important; box-shadow: var(--g-ring); }
 
 /* ─────────────────────────────────────────────
-   7) badges / pills / chips (เพิ่มขอบบาง + กลม)
+   7) Badges / Pills — Neon Semantic
    ───────────────────────────────────────────── */
-.badge, .pill-a, .pill-b, .pill-joint{ border:1px solid transparent; }
-.badge-income, .badge-paid{ border-color:color-mix(in srgb, var(--green) 30%, transparent); }
-.badge-expense{ border-color:color-mix(in srgb, var(--red) 30%, transparent); }
-.badge-pending{ border-color:color-mix(in srgb, var(--amber) 30%, transparent); }
-.badge-received, .badge-split, .badge-transfer{ border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
-.badge-personal{ border-color:color-mix(in srgb, var(--violet) 30%, transparent); }
+.badge, .pill-a, .pill-b, .pill-joint{ border: 1px solid transparent; }
+.badge-income, .badge-paid{
+  border-color: color-mix(in srgb, var(--green) 35%, transparent);
+}
+.badge-expense{
+  border-color: color-mix(in srgb, var(--red) 35%, transparent);
+}
+.badge-pending{
+  border-color: color-mix(in srgb, var(--amber) 35%, transparent);
+}
+.badge-received, .badge-split, .badge-transfer{
+  border-color: color-mix(in srgb, var(--blue) 35%, transparent);
+}
+.badge-personal{
+  border-color: color-mix(in srgb, var(--violet) 35%, transparent);
+}
 .cat-tag, .cat-chip{
-  background:var(--surface) !important;
-  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
-  border:1px solid var(--g-brd) !important;
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid var(--g-brd) !important;
 }
 
 /* ─────────────────────────────────────────────
-   8) แท็บกราฟ + ตาราง + settlement
+   8) Charts / Tables / Settlement
    ───────────────────────────────────────────── */
-.chart-tab.active{ color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
-tr:hover td{ background:var(--surface2) !important; }
-.tx-row:hover td{ background:var(--accent-soft) !important; }
+.chart-tab.active{
+  color: var(--accent) !important;
+  border-bottom-color: var(--accent) !important;
+}
+tr:hover td{ background: var(--surface2) !important; }
+.tx-row:hover td{
+  background: rgba(0,245,255,.06) !important;
+}
 
 .settle-card{
-  -webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));
-  border-radius:var(--r2) !important; box-shadow:var(--g-shadow), var(--g-ring);
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+  backdrop-filter:         blur(var(--g-blur)) saturate(var(--g-sat));
+  border-radius: var(--r2) !important;
+  box-shadow: var(--g-shadow), var(--g-ring);
 }
-.settle-owe{ background:linear-gradient(135deg, var(--amber-bg), var(--g-card)) !important; border-color:color-mix(in srgb,var(--amber) 30%,transparent) !important; }
-.settle-ok{ background:linear-gradient(135deg, var(--green-bg), var(--g-card)) !important; border-color:color-mix(in srgb,var(--green) 30%,transparent) !important; }
-.settle-amount{ color:var(--accent); }
+.settle-owe{
+  background: linear-gradient(135deg, var(--amber-bg), var(--g-card)) !important;
+  border-color: color-mix(in srgb, var(--amber) 32%, transparent) !important;
+}
+.settle-ok{
+  background: linear-gradient(135deg, var(--green-bg), var(--g-card)) !important;
+  border-color: color-mix(in srgb, var(--green) 32%, transparent) !important;
+}
+.settle-amount{ color: var(--accent); font-weight: 700; }
 
-/* swipe row (มือถือ) ให้พื้นหลังเป็น glass ด้วย */
-.swipe-content{ background:transparent !important; }
+.swipe-content{ background: transparent !important; }
 
-/* view-mode cards (ตั้งค่า → desktop/mobile) */
-.vm-card{ background:var(--surface) !important; border:1.5px solid var(--g-brd) !important; border-radius:var(--r2) !important; }
-.vm-card.active{ border-color:var(--accent) !important; background:var(--accent-soft) !important; }
+/* view-mode cards */
+.vm-card{
+  background: var(--surface) !important;
+  border: 1.5px solid var(--g-brd) !important;
+  border-radius: var(--r2) !important;
+}
+.vm-card.active{
+  border-color: var(--accent) !important;
+  background: rgba(0,245,255,.08) !important;
+}
 
 /* ─────────────────────────────────────────────
-   Settings / Admin — liquid glass enhancements
+   Settings — Neon Black enhancements
    ───────────────────────────────────────────── */
-
-/* Group label — accent bar ซ้าย */
-.stg-group-label {
-  font-size: 10px !important;
-  font-weight: 800 !important;
-  color: var(--ink2) !important;
-  letter-spacing: .08em !important;
+.stg-group-label{
+  font-size: 10px !important; font-weight: 800 !important;
+  color: var(--ink2) !important; letter-spacing: .08em !important;
   text-transform: uppercase !important;
   padding: 18px 2px 6px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  display: flex !important; align-items: center !important; gap: 8px !important;
 }
-.stg-group-label::before {
+.stg-group-label::before{
   content: '';
-  display: inline-block;
-  width: 3px; height: 14px;
+  display: inline-block; width: 3px; height: 14px;
   background: linear-gradient(180deg, var(--accent), var(--accent-2));
-  border-radius: 2px;
-  flex-shrink: 0;
+  border-radius: 2px; flex-shrink: 0;
 }
-/* row variant (label + action button ขวา) */
-.stg-group-label.stg-group-row {
-  justify-content: space-between !important;
-  flex-wrap: wrap;
-}
-.stg-action-btn {
-  font-size: 11px !important;
-  padding: 5px 12px !important;
-  min-height: 30px !important;
-  border-radius: 9px !important;
-  font-weight: 600 !important;
+.stg-group-label.stg-group-row{ justify-content: space-between !important; flex-wrap: wrap; }
+.stg-action-btn{
+  font-size: 11px !important; padding: 5px 12px !important;
+  min-height: 30px !important; border-radius: 9px !important; font-weight: 600 !important;
 }
 
-/* Section icons — bigger, glass ring */
-.stg-icon, .settings-icon {
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 13px !important;
-  font-size: 18px !important;
-  box-shadow: var(--g-ring), 0 4px 10px -4px rgba(40,46,96,.15) !important;
-  border: 1px solid rgba(255,255,255,.65) !important;
+/* Section icons */
+.stg-icon, .settings-icon{
+  width: 38px !important; height: 38px !important;
+  border-radius: 13px !important; font-size: 18px !important;
+  box-shadow: var(--g-ring), 0 4px 10px -4px rgba(0,245,255,.10) !important;
+  border: 1px solid rgba(0,245,255,.14) !important;
   flex-shrink: 0 !important;
 }
-html[data-theme="dark"] .stg-icon,
-html[data-theme="dark"] .settings-icon {
-  border-color: rgba(255,255,255,.14) !important;
-}
 
-/* Section card inner header — separator */
-.stg-sect-head {
-  padding: 14px 16px !important;
-  border-bottom: 1px solid var(--line) !important;
-}
-
-/* Subtitle text */
-.stg-sub {
-  font-size: 11px !important;
-  color: var(--ink3) !important;
-  margin-top: 2px;
-  line-height: 1.5;
-}
-
-/* Divider — fade edges */
-.stg-divider {
+.stg-sect-head{ padding: 14px 16px !important; border-bottom: 1px solid var(--line) !important; }
+.stg-sub{ font-size: 11px !important; color: var(--ink3) !important; margin-top: 2px; line-height: 1.5; }
+.stg-divider{
   height: 1px !important;
   background: linear-gradient(90deg, transparent, var(--line) 8%, var(--line) 92%, transparent) !important;
-  margin: 0 !important;
-  border: none !important;
+  margin: 0 !important; border: none !important;
 }
 
-/* mobile view simulation: ขอบให้เป็น glass */
+/* mobile view simulation */
 body.view-mobile .layout{
-  border-left:1px solid var(--g-brd) !important;
-  border-right:1px solid var(--g-brd) !important;
-  box-shadow:var(--g-shadow);
-  border-radius:0;
+  border-left: 1px solid var(--g-brd) !important;
+  border-right: 1px solid var(--g-brd) !important;
+  box-shadow: var(--g-shadow);
+  border-radius: 0;
 }
 
-/* divider เส้นในการ์ด */
-.divider, .stg-divider, .summary-row, .sg-item, .sg-mem-row{ border-color:var(--line) !important; }
+/* dividers */
+.divider, .stg-divider, .summary-row, .sg-item, .sg-mem-row{
+  border-color: var(--line) !important;
+}
 
-/* ── Filter pill buttons ─────────────────────────────────── */
-.tx-pill {
+/* ── Filter pill buttons ── */
+.tx-pill{
   display: inline-flex; align-items: center;
-  padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
-  font-family: Sarabun, sans-serif; cursor: pointer; white-space: nowrap;
+  padding: 5px 13px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  font-family: Sarabun,sans-serif; cursor: pointer; white-space: nowrap;
   border: 1.5px solid var(--pc, var(--accent));
   background: transparent; color: var(--pc, var(--accent));
   transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
   -webkit-tap-highlight-color: transparent;
 }
-.tx-pill[data-active="1"] {
-  background: var(--pb, var(--accent-soft));
+.tx-pill[data-active="1"]{
+  background: var(--pb, rgba(0,245,255,.10));
   box-shadow: 0 0 0 1px var(--pc, var(--accent));
 }
-.tx-pill:hover { opacity: .85; }
+.tx-pill:hover{ opacity: .85; }
 
-/* scrollbar เนียน ๆ */
-.nav::-webkit-scrollbar, .table-scroll::-webkit-scrollbar{ width:6px; height:6px; }
-.nav::-webkit-scrollbar-thumb, .table-scroll::-webkit-scrollbar-thumb{ background:rgba(140,148,180,.3); border-radius:3px; }
+/* scrollbars */
+.nav::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar{ width: 6px; height: 6px; }
+.nav::-webkit-scrollbar-thumb,
+.table-scroll::-webkit-scrollbar-thumb{
+  background: rgba(0,245,255,.25); border-radius: 3px;
+}
 
-/* ── หน้ารายการทั้งหมด — flex column เต็มจอ ─────────────── */
-/* ป้องกัน body scroll เมื่ออยู่หน้า transactions (ให้ #txContent scroll แทน) */
+/* ── Transactions page — flex column ── */
 html.tx-fullscreen,
-html.tx-fullscreen body{ overflow:hidden; }
+html.tx-fullscreen body{ overflow: hidden; }
 
 #page-transactions{
-  display: flex;
-  flex-direction: column;
-  /* desktop: ลบแค่ padding-top ของ .main (32px) → ลงถึงขอบล่างจอพอดี */
+  display: flex; flex-direction: column;
   height: calc(100vh - 32px);
 }
 #txContent{
-  flex: 1;
-  min-height: 0;        /* ให้ flex child หดได้ */
-  overflow-y: auto;
+  flex: 1; min-height: 0; overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(99,102,241,.55) rgba(255,255,255,.06);
+  scrollbar-color: rgba(0,245,255,.40) rgba(0,245,255,.04);
 }
-#txContent::-webkit-scrollbar{ width:6px; }
-#txContent::-webkit-scrollbar-track{ background:rgba(255,255,255,.06); border-radius:6px; }
+#txContent::-webkit-scrollbar{ width: 6px; }
+#txContent::-webkit-scrollbar-track{ background: rgba(0,245,255,.04); border-radius: 6px; }
 #txContent::-webkit-scrollbar-thumb{
-  background:rgba(99,102,241,.55);
-  border-radius:6px;
-  min-height:32px;
+  background: rgba(0,245,255,.40); border-radius: 6px; min-height: 32px;
 }
-#txContent::-webkit-scrollbar-thumb:hover{ background:rgba(99,102,241,.8); }
+#txContent::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+
 @media(max-width:900px){
   #page-transactions{
-    /* mobile: topbar 60px + bottomnav จริง 52px */
     height: calc(100vh - 60px - 52px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
   }
-  /* filter bar sticky ใต้ topbar บนมือถือ */
-  #txFilterBar{
-    top: calc(52px + env(safe-area-inset-top,0px));
-  }
+  #txFilterBar{ top: calc(52px + env(safe-area-inset-top,0px)); }
 }
 
 /* ─────────────────────────────────────────────
-   9) Modal overlays — ✦ Liquid Glass (ปรับตาม light/dark อัตโนมัติ)
+   9) Modal Overlays — Dark Neon Glass
    ───────────────────────────────────────────── */
-/* ── Dashboard drag-to-reorder ───────────────────────────── */
-/* Drag handle: จุด 2×3 ที่มุมบนขวา — ปรากฏเมื่อ hover */
+/* Dashboard drag-to-reorder */
 [data-dash-id]{
   position: relative;
   transition: opacity .2s, outline .15s;
 }
 [data-dash-id]::after{
-  content: '⠿';
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-size: 16px;
-  color: rgba(255,255,255,.18);
-  cursor: grab;
-  opacity: 0;
-  transition: opacity .2s, color .15s;
-  z-index: 5;
-  pointer-events: none;
-  user-select: none;
+  content: '⠿'; position: absolute; top: 10px; right: 12px;
+  font-size: 16px; color: rgba(0,245,255,.16); cursor: grab;
+  opacity: 0; transition: opacity .2s, color .15s;
+  z-index: 5; pointer-events: none; user-select: none;
 }
-[data-dash-id]:hover::after{
-  opacity: 1;
-}
-/* drag-over highlight */
-[data-dash-id].dd-over{
-  outline: 2px dashed var(--accent) !important;
-  outline-offset: 2px;
-}
+[data-dash-id]:hover::after{ opacity: 1; }
+[data-dash-id].dd-over{ outline: 2px dashed var(--accent) !important; outline-offset: 2px; }
 
-/* overlay backdrop — tint เข้มพอ + เบลอเบาๆ เพื่อ frame modal */
+/* overlay backdrop */
 #editOverlay, #catOverlay, #splitGroupModal, #transferModal,
 #recurringModal, #recurringDueModal, #depositModal,
 #editAccountModal, #deleteConfirmModal, #accountLedgerModal,
 #adjustModal, #accountDetailModal, #addAccountModal,
-#txDetailOverlay {
-  background: rgba(8,10,30,.40) !important;
-  -webkit-backdrop-filter: blur(var(--modal-blur,12px));
-  backdrop-filter: blur(var(--modal-blur,12px));
+#txDetailOverlay{
+  background: rgba(3,3,5,.85) !important;
+  -webkit-backdrop-filter: blur(var(--modal-blur,14px));
+  backdrop-filter:         blur(var(--modal-blur,14px));
 }
 
-/* modal box — liquid glass card: ใช้ tokens จาก liquid-skin/glass-overlay */
+/* modal box — dark neon glass */
 #editOverlay > div, #catOverlay > div, #splitGroupModal > div,
 #transferModal > div, #recurringModal > div, #depositModal > div,
 #editAccountModal > div, #deleteConfirmModal > div,
 #accountLedgerModal > div, #adjustModal > div,
 #accountDetailModal > div, #addAccountModal > div,
-#txDetailOverlay > div {
+#txDetailOverlay > div{
   background: var(--g-strong) !important;
-  -webkit-backdrop-filter: blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
-  backdrop-filter: blur(var(--g-blur,40px)) saturate(var(--g-sat,220%));
+  -webkit-backdrop-filter: blur(var(--g-blur,28px)) saturate(var(--g-sat,160%));
+  backdrop-filter:         blur(var(--g-blur,28px)) saturate(var(--g-sat,160%));
   border: 1px solid var(--g-brd) !important;
   border-radius: var(--r3) !important;
   box-shadow: var(--g-ring), var(--g-shadow) !important;
 }
 
-/* ✦ Liquid Glass panel — ซ่อน scrollbar */
-#glassFP { scrollbar-width: none; }
-#glassFP::-webkit-scrollbar { display: none; }
+/* ✦ Glass settings panel */
+#glassFP{ scrollbar-width: none; }
+#glassFP::-webkit-scrollbar{ display: none; }
 
-/* glassControlGroup — Expandable FAB */
-#glassControlGroup button.on { background:var(--accent-soft) !important; color:var(--accent) !important; }
-#glassControlGroup { max-width:42px; overflow:hidden; transition:max-width .34s cubic-bezier(.4,0,.2,1); }
-#glassControlGroup.gcg-open { max-width:380px; }
-#gcgToggle { width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:17px; line-height:1; transition:transform .22s ease; }
-#glassControlGroup.gcg-open #gcgToggle { transform:rotate(20deg); }
-#gcgContent { display:flex; align-items:center; white-space:nowrap; flex-shrink:0; opacity:0; transition:opacity .15s ease; }
-#glassControlGroup.gcg-open #gcgContent { opacity:1; transition:opacity .2s ease .18s; }
+/* glassControlGroup */
+#glassControlGroup button.on{ background: rgba(0,245,255,.12) !important; color: var(--accent) !important; }
+#glassControlGroup{ max-width:42px; overflow:hidden; transition:max-width .34s cubic-bezier(.4,0,.2,1); }
+#glassControlGroup.gcg-open{ max-width:380px; }
+#gcgToggle{
+  width:40px; height:40px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; line-height:1; transition:transform .22s ease;
+}
+#glassControlGroup.gcg-open #gcgToggle{ transform:rotate(20deg); }
+#gcgContent{
+  display:flex; align-items:center; white-space:nowrap; flex-shrink:0;
+  opacity:0; transition:opacity .15s ease;
+}
+#glassControlGroup.gcg-open #gcgContent{ opacity:1; transition:opacity .2s ease .18s; }
 @media(max-width:768px){ #glassControlGroup{ top:60px; right:12px; } }
+
+/* ─────────────────────────────────────────────
+   10) Neon Accent Helpers
+   ───────────────────────────────────────────── */
+/* Gradient text (use sparingly on key numbers) */
+.nb-grad-text{
+  background: linear-gradient(135deg, #00F5FF, #C026FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Neon glow dot (status indicators) */
+.nb-dot-cyan{
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #00F5FF;
+  box-shadow: 0 0 6px rgba(0,245,255,.70);
+}
+.nb-dot-green{
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #00FF88;
+  box-shadow: 0 0 6px rgba(0,255,136,.70);
+}
+
+/* Neon divider line */
+.nb-line{
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0,245,255,.30) 50%, transparent 100%);
+  border: none; margin: 0;
+}
+
+/* Neon primary badge override */
+.nb-badge-cyan{
+  background: rgba(0,245,255,.12);
+  color: #00F5FF;
+  border: 1px solid rgba(0,245,255,.28);
+  border-radius: 20px; padding: 2px 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: .4px;
+}

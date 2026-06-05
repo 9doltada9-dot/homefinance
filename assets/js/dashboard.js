@@ -101,11 +101,11 @@ function renderSalaryCycleCard(){
     // ── Header
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:6px">'+
       '<div>'+
-        '<div style="font-size:11px;font-weight:700;color:var(--blue,#1a4fa0);letter-spacing:.3px;text-transform:uppercase">💼 รอบเงินเดือน</div>'+
+        '<div style="font-size:11px;font-weight:700;color:var(--accent,#00F5FF);letter-spacing:.3px;text-transform:uppercase">💼 รอบเงินเดือน</div>'+
         '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-top:1px">'+cycle.label+'</div>'+
       '</div>'+
       '<div style="font-size:11px;color:var(--ink2);background:var(--surface2);padding:4px 12px;border-radius:20px;font-weight:600;flex-shrink:0">'+
-        (dayLeft===0?'<span style="color:#f87171">สิ้นสุดวันนี้</span>':'เหลืออีก <b>'+dayLeft+'</b> วัน')+
+        (dayLeft===0?'<span style="color:#FF4D6D">สิ้นสุดวันนี้</span>':'เหลืออีก <b>'+dayLeft+'</b> วัน')+
       '</div>'+
     '</div>'+
     // ── Time progress bar
@@ -116,29 +116,29 @@ function renderSalaryCycleCard(){
         '<span>'+toThaiDateShort(cycle.end)+'</span>'+
       '</div>'+
       '<div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">'+
-        '<div style="height:100%;width:'+progressPct+'%;background:var(--blue,#1a4fa0);border-radius:3px;transition:width .5s"></div>'+
+        '<div style="height:100%;width:'+progressPct+'%;background:linear-gradient(90deg,#00F5FF,#009DFF);border-radius:3px;transition:width .5s"></div>'+
       '</div>'+
     '</div>'+
     // ── 4-metric grid (1×4 desktop / 2×2 mobile via CSS class)
     '<div class="salary-metrics-grid">'+
-      '<div style="background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.35);border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:#15803d;margin-bottom:4px;font-weight:700">💰 รายรับ</div>'+
-        '<div style="font-size:18px;font-weight:800;color:#4ade80;font-family:monospace;letter-spacing:-0.5px">'+fmtH(received)+'</div>'+
+      '<div style="background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.28);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:#00CC6A;margin-bottom:4px;font-weight:700">💰 รายรับ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#00FF88;font-family:monospace;letter-spacing:-0.5px">'+fmtH(received)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">รับแล้ว</div>'+
       '</div>'+
-      '<div style="background:rgba(248,113,113,.10);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:#991b1b;margin-bottom:4px;font-weight:700">💸 รายจ่าย</div>'+
-        '<div style="font-size:18px;font-weight:800;color:#f87171;font-family:monospace;letter-spacing:-0.5px">'+fmtH(totalExp)+'</div>'+
+      '<div style="background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.28);border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:#FF4D6D;margin-bottom:4px;font-weight:700">💸 รายจ่าย</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#FF4D6D;font-family:monospace;letter-spacing:-0.5px">'+fmtH(totalExp)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">จ่ายแล้ว</div>'+
       '</div>'+
-      '<div style="background:'+(remain>=0?'rgba(74,222,128,.08)':'rgba(248,113,113,.10)')+';border:1px solid '+(remain>=0?'rgba(74,222,128,.30)':'rgba(248,113,113,.35)')+';border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:'+(remain>=0?'#15803d':'#991b1b')+';margin-bottom:4px;font-weight:700">💵 คงเหลือ</div>'+
-        '<div style="font-size:18px;font-weight:800;color:'+(remain>=0?'#4ade80':'#f87171')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(remain)+'</div>'+
+      '<div style="background:'+(remain>=0?'rgba(0,255,136,.08)':'rgba(255,77,109,.08)')+';border:1px solid '+(remain>=0?'rgba(0,255,136,.28)':'rgba(255,77,109,.28)')+';border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:'+(remain>=0?'#00CC6A':'#FF4D6D')+';margin-bottom:4px;font-weight:700">💵 คงเหลือ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:'+(remain>=0?'#00FF88':'#FF4D6D')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(remain)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">สุทธิรอบนี้</div>'+
       '</div>'+
-      '<div style="background:'+(pending>0?'rgba(251,191,36,.10)':'rgba(255,255,255,.04)')+';border:1px solid '+(pending>0?'rgba(251,191,36,.40)':'rgba(255,255,255,.08)')+';border-radius:12px;padding:12px 10px">'+
-        '<div style="font-size:10px;color:'+(pending>0?'#b5600a':'var(--ink3)')+';margin-bottom:4px;font-weight:700">⏳ รอรับ</div>'+
-        '<div style="font-size:18px;font-weight:800;color:'+(pending>0?'#fbbf24':'var(--ink3)')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(pending)+'</div>'+
+      '<div style="background:'+(pending>0?'rgba(255,200,87,.08)':'rgba(0,245,255,.04)')+';border:1px solid '+(pending>0?'rgba(255,200,87,.32)':'rgba(0,245,255,.08)')+';border-radius:12px;padding:12px 10px">'+
+        '<div style="font-size:10px;color:'+(pending>0?'#FFC857':'var(--ink3)')+';margin-bottom:4px;font-weight:700">⏳ รอรับ</div>'+
+        '<div style="font-size:18px;font-weight:800;color:'+(pending>0?'#FFC857':'var(--ink3)')+';font-family:monospace;letter-spacing:-0.5px">'+fmtH(pending)+'</div>'+
         '<div style="font-size:9px;color:var(--ink3);margin-top:2px">'+(pending>0?'รอดำเนินการ':'ไม่มีรอรับ')+'</div>'+
       '</div>'+
     '</div>'+
@@ -150,19 +150,19 @@ function renderSalaryCycleCard(){
         '<span>'+fmtH(totalExp)+' / '+fmtH(received)+'</span>'+
       '</div>'+
       '<div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">'+
-        '<div style="height:100%;width:'+spendPct+'%;border-radius:4px;transition:width .5s;background:'+(spendPct>=90?'#f87171':spendPct>=70?'#fbbf24':'#4ade80')+'"></div>'+
+        '<div style="height:100%;width:'+spendPct+'%;border-radius:4px;transition:width .5s;background:'+(spendPct>=90?'#FF4D6D':spendPct>=70?'#FFC857':'#00FF88')+'"></div>'+
       '</div>'+
     '</div>'
     : '')+
     // ── Pending salary entries
     (pendList.length ?
-    '<div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);border-radius:10px;padding:10px 12px;margin-bottom:2px">'+
-      '<div style="font-size:11px;font-weight:700;color:#b5600a;margin-bottom:6px">⏳ รอรับ — เปิดใช้วันที่ '+SALARY_DAY+'</div>'+
-      pendList.map(function(e){ return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(240,195,106,.25)">'+
+    '<div style="background:rgba(255,200,87,.08);border:1px solid rgba(255,200,87,.32);border-radius:10px;padding:10px 12px;margin-bottom:2px">'+
+      '<div style="font-size:11px;font-weight:700;color:#FFC857;margin-bottom:6px">⏳ รอรับ — เปิดใช้วันที่ '+SALARY_DAY+'</div>'+
+      pendList.map(function(e){ return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(255,200,87,.18)">'+
         '<span>'+e.desc+'</span>'+
-        '<span style="font-family:monospace;font-weight:700;color:#fbbf24">'+fmtH(e.amt)+'</span>'+
+        '<span style="font-family:monospace;font-weight:700;color:#FFC857">'+fmtH(e.amt)+'</span>'+
       '</div>'; }).join('')+
-      '<button onclick="activateSalaryNow()" style="margin-top:10px;width:100%;background:var(--blue,#1a4fa0);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
+      '<button onclick="activateSalaryNow()" style="margin-top:10px;width:100%;background:linear-gradient(135deg,#00F5FF,#009DFF);color:#050505;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✓ ยืนยันรับเงินทันที</button>'+
     '</div>' : '');
 }
 
@@ -236,15 +236,16 @@ function switchChart(type, passedMonth){
 
   var opts = {responsive:true,maintainAspectRatio:false,
     plugins:{legend:{display:false}},
-    scales:{y:{ticks:{callback:function(v){return fmt(v);},font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'},border:{dash:[4,4]}},
-            x:{grid:{display:false},ticks:{font:{size:10}}}}};
+    scales:{y:{ticks:{callback:function(v){return fmt(v);},font:{size:10},color:'rgba(160,168,192,.7)'},grid:{color:'rgba(0,245,255,0.06)'},border:{dash:[4,4]}},
+            x:{grid:{display:false},ticks:{font:{size:10},color:'rgba(160,168,192,.7)'}}},
+    color:'rgba(160,168,192,.7)'};
 
   if(type==='bar'){
     // รายรับ vs รายจ่ายแยกคน — ใช้ _allProfiles (UUID) เป็น source
     var _cu = _getChartUsers();
     var labels = _cu.map(function(u){ return u.name+'\n(รับ)'; }).concat(['รายจ่าย\nรวม']);
-    var _incColors = ['#4ade80','#86efac','#60a5fa','#f472b6','#a78bfa'];
-    var bgColors   = _cu.map(function(_,i){ return _incColors[i]||PALETTE[i]; }).concat(['#f87171']);
+    var _incColors = ['#00FF88','#00E5BC','#00F5FF','#C026FF','#FFC857'];
+    var bgColors   = _cu.map(function(_,i){ return _incColors[i]||PALETTE[i]; }).concat(['#FF4D6D']);
     var vals = _cu.map(function(u){
       return me.filter(function(e){ return e.type==='income'&&isPaid(e)&&_isEntryByUser(e,u); })
                .reduce(function(s,e){return s+e.amt;},0);
@@ -272,8 +273,8 @@ function switchChart(type, passedMonth){
     var expVals = months.map(function(m){return _chartDb.filter(function(e){return e.date.startsWith(m)&&e.type==='expense'&&isPaid(e);}).reduce(function(s,e){return s+e.amt;},0);});
     var labelsT = months.map(function(m){ var p=m.split('-').map(Number); return SHORT_M[p[1]-1]+(p[0]+543-2500<100?'':"'"+String(p[0]+543).slice(2)); });
     chartMain = new Chart(ctx,{type:'line',data:{labels:labelsT,datasets:[
-      {label:'รายรับ',data:incVals,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
-      {label:'รายจ่าย',data:expVals,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.1)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
+      {label:'รายรับ',data:incVals,borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,.08)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
+      {label:'รายจ่าย',data:expVals,borderColor:'#FF4D6D',backgroundColor:'rgba(255,77,109,.08)',tension:.3,fill:true,pointRadius:4,borderWidth:2},
     ]},options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:12}}}})});
     // render item trend chips — ใช้ db ทุก user (ไม่กรองเจ้าของ)
     renderItemChips(db, months, labelsT);
@@ -285,7 +286,7 @@ function switchChart(type, passedMonth){
     var catsP = Object.keys(bycat2);
     if(!catsP.length){ document.getElementById('chartLegend').innerHTML='ยังไม่มีข้อมูลรายจ่าย'; return; }
     var _cu2 = _getChartUsers();
-    var _expColors = ['rgba(74,222,128,.8)','rgba(96,165,250,.8)','rgba(244,114,182,.8)','rgba(251,191,36,.8)'];
+    var _expColors = ['rgba(0,245,255,.80)','rgba(192,38,255,.80)','rgba(0,255,136,.80)','rgba(255,200,87,.80)'];
     var datasets = _cu2.map(function(u,i){return {
       label: u.name,
       data: catsP.map(function(c){return me.filter(function(e){
@@ -307,8 +308,8 @@ function switchChart(type, passedMonth){
       data:{
         labels:['รายรับ','รายจ่าย'],
         datasets:[
-          {label:'เสร็จแล้ว',data:[incPaid,expPaid],backgroundColor:['rgba(74,222,128,.85)','rgba(248,113,113,.85)'],borderRadius:4,borderWidth:0},
-          {label:'รอดำเนินการ',data:[incPend,expPend],backgroundColor:['rgba(248,189,71,.85)','rgba(251,146,60,.85)'],borderRadius:4,borderWidth:0},
+          {label:'เสร็จแล้ว',data:[incPaid,expPaid],backgroundColor:['rgba(0,255,136,.80)','rgba(255,77,109,.80)'],borderRadius:4,borderWidth:0},
+          {label:'รอดำเนินการ',data:[incPend,expPend],backgroundColor:['rgba(255,200,87,.80)','rgba(255,123,107,.80)'],borderRadius:4,borderWidth:0},
         ]
       },
       options:Object.assign({}, opts, {plugins:{legend:{display:true,position:'top',labels:{font:{size:10},usePointStyle:true,padding:10}}},scales:Object.assign({}, opts.scales, {x:{stacked:false,grid:{display:false},ticks:{font:{size:11}}},y:Object.assign({stacked:false}, opts.scales.y)})})

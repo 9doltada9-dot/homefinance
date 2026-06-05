@@ -658,7 +658,8 @@ function renderSettle(){
 
   // เพิ่มปุ่ม Pay ให้แต่ละ transfer arrow card
   var _spRecords = typeof getSettlePayments === 'function' ? getSettlePayments() : [];
-  var transferHtmlWithPay = transfers.map(function(t, ti) {
+  // สรุปการโอนเงิน = เดือนนี้เท่านั้น (carry-forward แสดงแยกใน banner)
+  var transferHtmlWithPay = curMonthTransfers.map(function(t, ti) {
     var spRec = _spRecords.find(function(r) {
       return r.month === m && r.from_uid === t.fromUid && r.to_uid === t.toUid;
     });
@@ -722,8 +723,8 @@ function renderSettle(){
     +'</div>';
   }).join('');
 
-  // ถ้าไม่มี transfer แต่ก่อนล็อก → ใช้ transferHtml เดิม (✅ ไม่มียอดค้าง)
-  var finalTransferHtml = transfers.length ? transferHtmlWithPay : transferHtml;
+  // ถ้าไม่มียอดเดือนนี้ → ✅ ไม่มียอด (carry-forward ยังแสดงใน banner อยู่)
+  var finalTransferHtml = curMonthTransfers.length ? transferHtmlWithPay : transferHtml;
 
   // ── Carry-forward banner ────────────────────────────────
   var carryBanner = typeof buildCarryForwardBanner === 'function'

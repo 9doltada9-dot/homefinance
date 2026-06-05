@@ -529,7 +529,7 @@ function renderDashNetworthCard() {
     '<div class="hf-card-title">มูลค่าสุทธิรวม <span class="hf-link" onclick="nav(\'accounts\')">บัญชี →</span></div>'
     +'<div class="hf-mono" style="font-size:28px;font-weight:700;letter-spacing:-1.5px;color:'+(total>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(total)+'</div>'
     +'<hr class="hf-divider" style="margin:10px 0 8px">'
-    +'<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch">'
+    +'<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;min-width:0;max-width:100%">'
     +acctCards
     +'</div>';
 }

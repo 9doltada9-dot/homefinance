@@ -5,7 +5,7 @@
  *
  * NOTE: เน€เธเธฅเธตเนเธขเธ CACHE_VERSION เธ—เธธเธเธเธฃเธฑเนเธเธ—เธตเน deploy เนเธซเธกเน เน€เธเธทเนเธญเนเธซเน user เนเธ”เนเธเธญเธเนเธซเธกเน
  */
-const CACHE_VERSION = 'hf-v3.18.119';
+const CACHE_VERSION = 'hf-v3.18.120';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [

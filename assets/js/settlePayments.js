@@ -332,14 +332,10 @@ function buildCarryForwardBanner(currentMonth) {
 
   return '<div style="background:rgba(255,200,87,.08);border:1px solid rgba(255,200,87,.35);'
     + 'border-radius:14px;overflow:hidden;margin-bottom:14px">'
-    + '<div style="padding:8px 14px;border-bottom:1px solid rgba(255,200,87,.25);'
-      + 'display:flex;align-items:center;justify-content:space-between">'
+    + '<div style="padding:8px 14px;border-bottom:1px solid rgba(255,200,87,.25)">'
       + '<div style="font-size:11px;font-weight:800;color:#FFC857;letter-spacing:.5px;text-transform:uppercase">'
         + '⏳ ยอดค้างจากเดือนก่อน · ' + records.length + ' รายการ'
       + '</div>'
-      + '<span style="font-family:monospace;font-size:12px;font-weight:700;color:#FFC857">'
-        + fmtH(records.reduce(function(s, r) { return s + (r.amount_owed - r.amount_paid); }, 0))
-      + '</span>'
     + '</div>'
     + rows
   + '</div>';

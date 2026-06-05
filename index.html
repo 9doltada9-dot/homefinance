@@ -126,13 +126,18 @@ nav.sidebar.hf-side{position:fixed;height:100vh;z-index:100;width:240px;display:
 
 /* ── Phase 2: Dashboard bento grid ── */
 .hf-dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:16px;}
+/* ป้องกัน grid item ล้นออกนอก card */
+.hf-dash-grid>*{min-width:0;overflow:hidden;}
 .hf-dash-grid .chart-tab{padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--hf-ink3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;transition:color .15s,border-color .15s;}
 .hf-dash-grid .chart-tab.active{color:var(--hf-accent);border-bottom-color:var(--hf-accent);}
 select.hf-pill-select{appearance:auto;cursor:pointer;padding:8px 12px;border-radius:11px;background:var(--hf-g-card);border:1px solid var(--hf-g-brd);font-size:13px;font-weight:600;color:var(--hf-ink2);font-family:'Sarabun',sans-serif;}
-@media(max-width:768px){
-  .hf-dash-grid{grid-template-columns:1fr !important;}
-  .hf-dash-grid>*{grid-column:1/-1 !important;}
-  #metrics{grid-template-columns:repeat(2,1fr) !important;}
+/* salary cycle content ต้องไม่ล้น */
+#salaryCycleContent{min-width:0;width:100%;overflow:hidden;}
+@media(max-width:900px){
+  .hf-dash-grid{grid-template-columns:1fr !important;gap:12px;}
+  .hf-dash-grid>*{grid-column:1/-1 !important;overflow:hidden;min-width:0;}
+  .salary-metrics-grid{grid-template-columns:repeat(2,1fr) !important;}
+  #metrics{flex-wrap:nowrap;}
 }
 
 /* ── Phase 3: Transactions ── */

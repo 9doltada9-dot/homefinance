@@ -30,7 +30,11 @@ function _updateTxModeUI() {
     if (mode === 'salary') mfM.style.setProperty('display','none','important');
     else mfM.style.removeProperty('display');
   }
-  if (fltSC) fltSC.style.display = mode === 'salary' ? '' : 'none';
+  var mfSC = document.getElementById('mfSalaryCycle');
+  if (mfSC) {
+    if (mode === 'salary') mfSC.style.removeProperty('display');
+    else mfSC.style.setProperty('display','none','important');
+  }
   if (btnC) { btnC.style.background = 'transparent';
               btnC.style.border = mode==='calendar' ? '2px solid var(--blue)' : '2px solid var(--line)';
               btnC.style.color  = mode==='calendar' ? 'var(--blue)' : 'var(--ink3)'; }
@@ -75,6 +79,28 @@ function _syncMonthDrop(months, cur) {
 function setFltMonth(m) {
   var sel=document.getElementById('fltMonth'); if(sel)sel.value=m;
   var mf=document.getElementById('mfMonth'); if(mf){var d=mf.querySelector('.mf-dropdown');if(d)d.classList.remove('open');}
+  renderTx();
+}
+function _syncSCDrop(cycles, curVal) {
+  var drop = document.getElementById('fltSCDrop');
+  var lbl  = document.getElementById('fltSCLabel');
+  if (!drop) return;
+  drop.innerHTML = '<div style="padding:6px 8px;display:flex;flex-direction:column;gap:2px">'
+    + cycles.map(function(c){
+        var on = c.val === curVal;
+        return '<button onclick="setFltSC(\''+c.val+'\')" style="text-align:left;width:100%;background:'+(on?'var(--accent-soft)':'transparent')+';color:'+(on?'var(--accent)':'var(--ink)')+';border:none;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:'+(on?700:500)+';cursor:pointer;font-family:Sarabun,sans-serif;white-space:nowrap">'+c.label+'</button>';
+      }).join('') + '</div>';
+  if (lbl) {
+    var cur = cycles.find(function(c){ return c.val === curVal; });
+    lbl.innerHTML = (cur ? cur.label : '— รอบ —') + ' ▾';
+    lbl.classList.toggle('active', !!curVal);
+  }
+}
+function setFltSC(val) {
+  var inp = document.getElementById('fltSalaryCycle');
+  if (inp) inp.value = val;
+  var mf = document.getElementById('mfSalaryCycle');
+  if (mf) { var d = mf.querySelector('.mf-dropdown'); if(d) d.classList.remove('open'); }
   renderTx();
 }
 
@@ -312,6 +338,8 @@ function resetFilters(){
   if (fltMr) { fltMr.value = ''; fltMr._initialized = false; }
   var fltSCr = document.getElementById('fltSalaryCycle');
   if (fltSCr) { fltSCr.value = ''; fltSCr._initialized = false; }
+  var fltSCLbl = document.getElementById('fltSCLabel');
+  if (fltSCLbl) { fltSCLbl.innerHTML = '— รอบ — ▾'; fltSCLbl.classList.remove('active'); }
   var fltYr = document.getElementById('fltYear');
   if (fltYr) { fltYr.value = ''; fltYr._initialized = false; }
   _updateTxModeUI();
@@ -402,11 +430,7 @@ function populateFltSalaryCycle(sel) {
     }
     d = new Date(d.getFullYear(), d.getMonth() - 1, 10);
   }
-  sel.innerHTML = '<option value="">— รอบเงินเดือน —</option>' +
-    cycles.map(function(c){
-      return '<option value="'+c.val+'"'+(c.val===cur?' selected':'')+'>'+c.label+'</option>';
-    }).join('');
-  if (cur) sel.value = cur;
+  _syncSCDrop(cycles, cur);
 }
 
 

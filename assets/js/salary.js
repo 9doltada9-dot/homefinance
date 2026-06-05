@@ -56,7 +56,7 @@ function getSalaryCycle(date){
   return {
     start: fmt8(cycleStart),
     end:   fmt8(cycleEnd),
-    label: sy===ey ? (sm+' – '+em+' '+sy) : (sm+' '+sy+' – '+em+' '+ey)
+    label: sy===ey ? (sm+' – '+em) : (sm+' – '+em+' '+ey)
   };
 }
 

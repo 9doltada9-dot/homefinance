@@ -26,8 +26,11 @@ function _updateTxModeUI() {
   var mfM   = document.getElementById('mfMonth');
   var btnC  = document.getElementById('btnTxModeCalendar');
   var btnS  = document.getElementById('btnTxModeSalary');
-  if (mfM)   mfM.style.display   = mode === 'calendar' ? '' : 'none';
-  if (fltSC) fltSC.style.display = mode === 'salary'   ? '' : 'none';
+  if (mfM) {
+    if (mode === 'salary') mfM.style.setProperty('display','none','important');
+    else mfM.style.removeProperty('display');
+  }
+  if (fltSC) fltSC.style.display = mode === 'salary' ? '' : 'none';
   if (btnC) { btnC.style.background = 'transparent';
               btnC.style.border = mode==='calendar' ? '2px solid var(--blue)' : '2px solid var(--line)';
               btnC.style.color  = mode==='calendar' ? 'var(--blue)' : 'var(--ink3)'; }

@@ -1,5 +1,14 @@
 /* HomeFinance · module: transactions.js · v3.0.0 */
 
+// ─── LOAN DIRECTION HELPER ────────────────────────────────
+/** out = ให้ยืม/คืนเงิน (เงินออก), in = รับคืน/ยืม (เงินเข้า), null = transfer ปกติ */
+function _txLoanDir(e) {
+  if (!e || e.type !== 'transfer' || !e.desc) return null;
+  if (e.desc.indexOf('📤') === 0 || e.desc.indexOf('💳 คืนเงิน') === 0) return 'out';
+  if (e.desc.indexOf('📥') === 0 || e.desc.indexOf('💸 ยืม') === 0) return 'in';
+  return null;
+}
+
 // ─── ADMIN "SHOW ALL USERS" TOGGLE ───────────────────────
 var _txShowAllUsers = false;  // false = เฉพาะของตัวเอง, true = ทุก user (admin)
 var _txFilterMode = 'salary'; // 'calendar' | 'salary'
@@ -670,7 +679,7 @@ function renderTx(){
                 var _txCircleOverride = e.type==='transfer' ? _transferCircle(e, 46) : (_mVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_mVobj, 46) : null);
                 var _mIhtml=_txCircleOverride ? '' : (_mIid
                   ?'<svg width="22" height="22" viewBox="0 0 24 24" style="display:block"><use href="#'+_mIid+'"></use></svg>'
-                  :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>');
+                  :'<span style="font-size:20px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?(_txLoanDir(e)==='in'?'📥':_txLoanDir(e)==='out'?'📤':'↗️'):'💳')+'</span>');
                 var _mCircle=_txCircleOverride
                   ?_txCircleOverride
                   :'<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
@@ -701,7 +710,7 @@ function renderTx(){
                     '</button>'+
                   '</div>' :
                   e.type==='transfer' ?
-                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:var(--blue)">↗ '+fmtH(e.amt)+'</div>' :
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:'+(_txLoanDir(e)==='in'?'#4ade80':_txLoanDir(e)==='out'?'#f87171':'var(--blue)')+'">'+(_txLoanDir(e)==='in'?'↙ ':'↗ ')+fmtH(e.amt)+'</div>' :
                   '<span style="font-size:16px;font-weight:700;font-family:monospace;color:'+(e.type==='income'?'#4ade80':'#f87171')+'">'+
                     fmtH(e.amt)+
                   '</span>')+
@@ -749,15 +758,16 @@ function renderTx(){
         +'</div>'
         // cards
         + g.items.map(function(e){
-            var amtColor  = e.type==='transfer'?'var(--blue)':e.type==='income'?'#4ade80':'#f87171';
-            var amtPrefix = e.type==='transfer'?'↗ ':'';
+            var _ld = _txLoanDir(e);
+            var amtColor  = e.type==='transfer'?(_ld==='in'?'#4ade80':_ld==='out'?'#f87171':'var(--blue)'):e.type==='income'?'#4ade80':'#f87171';
+            var amtPrefix = e.type==='transfer'?(_ld==='in'?'↙ ':'↗ '):'';
             var acct = (typeof accountsData!=='undefined'?accountsData:[]).find(function(x){return x.id===e.account_id;});
             var iconId = (typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
             var _dVobj = e.vendor_id ? ((typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===e.vendor_id;})||null) : null;
             var _deskCircleOvr = e.type==='transfer' ? _transferCircle(e, 52) : (_dVobj && typeof vendorLogoHtml==='function' ? vendorLogoHtml(_dVobj, 52) : null);
             var iconHtml = _deskCircleOvr ? '' : (iconId
               ? '<svg width="28" height="28" viewBox="0 0 24 24" style="display:block"><use href="#'+iconId+'"></use></svg>'
-              : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳')+'</span>');
+              : '<span style="font-size:24px;line-height:1">'+(e.type==='income'?'💰':e.type==='transfer'?(_txLoanDir(e)==='in'?'📥':_txLoanDir(e)==='out'?'📤':'↗️'):'💳')+'</span>');
             var vendorName = e.vendor_id ? (((vendorsData||[]).find(function(v){return v.id===e.vendor_id;})||{}).name||'') : '';
             var statusBadge = e.type==='transfer'
               ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
@@ -823,12 +833,13 @@ function txDetailModal(id) {
   if (e.vendor_id) { var vobj = (vendorsData||[]).find(function(v){ return v.id===e.vendor_id; }); if(vobj) vendorName = vobj.name||''; }
   var acctName = '', acctColor = '', acctObj = null;
   if (e.account_id) { acctObj=(typeof accountsData!=='undefined'?accountsData:[]).find(function(a){ return a.id===e.account_id; }); if(acctObj){acctName=acctObj.name||'';acctColor=acctObj.color||'#1a4fa0';} }
+  var _ldModal  = _txLoanDir(e);
   var typeLabel = e.type==='income'?'รายรับ':e.type==='expense'?'รายจ่าย':'โอน/ฝาก';
-  var typeColor = e.type==='income'?'var(--green)':e.type==='expense'?'var(--red)':'var(--blue)';
-  var amtSign   = e.type==='income'?'+':e.type==='transfer'?'↗':'−';
+  var typeColor = e.type==='income'?'var(--green)':e.type==='expense'?'var(--red)':e.type==='transfer'?(_ldModal==='in'?'var(--green)':_ldModal==='out'?'var(--red)':'var(--blue)'):'var(--blue)';
+  var amtSign   = e.type==='income'?'+':e.type==='transfer'?(_ldModal==='in'?'↙':'↗'):'−';
   var statusLabel = e.type==='transfer'?'โอนแล้ว':(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย'));
-  var statusBg    = e.type==='transfer'?'var(--blue-bg)':(isPaid(e)?'var(--green-bg,#dcfce7)':'var(--amber-bg,#fef3c7)');
-  var statusFg    = e.type==='transfer'?'var(--blue)':(isPaid(e)?'var(--green)':'var(--amber,#d97706)');
+  var statusBg    = e.type==='transfer'?(_ldModal==='in'?'var(--green-bg,#dcfce7)':_ldModal==='out'?'var(--red-bg,#fee2e2)':'var(--blue-bg)'):(isPaid(e)?'var(--green-bg,#dcfce7)':'var(--amber-bg,#fef3c7)');
+  var statusFg    = e.type==='transfer'?(_ldModal==='in'?'var(--green)':_ldModal==='out'?'var(--red)':'var(--blue)'):(isPaid(e)?'var(--green)':'var(--amber,#d97706)');
 
   // split info
   var splitHtml = '';
@@ -875,13 +886,17 @@ function txDetailModal(id) {
     heroLogoHtml = '<img src="'+acctObj.logo_url+'" title="'+(acctName.replace(/"/g,'&quot;'))+'" '
       +'style="max-width:72px;max-height:72px;width:auto;height:auto;border-radius:14px;object-fit:contain;box-shadow:0 4px 18px rgba(0,0,0,.18)">';
   } else {
-    var _heroEmoji = e.type==='income'?'💰':e.type==='transfer'?'↗️':'💳';
+    var _heroEmoji = e.type==='income'?'💰':e.type==='transfer'?(_ldModal==='in'?'📥':_ldModal==='out'?'📤':'↗️'):'💳';
     heroLogoHtml = '<div style="width:72px;height:72px;border-radius:50%;background:'+typeColor+'22;border:2px solid '+typeColor+'44;display:flex;align-items:center;justify-content:center;font-size:32px">'+_heroEmoji+'</div>';
   }
 
   var heroBg = e.type==='income'
     ? 'linear-gradient(160deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 100%)'
     : e.type==='expense'
+    ? 'linear-gradient(160deg,rgba(248,113,113,.12) 0%,rgba(248,113,113,.04) 100%)'
+    : e.type==='transfer' && _ldModal==='in'
+    ? 'linear-gradient(160deg,rgba(74,222,128,.12) 0%,rgba(74,222,128,.04) 100%)'
+    : e.type==='transfer' && _ldModal==='out'
     ? 'linear-gradient(160deg,rgba(248,113,113,.12) 0%,rgba(248,113,113,.04) 100%)'
     : 'linear-gradient(160deg,rgba(96,165,250,.12) 0%,rgba(96,165,250,.04) 100%)';
 

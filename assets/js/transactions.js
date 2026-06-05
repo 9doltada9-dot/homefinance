@@ -1,11 +1,13 @@
 /* HomeFinance · module: transactions.js · v3.0.0 */
 
 // ─── LOAN DIRECTION HELPER ────────────────────────────────
-/** out = ให้ยืม/คืนเงิน (เงินออก), in = รับคืน/ยืม (เงินเข้า), null = transfer ปกติ */
+/** out = ให้ยืม/คืนเงิน (เงินออก), in = รับคืน/ยืม (เงินเข้า), null = transfer ปกติ
+ *  ตรวจจาก e.note เพราะ addTransfer เก็บ loan desc ไว้ใน note ไม่ใช่ desc */
 function _txLoanDir(e) {
-  if (!e || e.type !== 'transfer' || !e.desc) return null;
-  if (e.desc.indexOf('📤') === 0 || e.desc.indexOf('💳 คืนเงิน') === 0) return 'out';
-  if (e.desc.indexOf('📥') === 0 || e.desc.indexOf('💸 ยืม') === 0) return 'in';
+  if (!e || e.type !== 'transfer') return null;
+  var n = e.note || '';
+  if (n.indexOf('📤') === 0 || n.indexOf('💳 คืนเงิน') === 0) return 'out';
+  if (n.indexOf('📥') === 0 || n.indexOf('💸 ยืม') === 0) return 'in';
   return null;
 }
 

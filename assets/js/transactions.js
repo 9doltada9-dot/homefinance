@@ -570,7 +570,10 @@ function renderTx(){
     if(aPend !== bPend) return aPend - bPend;
     if(a.date > b.date) return -1;
     if(a.date < b.date) return 1;
-    return Number(b.id) - Number(a.id);
+    var at = a.created_at || '', bt = b.created_at || '';
+    if(bt > at) return 1;
+    if(bt < at) return -1;
+    return 0;
   });
 
   // Total bar — render เป็น element แรกใน txContent ให้ scroll ขึ้นพร้อมรายการ

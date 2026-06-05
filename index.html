@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.109</title>
+<title>HomeFinance v3.18.110</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -247,7 +247,7 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.109 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.110 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -348,7 +348,7 @@ function gcgToggle(e){
       </div>
     </div>
     <!-- Metrics 4×1 — span 12 -->
-    <div id="metrics" data-dash-id="metrics" style="grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-content:start"></div>
+    <div id="metrics" data-dash-id="metrics" style="grid-column:span 12;display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
     <!-- Recent TX — span 7 -->
     <div id="dashRecentCard" class="hf-card" data-dash-id="dashRecentCard" style="grid-column:span 7">
       <div class="hf-card-title">รายการล่าสุด <span class="hf-link" onclick="nav('transactions')">ดูทั้งหมด →</span></div>
@@ -1003,8 +1003,8 @@ function gcgToggle(e){
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.18.109</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
-        <strong>v3.18.109</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
+        <strong>v3.18.110</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
+        <strong>v3.18.110</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
         <strong>v3.18.64</strong> — ปุ่มทำทันที: ตรวจสถานะ db เดือนนี้ — รอจ่าย→ปุ่ม 💳 จ่ายทันที, ยังไม่มี→ปุ่ม ⚡ ทำทันที, จ่ายแล้ว→✅<br>
         <strong>v3.18.62</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
         <strong>v3.18.61</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
@@ -1846,7 +1846,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.109</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.110</div>
   </div>
 </div>
 

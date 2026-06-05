@@ -514,7 +514,7 @@ function renderDashNetworthCard() {
   var acctCards = active.map(function(a){
     var bal = typeof getAccountBalance === 'function' ? getAccountBalance(a.id) : 0;
     var logoNode = _acctLogoFn ? _acctLogoFn(a, 28) : '<span style="font-size:18px">'+(TYPE_ICON[a.type]||'💳')+'</span>';
-    return '<div onclick="nav(\'accounts\')" style="flex-shrink:0;min-width:120px;cursor:pointer;'
+    return '<div onclick="nav(\'accounts\')" style="cursor:pointer;min-width:0;'
       +'background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px;'
       +'border-top:3px solid '+a.color+'">'
       +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'+logoNode
@@ -529,7 +529,7 @@ function renderDashNetworthCard() {
     '<div class="hf-card-title">มูลค่าสุทธิรวม <span class="hf-link" onclick="nav(\'accounts\')">บัญชี →</span></div>'
     +'<div class="hf-mono" style="font-size:28px;font-weight:700;letter-spacing:-1.5px;color:'+(total>=0?'var(--hf-green)':'var(--hf-red)')+'">'+fmtH(total)+'</div>'
     +'<hr class="hf-divider" style="margin:10px 0 8px">'
-    +'<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:100%;box-sizing:border-box">'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">'
     +acctCards
     +'</div>';
 }

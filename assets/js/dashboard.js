@@ -38,12 +38,13 @@ function renderDash(){
   var _recentPool = (curM === thisM ? _dbFiltered : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}))
     .filter(function(e){ return e.status !== 'pending'; });
   var recent = _recentPool.slice(0,6);
-  document.getElementById('recentTx').innerHTML=recent.length?'<table class="hf-table"><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>สถานะ</th></tr>'+recent.map(function(e){return '<tr>'+
+  document.getElementById('recentTx').innerHTML=recent.length?'<table class="hf-table"><tr><th>วันที่</th><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th></tr>'+recent.map(function(e){
+    var _rc=e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)';
+    return '<tr>'+
     '<td style="font-size:12px;color:var(--ink3);white-space:nowrap">'+toThaiDateShort(e.date)+'</td>'+
-    '<td>'+e.desc+' <span class="badge '+(e.type==='income'?'badge-income':e.type==='transfer'?'badge-transfer':'badge-expense')+'" style="font-size:10px">'+(e.type==='income'?'รายรับ':e.type==='transfer'?'⇄ โอน':'รายจ่าย')+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
+    '<td><span style="font-weight:600;color:'+_rc+'">'+e.desc+'</span>'+(e.note?'<div style="font-size:10px;color:var(--ink3);font-style:italic">📝 '+e.note+'</div>':'')+
     '</td>'+
-    '<td style="text-align:right;font-family:monospace;color:'+(e.type==='income'?'var(--green)':e.type==='transfer'?'var(--blue)':'var(--red)')+'">'+fmtH(e.amt)+'</td>'+
-    '<td><span class="badge '+(isPaid(e)?'badge-paid':'badge-pending')+'" style="font-size:10px">'+(e.type==='transfer'?(isPaid(e)?'โอนแล้ว':'รอโอน'):(isPaid(e)?(e.type==='income'?'รับแล้ว':'จ่ายแล้ว'):(e.type==='income'?'รอรับ':'รอจ่าย')))+'</span></td>'+
+    '<td style="text-align:right;font-family:monospace;color:'+_rc+'">'+fmtH(e.amt)+'</td>'+
     '</tr>';}).join('')+'</table>':'<div class="empty">ยังไม่มีรายการ</div>';
   var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
   renderSalaryCycleCard();

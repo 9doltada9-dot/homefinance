@@ -26,12 +26,14 @@ function renderDash(){
     '<div class="hf-card" style="'+_mc+'"><div class="hf-metric-label">คงเหลือ</div><div class="hf-metric-val '+(bal>=0?'g':'r')+'">'+fmtH(bal)+'</div><div class="hf-metric-sub">บาท</div></div>'+
     '<div class="hf-card" style="'+_mc+'"><div class="hf-metric-label">รอดำเนินการ</div><div class="hf-metric-val a">'+fmtH(pIn+pOut)+'</div><div class="hf-metric-sub">'+(pIn>0?'รับ '+fmtH(pIn)+' ':'')+( pOut>0?'จ่าย '+fmtH(pOut):'ไม่มี')+'</div></div>';
   switchChart('trend', curM);
-  // Recent & Pending for selected month
-  // เรียง: วันที่ล่าสุดก่อน → ภายในวันเดียวกันเรียงตาม id (= Date.now() ตอนบันทึก) ล่าสุดก่อน
+  // Recent — วันที่ล่าสุดก่อน → ภายในวันเดียวกัน: created_at ล่าสุดก่อน
   var _dbFiltered = _dashDb.slice().sort(function(a, b){
     if(a.date > b.date) return -1;
     if(a.date < b.date) return 1;
-    return Number(b.id) - Number(a.id);
+    var at = a.created_at||'', bt = b.created_at||'';
+    if(bt > at) return 1;
+    if(bt < at) return -1;
+    return 0;
   });
   var _recentPool = (curM === thisM ? _dbFiltered : _dbFiltered.filter(function(e){return e.date.startsWith(curM);}))
     .filter(function(e){ return e.status !== 'pending'; });

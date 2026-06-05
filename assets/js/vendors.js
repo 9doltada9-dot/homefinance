@@ -148,13 +148,12 @@ function vendorLogoHtml(v, size) {
     return '<img src="'+v.logo_url+'" title="'+name.replace(/"/g,'&quot;')+'" '
       +'style="width:'+size+'px;height:'+size+'px;border-radius:6px;object-fit:contain;background:transparent;flex-shrink:0;display:inline-block;vertical-align:middle">';
   }
-  // fallback: ตัวอักษรแรก + สีเฉพาะ
+  // fallback: ตัวอักษรแรก + เส้นขอบวงกลม (ไม่ถมสี)
   var code = 0; for(var _i=0;_i<name.length;_i++) code = (code*31+name.charCodeAt(_i))&0xffff;
-  var bgs  = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3','#e0f2fe','#fee2e2','#fef9c3'];
-  var fgs  = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d','#0c4a6e','#991b1b','#713f12'];
-  var bg = bgs[code%bgs.length], fg = fgs[code%fgs.length];
+  var cls  = ['#93c5fd','#86efac','#fcd34d','#c4b5fd','#f9a8d4','#7dd3fc','#fca5a5','#fde68a'];
+  var cl = cls[code%cls.length];
   return '<span title="'+name.replace(/"/g,'&quot;')+'" style="display:inline-flex;width:'+size+'px;height:'+size+'px;border-radius:50%;'
-    +'background:'+bg+';color:'+fg+';align-items:center;justify-content:center;'
+    +'background:transparent;color:'+cl+';border:1.5px solid '+cl+';align-items:center;justify-content:center;'
     +'font-size:'+(size*0.55)+'px;font-weight:700;flex-shrink:0;vertical-align:middle">'+name.charAt(0)+'</span>';
 }
 

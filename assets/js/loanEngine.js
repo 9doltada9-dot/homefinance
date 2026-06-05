@@ -313,11 +313,12 @@ async function submitLoanRepay() {
     .find(function(a) { return a.id === _loanRepayAcctId; });
   if (!acct) return;
 
+  var loanAcctId = acct.id;
   closeLoanRepayModal();
   if (acct.loan_direction === 'lent') {
-    await receiveLoanRepayment(_loanRepayAcctId, acctId, amt, date, note);
+    await receiveLoanRepayment(loanAcctId, acctId, amt, date, note);
   } else {
-    await repayBorrowedMoney(_loanRepayAcctId, acctId, amt, date, note);
+    await repayBorrowedMoney(loanAcctId, acctId, amt, date, note);
   }
 }
 

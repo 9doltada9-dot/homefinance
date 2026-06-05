@@ -33,39 +33,79 @@ function lockSettlement(month, transfers) {
     if (typeof showCycleToast === 'function') showCycleToast('ℹ️ ไม่มียอดค้างในเดือนนี้');
     return;
   }
-  var list = getSettlePayments();
-  var created = 0;
+  var list    = getSettlePayments();
+  var created = 0, updated = 0;
+
   transfers.forEach(function(t) {
     var existing = list.find(function(r) {
-      return r.month === month
+      return r.month    === month
           && r.from_uid === t.fromUid
           && r.to_uid   === t.toUid;
     });
+
     if (!existing) {
+      // ─── ใหม่: สร้าง record ────────────────────────────
       list.push({
-        id:           'sp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-        month:        month,
-        from_uid:     t.fromUid,
-        to_uid:       t.toUid,
-        from_name:    t.fromName || t.fromUid,
-        to_name:      t.toName   || t.toUid,
-        amount_owed:  Math.round(t.amount * 100) / 100,
-        amount_paid:  0,
-        status:       'unpaid',    // unpaid | partial | paid
-        payments:     [],
-        locked_at:    new Date().toISOString().slice(0, 10),
+        id:          'sp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        month:       month,
+        from_uid:    t.fromUid,
+        to_uid:      t.toUid,
+        from_name:   t.fromName || t.fromUid,
+        to_name:     t.toName   || t.toUid,
+        amount_owed: Math.round(t.amount * 100) / 100,
+        amount_paid: 0,
+        status:      'unpaid',
+        payments:    [],
+        locked_at:   new Date().toISOString().slice(0, 10),
       });
       created++;
+
+    } else if (existing.status === 'unpaid') {
+      // ─── ล็อกซ้ำ (ยังไม่มีการชำระ) → อัปเดตยอดใหม่ ──
+      var newAmt = Math.round(t.amount * 100) / 100;
+      if (Math.abs(newAmt - existing.amount_owed) > 0.5) {
+        existing.amount_owed = newAmt;
+        existing.locked_at   = new Date().toISOString().slice(0, 10);
+        updated++;
+      }
+
+    } else if (existing.status === 'partial') {
+      // ─── ล็อกซ้ำ แต่มีการชำระบางส่วนแล้ว → ถามก่อน ──
+      var newAmt2  = Math.round(t.amount * 100) / 100;
+      var oldOwed  = existing.amount_owed;
+      if (Math.abs(newAmt2 - oldOwed) > 0.5) {
+        var diff    = newAmt2 - oldOwed;
+        var diffTxt = (diff > 0 ? '+' : '') + (typeof fmtH === 'function' ? fmtH(diff) : diff);
+        if (confirm(
+          'เดือน ' + month + ' มีการชำระบางส่วนแล้ว (' + (typeof fmtH === 'function' ? fmtH(existing.amount_paid) : existing.amount_paid) + ')\n'
+          + 'ยอดเปลี่ยนจาก ' + (typeof fmtH === 'function' ? fmtH(oldOwed) : oldOwed)
+          + ' → ' + (typeof fmtH === 'function' ? fmtH(newAmt2) : newAmt2)
+          + ' (' + diffTxt + ')\nอัปเดตยอดใหม่?'
+        )) {
+          existing.amount_owed = newAmt2;
+          existing.locked_at   = new Date().toISOString().slice(0, 10);
+          // อัปเดต status (อาจจ่ายครบแล้วถ้า amount_paid >= ยอดใหม่)
+          if (existing.amount_paid >= newAmt2 - 0.5) {
+            existing.status = 'paid';
+          }
+          updated++;
+        }
+      }
+      // status === 'paid' → ไม่แตะ
     }
   });
-  if (created > 0) {
+
+  if (created > 0 || updated > 0) {
     _saveSettlePayments(list);
-    if (typeof showCycleToast === 'function')
-      showCycleToast('🔒 ล็อก Settlement ' + month + ' แล้ว (' + created + ' รายการ)');
+    var msg = created > 0 && updated > 0
+      ? '🔒 ล็อก ' + created + ' รายการ · อัปเดต ' + updated + ' รายการ'
+      : created > 0
+        ? '🔒 ล็อก Settlement ' + month + ' แล้ว (' + created + ' รายการ)'
+        : '🔄 อัปเดตยอด Settlement ' + month + ' แล้ว (' + updated + ' รายการ)';
+    if (typeof showCycleToast === 'function') showCycleToast(msg);
     return true;
   } else {
-    if (typeof showCycleToast === 'function')
-      showCycleToast('ℹ️ เดือน ' + month + ' ล็อกไปแล้ว');
+    if (typeof showCycleToast === 'function') showCycleToast('✅ ยอดเดือน ' + month + ' ไม่มีการเปลี่ยนแปลง');
     return false;
   }
 }

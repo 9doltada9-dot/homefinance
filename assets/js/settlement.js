@@ -726,11 +726,30 @@ function renderSettle(){
     ? buildCarryForwardBanner(m) : '';
 
   // ── Lock settlement button ──────────────────────────────
+  // ตรวจว่าเดือนที่ดูอยู่คือเดือนปัจจุบันหรือไม่
+  var _today    = new Date();
+  var _thisMonth= _today.getFullYear() + '-' + String(_today.getMonth()+1).padStart(2,'0');
+  var _isCurMth = (m === _thisMonth);
+
   var lockBtn = '';
   if (transfers.length) {
+    var _transfersForLock = JSON.stringify(transfers.map(function(t) {
+      return { fromUid: t.fromUid, toUid: t.toUid, amount: t.amount,
+               fromName: t.from, toName: t.to };
+    })).replace(/'/g, '&#39;');
+
     if (_isLocked) {
+      // ล็อกแล้ว → แสดง status + ปุ่มอัปเดต (ถ้ากลางเดือน) + ปุ่มยกเลิก
+      var relock = _isCurMth
+        ? '<button onclick="lockSettlement(\''+m+'\','+_transfersForLock.replace(/"/g,'\'')+');renderSettle()" '
+            +'style="padding:3px 9px;background:rgba(0,245,255,.10);color:#00F5FF;'
+            +'border:1px solid rgba(0,245,255,.30);border-radius:7px;font-size:10px;'
+            +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+            +'🔄 อัปเดตยอด</button>'
+        : '';
       lockBtn = '<div style="display:flex;align-items:center;gap:6px">'
         +'<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>'
+        + relock
         +'<button onclick="unlockSettlement(\''+m+'\')" '
           +'style="padding:3px 9px;background:rgba(255,77,109,.10);color:#FF4D6D;'
           +'border:1px solid rgba(255,77,109,.35);border-radius:7px;font-size:10px;'
@@ -738,14 +757,19 @@ function renderSettle(){
           +'↩ ยกเลิก</button>'
         +'</div>';
     } else {
-      var _transfersForLock = JSON.stringify(transfers.map(function(t) {
-        return { fromUid: t.fromUid, toUid: t.toUid, amount: t.amount,
-                 fromName: t.from, toName: t.to };
-      })).replace(/'/g, '&#39;');
-      lockBtn = '<button onclick="lockSettlement(\'' + m + '\',' + _transfersForLock.replace(/"/g,'\'') + ');renderSettle()" '
-        +'style="padding:5px 12px;background:rgba(255,200,87,.12);color:#FFC857;border:1px solid rgba(255,200,87,.45);'
-        +'border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
-        +'🔒 ล็อก Settlement</button>';
+      // ยังไม่ล็อก → ปุ่มล็อก + คำเตือนถ้ากลางเดือน
+      var midMonthWarn = _isCurMth
+        ? '<span style="font-size:10px;color:#FFC857;font-weight:600">'
+            +'⚠️ ยังอยู่ระหว่างเดือน</span>'
+        : '';
+      lockBtn = '<div style="display:flex;align-items:center;gap:6px">'
+        + midMonthWarn
+        +'<button onclick="lockSettlement(\''+m+'\','+_transfersForLock.replace(/"/g,'\'')+');renderSettle()" '
+          +'style="padding:5px 12px;background:rgba(255,200,87,.12);color:#FFC857;'
+          +'border:1px solid rgba(255,200,87,.45);border-radius:8px;font-size:11px;'
+          +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+          +'🔒 ล็อก Settlement</button>'
+        +'</div>';
     }
   }
 

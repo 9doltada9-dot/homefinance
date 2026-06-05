@@ -286,16 +286,20 @@ function renderSettle(){
   // กรองเฉพาะ uid ที่ยังมีอยู่ใน system — ไม่แสดง user ที่ถูกลบออกไปแล้ว
   allUids = allUids.filter(function(uid){ return _activeUidSet[uid]; });
 
-  var balances = {};
-  allUids.forEach(function(uid){ balances[uid] = (paid[uid]||0) - (owed[uid]||0); });
+  // ── balances เดือนนี้เท่านั้น (ไม่รวม carry-forward) ────────
+  // ใช้สำหรับ lock → บันทึกเฉพาะยอดของเดือนนั้น
+  var curMonthBalances = {};
+  allUids.forEach(function(uid){ curMonthBalances[uid] = (paid[uid]||0) - (owed[uid]||0); });
+  var curMonthTransfers = _computeTransfers(Object.assign({}, curMonthBalances), nameMap);
 
-  // ── Carry-forward จากเดือนก่อนที่ยังค้างชำระ ────────────
+  // ── รวม carry-forward เข้าสำหรับแสดงผลเท่านั้น ────────────
+  var balances = Object.assign({}, curMonthBalances);
   var _carryFwd = {};
   if (typeof getCarryForwardBalances === 'function') {
     _carryFwd = getCarryForwardBalances(m);
     Object.keys(_carryFwd).forEach(function(uid) {
       if (_carryFwd[uid] === 0) return;
-      if (!nameMap[uid]) return;      // skip unknown uid
+      if (!nameMap[uid]) return;
       balances[uid] = (balances[uid] || 0) + _carryFwd[uid];
       if (allUids.indexOf(uid) === -1) allUids.push(uid);
     });
@@ -732,8 +736,9 @@ function renderSettle(){
   var _isCurMth = (m === _thisMonth);
 
   var lockBtn = '';
-  if (transfers.length) {
-    var _transfersForLock = JSON.stringify(transfers.map(function(t) {
+  if (curMonthTransfers.length || _isLocked) {
+    // lock ใช้ยอดเดือนนี้เท่านั้น (ไม่รวม carry-forward) ป้องกัน double-count
+    var _transfersForLock = JSON.stringify(curMonthTransfers.map(function(t) {
       return { fromUid: t.fromUid, toUid: t.toUid, amount: t.amount,
                fromName: t.from, toName: t.to };
     })).replace(/'/g, '&#39;');

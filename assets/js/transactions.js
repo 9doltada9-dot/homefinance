@@ -701,38 +701,38 @@ function renderTx(){
               ?_txCircleOverride
               :'<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
             return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
-          '<div style="padding:12px 24px 10px">'+
-            '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
+          '<div style="padding:10px 24px 8px">'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
               _mCircle+
-              '<div style="flex:1;min-width:0">'+
+              '<div style="flex:1;min-width:0;overflow:hidden">'+
                 '<div style="font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.type==='transfer'?_transferLogos(e,20):e.desc)+'</div>'+
-                '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">'+
-                  '<span style="font-size:11px;color:var(--ink3)">'+(e.cat_name||'—')+'</span>'+
+                '<div style="display:flex;align-items:center;gap:4px;margin-top:3px;overflow:hidden">'+
+                  '<span style="font-size:11px;color:var(--ink3);flex-shrink:0">'+(e.cat_name||'—')+'</span>'+
                   (_txShowAllUsers && (e.user_id||e.person) ? personPill(e.user_id||e.person) : '')+
+                  (e.type==='expense' ? _splitBadge(e) : '')+
+                  (e.note ? '<span style="font-size:11px;color:var(--ink3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">'+e.note+'</span>' : '')+
                 '</div>'+
-                (e.type==='expense' ? '<div style="margin-top:4px">'+_splitBadge(e)+'</div>' : '')+
-                (e.note ? '<div style="font-size:11px;color:var(--ink3);margin-top:3px;font-style:italic">📝 '+e.note+'</div>' : '')+
               '</div>'+
               '<div style="text-align:right;flex-shrink:0">'+
-                (isSalary(e) ?
-                '<div style="font-size:15px;font-weight:600;font-family:monospace;color:#4ade80;display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
-                  '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">'+fmtH(e.amt)+'</span>'+
-                  '<button '+
-                    'onpointerdown="revealSal(\''+e.id+'\')" '+
-                    'onpointerup="hideSal(\''+e.id+'\')" '+
-                    'onpointerleave="hideSal(\''+e.id+'\')" '+
-                    'style="background:none;border:none;padding:2px;color:var(--ink3);cursor:pointer;touch-action:none">'+
-                    '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 4C5 4 1.5 10 1.5 10S5 16 10 16s8.5-6 8.5-6S15 4 10 4zm0 9a3 3 0 110-6 3 3 0 010 6z"/></svg>'+
-                  '</button>'+
-                '</div>' :
-                e.type==='transfer' ?
-                '<div style="font-size:15px;font-weight:600;font-family:monospace;color:'+(_txLoanDir(e)==='in'?'#4ade80':_txLoanDir(e)==='out'?'#f87171':'var(--blue)')+'">'+(_txLoanDir(e)==='in'?'↙ ':'↗ ')+fmtH(e.amt)+'</div>' :
-                '<span style="font-size:16px;font-weight:700;font-family:monospace;color:'+(e.type==='income'?'#4ade80':'#f87171')+'">'+
-                  fmtH(e.amt)+
-                '</span>')+
-                '<div style="margin-top:3px;display:flex;align-items:center;gap:5px;justify-content:flex-end">'+
-                  (_fmtTime(e.created_at)?'<span style="font-size:10px;color:var(--ink3)">'+_fmtTime(e.created_at)+'</span>':'')+
+                '<div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
                   _acctDot(e)+
+                  (isSalary(e) ?
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:#4ade80;display:flex;align-items:center;gap:4px">'+
+                    '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">'+fmtH(e.amt)+'</span>'+
+                    '<button '+
+                      'onpointerdown="revealSal(\''+e.id+'\')" '+
+                      'onpointerup="hideSal(\''+e.id+'\')" '+
+                      'onpointerleave="hideSal(\''+e.id+'\')" '+
+                      'style="background:none;border:none;padding:2px;color:var(--ink3);cursor:pointer;touch-action:none">'+
+                      '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 4C5 4 1.5 10 1.5 10S5 16 10 16s8.5-6 8.5-6S15 4 10 4zm0 9a3 3 0 110-6 3 3 0 010 6z"/></svg>'+
+                    '</button>'+
+                  '</div>' :
+                  e.type==='transfer' ?
+                  '<div style="font-size:15px;font-weight:600;font-family:monospace;color:'+(_txLoanDir(e)==='in'?'#4ade80':_txLoanDir(e)==='out'?'#f87171':'var(--blue)')+'">'+(_txLoanDir(e)==='in'?'↙ ':'↗ ')+fmtH(e.amt)+'</div>' :
+                  '<span style="font-size:16px;font-weight:700;font-family:monospace;color:'+(e.type==='income'?'#4ade80':'#f87171')+'">'+fmtH(e.amt)+'</span>')+
+                '</div>'+
+                '<div style="margin-top:2px;display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
+                  (_fmtTime(e.created_at)?'<span style="font-size:10px;color:var(--ink3)">'+_fmtTime(e.created_at)+'</span>':'')+
                   (e.type==='transfer'
                     ? '<span class="badge badge-paid" style="font-size:10px;background:var(--blue-bg);color:var(--blue)">โอน</span>'
                     : (!isPaid(e) ? '<span class="badge badge-pending" style="font-size:10px">'+(e.type==='income'?'รอรับ':'รอจ่าย')+'</span>' : '')
@@ -796,7 +796,7 @@ function renderTx(){
                 : (!isPaid(e) ? '<span class="badge badge-pending">'+(e.type==='income'?'รอรับ':'รอจ่าย')+'</span>' : '');
 
               return '<div class="tx-card-row" id="row-'+e.id+'" onclick="(typeof gfCardTap===\'function\'?gfCardTap(this,function(){txDetailModal(\''+e.id+'\')}):txDetailModal(\''+e.id+'\'))" '
-                +'style="display:flex;align-items:flex-start;gap:12px;padding:10px 24px;margin-bottom:6px;cursor:pointer;'
+                +'style="display:flex;align-items:center;gap:12px;padding:10px 24px;margin-bottom:6px;cursor:pointer;'
                 +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
                 +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
                 +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
@@ -805,28 +805,30 @@ function renderTx(){
                 +(_deskCircleOvr
                   ?_deskCircleOvr
                   :'<div style="width:52px;height:52px;border-radius:50%;background:var(--surface2);'
-                  +'display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+iconHtml+'</div>')
+                  +'display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>')
 
                 +'<div style="flex:1;min-width:0">'
                 +  '<div style="font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.type==='transfer'?_transferLogos(e,22):e.desc)+'</div>'
-                +  '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center">'
-                +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3)">'+e.cat_name+'</span>':'')
-                +    (e.cat_name&&_splitBadge(e)?' <span style="color:var(--line2)">·</span> ':'')
+                +  '<div style="display:flex;gap:4px;margin-top:3px;align-items:center;overflow:hidden">'
+                +    (e.cat_name?'<span style="font-size:11px;color:var(--ink3);flex-shrink:0">'+e.cat_name+'</span>':'')
+                +    (e.cat_name&&_splitBadge(e)?' <span style="color:var(--line2);flex-shrink:0">·</span> ':'')
                 +    _splitBadge(e)
                 +    (_txShowAllUsers?' '+personPill(e.user_id||e.person):'')
+                +    (e.note?'<span style="font-size:11px;color:var(--ink3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.note+'</span>':'')
                 +  '</div>'
-                +  (e.note?'<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+e.note+'</div>':'')
                 +'</div>'
 
                 +'<div style="text-align:right;flex-shrink:0">'
-                +  '<div style="font-size:16px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtPrefix+fmtH(e.amt)+'</div>'
-                +  (_fmtTime(e.created_at)?'<div style="font-size:10px;color:var(--ink3);margin-top:1px">'+_fmtTime(e.created_at)+'</div>':'')
-                +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px">'
-                +    statusBadge
+                +  '<div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">'
                 +    (acct?(acct.logo_url
-                    ?'<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle">'
-                    :'<span title="'+(acct.name||'')+'" style="width:12px;height:12px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';display:inline-block"></span>')
+                    ?'<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0">'
+                    :'<span title="'+(acct.name||'')+'" style="width:10px;height:10px;border-radius:50%;background:'+(acct.color||'#1a4fa0')+';flex-shrink:0;display:inline-block"></span>')
                   :'')
+                +    '<div style="font-size:16px;font-weight:700;font-family:monospace;color:'+amtColor+'">'+amtPrefix+fmtH(e.amt)+'</div>'
+                +  '</div>'
+                +  '<div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:2px">'
+                +    (_fmtTime(e.created_at)?'<span style="font-size:10px;color:var(--ink3)">'+_fmtTime(e.created_at)+'</span>':'')
+                +    statusBadge
                 +  '</div>'
                 +'</div>'
 

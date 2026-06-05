@@ -350,103 +350,148 @@ function getUpcomingRecurring(days) {
 }
 
 // ─── RENDER LIST ──────────────────────────────────────────
+var _TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
 function renderRecurringList() {
   var box = document.getElementById('recurringList');
   if (!box) return;
   var today    = new Date();
   var yyyymm   = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
   var todayDay = today.getDate();
-  var list = getRecurringList();
+  var list     = getRecurringList();
+
   if (!list.length) {
-    box.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--ink3);font-size:14px">ยังไม่มีรายการประจำ<br><span style="font-size:12px">กด "+ เพิ่มรายการประจำ" เพื่อเริ่มต้น</span></div>';
+    box.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--ink3);font-size:14px">'
+      + 'ยังไม่มีรายการประจำ<br><span style="font-size:12px">กด "+ เพิ่มรายการประจำ" เพื่อเริ่มต้น</span></div>';
     return;
   }
-  box.innerHTML = list.map(function(t) {
-    var typeLbl = t.type === 'income'
-      ? '<span class="badge badge-income">รายรับ</span>'
-      : '<span class="badge badge-expense">รายจ่าย</span>';
-    var label = (t.cat_name || '');
-    if (t.desc && t.desc !== t.cat_name) label += ' — ' + t.desc;
-    var dueDay = t.day_of_month || 1;
 
-    // ─── ตรวจหา transaction เดือนนี้จาก db ─────────
-    var existingTx = null;
+  // เรียงตามวันที่ของเดือน (น้อย→มาก)
+  var sorted   = list.slice().sort(function(a, b) { return (a.day_of_month||1) - (b.day_of_month||1); });
+  var expenses = sorted.filter(function(t) { return t.type !== 'income'; });
+  var incomes  = sorted.filter(function(t) { return t.type === 'income';  });
+
+  // ── helper: vendor / fallback icon ───────────────────────
+  function _icon(t) {
+    if (t.vendor_id && typeof vendorsData !== 'undefined') {
+      var v = vendorsData.find(function(x) { return String(x.id) === String(t.vendor_id); });
+      if (v && v.logo_url) {
+        return '<img src="' + v.logo_url + '" alt="" '
+          + 'style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--line)" '
+          + 'onerror="this.style.display=\'none\'">';
+      }
+      if (v) {
+        return '<div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);'
+          + 'display:flex;align-items:center;justify-content:center;'
+          + 'font-size:15px;font-weight:700;color:var(--ink2);flex-shrink:0;border:1px solid var(--line)">'
+          + (v.name||'?')[0].toUpperCase() + '</div>';
+      }
+    }
+    var ico = t.type === 'income' ? '💰' : '💳';
+    return '<div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);'
+      + 'display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">' + ico + '</div>';
+  }
+
+  // ── helper: render one item ───────────────────────────────
+  function _item(t) {
+    var dueDay  = t.day_of_month || 1;
+    var isInc   = t.type === 'income';
+
+    // หา tx เดือนนี้จาก db
+    var tx = null;
     if (typeof db !== 'undefined' && Array.isArray(db)) {
-      existingTx = db.find(function(tx) {
-        return tx._recurring_id && String(tx._recurring_id) === String(t.id)
-          && tx.date && tx.date.slice(0, 7) === yyyymm;
+      tx = db.find(function(e) {
+        return e._recurring_id && String(e._recurring_id) === String(t.id)
+          && e.date && e.date.slice(0,7) === yyyymm;
       });
     }
 
-    // สถานะหลัก
-    var isPaid       = existingTx && (existingTx.status === 'paid' || existingTx.status === 'received');
-    var isPending    = existingTx && existingTx.status === 'pending';
-    var isDoneLegacy = !existingTx && t.last_run_yyyymm === yyyymm; // บันทึกผ่านฟอร์ม (ไม่มี _recurring_id)
-    var isDone       = isPaid || isDoneLegacy;
-    var noTx         = !existingTx && t.last_run_yyyymm !== yyyymm;
+    var isPaid    = tx && (tx.status === 'paid' || tx.status === 'received');
+    var isPending = tx && tx.status === 'pending';
+    var isDoneLeg = !tx && t.last_run_yyyymm === yyyymm;
+    var isDone    = isPaid || isDoneLeg;
+    var noTx      = !tx && t.last_run_yyyymm !== yyyymm;
 
-    // Urgency dot
-    var statusDot;
+    // สถานะ + วันที่ดำเนินการ
+    var statusHtml;
     if (isDone) {
-      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-left:6px;vertical-align:middle" title="ทำแล้วเดือนนี้"></span>';
+      var doneStr = '';
+      if (tx && tx.date) {
+        var dp = tx.date.split('-');
+        doneStr = parseInt(dp[2],10) + ' ' + _TH_MON[parseInt(dp[1],10)-1];
+      } else if (t.last_run_yyyymm) {
+        doneStr = t.last_run_yyyymm;
+      }
+      statusHtml = '<span style="font-size:11px;color:#22c55e;font-weight:600">✅ ดำเนินการแล้ว ' + doneStr + '</span>';
     } else if (isPending) {
-      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f97316;margin-left:6px;vertical-align:middle" title="รอจ่าย/รอรับ — ยังไม่เสร็จสิ้น"></span>';
+      statusHtml = '<span style="font-size:11px;color:#f97316;font-weight:600">⏳ รอ' + (isInc?'รับ':'จ่าย') + ' · วันที่ ' + dueDay + '</span>';
     } else if (noTx && todayDay >= dueDay) {
-      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle" title="ถึงกำหนดแล้ว"></span>';
-    } else if (noTx && dueDay - todayDay <= 7) {
-      statusDot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:6px;vertical-align:middle" title="ใกล้ถึงกำหนด"></span>';
+      var ov = todayDay - dueDay;
+      statusHtml = ov === 0
+        ? '<span style="font-size:11px;color:#ef4444;font-weight:600">🔴 ครบกำหนดวันนี้</span>'
+        : '<span style="font-size:11px;color:#ef4444;font-weight:600">🔴 เลยกำหนด ' + ov + ' วัน</span>';
     } else {
-      statusDot = '';
+      var dl = dueDay - todayDay;
+      statusHtml = dl <= 7
+        ? '<span style="font-size:11px;color:#f59e0b;font-weight:600">⏰ วันที่ ' + dueDay + ' · อีก ' + dl + ' วัน</span>'
+        : '<span style="font-size:11px;color:var(--ink3)">วันที่ ' + dueDay + ' ของเดือน</span>';
     }
 
-    // Info line (บรรทัดสอง)
-    var lastRun = t.last_run_yyyymm ? '· เดือนล่าสุด: ' + t.last_run_yyyymm : '· ยังไม่เคยทำงาน';
-    var statusHint = '';
-    if (isPending) {
-      statusHint = ' · <span style="color:#f97316;font-weight:600">⏳ รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + '</span>';
-    } else if (noTx && t.status === 'pending') {
-      statusHint = ' · <span style="color:var(--ink3);font-size:10px">(จะบันทึกเป็น รอ' + (t.type === 'income' ? 'รับ' : 'จ่าย') + ')</span>';
+    // ป้ายยอดเงิน (ใหญ่)
+    var amtStr   = typeof fmtH === 'function' ? fmtH(t.amt) : ('฿'+(Number(t.amt)||0).toLocaleString());
+    var amtColor = isInc ? '#22c55e' : '#ef4444';
+
+    // ชื่อรายการ (ไม่มี badge)
+    var label = (t.desc && t.desc !== t.cat_name) ? t.desc : (t.cat_name || '');
+
+    // ปุ่มดำเนินการ
+    var actionBtn = '';
+    if (!isDone) {
+      if (isPending) {
+        actionBtn = '<button onclick="openEditFromRecurring(' + tx.id + ')" '
+          + 'style="padding:5px 11px;background:#f97316;color:#fff;border:none;border-radius:8px;'
+          + 'font-size:12px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+          + (isInc?'💰 รับ':'💳 จ่าย') + '</button>';
+      } else {
+        actionBtn = '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" '
+          + 'style="padding:5px 11px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
+          + 'font-size:12px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+          + '⚡ บันทึก</button>';
+      }
     }
 
-    // Action button
-    var doNowBtn;
-    if (isDone) {
-      doNowBtn = '<span style="font-size:10px;color:#22c55e;font-weight:700;white-space:nowrap;padding:0 2px">✅ ทำแล้ว</span>';
-    } else if (isPending) {
-      // มี transaction pending อยู่ → เปิดหน้าแก้ไข + auto-set status + highlight
-      var payLabel = t.type === 'income' ? '💰 รับทันที' : '💳 จ่ายทันที';
-      doNowBtn = '<button onclick="openEditFromRecurring(' + existingTx.id + ')" id="recNowBtn-' + t.id + '" '
-        + 'style="padding:5px 10px;background:#f97316;color:#fff;border:none;border-radius:8px;'
-        + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
-        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">' + payLabel + '</button>';
-    } else {
-      // ยังไม่มี transaction → เปิดหน้าบันทึกพร้อมกรอกข้อมูลล่วงหน้า
-      doNowBtn = '<button onclick="fillFormFromRecurring(\'' + t.id + '\')" id="recNowBtn-' + t.id + '" '
-        + 'style="padding:5px 10px;background:#22c55e;color:#fff;border:none;border-radius:8px;'
-        + 'font-size:11px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;'
-        + 'white-space:nowrap;touch-action:manipulation;min-width:72px;letter-spacing:.3px">⚡ จ่ายทันที</button>';
-    }
-
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">'
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">'
+      + _icon(t)
       + '<div style="flex:1;min-width:0">'
-        + '<div style="font-size:13px;font-weight:500">' + typeLbl + ' ' + label + statusDot + '</div>'
-        + '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'
-          + 'วันที่ ' + dueDay + ' · ' + (typeof fmtH === 'function' ? fmtH(t.amt) : t.amt)
-          + statusHint
-          + ' ' + lastRun
-        + '</div>'
+        + '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</div>'
+        + '<div style="margin-top:2px">' + statusHtml + '</div>'
       + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;margin-left:10px">'
-        + doNowBtn
-        + '<div style="display:flex;gap:0">'
+      + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">'
+        + '<div style="font-size:18px;font-weight:800;font-family:\'IBM Plex Mono\',monospace;'
+          + 'color:' + amtColor + ';letter-spacing:-.3px">' + amtStr + '</div>'
+        + '<div style="display:flex;align-items:center;gap:2px">'
+          + actionBtn
           + '<button onclick="openEditRecurringModal(\'' + t.id + '\')" '
-            + 'style="background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;padding:3px 6px;touch-action:manipulation" title="แก้ไข">✏️</button>'
+            + 'style="background:none;border:none;color:var(--ink3);font-size:14px;cursor:pointer;padding:3px 4px;touch-action:manipulation">✏️</button>'
           + '<button onclick="onDeleteRecurring(\'' + t.id + '\')" '
-            + 'style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:3px 6px;touch-action:manipulation">×</button>'
+            + 'style="background:none;border:none;color:var(--red);font-size:19px;cursor:pointer;padding:3px 4px;touch-action:manipulation;line-height:1">×</button>'
         + '</div>'
       + '</div>'
     + '</div>';
-  }).join('');
+  }
+
+  var html = '';
+  if (expenses.length) {
+    html += '<div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;'
+      + 'color:var(--ink3);padding:8px 0 4px;border-bottom:1px solid var(--line)">💳 รายจ่าย (' + expenses.length + ')</div>';
+    html += expenses.map(_item).join('');
+  }
+  if (incomes.length) {
+    html += '<div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;'
+      + 'color:var(--ink3);padding:' + (expenses.length ? '14px' : '8px') + ' 0 4px;border-bottom:1px solid var(--line)">💰 รายรับ (' + incomes.length + ')</div>';
+    html += incomes.map(_item).join('');
+  }
+  box.innerHTML = html;
 }
 
 // ─── PAY NOW (อัปเดต pending → paid/received) ─────────────
@@ -790,7 +835,19 @@ function checkRecurringDueNow() {
   var upcomingList = [];
 
   list.forEach(function(t) {
-    if (t.last_run_yyyymm === yyyymm) return; // already done this month — skip
+    // ตรวจ tx จริงเดือนนี้ใน db
+    var tx = null;
+    if (typeof db !== 'undefined' && Array.isArray(db)) {
+      tx = db.find(function(e) {
+        return e._recurring_id && String(e._recurring_id) === String(t.id)
+          && e.date && e.date.slice(0,7) === yyyymm;
+      });
+    }
+    // ถ้าจ่าย/รับแล้ว → ข้าม
+    if (tx && (tx.status === 'paid' || tx.status === 'received')) return;
+    // ถ้าไม่มี tx และ legacy mark ว่าทำแล้วเดือนนี้ → ข้าม
+    if (!tx && t.last_run_yyyymm === yyyymm) return;
+
     var dueDay = t.day_of_month || 1;
     if (todayDay >= dueDay) {
       dueList.push(t);

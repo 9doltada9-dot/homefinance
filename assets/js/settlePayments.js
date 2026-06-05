@@ -342,3 +342,127 @@ function buildCarryForwardBanner(currentMonth) {
     + rows
   + '</div>';
 }
+
+// ─── REMOVE PAYMENT ENTRY (แก้/ทดสอบ) ─────────────────────
+/**
+ * ลบ payment entry ทีละรายการ — status คำนวณใหม่อัตโนมัติ
+ * ถ้าลบหมด → กลับเป็น unpaid (พร้อมล็อกใหม่/แก้ไขได้)
+ */
+function removeSettlePaymentEntry(recordId, entryIdx) {
+  if (!confirm('ลบรายการชำระนี้?')) return;
+  var list = getSettlePayments();
+  var rec  = list.find(function(r) { return r.id === recordId; });
+  if (!rec || !rec.payments[entryIdx]) return;
+
+  rec.payments.splice(entryIdx, 1);
+  rec.amount_paid = rec.payments.reduce(function(s, p) { return s + p.amount; }, 0);
+
+  // คำนวณ status ใหม่
+  if (rec.amount_paid >= rec.amount_owed - 0.5) {
+    rec.status = 'paid';
+  } else if (rec.amount_paid > 0) {
+    rec.status = 'partial';
+  } else {
+    rec.status = 'unpaid';
+  }
+
+  _saveSettlePayments(list);
+  if (typeof showCycleToast === 'function') showCycleToast('🗑️ ลบรายการชำระแล้ว');
+  if (typeof renderSettle   === 'function') renderSettle();
+}
+
+// ─── PAYMENT HISTORY SECTION ───────────────────────────────
+/**
+ * แสดงประวัติการชำระทั้งหมด (paid + partial)
+ * พร้อมปุ่มลบแต่ละ entry สำหรับการแก้ไข/ทดสอบ
+ */
+function buildPaymentHistorySection() {
+  var _fmt = typeof fmtH === 'function' ? fmtH : function(v){ return '฿'+v; };
+  var records = getSettlePayments()
+    .filter(function(r) { return r.payments && r.payments.length > 0; })
+    .sort(function(a, b) { return a.month < b.month ? 1 : -1; }); // ล่าสุดก่อน
+
+  if (!records.length) return '';
+
+  var items = records.map(function(r) {
+    var statusColor = r.status === 'paid'
+      ? '#00FF88' : r.status === 'partial' ? '#FFC857' : 'var(--ink3)';
+    var statusLabel = r.status === 'paid' ? '✅ ชำระครบ'
+      : r.status === 'partial' ? '🟡 บางส่วน'
+      : '⏳ รอชำระ';
+    var remaining = r.amount_owed - r.amount_paid;
+
+    // payment entries
+    var entryRows = r.payments.map(function(p, i) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px 5px 16px;'
+        + 'border-bottom:1px solid var(--line);font-size:12px">'
+        + '<span style="color:var(--ink3);flex-shrink:0;min-width:88px">'
+          + (p.date || '—')
+        + '</span>'
+        + '<span style="font-family:monospace;font-weight:700;color:#00FF88;flex-shrink:0">'
+          + _fmt(p.amount)
+        + '</span>'
+        + '<span style="flex:1;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+          + (p.note ? '📝 ' + p.note : '')
+        + '</span>'
+        + '<button onclick="removeSettlePaymentEntry(\'' + r.id + '\',' + i + ')" '
+          + 'title="ลบรายการนี้" '
+          + 'style="flex-shrink:0;background:none;border:none;color:var(--ink3);font-size:14px;'
+          + 'cursor:pointer;padding:2px 4px;touch-action:manipulation;'
+          + 'border-radius:4px;transition:color .15s" '
+          + 'onmouseover="this.style.color=\'#FF4D6D\'" onmouseout="this.style.color=\'var(--ink3)\'">'
+          + '×</button>'
+      + '</div>';
+    }).join('');
+
+    return '<details style="border-bottom:1px solid var(--line)">'
+      + '<summary style="display:flex;align-items:center;justify-content:space-between;'
+        + 'padding:9px 14px;cursor:pointer;list-style:none;gap:8px;user-select:none" '
+        + 'onclick="this.parentElement.open=!this.parentElement.open">'
+        + '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:12px;font-weight:600;color:var(--ink)">'
+            + (r.from_name||r.from_uid) + ' → ' + (r.to_name||r.to_uid)
+          + '</div>'
+          + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">เดือน ' + r.month + '</div>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          + '<span style="font-size:11px;font-weight:700;color:' + statusColor + '">' + statusLabel + '</span>'
+          + '<div style="text-align:right">'
+            + '<div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--ink)">'
+              + _fmt(r.amount_paid) + ' / ' + _fmt(r.amount_owed)
+            + '</div>'
+            + (remaining > 0.5
+              ? '<div style="font-size:10px;color:#FFC857">ค้าง ' + _fmt(remaining) + '</div>'
+              : '')
+          + '</div>'
+          + '<span style="font-size:11px;color:var(--ink3)">▾</span>'
+        + '</div>'
+      + '</summary>'
+      // expanded: payment entries
+      + '<div style="background:var(--surface2)">'
+        + '<div style="padding:4px 10px 2px 16px;font-size:10px;font-weight:700;color:var(--ink3);'
+          + 'text-transform:uppercase;letter-spacing:.5px">ประวัติการชำระ</div>'
+        + entryRows
+      + '</div>'
+    + '</details>';
+  }).join('');
+
+  return '<details style="margin-top:16px" id="settleHistoryDetails">'
+    + '<summary style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;'
+      + 'background:var(--surface2);border-radius:12px;list-style:none;user-select:none;'
+      + 'border:1px solid var(--line)" '
+      + 'onclick="this.parentElement.open=!this.parentElement.open">'
+      + '<span style="font-size:12px;font-weight:700;color:var(--ink2)">📋 ประวัติการชำระ Settlement</span>'
+      + '<span style="font-size:11px;color:var(--ink3);margin-left:auto">'
+        + records.length + ' รายการ</span>'
+      + '<span style="font-size:11px;color:var(--ink3)">▾</span>'
+    + '</summary>'
+    + '<div style="background:var(--g-card);border:1px solid var(--line);border-top:none;'
+      + 'border-radius:0 0 12px 12px;overflow:hidden;margin-top:-2px">'
+      + items
+      + '<div style="padding:8px 14px;font-size:10px;color:var(--ink3);text-align:center">'
+        + 'กด × เพื่อลบรายการ · status จะถูกคำนวณใหม่อัตโนมัติ'
+      + '</div>'
+    + '</div>'
+  + '</details>';
+}

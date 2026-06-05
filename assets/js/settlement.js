@@ -819,7 +819,9 @@ function renderSettle(){
       +'<button onclick="exportSettleHTML(\'' + m + '\',\'' + groupId + '\')" style="background:var(--red,#dc2626);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:Sarabun,sans-serif">📄 PDF</button>'
     +'</div>'
     +(splitExp.length ? detailRows : '<div style="color:var(--ink3);text-align:center;padding:20px;font-size:13px">ไม่มีรายการ'+(groupId?' ในกลุ่มนี้':'')+'</div>')
-    +personalHtml;
+    +personalHtml
+    // ── ประวัติการชำระ (collapsed โดย default) ──────────────
+    +(typeof buildPaymentHistorySection === 'function' ? buildPaymentHistorySection() : '');
   } catch(err) {
     console.error('[Settlement] renderSettle error:', err);
     out.innerHTML = '<div style="padding:20px;color:var(--red,#dc2626);background:var(--red-bg,#fef2f2);border-radius:10px;margin:12px 0">'

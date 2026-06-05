@@ -729,7 +729,14 @@ function renderSettle(){
   var lockBtn = '';
   if (transfers.length) {
     if (_isLocked) {
-      lockBtn = '<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>';
+      lockBtn = '<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-size:11px;color:var(--green);font-weight:700">🔒 ล็อกแล้ว</span>'
+        +'<button onclick="unlockSettlement(\''+m+'\')" '
+          +'style="padding:3px 9px;background:rgba(255,77,109,.10);color:#FF4D6D;'
+          +'border:1px solid rgba(255,77,109,.35);border-radius:7px;font-size:10px;'
+          +'font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">'
+          +'↩ ยกเลิก</button>'
+        +'</div>';
     } else {
       var _transfersForLock = JSON.stringify(transfers.map(function(t) {
         return { fromUid: t.fromUid, toUid: t.toUid, amount: t.amount,

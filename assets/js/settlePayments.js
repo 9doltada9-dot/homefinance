@@ -116,6 +116,25 @@ function deleteSettleRecord(recordId) {
   if (typeof renderSettle === 'function') renderSettle();
 }
 
+// ─── UNLOCK SETTLEMENT (ยกเลิกล็อกทั้งเดือน) ────────────
+function unlockSettlement(month) {
+  var list   = getSettlePayments();
+  var toRemove = list.filter(function(r) { return r.month === month; });
+  if (!toRemove.length) return;
+
+  // ถ้ามีบางรายการชำระแล้ว → เตือนก่อน
+  var hasPaid = toRemove.some(function(r) { return r.amount_paid > 0; });
+  var msg = hasPaid
+    ? 'เดือน ' + month + ' มีรายการที่ชำระแล้วบางส่วน\nยืนยันยกเลิกล็อกและลบข้อมูลการชำระทั้งหมด?'
+    : 'ยกเลิกล็อก Settlement เดือน ' + month + '?';
+  if (!confirm(msg)) return;
+
+  var newList = list.filter(function(r) { return r.month !== month; });
+  _saveSettlePayments(newList);
+  if (typeof showCycleToast === 'function') showCycleToast('↩ ยกเลิกล็อก ' + month + ' แล้ว');
+  if (typeof renderSettle   === 'function') renderSettle();
+}
+
 // ─── CARRY-FORWARD BALANCES ────────────────────────────────
 /**
  * คืน { uid: netBalance } จากเดือนก่อนที่ยังค้างชำระ

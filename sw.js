@@ -1,11 +1,11 @@
-﻿/* HomeFinance · Service Worker · v3.18.115
- * เธเธฅเธขเธธเธ—เธเน:
- *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first โ’ เนเธเนเธเธฒเธ offline เนเธ”เน
- *   - Supabase API call: network-first โ’ เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”เน€เธชเธกเธญ เธ–เนเธฒเนเธกเนเธกเธต net เนเธเนเธเธญเธเน€เธเนเธฒ
+/* HomeFinance ? Service Worker ? v3.18.115
+ * กลยุทธ์:
+ *   - Static asset (HTML, CSS, JS, fonts, Chart.js): cache-first → ใช้งาน offline ได้
+ *   - Supabase API call: network-first → ดึงข้อมูลล่าสุดเสมอ ถ้าไม่มี net ใช้ของเก่า
  *
- * NOTE: เน€เธเธฅเธตเนเธขเธ CACHE_VERSION เธ—เธธเธเธเธฃเธฑเนเธเธ—เธตเน deploy เนเธซเธกเน เน€เธเธทเนเธญเนเธซเน user เนเธ”เนเธเธญเธเนเธซเธกเน
+ * NOTE: เปลี่ยน CACHE_VERSION ทุกครั้งที่ deploy ใหม่ เพื่อให้ user ได้ของใหม่
  */
-const CACHE_VERSION = 'hf-v3.18.124';
+const CACHE_VERSION = 'hf-v3.18.125';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 const PRECACHE_URLS = [
@@ -58,7 +58,7 @@ const PRECACHE_URLS = [
   './assets/js/app.js',
 ];
 
-// โ”€โ”€โ”€ INSTALL: precache shell โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+// ─── INSTALL: precache shell ──────────────────────────────
 self.addEventListener('install', function(event){
   event.waitUntil(
     caches.open(STATIC_CACHE).then(function(cache){
@@ -69,7 +69,7 @@ self.addEventListener('install', function(event){
   );
 });
 
-// โ”€โ”€โ”€ ACTIVATE: เธฅเธ cache เน€เธเนเธฒ + เธเธฑเธเธเธฑเธ reload เธ—เธธเธ client โ”€โ”€
+// ─── ACTIVATE: ลบ cache เก่า + บังคับ reload ทุก client ──
 self.addEventListener('activate', function(event){
   event.waitUntil(
     caches.keys().then(function(keys){
@@ -79,7 +79,7 @@ self.addEventListener('activate', function(event){
     }).then(function(){
       return self.clients.claim();
     }).then(function(){
-      // เธเธฑเธเธเธฑเธเนเธซเนเธ—เธธเธ client เนเธซเธฅเธ”เนเธซเธกเนเน€เธเธทเนเธญเนเธเนเนเธเธฅเน version เนเธซเธกเน
+      // บังคับให้ทุก client โหลดใหม่เพื่อใช้ไฟล์ version ใหม่
       return self.clients.matchAll({ type: 'window' });
     }).then(function(clients){
       clients.forEach(function(client){
@@ -89,13 +89,13 @@ self.addEventListener('activate', function(event){
   );
 });
 
-// โ”€โ”€โ”€ FETCH: route เธ•เธฒเธก URL โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€โ”€
+// ─── FETCH: route ตาม URL ─────────────────────────────────
 self.addEventListener('fetch', function(event){
   var req = event.request;
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
 
-  // Supabase API โ’ network-first
+  // Supabase API → network-first
   if (url.hostname.indexOf('supabase') !== -1){
     event.respondWith(
       fetch(req).then(function(res){ return res; })
@@ -104,7 +104,7 @@ self.addEventListener('fetch', function(event){
     return;
   }
 
-  // Static (same-origin เธซเธฃเธทเธญ CDN เธ—เธตเน precache) โ’ cache-first
+  // Static (same-origin หรือ CDN ที่ precache) → cache-first
   event.respondWith(
     caches.match(req).then(function(cached){
       if (cached) return cached;

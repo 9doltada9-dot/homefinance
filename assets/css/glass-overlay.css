@@ -740,31 +740,39 @@ body.view-mobile .layout{
   background: rgba(0,245,255,.25); border-radius: 3px;
 }
 
-/* ── Transactions page — flex column ── */
+/* ── Transactions page — scrollable container (filter scrolls with content) ── */
 html.tx-fullscreen,
 html.tx-fullscreen body{ overflow: hidden; }
 
 #page-transactions{
-  display: flex; flex-direction: column;
+  overflow-y: auto;
   height: calc(100vh - 32px);
-}
-#txContent{
-  flex: 1; min-height: 0; overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(0,245,255,.40) rgba(0,245,255,.04);
 }
-#txContent::-webkit-scrollbar{ width: 6px; }
-#txContent::-webkit-scrollbar-track{ background: rgba(0,245,255,.04); border-radius: 6px; }
-#txContent::-webkit-scrollbar-thumb{
+#page-transactions::-webkit-scrollbar{ width: 6px; }
+#page-transactions::-webkit-scrollbar-track{ background: rgba(0,245,255,.04); border-radius: 6px; }
+#page-transactions::-webkit-scrollbar-thumb{
   background: rgba(0,245,255,.40); border-radius: 6px; min-height: 32px;
 }
-#txContent::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+#page-transactions::-webkit-scrollbar-thumb:hover{ background: rgba(0,245,255,.65); }
+
+/* Pending zone divider */
+.tx-pending-header{
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 4px 10px; margin: 4px 0;
+  font-size: 12px; font-weight: 700;
+  color: var(--amber,#d97706); white-space: nowrap;
+}
+.tx-pending-header::before,.tx-pending-header::after{
+  content: ''; flex: 1; height: 1px;
+  background: var(--amber,#d97706); opacity: .4;
+}
 
 @media(max-width:900px){
   #page-transactions{
     height: calc(100vh - 60px - 52px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
   }
-  #txFilterBar{ top: calc(52px + env(safe-area-inset-top,0px)); }
 }
 
 /* ─────────────────────────────────────────────

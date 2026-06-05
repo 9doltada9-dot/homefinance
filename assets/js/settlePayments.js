@@ -74,12 +74,13 @@ function lockSettlement(month, transfers) {
       var newAmt2  = Math.round(t.amount * 100) / 100;
       var oldOwed  = existing.amount_owed;
       if (Math.abs(newAmt2 - oldOwed) > 0.5) {
+        var _fp = typeof fmt === 'function' ? fmt : function(v){ return Number(v).toLocaleString(); };
         var diff    = newAmt2 - oldOwed;
-        var diffTxt = (diff > 0 ? '+' : '') + (typeof fmtH === 'function' ? fmtH(diff) : diff);
+        var diffTxt = (diff > 0 ? '+฿' : '-฿') + _fp(Math.abs(diff));
         if (confirm(
-          'เดือน ' + month + ' มีการชำระบางส่วนแล้ว (' + (typeof fmtH === 'function' ? fmtH(existing.amount_paid) : existing.amount_paid) + ')\n'
-          + 'ยอดเปลี่ยนจาก ' + (typeof fmtH === 'function' ? fmtH(oldOwed) : oldOwed)
-          + ' → ' + (typeof fmtH === 'function' ? fmtH(newAmt2) : newAmt2)
+          'เดือน ' + month + ' มีการชำระบางส่วนแล้ว (฿' + _fp(existing.amount_paid) + ')\n'
+          + 'ยอดเปลี่ยนจาก ฿' + _fp(oldOwed)
+          + ' → ฿' + _fp(newAmt2)
           + ' (' + diffTxt + ')\nอัปเดตยอดใหม่?'
         )) {
           existing.amount_owed = newAmt2;
@@ -162,7 +163,8 @@ function unlockSettlement(month) {
   var toRemove = list.filter(function(r) { return r.month === month; });
   if (!toRemove.length) return;
 
-  var _fmt = typeof fmtH === 'function' ? fmtH : function(v){ return '฿'+v; };
+  // ใช้ fmt() (plain text) ไม่ใช้ fmtH (HTML) เพราะ confirm() แสดง plain text
+  var _fmtPlain = typeof fmt === 'function' ? fmt : function(v){ return Number(v).toLocaleString(); };
 
   // ── 🚫 paid ทั้งหมด → บล็อก ────────────────────────────
   var allPaid = toRemove.every(function(r) { return r.status === 'paid'; });
@@ -184,8 +186,8 @@ function unlockSettlement(month) {
       .map(function(r) {
         var remaining = r.amount_owed - r.amount_paid;
         return '• ' + (r.from_name||r.from_uid) + ' → ' + (r.to_name||r.to_uid)
-          + '\n    จ่ายแล้ว ' + _fmt(r.amount_paid)
-          + '  ยังค้าง ' + _fmt(remaining) + ' (จะหาย)';
+          + '\n    จ่ายแล้ว ฿' + _fmtPlain(r.amount_paid)
+          + '  ยังค้าง ฿' + _fmtPlain(remaining) + ' (จะหาย)';
       }).join('\n');
     if (!confirm(
       '⚠️ มีรายการที่ชำระบางส่วนแล้ว\n\n'

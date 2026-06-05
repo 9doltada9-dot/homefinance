@@ -811,8 +811,6 @@ var _recurringIntervalId = null;
 
 function initRecurringEngine() {
   if (_recurringIntervalId) { clearInterval(_recurringIntervalId); _recurringIntervalId = null; }
-  processRecurring();
-  _recurringIntervalId = setInterval(function() {
-    try { processRecurring(); } catch(_) {}
-  }, 60 * 60 * 1000);
-}
+
+  // ── Migration guard: push localStorage → Supabase ──────
+  // ข้อมูล recurring อาจถูกสร้�

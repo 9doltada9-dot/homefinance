@@ -692,17 +692,19 @@ function renderTx(){
   };
 
   // โลโก้/จุดสีธนาคาร: คืน logo เล็กๆ หรือ dot สีถ้าไม่มีโลโก้
-  var _acctDot = function(e){
+  var _acctDot = function(e, sz){
     if (!e.account_id) return '';
     var acct = (typeof accountsData !== 'undefined' ? accountsData : []).find(function(a){ return a.id === e.account_id; });
     if (!acct) return '';
+    var s = sz || 28;
     if (acct.logo_url) {
       return '<img src="'+acct.logo_url+'" title="'+(acct.name||'')+'" '
-        +'style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
+        +'style="width:'+s+'px;height:'+s+'px;border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-block;vertical-align:middle">';
     }
     var col  = acct.color || '#1a4fa0';
     var name = (acct.name || '').replace(/"/g,'&quot;');
-    return '<span title="'+name+'" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
+    var ds = Math.round(s * 0.43);
+    return '<span title="'+name+'" style="display:inline-block;width:'+ds+'px;height:'+ds+'px;border-radius:50%;background:'+col+';flex-shrink:0"></span>';
   };
 
   if(isMobile){
@@ -716,7 +718,16 @@ function renderTx(){
         _dm[d].push(e);
       });
       return _grps.map(function(g){
-        return '<div id="'+(isPend?'txdate-pend-':'txdate-')+g.date+'" style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line)">'+toThaiDateStr(g.date)+'</div>'+
+        var _mdi=0,_mdo=0;
+        g.items.forEach(function(e){if(e.type==='income')_mdi+=e.amt;else if(e.type==='expense')_mdo+=e.amt;});
+        return '<div id="'+(isPend?'txdate-pend-':'txdate-')+g.date+'" style="background:var(--surface2);padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line);border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">'
+          +toThaiDateStr(g.date)
+          +'<span style="font-size:11px;font-family:monospace">'
+          +(_mdi?'<span style="color:#4ade80;font-weight:700;text-shadow:0 0 6px #4ade8088">'+fmtH(_mdi)+'</span>':'')
+          +(_mdi&&_mdo?' <span style="opacity:.4">·</span> ':'')
+          +(_mdo?'<span style="color:#f87171;font-weight:700;text-shadow:0 0 6px #f8717188">'+fmtH(_mdo)+'</span>':'')
+          +'</span>'
+          +'</div>'+
           g.items.map(function(e){
             var _mIid=(typeof getDescriptionIconId==='function')?getDescriptionIconId(e.desc):null;
             var _mVobj = e.vendor_id ? ((typeof vendorsData!=='undefined'?vendorsData:[]).find(function(v){return v.id===e.vendor_id;})||null) : null;
@@ -727,7 +738,7 @@ function renderTx(){
             var _mCircle=_txCircleOverride
               ?_txCircleOverride
               :'<div style="width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+_mIhtml+'</div>';
-            return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;border-bottom:1px solid var(--line)">'+
+            return '<div class="tx-card-row" onclick="txDetailModal(\''+e.id+'\')'+'" id="srow-'+e.id+'" style="cursor:pointer;touch-action:manipulation;border-bottom:1px solid var(--line)">'+
           '<div style="padding:10px 24px 8px">'+
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
               _mCircle+
@@ -742,7 +753,7 @@ function renderTx(){
               '</div>'+
               '<div style="text-align:right;flex-shrink:0">'+
                 '<div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">'+
-                  _acctDot(e)+
+                  _acctDot(e,18)+
                   (isSalary(e) ?
                   '<div style="font-size:15px;font-weight:600;font-family:monospace;color:#4ade80;display:flex;align-items:center;gap:4px">'+
                     '<span id="sal-'+e.id+'" style="filter:blur(5px);user-select:none;transition:filter .15s">'+fmtH(e.amt)+'</span>'+
@@ -1018,11 +1029,11 @@ function txDetailModal(id) {
   }
 
   wrap.innerHTML =
-    '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-end;justify-content:center">'
-    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:520px;display:flex;flex-direction:column;max-height:88vh;padding-bottom:env(safe-area-inset-bottom,0)">'
+    '<div id="txDetailOverlay" onclick="closeTxDetailModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:flex;align-items:flex-start;justify-content:center">'
+    +'<div onclick="event.stopPropagation()" style="background:var(--surface);border-radius:0 0 24px 24px;width:100%;max-width:520px;display:flex;flex-direction:column;max-height:88vh;padding-top:env(safe-area-inset-top,0)">'
 
-      // drag handle
-      +'<div style="display:flex;justify-content:center;padding:8px 0 0;flex-shrink:0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
+      // top close handle
+      +'<div style="display:flex;justify-content:center;padding:6px 0 0;flex-shrink:0"><div style="width:36px;height:4px;border-radius:2px;background:var(--line)"></div></div>'
 
       // top bar
       +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 0;flex-shrink:0">'
@@ -1090,8 +1101,8 @@ function txDetailModal(id) {
 
       // action buttons
       +'<div style="padding:10px 14px 16px;display:flex;gap:10px;flex-shrink:0;border-top:1px solid var(--line)">'
-        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:12px;border-radius:14px;background:#fee2e2;color:#dc2626;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">🗑 ลบ</button>'
-        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:12px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif">✏ แก้ไข</button>'
+        +'<button onclick="closeTxDetailModal();delConfirm(\''+e.id+'\')" style="flex:1;padding:12px;border-radius:14px;background:transparent;color:#dc2626;border:1.5px solid #dc2626;font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">🗑 ลบ</button>'
+        +'<button onclick="closeTxDetailModal();openEdit(\''+e.id+'\')" style="flex:2;padding:12px;border-radius:14px;background:transparent;color:var(--blue);border:1.5px solid var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:Sarabun,sans-serif;touch-action:manipulation">✏ แก้ไข</button>'
       +'</div>'
     +'</div>'
   +'</div>';

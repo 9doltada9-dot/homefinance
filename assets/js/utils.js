@@ -209,6 +209,32 @@ function _closeModal(id, cb) {
   }, 180);
 }
 
+// ─── BOTTOM NAV AUTO-HIDE ON SCROLL ──────────────────────
+(function(){
+  var _lastSY = 0, _ticking = false, _bnav = null;
+  function _onScroll(){
+    if (!_bnav) _bnav = document.querySelector('.bottomnav');
+    if (!_bnav){ _ticking=false; return; }
+    var sy = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if (sy > _lastSY + 10 && sy > 80){
+      _bnav.classList.add('bnav-hidden');
+    } else if (sy < _lastSY - 5){
+      _bnav.classList.remove('bnav-hidden');
+    }
+    _lastSY = sy < 0 ? 0 : sy;
+    _ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if (!_ticking){ requestAnimationFrame(_onScroll); _ticking=true; }
+  }, {passive:true});
+})();
+
+/** เรียกเมื่อ navigate page ใหม่ — คืน bottom nav เสมอ */
+function showBottomNav(){
+  var nav = document.querySelector('.bottomnav');
+  if (nav) nav.classList.remove('bnav-hidden');
+}
+
 // ─── CLOSE MODAL ON BACKDROP CLICK ───────────────────────
 // คลิกนอก card (บน overlay) → ปิด modal อัตโนมัติ
 // deleteConfirmModal ไม่รวม (ป้องกัน dismiss โดยบังเอิญ)
@@ -227,6 +253,9 @@ function _closeModal(id, cb) {
     // accountDetailModal มี onclick บน element อยู่แล้ว ไม่ต้องเพิ่ม
     'addAccountModal':    'closeAddAccountModal',
     'txDetailOverlay':    'closeTxDetailModal',
+    'settlePayModal':     'closeSettlePayModal',
+    'loanModal':          'closeLoanModal',
+    'loanRepayModal':     'closeLoanRepayModal',
   };
   document.addEventListener('click', function(e) {
     var id = e.target && e.target.id;

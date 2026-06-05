@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0f0f0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='20' fill='white' text-anchor='middle'%3E%E0%B8%BF%3C/text%3E%3C/svg%3E">
-<title>HomeFinance v3.18.123</title>
+<title>HomeFinance v3.18.124</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -252,7 +252,7 @@ function gcgToggle(e){
 <nav class="sidebar hf-side" id="sidebar">
   <div class="hf-brand">
     <div class="hf-brand-title">HomeFinance</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.123 · © 2025</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.4px">v3.18.124 · © 2025</div>
   </div>
   <div class="hf-user">
     <div class="hf-avatar" id="sidebarAvatar">👤</div>
@@ -1023,9 +1023,9 @@ function gcgToggle(e){
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
       <div style="padding:8px 10px;background:var(--green-bg);border-radius:var(--r);border-left:3px solid var(--green)">
-        <strong>v3.18.123</strong> — accounts: แก้ชื่อบัญชีตัดกลางคำ → nowrap+ellipsis; ปรับ layout card ให้กระชับบนมือถือ 390px<br>
-        <strong>v3.18.123</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
-        <strong>v3.18.123</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
+        <strong>v3.18.124</strong> — accounts: แก้ชื่อบัญชีตัดกลางคำ → nowrap+ellipsis; ปรับ layout card ให้กระชับบนมือถือ 390px<br>
+        <strong>v3.18.124</strong> — จ่ายทันที: เปิด edit form + auto-set paid/received + highlight focus สีโฟกัสที่ field สถานะ<br>
+        <strong>v3.18.124</strong> — ทำทันที→เปิดหน้าบันทึก pre-fill; จ่ายทันที→เปิด edit form pending tx; edit บันทึก re-render recurring<br>
         <strong>v3.18.64</strong> — ปุ่มทำทันที: ตรวจสถานะ db เดือนนี้ — รอจ่าย→ปุ่ม 💳 จ่ายทันที, ยังไม่มี→ปุ่ม ⚡ ทำทันที, จ่ายแล้ว→✅<br>
         <strong>v3.18.62</strong> — ทำทันที: เพิ่ม field สถานะ (จ่ายแล้ว/รอจ่าย/รับแล้ว/รอรับ) ในฟอร์ม recurring + บันทึกตามสถานะที่ตั้งไว้<br>
         <strong>v3.18.61</strong> — รายการประจำเดือนแยกเป็นเมนูหลัก + ปุ่ม ⚡ ทำทันที บันทึกอัตโนมัติจาก template<br>
@@ -1513,11 +1513,11 @@ create policy "public write" on transactions for all using (true);</div>
 
 
 <!-- RECURRING DUE MODAL -->
-<div id="recurringDueModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
-  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:520px;padding:20px 20px 32px;max-height:80vh;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:15px;font-weight:600">🔔 รายการประจำที่ถึงกำหนด</div>
-      <button onclick="closeRecurringDueModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);padding:4px">×</button>
+<div id="recurringDueModal" class="modal-top-sheet">
+  <div class="modal-top-card" style="max-width:520px">
+    <div class="modal-top-head">
+      <div class="modal-top-title">🔔 รายการประจำที่ถึงกำหนด</div>
+      <button class="modal-x-btn" onclick="closeRecurringDueModal()">×</button>
     </div>
     <div id="recurringDueList"></div>
   </div>
@@ -1548,9 +1548,12 @@ create policy "public write" on transactions for all using (true);</div>
 </div>
 
 <!-- SETTLE PAY MODAL -->
-<div id="settlePayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
-  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
-    <div style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">💳 บันทึกชำระ Settlement</div>
+<div id="settlePayModal" class="modal-top-sheet">
+  <div class="modal-top-card">
+    <div class="modal-top-head">
+      <div class="modal-top-title">💳 บันทึกชำระ Settlement</div>
+      <button class="modal-x-btn" onclick="closeSettlePayModal()">×</button>
+    </div>
     <div id="spInfo"></div>
     <div class="field" style="margin-bottom:12px">
       <label>จำนวนที่จ่าย (฿)</label>
@@ -1564,17 +1567,17 @@ create policy "public write" on transactions for all using (true);</div>
       <label>หมายเหตุ</label>
       <input type="text" id="spNote" placeholder="(ไม่บังคับ)">
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeSettlePayModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="submitSettlePayment()" style="flex:1;min-height:44px">✅ บันทึก</button>
-    </div>
+    <button class="btn btn-primary" onclick="submitSettlePayment()" style="width:100%;min-height:44px">✅ บันทึก</button>
   </div>
 </div>
 
 <!-- LOAN MODAL (ให้ยืม / ยืม) -->
-<div id="loanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
-  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
-    <div id="loanModalTitle" style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">📤 ให้ยืมเงิน</div>
+<div id="loanModal" class="modal-top-sheet">
+  <div class="modal-top-card">
+    <div class="modal-top-head">
+      <div id="loanModalTitle" class="modal-top-title">📤 ให้ยืมเงิน</div>
+      <button class="modal-x-btn" onclick="closeLoanModal()">×</button>
+    </div>
     <div class="field" style="margin-bottom:12px">
       <label id="loanCounterpartLabel">ชื่อผู้ยืม</label>
       <input type="text" id="loanCounterpart" placeholder="เช่น นายก, แม่, เพื่อน">
@@ -1595,17 +1598,17 @@ create policy "public write" on transactions for all using (true);</div>
       <label>หมายเหตุ</label>
       <input type="text" id="loanNote" placeholder="(ไม่บังคับ)">
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeLoanModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="submitLoanModal()" style="flex:1;min-height:44px">บันทึก</button>
-    </div>
+    <button class="btn btn-primary" onclick="submitLoanModal()" style="width:100%;min-height:44px">บันทึก</button>
   </div>
 </div>
 
 <!-- LOAN REPAY MODAL (รับคืน / คืนเงิน) -->
-<div id="loanRepayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center">
-  <div style="background:var(--surface);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:480px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))">
-    <div id="loanRepayTitle" style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ink)">📥 บันทึกรับคืน</div>
+<div id="loanRepayModal" class="modal-top-sheet">
+  <div class="modal-top-card">
+    <div class="modal-top-head">
+      <div id="loanRepayTitle" class="modal-top-title">📥 บันทึกรับคืน</div>
+      <button class="modal-x-btn" onclick="closeLoanRepayModal()">×</button>
+    </div>
     <div id="loanRepayInfo"></div>
     <div class="field" style="margin-bottom:12px">
       <label>จำนวนเงิน (฿)</label>
@@ -1623,10 +1626,7 @@ create policy "public write" on transactions for all using (true);</div>
       <label>หมายเหตุ</label>
       <input type="text" id="loanRepayNote" placeholder="(ไม่บังคับ)">
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="closeLoanRepayModal()" style="flex:1;min-height:44px">ยกเลิก</button>
-      <button class="btn btn-primary" onclick="submitLoanRepay()" style="flex:1;min-height:44px">✅ บันทึก</button>
-    </div>
+    <button class="btn btn-primary" onclick="submitLoanRepay()" style="width:100%;min-height:44px">✅ บันทึก</button>
   </div>
 </div>
 
@@ -1950,7 +1950,7 @@ create policy "public write" on transactions for all using (true);</div>
       <button id="loginDbSaveBtn" onclick="saveDbSetup()" class="btn btn-primary" style="width:100%;min-height:40px;font-size:14px">💾 บันทึกและทดสอบการเชื่อมต่อ</button>
       <div id="loginDbMsg" style="margin-top:8px;font-size:12px;text-align:center"></div>
     </div>
-    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.123</div>
+    <div onclick="authDbTap()" style="text-align:center;margin-top:16px;font-size:12px;color:var(--ink3);cursor:default;user-select:none">HomeFinance v3.18.124</div>
   </div>
 </div>
 

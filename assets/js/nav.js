@@ -18,6 +18,9 @@ function nav(page){
   var targetEl = document.getElementById('page-' + page);
   if (!targetEl) return; // guard — unknown page name
 
+  // คืน bottom nav เสมอเมื่อเปลี่ยนหน้า
+  if (typeof showBottomNav === 'function') showBottomNav();
+
   // Step 1: ซ่อนทุก page — class + inline style
   document.querySelectorAll('.page').forEach(function(p){
     p.classList.remove('active');

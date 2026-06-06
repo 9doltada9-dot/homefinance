@@ -187,6 +187,8 @@ var chartCat     = null;
 var chartTrendNet      = null;
 var _trendNetSelItems  = [];   // รายการประจำที่เลือกแสดง (desc strings)
 var _trendNetFreqItems = [];   // [{desc, cnt, total}] รายการ ≥3 วันในรอบ
+var _trendNetDays      = [];   // full date strings ของ X-axis ปัจจุบัน
+var _TREND_DOW         = ['อา','จ','อ','พ','พฤ','ศ','ส'];
 
 /** ดึงชื่อที่ดีที่สุดสำหรับ person entry (legacy — ใช้กับ persons array) */
 function _personDisplayName(p) {
@@ -853,6 +855,7 @@ function _renderTrendNetChart(_cycleDb, cycle) {
     days.push(cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0'));
     cur.setDate(cur.getDate()+1);
   }
+  _trendNetDays = days; // เก็บไว้ให้ onClick ใช้
   var labelsT = days.map(function(d){ return parseInt(d.slice(8),10)+'/'+parseInt(d.slice(5,7),10); });
 
   var datasets = _trendNetSelItems.map(function(desc){
@@ -866,8 +869,10 @@ function _renderTrendNetChart(_cycleDb, cycle) {
           return e.date===date && e.type==='expense' && isPaid(e) && e.desc===desc;
         }).reduce(function(s,e){ return s+e.amt; }, 0);
       }),
-      tension: .3, fill: true, pointRadius: 4, borderWidth: 2,
-      pointHoverRadius: 6
+      tension: .35, fill: true,
+      pointStyle: 'circle', pointRadius: 5, pointHoverRadius: 9,
+      pointBackgroundColor: col, pointBorderWidth: 0,
+      borderWidth: 2
     };
   });
 
@@ -878,7 +883,27 @@ function _renderTrendNetChart(_cycleDb, cycle) {
       plugins: {
         legend: { display: datasets.length > 1, position: 'top',
                   labels: { font:{size:10}, usePointStyle:true, padding:10 } },
-        tooltip: { callbacks: { label: function(c){ return c.dataset.label+': '+fmt(c.raw); } } }
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              if (!items.length) return '';
+              var d = new Date(_trendNetDays[items[0].dataIndex]+'T00:00:00');
+              return _TREND_DOW[d.getDay()]+'. '+d.getDate()+' '+SHORT_M[d.getMonth()];
+            },
+            label: function(c){ return ' '+c.dataset.label+':  '+fmt(c.raw); }
+          }
+        }
+      },
+      onClick: function(evt, elements) {
+        if (!elements || !elements.length) return;
+        var date = _trendNetDays[elements[0].index];
+        if (!date) return;
+        window._hlTxDate = date;
+        // สลับ filter ไปรอบเงินเดือนปัจจุบันก่อน navigate
+        if (typeof _txFilterMode !== 'undefined') _txFilterMode = 'salary';
+        var fSC = document.getElementById('fltSalaryCycle');
+        if (fSC) { var cy = getSalaryCycle(); fSC.value = cy.start+'|'+cy.end; fSC._initialized = true; }
+        nav('transactions');
       },
       scales: {
         y: { ticks:{ callback:function(v){return fmt(v);}, font:{size:9} },

@@ -833,12 +833,12 @@ function renderTx(){
                 ? '<span class="badge" style="background:var(--blue-bg);color:var(--blue)">โอน</span>'
                 : (!isPaid(e) ? '<span class="badge badge-pending">'+(e.type==='income'?'รอรับ':'รอจ่าย')+'</span>' : '');
 
-              return '<div class="tx-card-row" id="row-'+e.id+'" onclick="(typeof gfCardTap===\'function\'?gfCardTap(this,function(){txDetailModal(\''+e.id+'\')}):txDetailModal(\''+e.id+'\'))" '
+              return '<div class="tx-card-row" id="row-'+e.id+'" data-date="'+e.date+'" onclick="(typeof gfCardTap===\'function\'?gfCardTap(this,function(){txDetailModal(\''+e.id+'\')}):txDetailModal(\''+e.id+'\'))" '
                 +'style="display:flex;align-items:center;gap:12px;padding:10px 24px;margin-bottom:6px;cursor:pointer;'
                 +'background:var(--surface);border-radius:14px;border:1px solid var(--line);'
                 +'backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
                 +'-webkit-backdrop-filter:blur(var(--g-blur)) saturate(var(--g-sat));'
-                +'box-shadow:var(--g-shadow);transition:box-shadow .15s">'
+                +'box-shadow:var(--g-shadow);transition:box-shadow .3s">'
 
                 +(_deskCircleOvr
                   ?_deskCircleOvr
@@ -885,8 +885,36 @@ function renderTx(){
       ? (_buildDGroups(normalList, false) + _dPendZone)
       : '<div class="empty">ไม่พบรายการ</div>');
   }
+
+  // highlight จาก chart click
+  if (window._hlTxDate) {
+    var _hlD = window._hlTxDate;
+    window._hlTxDate = null;
+    setTimeout(function(){ _hlTxDateRows(_hlD); }, 80);
+  }
 }
 
+function _hlTxDateRows(date) {
+  // inject animation ครั้งเดียว
+  if (!document.getElementById('_hlGlowStyle')) {
+    var s = document.createElement('style');
+    s.id = '_hlGlowStyle';
+    s.textContent = '@keyframes _hlGlow{'
+      +'0%{box-shadow:var(--g-shadow)}'
+      +'20%{box-shadow:0 0 0 2px #00F5FF,0 0 22px 6px rgba(0,245,255,.45)}'
+      +'70%{box-shadow:0 0 0 2px #00F5FF,0 0 10px 2px rgba(0,245,255,.2)}'
+      +'100%{box-shadow:var(--g-shadow)}}';
+    document.head.appendChild(s);
+  }
+  var rows = document.querySelectorAll('.tx-card-row[data-date="'+date+'"]');
+  if (!rows.length) return;
+  rows.forEach(function(row){
+    row.style.animation = '';
+    void row.offsetWidth; // force reflow
+    row.style.animation = '_hlGlow 2.2s ease-out 1';
+  });
+  rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 // ─── TRANSACTION DETAIL MODAL ────────────────────────────────────
 function txDetailModal(id) {

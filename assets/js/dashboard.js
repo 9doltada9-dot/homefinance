@@ -705,53 +705,55 @@ function renderAddFavCats() {
   }).join('');
 }
 
-// ─── CATEGORY EXPENSE CHART ──────────────────────────────
+// ─── EXPENSE BY PERSON LINE CHART ────────────────────────
 function renderDashTrendNetCard() {
   var canvas = document.getElementById('chartTrendNet');
   if (!canvas) return;
   if (chartTrendNet) { chartTrendNet.destroy(); chartTrendNet = null; }
 
   var now = new Date();
-  var curM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  var months = [];
+  for (var i = 5; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  }
+  var labelsT = months.map(function(m) {
+    var p = m.split('-').map(Number);
+    return SHORT_M[p[1] - 1] + "'" + String(p[0] + 543).slice(2);
+  });
 
-  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
-  var _db = _myUid ? db.filter(function(e) { return (e.user_id || e.person) === _myUid; }) : db;
+  var users = _getChartUsers();
+  var LINE_COLORS = ['#00F5FF', '#FF4D6D', '#00FF88', '#FFC857'];
 
-  var catMap = {};
-  _db.filter(function(e) { return e.date.startsWith(curM) && e.type === 'expense' && isPaid(e); })
-    .forEach(function(e) { var k = e.cat_name || '—'; catMap[k] = (catMap[k] || 0) + e.amt; });
-
-  var cats = Object.keys(catMap).sort(function(a, b) { return catMap[b] - catMap[a]; });
-  if (!cats.length) return;
-
-  var vals = cats.map(function(c) { return catMap[c]; });
-  var total = vals.reduce(function(s, v) { return s + v; }, 0);
+  var datasets = users.map(function(u, i) {
+    var vals = months.map(function(m) {
+      return db.filter(function(e) {
+        return _isEntryByUser(e, u) && e.date.startsWith(m) && e.type === 'expense' && isPaid(e);
+      }).reduce(function(s, e) { return s + e.amt; }, 0);
+    });
+    var col = LINE_COLORS[i] || PALETTE[i];
+    var r = parseInt(col.slice(1,3),16), g = parseInt(col.slice(3,5),16), b = parseInt(col.slice(5,7),16);
+    return {
+      label: u.name,
+      data: vals,
+      borderColor: col,
+      backgroundColor: 'rgba('+r+','+g+','+b+',.08)',
+      tension: .3, fill: true, pointRadius: 4, borderWidth: 2
+    };
+  });
 
   chartTrendNet = new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: cats,
-      datasets: [{
-        data: vals,
-        backgroundColor: PALETTE.slice(0, cats.length),
-        borderRadius: 6,
-        borderWidth: 0
-      }]
-    },
+    type: 'line',
+    data: { labels: labelsT, datasets: datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      indexAxis: 'y',
       plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: {
-          label: function(c) {
-            return ' ' + fmt(c.raw) + '  (' + Math.round(c.raw / total * 100) + '%)';
-          }
-        }}
+        legend: { display: true, position: 'top', labels: { font: { size: 10 }, usePointStyle: true, padding: 12 } },
+        tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fmt(c.raw); } } }
       },
       scales: {
-        x: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
-        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        y: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
       }
     }
   });

@@ -916,9 +916,14 @@ function _hlTxDateRows(date, desc) {
     var row = document.getElementById('row-'+id);
     if (!row) return;
     if (!firstRow) firstRow = row;
+    // เส้นสีเหลืองค้างไว้ก่อน แล้วค่อย glow ทับ
+    row.style.border = '1px solid #FFC857';
+    row.style.boxShadow = '';
     row.style.animation = '';
     void row.offsetWidth;
     row.style.animation = '_hlGlow 2.2s ease-out 1';
+    // หลัง glow จบ → คง yellow outline ค้าง
+    row.addEventListener('animationend', function(){ row.style.boxShadow = '0 0 0 2px #FFC857, var(--g-shadow)'; }, { once: true });
   });
   if (firstRow) firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }

@@ -184,8 +184,9 @@ function activateSalaryNow(){
 // ─── DASHBOARD CHARTS ─────────────────────────────────────
 var chartMain    = null;
 var chartCat     = null;
-var chartTrendNet = null;
-var _trendNetSelUsers = null; // null = ยังไม่ init (จะ init เป็น all ตอน render)
+var chartTrendNet      = null;
+var _trendNetSelCats   = null; // null = init ครั้งแรก → ['ส่วนตัว','ลูก']
+var _trendNetAllCats   = [];   // หมวดทั้งหมดในรอบปัจจุบัน (cache)
 
 /** ดึงชื่อที่ดีที่สุดสำหรับ person entry (legacy — ใช้กับ persons array) */
 function _personDisplayName(p) {
@@ -706,93 +707,106 @@ function renderAddFavCats() {
   }).join('');
 }
 
-// ─── DAILY EXPENSE BY PERSON LINE CHART ─────────────────
-var _TREND_COLORS = ['#00F5FF', '#FF4D6D', '#00FF88', '#FFC857'];
+// ─── DAILY EXPENSE BY CATEGORY (SALARY CYCLE) ───────────
 
 function renderDashTrendNetCard() {
-  var users = _getChartUsers();
-  if (!users.length) return;
+  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _cycleDb = _myUid ? db.filter(function(e){ return (e.user_id||e.person) === _myUid; }) : db;
 
-  // init selection = ทุกคน
-  if (!_trendNetSelUsers) {
-    _trendNetSelUsers = users.map(function(u) { return u.uid; });
-  }
+  var cycle = getSalaryCycle();
 
-  // สร้าง person picker chips
-  var picker = document.getElementById('trendNetPersonPicker');
-  if (picker) {
-    picker.innerHTML = users.map(function(u, i) {
-      var col = _TREND_COLORS[i] || PALETTE[i];
-      var r = parseInt(col.slice(1,3),16), g = parseInt(col.slice(3,5),16), b = parseInt(col.slice(5,7),16);
-      var on = _trendNetSelUsers.indexOf(u.uid) > -1;
-      return '<button data-uid="'+u.uid+'" onclick="toggleTrendNetUser(\''+u.uid+'\')"'
-        +' style="padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;'
-        +'font-family:Sarabun,sans-serif;transition:.15s;touch-action:manipulation;'
-        +'border:1px solid '+(on ? col : 'transparent')+';'
-        +'background:'+(on ? 'rgba('+r+','+g+','+b+',.18)' : 'var(--surface2)')+';'
-        +'color:'+(on ? col : 'var(--ink3)')+'">'+u.name+'</button>';
-    }).join('');
-  }
+  // อัปเดต cycle label
+  var lbl = document.getElementById('trendNetCycleLabel');
+  if (lbl) lbl.textContent = cycle.label;
 
-  _renderTrendNetChart(users);
-}
+  // หาหมวดที่มีรายจ่ายในรอบนี้
+  var catSet = {};
+  _cycleDb.filter(function(e){
+    return e.type === 'expense' && isPaid(e) && e.date >= cycle.start && e.date <= cycle.end;
+  }).forEach(function(e){ catSet[e.cat_name || '—'] = true; });
+  _trendNetAllCats = Object.keys(catSet).sort();
 
-function toggleTrendNetUser(uid) {
-  if (!_trendNetSelUsers) _trendNetSelUsers = [];
-  var idx = _trendNetSelUsers.indexOf(uid);
-  if (idx > -1) {
-    if (_trendNetSelUsers.length > 1) _trendNetSelUsers.splice(idx, 1);
+  // init หรือ re-validate selection
+  if (!_trendNetSelCats) {
+    var def = ['ส่วนตัว', 'ลูก'].filter(function(c){ return catSet[c]; });
+    _trendNetSelCats = def.length ? def : _trendNetAllCats.slice(0, 2);
   } else {
-    _trendNetSelUsers.push(uid);
+    _trendNetSelCats = _trendNetSelCats.filter(function(c){ return catSet[c]; });
+    if (!_trendNetSelCats.length) _trendNetSelCats = _trendNetAllCats.slice(0, 1);
   }
-  var users = _getChartUsers();
-  // อัปเดต style ปุ่มโดยไม่ rebuild
-  var picker = document.getElementById('trendNetPersonPicker');
-  if (picker) picker.querySelectorAll('button[data-uid]').forEach(function(btn) {
-    var bUid = btn.getAttribute('data-uid');
-    var i = 0;
-    users.forEach(function(u, j) { if (u.uid === bUid) i = j; });
-    var col = _TREND_COLORS[i] || PALETTE[i];
-    var r = parseInt(col.slice(1,3),16), g = parseInt(col.slice(3,5),16), b = parseInt(col.slice(5,7),16);
-    var on = _trendNetSelUsers.indexOf(bUid) > -1;
-    btn.style.border = '1px solid ' + (on ? col : 'transparent');
-    btn.style.background = on ? 'rgba('+r+','+g+','+b+',.18)' : 'var(--surface2)';
-    btn.style.color = on ? col : 'var(--ink3)';
-  });
-  _renderTrendNetChart(users);
+
+  _buildTrendNetPicker();
+  _renderTrendNetChart(_cycleDb, cycle);
 }
 
-function _renderTrendNetChart(users) {
+function _buildTrendNetPicker() {
+  var picker = document.getElementById('trendNetCatPicker');
+  if (!picker) return;
+  picker.innerHTML = _trendNetAllCats.map(function(c, i){
+    var col = PALETTE[i % PALETTE.length];
+    var on  = _trendNetSelCats && _trendNetSelCats.indexOf(c) > -1;
+    return '<button data-cat="'+c.replace(/"/g,'&quot;')+'" data-idx="'+i+'"'
+      +' onclick="toggleTrendNetCat(\''+c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\', '+i+')"'
+      +' style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;'
+      +'font-family:Sarabun,sans-serif;touch-action:manipulation;transition:.15s;'
+      +'border:1px solid '+(on ? col : 'transparent')+';'
+      +'background:'+(on ? col+'28' : 'var(--surface2)')+';'
+      +'color:'+(on ? col : 'var(--ink3)')+'">'+c+'</button>';
+  }).join('');
+}
+
+function toggleTrendNetCat(cat) {
+  if (!_trendNetSelCats) _trendNetSelCats = [];
+  var idx = _trendNetSelCats.indexOf(cat);
+  if (idx > -1) {
+    if (_trendNetSelCats.length > 1) _trendNetSelCats.splice(idx, 1);
+  } else {
+    _trendNetSelCats.push(cat);
+  }
+  // อัปเดต chip style โดยไม่ rebuild
+  var picker = document.getElementById('trendNetCatPicker');
+  if (picker) picker.querySelectorAll('button[data-cat]').forEach(function(btn){
+    var bc = btn.getAttribute('data-cat');
+    var i  = parseInt(btn.getAttribute('data-idx'), 10);
+    var col = PALETTE[i % PALETTE.length];
+    var on  = _trendNetSelCats.indexOf(bc) > -1;
+    btn.style.border     = '1px solid ' + (on ? col : 'transparent');
+    btn.style.background = on ? col + '28' : 'var(--surface2)';
+    btn.style.color      = on ? col : 'var(--ink3)';
+  });
+  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _cycleDb = _myUid ? db.filter(function(e){ return (e.user_id||e.person) === _myUid; }) : db;
+  _renderTrendNetChart(_cycleDb, getSalaryCycle());
+}
+
+function _renderTrendNetChart(_cycleDb, cycle) {
   var canvas = document.getElementById('chartTrendNet');
   if (!canvas) return;
   if (chartTrendNet) { chartTrendNet.destroy(); chartTrendNet = null; }
 
-  if (!users) users = _getChartUsers();
-  var now = new Date();
-  var curM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-  var todayD = now.getDate();
-
-  // X-axis: วันที่ 1 ถึงวันนี้
+  // X-axis: วันเริ่มรอบ ถึง วันนี้ (หรือวันสิ้นสุดรอบ ถ้าผ่านไปแล้ว)
+  var today = new Date().toISOString().slice(0, 10);
+  var endDate = cycle.end < today ? cycle.end : today;
   var days = [];
-  for (var i = 1; i <= todayD; i++) days.push(String(i).padStart(2, '0'));
-  var labelsT = days.map(function(d) { return String(parseInt(d, 10)); });
+  var cur = new Date(cycle.start + 'T00:00:00');
+  var endD = new Date(endDate + 'T00:00:00');
+  while (cur <= endD) {
+    days.push(cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0'));
+    cur.setDate(cur.getDate() + 1);
+  }
+  var labelsT = days.map(function(d){ return String(parseInt(d.slice(8),10))+'/'+String(parseInt(d.slice(5,7),10)); });
 
-  var selUsers = users.filter(function(u) { return _trendNetSelUsers && _trendNetSelUsers.indexOf(u.uid) > -1; });
-
-  var datasets = selUsers.map(function(u) {
-    var i = 0; users.forEach(function(x, j) { if (x.uid === u.uid) i = j; });
-    var col = _TREND_COLORS[i] || PALETTE[i];
-    var r = parseInt(col.slice(1,3),16), g = parseInt(col.slice(3,5),16), b = parseInt(col.slice(5,7),16);
-    var vals = days.map(function(d) {
-      return db.filter(function(e) {
-        return _isEntryByUser(e, u) && e.date === curM+'-'+d && e.type === 'expense' && isPaid(e);
-      }).reduce(function(s, e) { return s + e.amt; }, 0);
+  var selCats = _trendNetSelCats || [];
+  var datasets = selCats.map(function(cat){
+    var i   = _trendNetAllCats.indexOf(cat);
+    var col = PALETTE[i >= 0 ? i % PALETTE.length : 0];
+    var vals = days.map(function(date){
+      return _cycleDb.filter(function(e){
+        return e.date === date && e.type === 'expense' && isPaid(e) && (e.cat_name||'—') === cat;
+      }).reduce(function(s,e){ return s+e.amt; }, 0);
     });
-    return {
-      label: u.name, data: vals,
-      borderColor: col, backgroundColor: 'rgba('+r+','+g+','+b+',.08)',
-      tension: .3, fill: true, pointRadius: 3, borderWidth: 2
-    };
+    return { label: cat, data: vals, borderColor: col, backgroundColor: col+'14',
+             tension: .3, fill: true, pointRadius: 3, borderWidth: 2 };
   });
 
   chartTrendNet = new Chart(canvas.getContext('2d'), {
@@ -801,12 +815,14 @@ function _renderTrendNetChart(users) {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fmt(c.raw); } } }
+        legend: { display: datasets.length > 1, position: 'top',
+                  labels: { font: { size: 10 }, usePointStyle: true, padding: 10 } },
+        tooltip: { callbacks: { label: function(c){ return c.dataset.label+': '+fmt(c.raw); } } }
       },
       scales: {
-        y: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
-        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxTicksLimit: 15 } }
+        y: { ticks: { callback: function(v){ return fmt(v); }, font: { size: 9 } },
+             grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3,3] } },
+        x: { grid: { display: false }, ticks: { font: { size: 8 }, maxTicksLimit: 12 } }
       }
     }
   });

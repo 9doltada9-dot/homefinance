@@ -897,9 +897,10 @@ function _renderTrendNetChart(_cycleDb, cycle) {
       onClick: function(evt, elements) {
         if (!elements || !elements.length) return;
         var date = _trendNetDays[elements[0].index];
-        if (!date) return;
+        var desc = _trendNetSelItems[elements[0].datasetIndex];
+        if (!date || !desc) return;
         window._hlTxDate = date;
-        // สลับ filter ไปรอบเงินเดือนปัจจุบันก่อน navigate
+        window._hlTxDesc = desc;
         if (typeof _txFilterMode !== 'undefined') _txFilterMode = 'salary';
         var fSC = document.getElementById('fltSalaryCycle');
         if (fSC) { var cy = getSalaryCycle(); fSC.value = cy.start+'|'+cy.end; fSC._initialized = true; }

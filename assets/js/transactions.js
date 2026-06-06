@@ -888,32 +888,39 @@ function renderTx(){
 
   // highlight จาก chart click
   if (window._hlTxDate) {
-    var _hlD = window._hlTxDate;
-    window._hlTxDate = null;
-    setTimeout(function(){ _hlTxDateRows(_hlD); }, 80);
+    var _hlD = window._hlTxDate, _hlDesc = window._hlTxDesc || null;
+    window._hlTxDate = null; window._hlTxDesc = null;
+    setTimeout(function(){ _hlTxDateRows(_hlD, _hlDesc); }, 80);
   }
 }
 
-function _hlTxDateRows(date) {
-  // inject animation ครั้งเดียว
+function _hlTxDateRows(date, desc) {
   if (!document.getElementById('_hlGlowStyle')) {
     var s = document.createElement('style');
     s.id = '_hlGlowStyle';
     s.textContent = '@keyframes _hlGlow{'
       +'0%{box-shadow:var(--g-shadow)}'
-      +'20%{box-shadow:0 0 0 2px #00F5FF,0 0 22px 6px rgba(0,245,255,.45)}'
+      +'20%{box-shadow:0 0 0 2px #00F5FF,0 0 24px 6px rgba(0,245,255,.5)}'
       +'70%{box-shadow:0 0 0 2px #00F5FF,0 0 10px 2px rgba(0,245,255,.2)}'
       +'100%{box-shadow:var(--g-shadow)}}';
     document.head.appendChild(s);
   }
-  var rows = document.querySelectorAll('.tx-card-row[data-date="'+date+'"]');
-  if (!rows.length) return;
-  rows.forEach(function(row){
+
+  // หา IDs จาก db ที่ตรงทั้ง date + desc (เฉพาะ group ที่คลิก)
+  var matchIds = db.filter(function(e){
+    return e.date === date && (!desc || e.desc === desc) && e.type === 'expense';
+  }).map(function(e){ return String(e.id); });
+
+  var firstRow = null;
+  matchIds.forEach(function(id){
+    var row = document.getElementById('row-'+id);
+    if (!row) return;
+    if (!firstRow) firstRow = row;
     row.style.animation = '';
-    void row.offsetWidth; // force reflow
+    void row.offsetWidth;
     row.style.animation = '_hlGlow 2.2s ease-out 1';
   });
-  rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (firstRow) firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ─── TRANSACTION DETAIL MODAL ────────────────────────────────────

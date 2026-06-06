@@ -705,36 +705,37 @@ function renderAddFavCats() {
   }).join('');
 }
 
-// ─── MONTHLY NET TREND CHART ─────────────────────────────
+// ─── DAILY EXPENSE TREND CHART ───────────────────────────
 function renderDashTrendNetCard() {
   var canvas = document.getElementById('chartTrendNet');
   if (!canvas) return;
   if (chartTrendNet) { chartTrendNet.destroy(); chartTrendNet = null; }
 
   var now = new Date();
-  var months = [];
-  for (var i = 11; i >= 0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
-  }
+  var curM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
   var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var _db = _myUid ? db.filter(function(e) { return (e.user_id || e.person) === _myUid; }) : db;
 
-  var labelsT = months.map(function(m) {
-    var p = m.split('-').map(Number);
-    return SHORT_M[p[1] - 1] + "'" + String(p[0] + 543).slice(2);
-  });
+  // รวมรายจ่ายแยกตามวัน เฉพาะวันที่มีข้อมูล
+  var dayMap = {};
+  _db.filter(function(e) { return e.date.startsWith(curM) && e.type === 'expense' && isPaid(e); })
+    .forEach(function(e) { dayMap[e.date] = (dayMap[e.date] || 0) + e.amt; });
 
-  var netVals = months.map(function(m) {
-    var inc = _db.filter(function(e) { return e.date.startsWith(m) && e.type === 'income' && isPaid(e); }).reduce(function(s, e) { return s + e.amt; }, 0);
-    var exp = _db.filter(function(e) { return e.date.startsWith(m) && e.type === 'expense' && isPaid(e); }).reduce(function(s, e) { return s + e.amt; }, 0);
-    return inc - exp;
-  });
+  var days = Object.keys(dayMap).sort();
+  if (!days.length) {
+    var ctx0 = canvas.getContext('2d');
+    ctx0.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
 
+  var labelsT = days.map(function(d) { return String(parseInt(d.slice(8), 10)); });
+  var expVals = days.map(function(d) { return dayMap[d]; });
+
+  // ยอดสะสมรายวัน
   var cumVals = [];
   var running = 0;
-  netVals.forEach(function(v) { running += v; cumVals.push(running); });
+  expVals.forEach(function(v) { running += v; cumVals.push(running); });
 
   var opts = {
     responsive: true, maintainAspectRatio: false,
@@ -753,8 +754,8 @@ function renderDashTrendNetCard() {
     data: {
       labels: labelsT,
       datasets: [
-        { label: 'ยอดสุทธิรายเดือน', data: netVals, borderColor: '#00F5FF', backgroundColor: 'rgba(0,245,255,.07)', tension: .3, fill: true, pointRadius: 4, borderWidth: 2 },
-        { label: 'ยอดสะสม', data: cumVals, borderColor: '#C026FF', backgroundColor: 'rgba(192,38,255,.05)', tension: .3, fill: true, pointRadius: 3, borderWidth: 2 }
+        { label: 'รายจ่ายรายวัน', data: expVals, borderColor: '#FF4D6D', backgroundColor: 'rgba(255,77,109,.08)', tension: .3, fill: true, pointRadius: 4, borderWidth: 2 },
+        { label: 'สะสมเดือนนี้', data: cumVals, borderColor: '#FFC857', backgroundColor: 'rgba(255,200,87,.05)', tension: .3, fill: false, pointRadius: 3, borderWidth: 2 }
       ]
     },
     options: opts

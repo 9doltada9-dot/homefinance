@@ -49,6 +49,7 @@ function renderDash(){
   var pend=_dbFiltered.filter(function(e){return e.status==='pending';});
   renderSalaryCycleCard();
   renderDashNetworthCard();
+  renderDashTrendNetCard();
   renderDashBudgetMini();
   renderDashSettleMini(pend);
   renderDashSavingsMini();
@@ -181,8 +182,9 @@ function activateSalaryNow(){
 }
 
 // ─── DASHBOARD CHARTS ─────────────────────────────────────
-var chartMain = null;
-var chartCat  = null;
+var chartMain    = null;
+var chartCat     = null;
+var chartTrendNet = null;
 
 /** ดึงชื่อที่ดีที่สุดสำหรับ person entry (legacy — ใช้กับ persons array) */
 function _personDisplayName(p) {
@@ -701,6 +703,62 @@ function renderAddFavCats() {
       +'style="padding:6px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;display:inline-block">'
       +c.name+'</span>';
   }).join('');
+}
+
+// ─── MONTHLY NET TREND CHART ─────────────────────────────
+function renderDashTrendNetCard() {
+  var canvas = document.getElementById('chartTrendNet');
+  if (!canvas) return;
+  if (chartTrendNet) { chartTrendNet.destroy(); chartTrendNet = null; }
+
+  var now = new Date();
+  var months = [];
+  for (var i = 11; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  }
+
+  var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
+  var _db = _myUid ? db.filter(function(e) { return (e.user_id || e.person) === _myUid; }) : db;
+
+  var labelsT = months.map(function(m) {
+    var p = m.split('-').map(Number);
+    return SHORT_M[p[1] - 1] + "'" + String(p[0] + 543).slice(2);
+  });
+
+  var netVals = months.map(function(m) {
+    var inc = _db.filter(function(e) { return e.date.startsWith(m) && e.type === 'income' && isPaid(e); }).reduce(function(s, e) { return s + e.amt; }, 0);
+    var exp = _db.filter(function(e) { return e.date.startsWith(m) && e.type === 'expense' && isPaid(e); }).reduce(function(s, e) { return s + e.amt; }, 0);
+    return inc - exp;
+  });
+
+  var cumVals = [];
+  var running = 0;
+  netVals.forEach(function(v) { running += v; cumVals.push(running); });
+
+  var opts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'top', labels: { font: { size: 10 }, usePointStyle: true, padding: 12 } },
+      tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fmt(c.raw); } } }
+    },
+    scales: {
+      y: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
+      x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    }
+  };
+
+  chartTrendNet = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labelsT,
+      datasets: [
+        { label: 'ยอดสุทธิรายเดือน', data: netVals, borderColor: '#00F5FF', backgroundColor: 'rgba(0,245,255,.07)', tension: .3, fill: true, pointRadius: 4, borderWidth: 2 },
+        { label: 'ยอดสะสม', data: cumVals, borderColor: '#C026FF', backgroundColor: 'rgba(192,38,255,.05)', tension: .3, fill: true, pointRadius: 3, borderWidth: 2 }
+      ]
+    },
+    options: opts
+  });
 }
 
 // ─── DASHBOARD DRAG-TO-REORDER ────────────────────────────

@@ -705,7 +705,7 @@ function renderAddFavCats() {
   }).join('');
 }
 
-// ─── DAILY EXPENSE TREND CHART ───────────────────────────
+// ─── CATEGORY EXPENSE CHART ──────────────────────────────
 function renderDashTrendNetCard() {
   var canvas = document.getElementById('chartTrendNet');
   if (!canvas) return;
@@ -717,48 +717,43 @@ function renderDashTrendNetCard() {
   var _myUid = typeof getAuthUserId === 'function' ? getAuthUserId() : null;
   var _db = _myUid ? db.filter(function(e) { return (e.user_id || e.person) === _myUid; }) : db;
 
-  // รวมรายจ่ายแยกตามวัน เฉพาะวันที่มีข้อมูล
-  var dayMap = {};
+  var catMap = {};
   _db.filter(function(e) { return e.date.startsWith(curM) && e.type === 'expense' && isPaid(e); })
-    .forEach(function(e) { dayMap[e.date] = (dayMap[e.date] || 0) + e.amt; });
+    .forEach(function(e) { var k = e.cat_name || '—'; catMap[k] = (catMap[k] || 0) + e.amt; });
 
-  var days = Object.keys(dayMap).sort();
-  if (!days.length) {
-    var ctx0 = canvas.getContext('2d');
-    ctx0.clearRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
+  var cats = Object.keys(catMap).sort(function(a, b) { return catMap[b] - catMap[a]; });
+  if (!cats.length) return;
 
-  var labelsT = days.map(function(d) { return String(parseInt(d.slice(8), 10)); });
-  var expVals = days.map(function(d) { return dayMap[d]; });
-
-  // ยอดสะสมรายวัน
-  var cumVals = [];
-  var running = 0;
-  expVals.forEach(function(v) { running += v; cumVals.push(running); });
-
-  var opts = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true, position: 'top', labels: { font: { size: 10 }, usePointStyle: true, padding: 12 } },
-      tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fmt(c.raw); } } }
-    },
-    scales: {
-      y: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
-      x: { grid: { display: false }, ticks: { font: { size: 9 } } }
-    }
-  };
+  var vals = cats.map(function(c) { return catMap[c]; });
+  var total = vals.reduce(function(s, v) { return s + v; }, 0);
 
   chartTrendNet = new Chart(canvas.getContext('2d'), {
-    type: 'line',
+    type: 'bar',
     data: {
-      labels: labelsT,
-      datasets: [
-        { label: 'รายจ่ายรายวัน', data: expVals, borderColor: '#FF4D6D', backgroundColor: 'rgba(255,77,109,.08)', tension: .3, fill: true, pointRadius: 4, borderWidth: 2 },
-        { label: 'สะสมเดือนนี้', data: cumVals, borderColor: '#FFC857', backgroundColor: 'rgba(255,200,87,.05)', tension: .3, fill: false, pointRadius: 3, borderWidth: 2 }
-      ]
+      labels: cats,
+      datasets: [{
+        data: vals,
+        backgroundColor: PALETTE.slice(0, cats.length),
+        borderRadius: 6,
+        borderWidth: 0
+      }]
     },
-    options: opts
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: function(c) {
+            return ' ' + fmt(c.raw) + '  (' + Math.round(c.raw / total * 100) + '%)';
+          }
+        }}
+      },
+      scales: {
+        x: { ticks: { callback: function(v) { return fmt(v); }, font: { size: 9 } }, grid: { color: 'rgba(128,128,128,0.08)' }, border: { dash: [3, 3] } },
+        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
   });
 }
 

@@ -717,28 +717,78 @@ function renderDashTrendNetCard() {
   var lbl = document.getElementById('trendNetCycleLabel');
   if (lbl) lbl.textContent = cycle.label;
 
-  // วิเคราะห์รายการที่ใช้ประจำ (≥3 วันต่างกันในรอบ)
-  var itemDaySet = {}, itemAmtSum = {};
+  var today = new Date().toISOString().slice(0, 10);
+
+  // สะสมข้อมูลต่อรายการ: วันที่มีข้อมูล + ยอดต่อวัน
+  var itemDaySet = {}, itemAmtDay = {};
   _cycleDb.filter(function(e){
     return e.type === 'expense' && isPaid(e) && e.date >= cycle.start && e.date <= cycle.end && e.desc;
   }).forEach(function(e){
-    if (!itemDaySet[e.desc]) { itemDaySet[e.desc] = {}; itemAmtSum[e.desc] = 0; }
+    if (!itemDaySet[e.desc]) { itemDaySet[e.desc] = {}; itemAmtDay[e.desc] = {}; }
     itemDaySet[e.desc][e.date] = true;
-    itemAmtSum[e.desc] += e.amt;
+    itemAmtDay[e.desc][e.date] = (itemAmtDay[e.desc][e.date] || 0) + e.amt;
   });
-  _trendNetFreqItems = Object.keys(itemDaySet)
-    .map(function(d){ return { desc: d, cnt: Object.keys(itemDaySet[d]).length, total: itemAmtSum[d] }; })
-    .filter(function(o){ return o.cnt >= 3; })
-    .sort(function(a, b){ return b.cnt - a.cnt || b.total - a.total; });
 
-  // init: auto-select top 3 ที่ถี่ที่สุด (ถ้ายังไม่มี selection)
-  var freqDescs = _trendNetFreqItems.map(function(o){ return o.desc; });
-  if (!_trendNetSelItems.length) {
-    _trendNetSelItems = freqDescs.slice(0, 3);
-  } else {
-    _trendNetSelItems = _trendNetSelItems.filter(function(d){ return freqDescs.indexOf(d) > -1; });
-    if (!_trendNetSelItems.length) _trendNetSelItems = freqDescs.slice(0, 3);
-  }
+  // คำนวณ activity score ต่อรายการ
+  _trendNetFreqItems = Object.keys(itemDaySet)
+    .map(function(d){
+      var daysList = Object.keys(itemDaySet[d]).sort();
+      var cnt = daysList.length;
+      if (cnt < 3) return null;
+
+      // lastSeen: กี่วันที่แล้ว
+      var lastDate = daysList[daysList.length - 1];
+      var daysAgo = Math.max(0, Math.round((new Date(today) - new Date(lastDate)) / 86400000));
+
+      // recentCount: จำนวนวันที่มีข้อมูลใน 5 วันล่าสุด
+      var recentCount = 0;
+      for (var k = 0; k < 5; k++) {
+        var dk = new Date(new Date(today) - k * 86400000);
+        var ds = dk.getFullYear()+'-'+String(dk.getMonth()+1).padStart(2,'0')+'-'+String(dk.getDate()).padStart(2,'0');
+        if (itemDaySet[d][ds]) recentCount++;
+      }
+
+      // trend: เทียบยอด 5 วันหลังสุด vs 5 วันก่อนหน้านั้น
+      var sumNew = 0, sumOld = 0;
+      for (var k = 0; k < 5; k++) {
+        var dn = new Date(new Date(today) - k * 86400000);
+        var dns = dn.getFullYear()+'-'+String(dn.getMonth()+1).padStart(2,'0')+'-'+String(dn.getDate()).padStart(2,'0');
+        var dop = new Date(new Date(today) - (k + 5) * 86400000);
+        var dops = dop.getFullYear()+'-'+String(dop.getMonth()+1).padStart(2,'0')+'-'+String(dop.getDate()).padStart(2,'0');
+        sumNew += itemAmtDay[d][dns] || 0;
+        sumOld += itemAmtDay[d][dops] || 0;
+      }
+      var trend = sumNew > sumOld * 1.1 ? 'up' : sumNew < sumOld * 0.9 ? 'down' : 'flat';
+      // ถ้าไม่มีข้อมูลทั้งคู่ → flat
+      if (sumNew === 0 && sumOld === 0) trend = 'flat';
+
+      // score: recency สำคัญที่สุด + frequency + trend bonus
+      var score = Math.max(0, 10 - daysAgo * 2) * 3
+                + recentCount * 2
+                + cnt
+                + (trend === 'up' ? 3 : trend === 'flat' ? 1 : 0);
+
+      var total = Object.values ? Object.values(itemAmtDay[d]).reduce(function(s,v){return s+v;},0)
+                : Object.keys(itemAmtDay[d]).reduce(function(s,k){return s+itemAmtDay[d][k];},0);
+
+      return { desc: d, cnt: cnt, total: total, daysAgo: daysAgo, recentCount: recentCount, trend: trend, score: score };
+    })
+    .filter(function(o){ return o !== null; })
+    .sort(function(a, b){ return b.score - a.score; });
+
+  // auto-select top 3 ที่ active ที่สุด (ทุกรอบ render — ไม่เก็บ stale selection)
+  var autoTop = _trendNetFreqItems.slice(0, 3).map(function(o){ return o.desc; });
+  // คง manual selection ที่ยังอยู่ใน freq list ไว้ถ้า user เคยเลือกเอง
+  var validPrev = _trendNetSelItems.filter(function(d){
+    return _trendNetFreqItems.some(function(o){ return o.desc === d; });
+  });
+  _trendNetSelItems = validPrev.length ? validPrev : autoTop;
+  // ถ้า selection เดิมทั้งหมด daysAgo ≥ 3 → swap ด้วย auto top
+  var allStale = _trendNetSelItems.every(function(d){
+    var o = _trendNetFreqItems.filter(function(x){ return x.desc === d; })[0];
+    return o && o.daysAgo >= 3;
+  });
+  if (allStale && autoTop.length) _trendNetSelItems = autoTop;
 
   _buildTrendNetPicker();
   _renderTrendNetChart(_cycleDb, cycle);
@@ -751,16 +801,26 @@ function _buildTrendNetPicker() {
     picker.innerHTML = '<span style="font-size:11px;color:var(--hf-ink3)">ยังไม่มีรายการที่ใช้ประจำในรอบนี้</span>';
     return;
   }
+  var TREND_ICON = { up: '↑', down: '↓', flat: '→' };
+  var TREND_COL  = { up: '#00FF88', down: '#FF4D6D', flat: 'var(--hf-ink3)' };
   picker.innerHTML = _trendNetFreqItems.map(function(o, i){
     var col = PALETTE[i % PALETTE.length];
     var on  = _trendNetSelItems.indexOf(o.desc) > -1;
+    var tIcon = TREND_ICON[o.trend] || '→';
+    var tCol  = TREND_COL[o.trend]  || 'var(--hf-ink3)';
+    var staleBadge = o.daysAgo >= 3
+      ? '<span style="font-size:9px;opacity:.5"> ·'+o.daysAgo+'วัน</span>'
+      : '';
     return '<button data-item="'+o.desc.replace(/"/g,'&quot;')+'" data-idx="'+i+'"'
       +' onclick="toggleTrendNetItem(\''+o.desc.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\', '+i+')"'
       +' style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;'
       +'font-family:Sarabun,sans-serif;touch-action:manipulation;transition:.15s;'
       +'border:1px solid '+(on ? col : 'transparent')+';background:'+(on ? col+'28' : 'var(--surface2)')+';'
       +'color:'+(on ? col : 'var(--ink3)')+'">'+o.desc
-      +' <span style="font-size:9px;opacity:.65;font-weight:500">'+o.cnt+'วัน</span></button>';
+      +' <span style="font-size:10px;color:'+tCol+';font-weight:700">'+tIcon+'</span>'
+      +'<span style="font-size:9px;opacity:.6;font-weight:500"> '+o.cnt+'วัน</span>'
+      + staleBadge
+      +'</button>';
   }).join('');
 }
 
